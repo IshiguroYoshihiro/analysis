@@ -698,7 +698,7 @@ Lemma integral_bigsetU (F : (set T)^nat) (mF : forall n, measurable (F n))
 Proof.
 Admitted.
 
-Lemma ge0_subadditive_countable (F : (set _)^nat) (f : T -> \bar R) :
+Lemma ge0_integral_bigcup (F : (set _)^nat) (f : T -> \bar R) :
   (forall x, 0 <= f x)%E ->
   trivIset setT F ->
   (forall k, measurable (F k)) ->
@@ -708,7 +708,40 @@ Lemma ge0_subadditive_countable (F : (set _)^nat) (f : T -> \bar R) :
 Proof.
 Admitted.
 
-Lemma subadditive_countable (F : (set _)^nat) (f : T -> R) :
+Section tmp_ereal_series.
+Lemma ereal_seriesD (F G : (\bar R)^nat) :
+  cvg (fun n => \sum_(0 <= i < n) (F i)) ->
+  cvg (fun n => \sum_(0 <= i < n) (G i)) ->
+  \sum_(i <oo) F i +? \sum_(i <oo) G i ->
+  \sum_(i <oo) F i + \sum_(i <oo) G i = \sum_(i <oo) (F i + G i).
+Proof.
+move=> HF HG HFG.
+transitivity (lim (fun n => \sum_(0 <= i < n) F i + \sum_(0 <= i < n) G i)).
+  rewrite -ereal_limD //.
+congr (lim _).
+apply funext=> ?.
+by rewrite big_split.
+Qed.
+
+Lemma ereal_seriesN (F : (\bar R)^nat) :
+    cvg (fun n => \sum_(0 <= i < n) (F i)) ->
+    (- \sum_(i <oo) F i) = \sum_(i <oo) - F i.
+Proof.
+Admitted.
+
+Lemma ereal_seriesB (F G : (\bar R)^nat) :
+  cvg (fun n => \sum_(0 <= i < n) (F i)) ->
+  cvg (fun n => \sum_(0 <= i < n) (G i)) ->
+  \sum_(i <oo) F i +? \sum_(i <oo) - G i ->
+  \sum_(i <oo) F i - \sum_(i <oo) G i = \sum_(i <oo) (F i - G i).
+Proof.
+move=> HF HG HFG.
+rewrite ereal_seriesN // ereal_seriesD //; last first.
+Fail rewrite ereal_sumN.
+Admitted.
+End tmp_ereal_series.
+
+Lemma integral_bigcup (F : (set _)^nat) (f : T -> R) :
   trivIset setT F ->
   (forall k, measurable (F k)) ->
   mu.-integrable (\bigcup_k F k) (EFin \o f) ->
@@ -716,6 +749,7 @@ Lemma subadditive_countable (F : (set _)^nat) (f : T -> R) :
    \sum_(i <oo) \int_ (F i) ((EFin \o f) x) 'd mu[x])%E.
 Proof.
 move=> tF mF fi.
+have H: \int_ (\bigcup_i F i) ((EFin \o f) x) 'd mu[x] \is a fin_num by admit.
 set g := EFin \o f.
 transitivity (\int_ (\bigcup_i F i) g^\+ x 'd mu[x] -
               \int_ (\bigcup_i F i) g^\- x 'd mu[x])%E.
@@ -730,10 +764,34 @@ transitivity (\sum_(i <oo) (\int_ (F i) (g^\+ x) 'd mu[x] - \int_ (F i) (g^\- x)
 transitivity (
     (\sum_(i <oo) \int_ (F i) (g^\+ x) 'd mu[x]) -
     (\sum_(i <oo) \int_ (F i) (g^\- x) 'd mu[x]))%E.
-  rewrite ge0_subadditive_countable//; last first.
+  rewrite ge0_integral_bigcup//; last first.
     by apply: integrable_funenng => //; exact: measurable_bigcup.
-  by rewrite ge0_subadditive_countable//; apply: integrable_funennp => //; exact: measurable_bigcup.
-Abort.
+  by rewrite ge0_integral_bigcup//; apply: integrable_funennp => //; exact: measurable_bigcup.
+rewrite ereal_seriesB //.
+- apply ereal_nondecreasing_is_cvg => x y xy.
+  apply: lee_sum_nneg_natr => //.
+  admit.
+- apply ereal_nondecreasing_is_cvg => x y xy.
+  apply: lee_sum_nneg_natr => //.
+  admit.
+(*
+have H1 : \sum_(i <oo) \int_ (F i) (g^\+ x) 'd mu[x] =
+            \sum_(i <oo) `| \int_ (F i) (g^\+ x) 'd mu[x] |.
+  apply: eq_ereal_pseries => i.
+  rewrite gee0_abs //.
+  apply: integral_ge0=> //.
+have H2 : \sum_(i <oo) \int_ (F i) (g^\- x) 'd mu[x] =
+         \sum_(i <oo) `| \int_ (F i) (g^\- x) 'd mu[x] |.
+  apply: eq_ereal_pseries => i.
+  rewrite gee0_abs //.
+  apply: integral_ge0=> //.
+*)
+have H1 : \sum_(i <oo) `| \int_ (F i) (g^\+ x) 'd mu[x] | < +oo.
+  admit.
+have H2 : \sum_(i <oo) `| \int_ (F i) (g^\- x) 'd mu[x] | < +oo.
+  admit.
+(*exact: absolutely_convergent_series_sub.*)
+Admitted.
 
 End subadditive_countable.
 
@@ -775,7 +833,7 @@ have H2 : trivIset setT (fun k => [set A k]).
 transitivity (\int_ (\bigcup_k X @^-1` [set A k]) (X w)%:E 'd P[w])%E.
   admit.
 transitivity (\sum_(k <oo) \int_ (X @^-1` [set A k]) (A k)%:E 'd P[w])%E.
-  rewrite subadditive_countable; last 3 first.
+  rewrite integral_bigcup; last 3 first.
     admit.
     admit.
     admit.
