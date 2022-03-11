@@ -1988,7 +1988,7 @@ apply/eqP; rewrite eq_le; apply/andP; split; last first.
     apply: ge0_le_integral => //.
     - by move=> x _; apply: ereal_lim_ge => //; apply: nearW => k; exact/g0.
     - apply: emeasurable_fun_cvg mg _ => x _.
-      by apply: ereal_nondecreasing_is_cvg.
+      exact: ereal_nondecreasing_is_cvg.
     - move=> x Dx; apply: ereal_lim_ge => //.
       near=> m; have nm : (n <= m)%N by near: m; exists n.
       exact/nd_g.

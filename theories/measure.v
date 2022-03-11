@@ -62,6 +62,9 @@ From HB Require Import structures.
 (*                   measurable sets and is semi-sigma-additive               *)
 (*   sigma_finite A f == the measure f is sigma-finite on A : set T with      *)
 (*                   T : ringOfSetsType.                                      *)
+(*   measure_restr mu mD == restriction of the measure mu to a set D;         *)
+(*                   mD is a proof that D is measurable                       *)
+(*   measure_count T R == counting measure                                    *)
 (*   mu.-negligible A == A is mu negligible                                   *)
 (* 　{ae mu, forall x, P x} == P holds almost everywhere for the measure mu   *)
 (*                                                                            *)
@@ -1349,17 +1352,16 @@ End measure_is_additive_measure.
 
 Coercion measure_additive_measure : Measure.map >-> AdditiveMeasure.map.
 
-
 Section measure_restr.
 Variables (T : measurableType) (R : realType) (mu : {measure set T -> \bar R}).
 Variables (D : set T) (mD : measurable D).
 
 Let measure_restr' (X : set _) : \bar R := mu (X `&` D).
 
-Let measure_restr'0 : measure_restr' set0 = 0%E.
+Let measure_restr'0 : measure_restr' set0 = 0.
 Proof. by rewrite /measure_restr' set0I measure0. Qed.
 
-Let measure_restr'_ge0 (A : set _) : (0 <= measure_restr' A)%E.
+Let measure_restr'_ge0 (A : set _) : 0 <= measure_restr' A.
 Proof.
 by rewrite /measure_restr'; apply: measure_ge0; exact: measurableI.
 Qed.
@@ -1383,6 +1385,87 @@ Lemma measure_restrE A : measure_restr A = mu (A `&` D).
 Proof. by []. Qed.
 
 End measure_restr.
+
+Section measure_count.
+Variables (T : measurableType) (R : realType).
+Variables (D : set T) (mD : measurable D).
+
+Let measure_count' (X : set T) : \bar R :=
+  if `[< finite_set X >] then (#|` fset_set X |)%:R%:E else +oo.
+
+Let measure_count'0 : measure_count' set0 = 0.
+Proof. by rewrite /measure_count' asboolT// fset_set0. Qed.
+
+Let measure_count'_ge0 (A : set _) : 0 <= measure_count' A.
+Proof.
+by rewrite /measure_count'; case: ifPn; rewrite ?lee_fin// lee_pinfty.
+Qed.
+
+Let measure_count'_sigma_additive : semi_sigma_additive measure_count'.
+Proof.
+move=> F mF tF mU.
+have [[i Fi]|infinF] := pselect (exists k, infinite_set (F k)).
+  have -> : measure_count' (\bigcup_n F n) = +oo.
+    rewrite /measure_count' asboolF//.
+    by apply: contra_not Fi; exact/sub_finite_set/bigcup_sup.
+  apply/ereal_cvgPpinfty => M M0; near=> n.
+  have ni : (i < n)%N by near: n; exists i.+1.
+  rewrite (bigID (xpred1 i))/= big_mkord (big_pred1 (Ordinal ni))//=.
+  rewrite [X in X + _]/measure_count' asboolF// addooe ?lee_pinfty//.
+  by rewrite gt_eqF// (@lt_le_trans _ _ 0) ?lte_ninfty//; exact: sume_ge0.
+have {infinF}finF : forall i, finite_set (F i) by exact/not_forallP.
+pose u : nat^nat := fun n => #|` fset_set (F n) |.
+have sumFE n : \sum_(i < n) measure_count' (F i) =
+               #|` fset_set (\big[setU/set0]_(k < n) F k) |%:R%:E.
+  rewrite -trivIset_sum_card// natr_sum -sumEFin.
+  by apply eq_bigr => // i _; rewrite /measure_count' asboolT.
+have [cvg_u|dvg_u] := pselect (cvg (nseries u)).
+  have [N _ Nu] : \forall n \near \oo, u n = 0%N by apply: cvg_nseries_near.
+  rewrite [X in _ --> X](_ : _ = \sum_(i < N) measure_count' (F i)); last first.
+    have -> : \bigcup_i (F i) = \big[setU/set0]_(i < N) F i.
+      rewrite (bigcupID (`I_N)) setTI bigcup_mkord.
+      rewrite [X in _ `|` X](_ : _ = set0) ?setU0// bigcup0// => i [_ /negP].
+      by rewrite -leqNgt => /Nu/eqP/[!cardfs_eq0]/eqP/fset_set_set0 ->.
+    rewrite /measure_count' /= asboolT// ?sumFE//.
+    by rewrite -bigcup_mkord; exact: bigcup_finite.
+  rewrite -(cvg_shiftn N)/=.
+  rewrite (_ : (fun n => _) = (fun=> \sum_(i < N) measure_count' (F i))).
+    exact: cvg_cst.
+  apply/funext => n; rewrite /index_iota subn0 (addnC n) iotaD big_cat/=.
+  rewrite [X in _ + X](_ : _ = 0) ?adde0.
+    by rewrite -{1}(subn0 N) big_mkord.
+  rewrite add0n big_seq big1// => i /[!mem_iota] => /andP[NI iNn].
+  by rewrite /measure_count' asboolT//= -/(u _) Nu.
+have {dvg_u}cvg_F : (fun n => \sum_(i < n) measure_count' (F i)) --> +oo.
+  rewrite (_ : (fun n => _) = [sequence (\sum_(0 <= i < n) (u i))%:R%:E]_n).
+    exact/dvg_ereal_cvg/nat_dvg_real/dvg_nseries.
+  apply/funext => n /=; under eq_bigr.
+    by rewrite /measure_count' => i _; rewrite asboolT//; over.
+  by rewrite sumEFin natr_sum big_mkord.
+have [UFoo|/contrapT[k UFk]] := pselect (infinite_set (\bigcup_n F n)).
+  rewrite /measure_count' asboolF//.
+  by under eq_fun do rewrite big_mkord.
+exfalso.
+move: cvg_F =>/ereal_cvgPpinfty/(_ k.+1%:R)/[!ltr0n]/(_ erefl)[K _].
+move=> /(_ K (leqnn _)); rewrite leNgt => /negP; apply.
+rewrite sumFE lte_fin ltr_nat ltnS.
+have -> : k = #|` fset_set (\bigcup_n F n) |.
+  by apply/esym/card_eq_fsetP; rewrite fset_setK//; exists k.
+apply/fsubset_leq_card/fset_set_sub => //.
+- by rewrite -bigcup_mkord; exact: bigcup_finite.
+- by exists k.
+- by move=> /= t; rewrite -bigcup_mkord => -[m _ Fmt]; exists m.
+Unshelve. all: by end_near. Qed.
+
+Definition measure_count : {measure set _ -> \bar R} :=
+  Measure.Pack _ (Measure.Axioms
+    measure_count'0 measure_count'_ge0 measure_count'_sigma_additive).
+
+Lemma measure_countE A : measure_count A =
+  if `[< finite_set A >] then #|` fset_set A|%:R%:E else +oo.
+Proof. by []. Qed.
+
+End measure_count.
 
 Lemma big_trivIset (I : choiceType) D T (R : Type) (idx : R)
    (op : Monoid.com_law idx) (A : I -> set T) (F : set T -> R) :
