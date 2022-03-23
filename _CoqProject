@@ -14,6 +14,7 @@ theories/reals.v
 theories/landau.v
 theories/classical_sets.v
 theories/Rstruct.v
+theories/Rstruct_topology.v
 theories/topology.v
 theories/prodnormedzmodule.v
 theories/normedtype.v
