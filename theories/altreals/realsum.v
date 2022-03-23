@@ -5,8 +5,9 @@
 
 (* -------------------------------------------------------------------- *)
 From mathcomp Require Import all_ssreflect all_algebra.
-Require Import xfinmap boolp ereal reals discrete realseq.
-Require Import mathcomp_extra classical_sets functions topology.
+From mathcomp.classical Require Import mathcomp_extra boolp classical_sets.
+From mathcomp.classical Require Import reals ereal functions.
+Require Import xfinmap discrete realseq topology.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -140,7 +141,7 @@ Proof.
 case/summableP=> M ge0_M bM; pose E (p : nat) := [pred x | `|f x| > 1 / p.+1%:~R].
 set F := [pred x | _]; have le: {subset F <= [pred x | `[< exists p, x \in E p >]]}.
   move=> x; rewrite !inE => nz_fx.
-  pose j := `|floor (1 / `|f x|)|%N; exists j; rewrite inE.
+  pose j := `|floor (1 / `|f x|)|%N; apply/asboolP; exists j; rewrite inE.
   rewrite ltr_pdivr_mulr ?ltr0z // -ltr_pdivr_mull ?normr_gt0 //.
   rewrite mulr1 /j div1r -addn1 /= PoszD intrD mulr1z.
   rewrite gez0_abs ?floor_ge0 ?invr_ge0 ?normr_ge0 //.

@@ -1,9 +1,10 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From mathcomp Require Import all_ssreflect ssralg ssrint ssrnum matrix.
 From mathcomp Require Import interval rat.
-Require Import mathcomp_extra boolp reals ereal nsatz_realtype classical_sets.
-Require Import signed functions topology normedtype landau sequences derive.
-Require Import realfun exp.
+From mathcomp.classical Require Import mathcomp_extra boolp classical_sets.
+From mathcomp.classical Require Import signed functions reals ereal.
+From mathcomp.classical Require Import nsatz_realtype.
+Require Import topology normedtype landau sequences derive realfun exp.
 
 (******************************************************************************)
 (*                     Theory of trigonometric functions                      *)

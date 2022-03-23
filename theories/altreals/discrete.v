@@ -5,7 +5,8 @@
 
 (* -------------------------------------------------------------------- *)
 From mathcomp Require Import all_ssreflect all_algebra.
-Require Import xfinmap boolp reals.
+From mathcomp.classical Require Import boolp reals.
+Require Import xfinmap.
 (* ------- *) Require (*--*) Setoid.
 
 (* -------------------------------------------------------------------- *)

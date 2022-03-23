@@ -1,7 +1,7 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
 Require Import mathcomp_extra boolp classical_sets signed functions cardinality.
-Require Import reals ereal topology normedtype.
+Require Import reals ereal.
 
 (******************************************************************************)
 (*                     Finitely-supported big operators                       *)
@@ -18,7 +18,6 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Import Order.TTheory GRing.Theory Num.Def Num.Theory.
-Import numFieldTopology.Exports.
 
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.

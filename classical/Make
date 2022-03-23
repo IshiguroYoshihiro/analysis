@@ -1,0 +1,23 @@
+-R . mathcomp.classical
+
+-arg -w -arg -parsing
+-arg -w -arg +undeclared-scope
+-arg -w -arg +non-primitive-record
+-arg -w -arg -ambiguous-paths
+-arg -w -arg -redundant-canonical-projection
+-arg -w -arg -projection-no-head-constant
+
+boolp.v
+classical_sets.v
+cardinality.v
+ereal.v
+forms.v
+fsbigop.v
+functions.v
+mathcomp_extra.v
+nsatz_realtype.v
+prodnormedzmodule.v
+reals.v
+Rstruct.v
+signed.v
+all_classical.v

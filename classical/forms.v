@@ -1,12 +1,4 @@
-From mathcomp
-Require Import all_ssreflect ssralg fingroup zmodp poly ssrnum.
-From mathcomp
-Require Import matrix mxalgebra vector falgebra ssrnum algC algnum.
-From mathcomp
-Require Import fieldext.
-From mathcomp Require Import vector.
-
-(* From mathcomp Require classfun. *)
+From mathcomp Require Import all_ssreflect ssralg zmodp ssrnum matrix mxalgebra.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

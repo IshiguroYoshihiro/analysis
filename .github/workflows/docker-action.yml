@@ -34,6 +34,13 @@ jobs:
       - uses: coq-community/docker-coq-action@v1
         with:
           opam_file: 'coq-mathcomp-analysis.opam'
+          install: |
+            startGroup "Install dependencies"
+              opam pin add -n -y -k path coq-mathcomp-classical $WORKDIR
+              opam pin add -n -y -k path $PACKAGE $WORKDIR
+              opam update -y
+              opam install -y -j 2 coq-mathcomp-classical --deps-only
+            endGroup
           custom_image: ${{ matrix.image }}
 
 # See also:

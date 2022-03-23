@@ -1,7 +1,9 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From mathcomp Require Import all_ssreflect all_algebra finmap.
-Require Import boolp classical_sets mathcomp_extra reals ereal signed.
-Require Import functions topology normedtype sequences cardinality esum fsbigop.
+From mathcomp.classical Require Import mathcomp_extra boolp classical_sets.
+From mathcomp.classical Require Import reals ereal signed functions fsbigop.
+From mathcomp.classical Require Import cardinality.
+Require Import topology normedtype sequences esum.
 From HB Require Import structures.
 
 (******************************************************************************)

@@ -8,10 +8,9 @@
 (* archimedean field with a least upper bound operator.                 *)
 (* -------------------------------------------------------------------- *)
 
+From Coq Require Import Setoid.
 From mathcomp Require Import all_ssreflect all_algebra.
-(* ------- *) Require Import mathcomp_extra boolp classical_sets.
-
-Require Import Setoid.
+Require Import mathcomp_extra boolp classical_sets.
 
 Declare Scope real_scope.
 

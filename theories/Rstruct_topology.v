@@ -2,9 +2,9 @@ Require Import Rdefinitions Raxioms RIneq Rbasic_fun Zwf.
 Require Import Epsilon FunctionalExtensionality Ranalysis1 Rsqrt_def.
 Require Import Rtrigo1 Reals.
 From mathcomp Require Import all_ssreflect ssralg poly mxpoly ssrnum.
-Require Import reals boolp classical_sets.
-Require Import signed topology normedtype.
-Require Import Rstruct.
+From mathcomp.classical Require Import reals boolp classical_sets signed.
+From mathcomp.classical Require Import Rstruct.
+Require Import topology normedtype.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

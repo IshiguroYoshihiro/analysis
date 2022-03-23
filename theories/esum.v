@@ -1,7 +1,8 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From mathcomp Require Import all_ssreflect ssralg ssrnum finmap.
-Require Import boolp reals mathcomp_extra ereal classical_sets signed topology.
-Require Import sequences functions cardinality.
+From mathcomp.classical Require Import mathcomp_extra boolp classical_sets.
+From mathcomp.classical Require Import reals ereal functions signed cardinality.
+Require Import topology sequences.
 
 (******************************************************************************)
 (*                      Summation over classical sets                         *)

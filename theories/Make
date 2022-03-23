@@ -1,0 +1,32 @@
+-R . mathcomp.analysis
+
+-arg -w -arg -parsing
+-arg -w -arg +undeclared-scope
+-arg -w -arg +non-primitive-record
+-arg -w -arg -ambiguous-paths
+-arg -w -arg -redundant-canonical-projection
+-arg -w -arg -projection-no-head-constant
+
+landau.v
+Rstruct_topology.v
+topology.v
+normedtype.v
+realfun.v
+sequences.v
+exp.v
+trigo.v
+esum.v
+set_interval.v
+lebesgue_measure.v
+derive.v
+measure.v
+numfun.v
+lebesgue_integral.v
+summability.v
+altreals/xfinmap.v
+altreals/discrete.v
+altreals/realseq.v
+altreals/realsum.v
+altreals/distr.v
+
+
