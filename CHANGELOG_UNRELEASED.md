@@ -62,6 +62,10 @@
     `ptws_compact_closed`, `ascoli_forward`, `compact_equicontinuous`
 - in file `ereal.v`:
   + lemma `abse1`
+- in file `lebesgue_integral.v`:
+  + definition `dirac` with notation `\d_` and canonical `measure_dirac`
+  + lemmas `integralM_indic`, `integralM_indic_nnsfun`, `integral_dirac`
+  + lemmas `finite_card_dirac`, `infinite_card_dirac`
 
 ### Changed
 
@@ -69,6 +73,8 @@
   + remove one hypothesis in lemmas `reindex_esum`, `esum_image`
 - moved from `lebesgue_integral.v` to `lebesgue_measure.v` and generalized
   + hint `measurable_set1`/`emeasurable_set1`
+- in `mathcomp_extra.v`:
+  + generalize `card_fset_sum1`
 
 ### Renamed
 

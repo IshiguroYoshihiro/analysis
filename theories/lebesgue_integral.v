@@ -3,7 +3,7 @@
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
 Require Import mathcomp_extra boolp classical_sets signed functions cardinality.
-Require Import reals ereal topology normedtype sequences measure.
+Require Import reals ereal topology normedtype sequences esum measure.
 Require Import lebesgue_measure fsbigop numfun.
 
 (******************************************************************************)
@@ -28,6 +28,7 @@ Require Import lebesgue_measure fsbigop numfun.
 (*       {nnsfun T >-> R} == type of non-negative simple functions            *)
 (*           cst_nnsfun r == constant simple function                         *)
 (*                nnsfun0 := cst_nnsfun 0                                     *)
+(*                   \d_a == Dirac measure                                    *)
 (*         sintegral mu f == integral of the function f with the measure mu   *)
 (* \int_ D (f x) 'd mu[x] == integral of the measurable function f over the   *)
 (*                           domain D with measure mu; this notation is       *)
@@ -64,6 +65,9 @@ Reserved Notation "'\int_' D f ''d' mu [ x ]" (at level 36, D at level 0,
 Reserved Notation "'\int' f ''d' mu [ x ]" (at level 36, f at level 36,
   mu at level 0, x at level 3, format "'\int'  f  ''d'  mu [ x ]").
 Reserved Notation "mu .-integrable" (at level 2, format "mu .-integrable").
+Reserved Notation "'\d_' a" (at level 8, a at level 2, format "'\d_'  a").
+#[global]
+Hint Extern 0 (measurable [set _]) => solve [apply: measurable_set1] : core.
 
 HB.mixin Record IsMeasurableFun (aT : measurableType) (rT : realType) (f : aT -> rT) := {
   measurable_funP : measurable_fun setT f
@@ -513,6 +517,71 @@ HB.instance Definition _ D (mD : measurable D) :
 
 End nnsfun_functions.
 Arguments nnsfun0 {T R}.
+
+Section measure_dirac.
+Local Open Scope ereal_scope.
+Variables (T : measurableType) (a : T) (R : realType).
+
+Definition dirac (A : set T) : \bar R := (\1_A a)%:E.
+
+Let dirac0 : dirac set0 = 0. Proof. by rewrite /dirac indic0. Qed.
+
+Let dirac_ge0 B : 0 <= dirac B. Proof. by rewrite /dirac lee_fin. Qed.
+
+Let dirac_sigma_additive : semi_sigma_additive dirac.
+Proof.
+move=> F mF tF mUF; rewrite /dirac indicE; have [|aFn] /= := boolP (a \in _).
+  rewrite inE => -[n _ Fna].
+  have naF m : m != n -> a \notin F m.
+    move=> mn; rewrite notin_set => Fma.
+    move/trivIsetP : tF => /(_ _ _ Logic.I Logic.I mn).
+    by rewrite predeqE => /(_ a)[+ _]; exact.
+  apply/cvg_ballP => _/posnumP[e]; rewrite near_map; near=> m.
+  have mn : (n < m)%N by near: m; exists n.+1.
+  rewrite big_mkord (bigID (xpred1 (Ordinal mn)))//= big_pred1_eq/= big1/=.
+    by rewrite adde0 indicE mem_set//; exact: ballxx.
+  by move=> j ij; rewrite indicE (negbTE (naF _ _)).
+rewrite [X in X --> _](_ : _ = cst 0); first exact: cvg_cst.
+apply/funext => n; rewrite big1// => i _; rewrite indicE; apply/eqP.
+by rewrite eqe pnatr_eq0 eqb0; apply: contra aFn => /[!inE] aFn; exists i.
+Unshelve. all: by end_near. Qed.
+
+Canonical measure_dirac : {measure set T -> \bar R} :=
+  Measure.Pack _ (Measure.Axioms dirac0 dirac_ge0 dirac_sigma_additive).
+
+End measure_dirac.
+Arguments dirac {T} _ {R}.
+Arguments measure_dirac {T} _ {R}.
+
+Notation "\d_ a" := (measure_dirac a) : ring_scope.
+
+Section dirac_lemmas.
+Local Open Scope ereal_scope.
+Variables (T : measurableType) (R : realType).
+
+Lemma finite_card_dirac (A : set T) : finite_set A ->
+  \esum_(i in A) \d_ i A = (#|` fset_set A|%:R)%:E :> \bar R.
+Proof.
+move=> finA.
+rewrite -sum_fset_set// big_seq_cond (eq_bigr (fun=> 1)) -?big_seq_cond.
+  by rewrite card_fset_sum1// natr_sum -sumEFin.
+by move=> i; rewrite andbT in_fset_set//= /dirac indicE => ->.
+Qed.
+
+Lemma infinite_card_dirac (A : set T) : infinite_set A ->
+  \esum_(i in A) \d_ i A = +oo :> \bar R.
+Proof.
+move=> infA; apply/eq_pinftyP => r r0.
+have [B BA Br] := infinite_set_fset `|ceil r| infA.
+apply: esum_ge; exists B => //; apply: (@le_trans _ _ `|ceil r|%:R%:E).
+  by rewrite lee_fin natr_absz gtr0_norm ?ceil_gt0// ceil_ge.
+move: Br; rewrite -(@ler_nat R) -lee_fin => /le_trans; apply.
+rewrite big_seq (eq_bigr (cst 1))/=; last first.
+  by move=> i Bi; rewrite /dirac indicE mem_set//; exact: BA.
+by rewrite -big_seq card_fset_sum1 sumEFin natr_sum.
+Qed.
+
+End dirac_lemmas.
 
 Section nnfun_bin.
 Variables (T : Type) (R : numDomainType) (f g : {nnfun T >-> R}).
@@ -2242,6 +2311,83 @@ by rewrite restrict_indic sintegral_indic//; exact: measurableI.
 Qed.
 
 End integral_ind.
+
+Section integralM_indic.
+Local Open Scope ereal_scope.
+Variables (T : measurableType) (R : realType) (m : {measure set T -> \bar R}).
+Variables (D : set T) (mD : measurable D).
+
+Lemma integralM_indic (f : R -> set T) (k : R) :
+  ((k < 0)%R -> f k = set0) -> measurable (f k) ->
+  \int_ D (k * \1_(f k) x)%:E 'd m[x] = k%:E * \int_ D (\1_(f k) x)%:E 'd m[x].
+Proof.
+move=> fk0 mfk; have [k0|k0] := ltP k 0%R.
+  rewrite (eq_integral (cst 0%E)) ?integral0 ?mule0; last first.
+    by move=> x _; rewrite fk0// indic0 mulr0.
+  rewrite (eq_integral (cst 0%E)) ?integral0 ?mule0// => x _.
+  by rewrite fk0// indic0.
+under eq_integral do rewrite EFinM.
+rewrite ge0_integralM//.
+- apply/EFin_measurable_fun/(@measurable_funS _ _ setT) => //.
+  by rewrite (_ : \1_(f k) = mindic R mfk).
+- by move=> y _; rewrite lee_fin.
+Qed.
+
+Lemma integralM_indic_nnsfun (f : {nnsfun T >-> R}) (k : R) :
+  \int_ D (k * \1_(f @^-1` [set k]) x)%:E 'd m[x] =
+  k%:E * \int_ D (\1_(f @^-1` [set k]) x)%:E 'd m[x].
+Proof.
+rewrite (@integralM_indic (fun k => f @^-1` [set k]))// => k0.
+by rewrite preimage_nnfun0.
+Qed.
+
+End integralM_indic.
+
+Section integral_dirac.
+Local Open Scope ereal_scope.
+Variables (T : measurableType) (a : T) (R : realType).
+Variables (D : set T) (mD : measurable D).
+
+Let ge0_integral_dirac (f : T -> \bar R) (mf : measurable_fun D f)
+    (f0 : forall x, D x -> 0 <= f x) :
+  D a -> \int_ D (f x) 'd (\d_ a)[x] = f a.
+Proof.
+move=> Da; have [f_ [ndf_ f_f]] := approximation mD mf f0.
+transitivity (lim (fun n => \int_ D (f_ n x)%:E 'd (\d_ a)[x])).
+  rewrite -monotone_convergence//.
+  - apply: eq_integral => x Dx; apply/esym/cvg_lim => //; apply: f_f.
+    by rewrite inE in Dx.
+  - by move=> n; apply/EFin_measurable_fun; exact/(@measurable_funS _ _ setT).
+  - by move=> *; rewrite lee_fin.
+  - by move=> x _ m n mn; rewrite lee_fin; exact/lefP/ndf_.
+rewrite (_ : (fun _ => _) = (fun n => (f_ n a)%:E)).
+  by apply/cvg_lim => //; exact: f_f.
+apply/funext => n; under eq_integral do rewrite fimfunE -sumEFin.
+rewrite ge0_integral_sum//; last 2 first.
+  - move=> r; apply/EFin_measurable_fun.
+    apply: measurable_funM => //; first exact: measurable_fun_cst.
+    apply: (@measurable_funS _ _ setT) => //.
+    by rewrite (_ : \1_ _ = mindic R (measurable_sfunP (f_ n) r)).
+  - by move=> r x _; rewrite muleindic_ge0.
+under eq_bigr; first by move=> r _; rewrite integralM_indic_nnsfun//; over.
+rewrite /= (big_fsetD1 (f_ n a))/=; last first.
+  by rewrite in_fset_set// in_setE; exists a.
+rewrite integral_indic//= /dirac indicE mem_set// mule1.
+rewrite big1_fset ?adde0// => r; rewrite !inE => /andP[rfna _] _.
+rewrite integral_indic//= /dirac indicE memNset ?mule0//.
+by apply/not_andP; left; exact/nesym/eqP.
+Qed.
+
+Lemma integral_dirac (f : T -> \bar R) (mf : measurable_fun D f) :
+  D a -> \int_ D (f x) 'd (\d_ a)[x] = f a.
+Proof.
+move=> Da.
+rewrite integralE ge0_integral_dirac//; last exact/emeasurable_fun_funenng.
+rewrite ge0_integral_dirac//; last exact/emeasurable_fun_funennp.
+by rewrite [in RHS](funenngnnp f).
+Qed.
+
+End integral_dirac.
 
 Section subset_integral.
 Local Open Scope ereal_scope.
