@@ -34,6 +34,11 @@
   + lemma `fset_set_image`, `card_fset_set`, `geq_card_fset_set`,
     `leq_card_fset_set`, `infinite_set_fset`, `infinite_set_fsetP` and
     `fcard_eq`.
+- in file `sequences.v`:
+  + lemmas `nneseriesrM`, `ereal_series_cond`, `ereal_series`, `nneseries_split`
+  + lemmas `lee_nneseries`
+- in file `esum.v`:
+  + lemma `nnseries_interchange`
 
 ### Changed
 
@@ -41,6 +46,8 @@
   + remove one hypothesis in lemmas `reindex_esum`, `esum_image`
 - moved from `lebesgue_integral.v` to `lebesgue_measure.v` and generalized
   + hint `measurable_set1`/`emeasurable_set1`
+- in `sequences.v`:
+  + generalize `eq_nneseries`, `nneseries0`
 
 ### Renamed
 
