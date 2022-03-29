@@ -39,6 +39,14 @@
   + lemmas `lee_nneseries`
 - in file `esum.v`:
   + lemma `nnseries_interchange`
+- in file `measure.v`:
+  + lemma `measure_ext`
+  + definition `msum` and canonical `measure_sum'`
+  + definition `mzero` and canonical `measure_zero'`
+  + definition `measure_add` and lemma `measure_addE`
+  + definition `mseries` and canonical `measure_series'`
+- in file `lebesgue_integral.v`:
+  + lemma `integral_measure_zero`
 
 ### Changed
 
