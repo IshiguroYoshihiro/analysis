@@ -62,6 +62,8 @@
     `ptws_compact_closed`, `ascoli_forward`, `compact_equicontinuous`
 - in file `ereal.v`:
   + lemma `abse1`
+- in file `lebesgue_measure.v`:
+  + lemma `emeasurable_funN`
 
 ### Changed
 
@@ -128,6 +130,23 @@
   + `adde_def_nneg_series` -> `adde_def_nneseries`
 - in `esum.v`:
   + `ereal_pseries_esum` -> `nneseries_esum`
+- in `numfun.v`:
+  + `funennp` -> `funenpo`
+  + `funennp_ge0` -> `funenpo_ge0`
+  + `funennpN` -> `funenpoN`
+  + `funennp_restrict` -> `funenpo_restrict`
+  + `ge0_funennpE` -> `ge0_funenpoE`
+  + `le0_funennpE` -> `le0_funenpoE`
+  + `gt0_funennpM` -> `gt0_funenpoM`
+  + `lt0_funennpM` -> `lt0_funenpoM`
+  + `funenngnnp` -> `funenngnpo`
+  + `add_def_funennpg` -> `add_def_funenngnpo`
+- in `lebesgue_measure.v`:
+  + `emeasurable_fun_funennp` -> `emeasurable_fun_funenpo`
+- in `lebesgue_integral.v`:
+  + `integrable_funenng` -> `integrable_funenpo`
+  + `integral_funennp_lt_pinfty` -> `integral_funenpo_lt_pinfty`
+  + `ae_eq_funenng_funennp` -> `ae_eq_funenng_funenpo`
 
 ### Removed
 

@@ -1005,9 +1005,9 @@ Proof. by rewrite /integral => /eq_restrictP->. Qed.
 Lemma ge0_integralE D f : (forall x, D x -> 0 <= f x) ->
   \int_ D (f x) 'd x = nnintegral (f \_ D).
 Proof.
-move=> f0; rewrite /integral funennp_restrict funenng_restrict.
+move=> f0; rewrite /integral funenpo_restrict funenng_restrict.
 have /eq_restrictP-> := ge0_funenngE f0.
-have /eq_restrictP-> := ge0_funennpE f0.
+have /eq_restrictP-> := ge0_funenpoE f0.
 by rewrite erestrict0 nnintegral0 sube0.
 Qed.
 
@@ -1018,8 +1018,7 @@ Proof. by move=> f0; rewrite ge0_integralE// patch_setT. Qed.
 Lemma integralE D f :
   \int_ D (f x) 'd x = \int_ D (f ^\+ x) 'd x - \int_ D (f ^\- x) 'd x.
 Proof.
-rewrite [in LHS]/integral funenng_restrict funennp_restrict.
-by rewrite -ge0_integralE // -ge0_integralE.
+by rewrite [in LHS]/integral funenng_restrict funenpo_restrict -!ge0_integralE.
 Qed.
 
 Lemma integral0 D : \int_ D (cst 0 x) 'd x = 0.
@@ -1701,8 +1700,8 @@ exists (fun n => [the {sfun T >-> R} of fp_ n \+ cst (-1) \* fn_ n]) => x /=.
 rewrite [X in X --> _](_ : _ =
     EFin \o fp_^~ x \+ (-%E \o EFin \o fn_^~ x))%E; last first.
   by apply/funext => n/=; rewrite EFinD mulN1r.
-by move=> Dx; rewrite (funenngnnp f); apply: ereal_cvgD;
-  [exact: add_def_funennpg|apply: fp_cvg|apply:ereal_cvgN; apply: fn_cvg].
+by move=> Dx; rewrite (funenngnpo f); apply: ereal_cvgD;
+  [exact: add_def_funenngnpo|apply: fp_cvg|apply:ereal_cvgN; exact: fn_cvg].
 Qed.
 
 End approximation_sfun.
@@ -2151,22 +2150,22 @@ Lemma integralN D (f : T -> \bar R) :
 Proof.
 have [f_fin _|] := boolP (\int_ D (f^\- x) 'd mu[x] \is a fin_num).
   rewrite integralE// [in RHS]integralE// oppeD ?fin_numN// oppeK addeC.
-  by rewrite funennpN.
+  by rewrite funenpoN.
 rewrite fin_numE negb_and 2!negbK => /orP[nfoo|/eqP nfoo].
   exfalso; move/negP : nfoo; apply; rewrite -lee_ninfty_eq; apply/negP.
   by rewrite -ltNge (lt_le_trans _ (integral_ge0 _ _))// ?lte_ninfty.
 rewrite nfoo adde_defEninfty.
 rewrite -lee_pinfty_eq -ltNge lte_pinfty_eq => /orP[f_fin|/eqP pfoo].
   rewrite integralE// [in RHS]integralE// nfoo [in RHS]addeC oppeD//.
-  by rewrite funennpN.
-by rewrite integralE// [in RHS]integralE// funenngN funennpN nfoo pfoo.
+  by rewrite funenpoN.
+by rewrite integralE// [in RHS]integralE// funenngN funenpoN nfoo pfoo.
 Qed.
 
 Lemma integral_ge0N (D : set T) (f : T -> \bar R) :
   (forall x, D x -> 0 <= f x) ->
   \int_ D ((-%E \o f) x) 'd mu[x] = - \int_ D (f x) 'd mu[x].
 Proof.
-move=> f0; rewrite integralN // (eq_integral _ _ (ge0_funennpE _))// integral0//.
+move=> f0; rewrite integralN // (eq_integral _ _ (ge0_funenpoE _))// integral0//.
 by rewrite oppe0 fin_num_adde_def.
 Qed.
 
@@ -2373,7 +2372,7 @@ Proof.
 move=>  [mf]; rewrite -[(fun x => _)]/(abse \o f) fune_abse => foo.
 rewrite ge0_integralD // in foo; last 2 first.
   - exact: emeasurable_fun_funenng.
-  - exact: emeasurable_fun_funennp.
+  - exact: emeasurable_fun_funenpo.
 apply: ltpinfty_adde_def.
 - by apply: le_lt_trans foo; rewrite lee_addl// integral_ge0.
 - rewrite inE (@le_lt_trans _ _ 0)// ?lte_pinfty// lee_oppl oppe0.
@@ -2389,25 +2388,25 @@ apply: le_lt_trans foo; apply: ge0_le_integral => //.
 - by move=> t Dt; rewrite -/((abse \o f) t) fune_abse gee0_abs// lee_addl.
 Qed.
 
-Lemma integrable_funennp f : integrable f -> integrable f^\-.
+Lemma integrable_funenpo f : integrable f -> integrable f^\-.
 Proof.
-move=> [Df foo]; split; first exact: emeasurable_fun_funennp.
+move=> [Df foo]; split; first exact: emeasurable_fun_funenpo.
 apply: le_lt_trans foo; apply: ge0_le_integral => //.
-- by apply/measurable_fun_comp => //; exact: emeasurable_fun_funennp.
+- by apply/measurable_fun_comp => //; exact: emeasurable_fun_funenpo.
 - exact/measurable_fun_comp.
 - by move=> t Dt; rewrite -/((abse \o f) t) fune_abse gee0_abs// lee_addr.
 Qed.
 
-Lemma integral_funennp_lt_pinfty f : integrable f ->
+Lemma integral_funenpo_lt_pinfty f : integrable f ->
   \int_ D (f^\- x) 'd mu[x] < +oo.
 Proof.
 move=> [mf]; apply: le_lt_trans; apply ge0_le_integral => //.
-- by apply: emeasurable_fun_funennp => //; exact: emeasurable_funN.
+- by apply: emeasurable_fun_funenpo => //; exact: emeasurable_funN.
 - exact: measurable_fun_comp.
 - move=> x Dx; have [fx0|/ltW fx0] := leP (f x) 0.
-    rewrite lee0_abs// /funennp.
+    rewrite lee0_abs// /funenpo.
     by move: fx0; rewrite -{1}oppe0 -lee_oppr => /max_idPl ->.
-  rewrite gee0_abs// /funennp.
+  rewrite gee0_abs// /funenpo.
   by move: (fx0); rewrite -{1}oppe0 -lee_oppl => /max_idPr ->.
 Qed.
 
@@ -2534,16 +2533,16 @@ Lemma integralM r : \int_ D (r%:E * f x) 'd mu[x] = r%:E * \int_ D (f x) 'd mu[x
 Proof.
 have [r0|r0|->] := ltgtP r 0%R; last first.
   by under eq_fun do rewrite mul0e; rewrite mul0e integral0.
-- rewrite [in LHS]integralE// gt0_funenngM// gt0_funennpM//.
+- rewrite [in LHS]integralE// gt0_funenngM// gt0_funenpoM//.
   rewrite (ge0_integralM_EFin _ _ _ _ (ltW r0)) //; last first.
     by apply: emeasurable_fun_funenng => //; case: intf.
   rewrite (ge0_integralM_EFin _ _ _ _ (ltW r0)) //; last first.
-    by apply: emeasurable_fun_funennp => //; case: intf.
+    by apply: emeasurable_fun_funenpo => //; case: intf.
   rewrite -muleBr 1?[in RHS]integralE//.
   by apply: integrable_add_def; case: intf.
-- rewrite [in LHS]integralE// lt0_funenngM// lt0_funennpM//.
+- rewrite [in LHS]integralE// lt0_funenngM// lt0_funenpoM//.
   rewrite ge0_integralM_EFin //; last 2 first.
-    + by apply: emeasurable_fun_funennp => //; case: intf.
+    + by apply: emeasurable_fun_funenpo => //; case: intf.
     + by rewrite -ler_oppr oppr0 ltW.
   rewrite ge0_integralM_EFin //; last 2 first.
     + by apply: emeasurable_fun_funenng => //; case: intf.
@@ -2576,14 +2575,14 @@ suff: \int_ D ((g1 \+ g2)^\+ x) 'd mu[x] + \int_ D (g1^\- x) 'd mu[x] + \int_ D 
     rewrite ge0_fin_numE//.
       by rewrite lte_add_pinfty//; exact: integral_funenng_lt_pinfty.
     by apply adde_ge0; exact: integral_ge0.
-  have g12nnp : \int_ D (g1^\- x) 'd mu[x] + \int_ D (g2^\- x) 'd mu[x] \is a fin_num.
+  have g12npo : \int_ D (g1^\- x) 'd mu[x] + \int_ D (g2^\- x) 'd mu[x] \is a fin_num.
     rewrite ge0_fin_numE//.
-      by rewrite lte_add_pinfty//; apply: integral_funennp_lt_pinfty.
+      by rewrite lte_add_pinfty// ; exact: integral_funenpo_lt_pinfty.
     by apply adde_ge0; exact: integral_ge0.
   rewrite -sube_eq; last 2 first.
     - rewrite ge0_fin_numE.
-        apply: lte_add_pinfty; last exact: integral_funennp_lt_pinfty.
-        apply: lte_add_pinfty; last exact: integral_funennp_lt_pinfty.
+        apply: lte_add_pinfty; last exact: integral_funenpo_lt_pinfty.
+        apply: lte_add_pinfty; last exact: integral_funenpo_lt_pinfty.
         have : mu.-integrable D (g1 \+ g2) by apply: integrableD.
         exact: integral_funenng_lt_pinfty.
       apply: adde_ge0; last exact: integral_ge0.
@@ -2595,71 +2594,50 @@ suff: \int_ D ((g1 \+ g2)^\+ x) 'd mu[x] + \int_ D (g1^\- x) 'd mu[x] + \int_ D 
   rewrite eq_sym -(sube_eq g12nng); last by rewrite fin_num_adde_def.
   move/eqP => <-.
   rewrite oppeD; last first.
-    rewrite ge0_fin_numE; first exact: integral_funennp_lt_pinfty if2.
+    rewrite ge0_fin_numE; first exact: integral_funenpo_lt_pinfty if2.
     exact: integral_ge0.
   rewrite -addeA (addeCA (\int_ D (g2^\+ x) 'd mu[x])).
   by rewrite addeA -(integralE _ _ g1) -(integralE _ _ g2).
 have : (g1 \+ g2)^\+ \+ g1^\- \+ g2^\- = (g1 \+ g2)^\- \+ g1^\+ \+ g2^\+.
   rewrite funeqE => x.
   apply/eqP; rewrite -2!addeA [in eqRHS]addeC -sube_eq; last 2 first.
-    by rewrite /funenng /funennp /g1 /g2 /= !maxEFin.
-    by rewrite /funenng /funennp /g1 /g2 /= !maxEFin.
+    by rewrite /funenng /funenpo /g1 /g2 /= !maxEFin.
+    by rewrite /funenng /funenpo /g1 /g2 /= !maxEFin.
   rewrite addeAC eq_sym -sube_eq; last 2 first.
-    by rewrite /funenng /funennp !maxEFin.
-    by rewrite /funenng /funennp !maxEFin.
+    by rewrite /funenng /funenpo !maxEFin.
+    by rewrite /funenng /funenpo !maxEFin.
   apply/eqP.
   rewrite -[LHS]/((g1^\+ \+ g2^\+ \- (g1^\- \+ g2^\-)) x) -funeD_nngD.
   by rewrite -[RHS]/((_ \- _) x) -funeD_Dnng.
 move/(congr1 (fun y => \int_ D (y x) 'd mu[x])).
 rewrite (ge0_integralD mu mD); last 4 first.
   - by move=> x _; rewrite adde_ge0.
-  - rewrite /funennp /funenng /g1 /g2 /=.
-    under eq_fun do rewrite 2!maxEFin; rewrite -/(measurable_fun _ _).
-    apply: emeasurable_funD => //.
-      under eq_fun do rewrite -maxEFin; rewrite -/(measurable_fun _ _).
-      apply: emeasurable_fun_funenng => //;
-      apply/EFin_measurable_fun/measurable_funD => //.
-        by case: if1 => /EFin_measurable_fun.
-      by case: if2 => /EFin_measurable_fun.
-    under eq_fun do rewrite -maxEFin; rewrite -/(measurable_fun _ _).
-    apply: emeasurable_fun_funenng => //.
-    apply/EFin_measurable_fun/measurable_funN => //.
-    by case: if1 => /EFin_measurable_fun.
+  - apply: emeasurable_funD.
+      apply: emeasurable_fun_funenng.
+      by apply: emeasurable_funD; [case: if1|case: if2].
+    by apply: emeasurable_fun_funenpo; case: if1.
   - by [].
-  - by apply: emeasurable_fun_funennp => //; case: if2.
+  - by apply: emeasurable_fun_funenpo; case: if2.
 rewrite (ge0_integralD mu mD); last 4 first.
   - by [].
-  - apply: emeasurable_fun_funenng => //=.
-    apply/EFin_measurable_fun/measurable_funD => //.
-      by case: if1 => /EFin_measurable_fun.
-    by case: if2 => /EFin_measurable_fun.
+  - apply: emeasurable_fun_funenng.
+    by apply: emeasurable_funD; [case: if1|case: if2].
   - by [].
-  - apply: emeasurable_fun_funenng => //.
-    rewrite /g1 /comp.
-    under eq_fun do rewrite -EFinN; rewrite -/(measurable_fun _ _).
-    apply/EFin_measurable_fun; apply: measurable_funN => //.
-    by case: if1 => /EFin_measurable_fun.
+  - apply: emeasurable_fun_funenng => //; apply: emeasurable_funN => //.
+    by case: if1.
 move=> ->.
 rewrite (ge0_integralD mu mD); last 4 first.
   - by move=> x _; exact: adde_ge0.
-  - rewrite /g1 /g2 /= /comp /= /funennp /funenng.
-    under eq_fun do rewrite -EFinN.
-    under eq_fun do rewrite 2!maxEFin; rewrite -/(measurable_fun _ _).
-    apply: emeasurable_funD => //.
-      under eq_fun do rewrite -maxEFin; rewrite -/(measurable_fun _ _).
-      apply: emeasurable_fun_funenng => //.
-      apply/EFin_measurable_fun/measurable_funN => //.
-      apply: measurable_funD => //.
-        by case: if1 => /EFin_measurable_fun.
-      by case: if2 => /EFin_measurable_fun.
-     under eq_fun do rewrite -maxEFin; rewrite -/(measurable_fun _ _).
-     by apply: emeasurable_fun_funenng => //; case: if1.
+  - apply: emeasurable_funD.
+      apply: emeasurable_fun_funenpo.
+      by apply: emeasurable_funD; [case: if1|case: if2].
+    by apply: emeasurable_fun_funenng; case: if1.
   - by [].
-  - by apply: emeasurable_fun_funenng => //; case: if2.
+  - by apply: emeasurable_fun_funenng; case: if2.
 rewrite (ge0_integralD mu mD) //.
-- apply: emeasurable_fun_funennp => //.
+- apply: emeasurable_fun_funenpo.
   by apply: emeasurable_funD => //; [case: if1|case: if2].
-- by apply: emeasurable_fun_funenng => //; case: if1.
+- by apply: emeasurable_fun_funenng; case: if1.
 Qed.
 
 End linearity.
@@ -2686,7 +2664,7 @@ rewrite integralE (le_trans (lee_abs_sub _ _))// gee0_abs; last first.
   exact: integral_ge0.
 rewrite gee0_abs; last exact: integral_ge0.
 by rewrite -ge0_integralD // -?fune_abse//;
-  [exact: emeasurable_fun_funenng | exact: emeasurable_fun_funennp].
+  [exact: emeasurable_fun_funenng | exact: emeasurable_fun_funenpo].
 Qed.
 
 Section integral_indic.
@@ -2721,16 +2699,16 @@ move=> [N [mN N0 subN]]; exists N; split => //.
 by apply: subset_trans subN; apply: subsetC => x /= /[apply] ->.
 Qed.
 
-Lemma ae_eq_funenng_funennp f g : ae_eq f g <-> ae_eq f^\+ g^\+ /\ ae_eq f^\- g^\-.
+Lemma ae_eq_funenng_funenpo f g : ae_eq f g <-> ae_eq f^\+ g^\+ /\ ae_eq f^\- g^\-.
 Proof.
 split=> [[N [mN N0 DfgN]]|[[A [mA A0 DfgA] [B [mB B0 DfgB]]]]].
   by split; exists N; split => // x Dfgx; apply: DfgN => /=;
-    apply: contra_not Dfgx => /= /[apply]; rewrite /funenng /funennp => ->.
+    apply: contra_not Dfgx => /= /[apply]; rewrite /funenng /funenpo => ->.
 exists (A `|` B); rewrite null_set_setU//; split=> //; first exact: measurableU.
 move=> x /= /not_implyP[Dx fgx]; apply: contrapT => /not_orP[Ax Bx].
 have [fgpx|fgnx] : (f^\+ x <> g^\+ x \/ f^\- x <> g^\- x)%E.
   apply: contrapT => /not_orP[/contrapT fgpx /contrapT fgnx].
-  by apply: fgx; rewrite (funenngnnp f) (funenngnnp g) fgpx fgnx.
+  by apply: fgx; rewrite (funenngnpo f) (funenngnpo g) fgpx fgnx.
 - by apply: Ax; exact/DfgA/not_implyP.
 - by apply: Bx; exact/DfgB/not_implyP.
 Qed.
@@ -3067,12 +3045,12 @@ Lemma ae_eq_integral (D : set T) (f g : T -> \bar R) :
   measurable D -> measurable_fun D f -> measurable_fun D g ->
   ae_eq D f g -> integral mu D f = integral mu D g.
 Proof.
-move=> mD mf mg /ae_eq_funenng_funennp[Dfgp Dfgn].
+move=> mD mf mg /ae_eq_funenng_funenpo[Dfgp Dfgn].
 rewrite integralE// [in RHS]integralE//; congr (_ - _).
   by apply: ge0_ae_eq_integral => //; [exact: emeasurable_fun_funenng|
                                       exact: emeasurable_fun_funenng].
-by apply: ge0_ae_eq_integral => //; [exact: emeasurable_fun_funennp|
-                                    exact: emeasurable_fun_funennp].
+by apply: ge0_ae_eq_integral => //; [exact: emeasurable_fun_funenpo|
+                                    exact: emeasurable_fun_funenpo].
 Qed.
 
 End ae_eq_integral.
@@ -4313,7 +4291,7 @@ Qed.
 
 Let measurable_Fminus : measurable_fun setT Fminus.
 Proof.
-by apply: measurable_fun_fubini_tonelli_F => //; exact: emeasurable_fun_funennp.
+by apply: measurable_fun_fubini_tonelli_F => //; exact: emeasurable_fun_funenpo.
 Qed.
 
 Lemma measurable_fubini_F : measurable_fun setT F.
@@ -4343,10 +4321,10 @@ split=> //; apply: le_lt_trans (fubini1a.1 imf); apply: ge0_le_integral => //.
 - exact: measurable_fun_comp.
 - by move=> *; exact: integral_ge0.
 - move=> x _; apply: le_trans.
-    apply: le_abse_integral => //; apply: emeasurable_fun_funennp => //.
+    apply: le_abse_integral => //; apply: emeasurable_fun_funenpo => //.
     exact: measurable_fun_prod1.
   apply: ge0_le_integral => //.
-  + apply: measurable_fun_comp => //; apply: emeasurable_fun_funennp => //.
+  + apply: measurable_fun_comp => //; apply: emeasurable_fun_funenpo => //.
     exact: measurable_fun_prod1.
   + by apply: measurable_fun_comp => //; exact: measurable_fun_prod1.
   + by move=> y _; rewrite gee0_abs// -/((abse \o f) (x, y)) fune_abse lee_addr.
@@ -4369,7 +4347,7 @@ Qed.
 
 Let measurable_Gminus : measurable_fun setT Gminus.
 Proof.
-by apply: measurable_fun_fubini_tonelli_G => //; exact: emeasurable_fun_funennp.
+by apply: measurable_fun_fubini_tonelli_G => //; exact: emeasurable_fun_funenpo.
 Qed.
 
 Lemma measurable_fubini_G : measurable_fun setT G.
@@ -4396,11 +4374,11 @@ split=> //; apply: le_lt_trans (fubini1b.1 imf); apply: ge0_le_integral => //.
 - exact: measurable_fun_comp.
 - by move=> *; exact: integral_ge0.
 - move=> y _; apply: le_trans.
-    apply: le_abse_integral => //; apply: emeasurable_fun_funennp => //.
+    apply: le_abse_integral => //; apply: emeasurable_fun_funenpo => //.
     exact: measurable_fun_prod2.
   apply: ge0_le_integral => //.
   + apply: measurable_fun_comp => //.
-    by apply: emeasurable_fun_funennp => //; exact: measurable_fun_prod2.
+    by apply: emeasurable_fun_funenpo => //; exact: measurable_fun_prod2.
   + by apply: measurable_fun_comp => //; exact: measurable_fun_prod2.
   + by move=> x _; rewrite gee0_abs// -/((abse \o f) (x, y)) fune_abse lee_addr.
 Qed.
@@ -4409,14 +4387,14 @@ Lemma fubini1 : \int (F x) 'd m1[x] = \int (f z) 'd m[z].
 Proof.
 rewrite FE integralB// [in RHS]integralE//.
 rewrite fubini_tonelli1//; last exact: emeasurable_fun_funenng.
-by rewrite fubini_tonelli1//; exact: emeasurable_fun_funennp.
+by rewrite fubini_tonelli1//; exact: emeasurable_fun_funenpo.
 Qed.
 
 Lemma fubini2 : \int (G x) 'd m2[x] = \int (f z) 'd m[z].
 Proof.
 rewrite GE integralB// [in RHS]integralE//.
 rewrite fubini_tonelli2//; last exact: emeasurable_fun_funenng.
-by rewrite fubini_tonelli2//; exact: emeasurable_fun_funennp.
+by rewrite fubini_tonelli2//; exact: emeasurable_fun_funenpo.
 Qed.
 
 Theorem Fubini :
