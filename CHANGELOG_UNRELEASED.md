@@ -62,6 +62,8 @@
     `ptws_compact_closed`, `ascoli_forward`, `compact_equicontinuous`
 - in file `ereal.v`:
   + lemma `abse1`
+- in file `measure.v`:
+  + definition `pushforward` and canonical `pushforward_measure`
 
 ### Changed
 
