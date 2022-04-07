@@ -41,7 +41,7 @@
   + definition `nseries`, lemmas `le_nseries`, `cvg_nseries_near`, `dvg_nseries`
 - in file `measure.v`:
   + definition `restr`
-  + definition `measure_count`, lemma `measure_countE`
+  + definition `counting`, canonical `measure_counting`
 
 ### Changed
 
