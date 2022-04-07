@@ -62,8 +62,8 @@ From HB Require Import structures.
 (*                   measurable sets and is semi-sigma-additive               *)
 (*   sigma_finite A f == the measure f is sigma-finite on A : set T with      *)
 (*                   T : ringOfSetsType.                                      *)
-(*   measure_restr mu mD == restriction of the measure mu to a set D;         *)
-(*                   mD is a proof that D is measurable                       *)
+(*   restr mu m == restriction of the measure mu to a set D; it is associated *)
+(*                 with a canonical declaration of measure (measure_restr)    *)
 (*   measure_count T R == counting measure                                    *)
 (*   mu.-negligible A == A is mu negligible                                   *)
 (* 　{ae mu, forall x, P x} == P holds almost everywhere for the measure mu   *)
@@ -1356,7 +1356,7 @@ Section measure_restr.
 Variables (T : measurableType) (R : realType) (mu : {measure set T -> \bar R}).
 Variables (D : set T) (mD : measurable D).
 
-Let restr (X : set _) : \bar R := mu (X `&` D).
+Definition restr (X : set _) : \bar R := mu (X `&` D).
 
 Let restr0 : restr set0 = 0. Proof. by rewrite /restr set0I measure0. Qed.
 
@@ -1365,21 +1365,18 @@ Proof. by rewrite /restr; apply: measure_ge0; exact: measurableI. Qed.
 
 Let restr_sigma_additive : semi_sigma_additive restr.
 Proof.
-move=> F mF tF mU; pose F' i := F i `&` D.
-have mF' i : measurable (F' i) by apply: measurableI.
-have tF' : trivIset setT F'.
+move=> F mF tF mU; pose FD i := F i `&` D.
+have mFD i : measurable (FD i) by apply: measurableI.
+have tFD : trivIset setT FD.
   apply/trivIsetP => i j _ _ ij.
   move/trivIsetP : tF => /(_ i j Logic.I Logic.I ij).
-  by rewrite /F' setIACA => ->; rewrite set0I.
-have h := @measure_sigma_additive _ _ mu _ mF' tF'.
+  by rewrite /FD setIACA => ->; rewrite set0I.
+have h := @measure_sigma_additive _ _ mu _ mFD tFD.
 by rewrite /restr setI_bigcupl.
 Qed.
 
-Definition measure_restr : {measure set _ -> \bar R} :=
+Canonical measure_restr : {measure set _ -> \bar R} :=
   Measure.Pack _ (Measure.Axioms restr0 restr_ge0 restr_sigma_additive).
-
-Lemma measure_restrE A : measure_restr A = mu (A `&` D).
-Proof. by []. Qed.
 
 End measure_restr.
 
@@ -1406,8 +1403,8 @@ have [[i Fi]|infinF] := pselect (exists k, infinite_set (F k)).
   apply/ereal_cvgPpinfty => M M0; near=> n.
   have ni : (i < n)%N by near: n; exists i.+1.
   rewrite (bigID (xpred1 i))/= big_mkord (big_pred1 (Ordinal ni))//=.
-  rewrite [X in X + _]/mcount asboolF// addooe ?lee_pinfty//.
-  by rewrite gt_eqF// (@lt_le_trans _ _ 0) ?lte_ninfty//; exact: sume_ge0.
+  rewrite [X in X + _]/mcount asboolF// addye ?leey//.
+  by rewrite gt_eqF// (@lt_le_trans _ _ 0)//; exact: sume_ge0.
 have {infinF}finF : forall i, finite_set (F i) by exact/not_forallP.
 pose u : nat^nat := fun n => #|` fset_set (F n) |.
 have sumFE n : \sum_(i < n) mcount (F i) =

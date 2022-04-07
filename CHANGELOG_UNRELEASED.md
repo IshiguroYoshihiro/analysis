@@ -40,7 +40,8 @@
   + lemmas `nat_dvg_real`, `nat_cvgPpinfty`, `nat_nondecreasing_is_cvg`
   + definition `nseries`, lemmas `le_nseries`, `cvg_nseries_near`, `dvg_nseries`
 - in file `measure.v`:
-  + defintion `measure_count`, lemma `measure_countE`
+  + definition `restr`
+  + definition `measure_count`, lemma `measure_countE`
 
 ### Changed
 
@@ -48,6 +49,8 @@
   + remove one hypothesis in lemmas `reindex_esum`, `esum_image`
 - moved from `lebesgue_integral.v` to `lebesgue_measure.v` and generalized
   + hint `measurable_set1`/`emeasurable_set1`
+- in `measure.v`:
+  + definition `measure_restr` made canonical
 
 ### Renamed
 
@@ -107,6 +110,8 @@
   + `adde_def_nneg_series` -> `adde_def_nneseries`
 - in `esum.v`:
   + `ereal_pseries_esum` -> `nneseries_esum`
+- in `measure.v`:
+  + lemma `measure_restrE`
 
 ### Removed
 
