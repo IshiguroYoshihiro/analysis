@@ -110,14 +110,14 @@
   + `adde_def_nneg_series` -> `adde_def_nneseries`
 - in `esum.v`:
   + `ereal_pseries_esum` -> `nneseries_esum`
-- in `measure.v`:
-  + lemma `measure_restrE`
 
 ### Removed
 
 - in `mathcomp_extra.v`:
   + lemmas `natr_absz`, `ge_pinfty`, `le_ninfty`, `gt_pinfty`,
     `lt_ninfty`
+- in `measure.v`:
+  + lemma `measure_restrE`
 
 ### Infrastructure
 
