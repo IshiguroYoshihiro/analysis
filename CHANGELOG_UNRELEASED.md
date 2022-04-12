@@ -106,6 +106,8 @@
 - in `mathcomp_extra.v`:
   + lemmas `natr_absz`, `ge_pinfty`, `le_ninfty`, `gt_pinfty`,
     `lt_ninfty`
+- in `topology.v`:
+  + lemmas `inj_can_sym_in_on`, `inj_can_sym_on`, `inj_can_sym_in`
 
 ### Infrastructure
 
