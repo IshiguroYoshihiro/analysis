@@ -2869,6 +2869,10 @@ Definition measure_is_complete d (R : realType) (T : measurableType d)
     (mu : set T -> \bar R) :=
   forall X, mu.-negligible X -> measurable X.
 
+Definition abs_continuous (T : measurableType) (R : realType)
+    (m1 m2 : {measure set T -> \bar R}) :=
+  forall A : set T, measurable A -> m2 A = 0 -> m1 A = 0.
+
 Section caratheodory_measure.
 Variables (R : realType) (T : pointedType).
 Variable (mu : {outer_measure set T -> \bar R}).
