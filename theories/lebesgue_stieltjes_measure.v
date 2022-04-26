@@ -50,13 +50,33 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+Notation right_continuous f := (forall x, f%function @ at_right x --> f%function x).
+(* ToDo : right_continuous + left_continuous = continuous *)
+
 Section hlength.
 Local Open Scope ereal_scope.
 Variable R : realType.
+Variable f : R -> R.
+Hypothesis f_monotone : {homo f : x y / (x <= y)%R}.
+Hypothesis f_right_continuous : right_continuous f.
+
+Let g x := if x is r%:E then (f r)%:E else x.
+
+Let g_monotone :  {homo g : x y / (x <= y)%E}.
+Proof.
+move=> [r||] [l||]//=.
+rewrite !lee_fin.
+apply f_monotone.
+
+by rewrite !leey.
+by rewrite !leNye.
+Qed.
+
 Implicit Types i j : interval R.
 Definition itvs : Type := R.
 
-Definition hlength (A : set itvs) : \bar R := let i := Rhull A in i.2 - i.1.
+Definition hlength (A : set itvs): \bar R := 
+  let i := Rhull A in g i.2 - g i.1.
 
 Lemma hlength0 : hlength (set0 : set R) = 0.
 Proof. by rewrite /hlength Rhull0 /= subee. Qed.
@@ -67,7 +87,7 @@ rewrite /hlength /= asboolT// sup_itvcc//= asboolT//.
 by rewrite asboolT inf_itvcc//= ?subee// inE.
 Qed.
 
-Lemma hlength_itv i : hlength [set` i] = if i.2 > i.1 then i.2 - i.1 else 0.
+Lemma hlength_itv i : hlength [set` i] = if i.2 > i.1 then g i.2 - g i.1 else 0.
 Proof.
 case: ltP => [/lt_ereal_bnd/neitvP i12|]; first by rewrite /hlength set_itvK.
 rewrite le_eqVlt => /orP[|/lt_ereal_bnd i12]; last first.
@@ -82,7 +102,7 @@ case: i => -[ba a|[|]] [bb b|[|]] //=.
 Qed.
 
 Lemma hlength_setT : hlength setT = +oo%E :> \bar R.
-Proof. by rewrite -set_itv_infty_infty hlength_itv. Qed.
+Proof. by rewrite /hlength RhullT. Qed.
 
 Lemma hlength_finite_fin_num i : neitv i -> hlength [set` i] < +oo ->
   ((i.1 : \bar R) \is a fin_num) /\ ((i.2 : \bar R) \is a fin_num).
@@ -91,15 +111,32 @@ move: i => [[ba a|[]] [bb b|[]]] /neitvP //=; do ?by rewrite ?set_itvE ?eqxx.
 by move=> _; rewrite hlength_itv /= ltey.
 by move=> _; rewrite hlength_itv /= ltNye.
 by move=> _; rewrite hlength_itv.
-Qed.
+Qed. 
 
 Lemma finite_hlengthE i : neitv i -> hlength [set` i] < +oo ->
-  hlength [set` i] = (fine i.2)%:E - (fine i.1)%:E.
+  hlength [set` i] = (fine (g i.2))%:E - (fine (g i.1))%:E.
 Proof.
 move=> i0 ioo; have [ri1 ri2] := hlength_finite_fin_num i0 ioo.
-rewrite !fineK// hlength_itv; case: ifPn => //.
-rewrite -leNgt le_eqVlt => /predU1P[->|]; first by rewrite subee.
+rewrite hlength_itv.
+rewrite fineK; last first.
+rewrite /g.
+move: ri2.
+case:(ereal_of_itv_bound i.2) => //.
+
+rewrite fineK; last first.
+rewrite /g.
+move: ri1.
+case:(ereal_of_itv_bound i.1) => //.
+
+case: ifPn => //.
+rewrite -leNgt le_eqVlt => /predU1P[->|].
+ rewrite subee//.
+rewrite /g.
+move: ri1.
+case:(ereal_of_itv_bound i.1) => //.
+
 by move/lt_ereal_bnd/ltW; rewrite leNgt; move: i0 => /neitvP => ->.
+
 Qed.
 
 Lemma hlength_infty_bnd b r :
@@ -124,7 +161,10 @@ Qed.
 Lemma hlength_ge0 i : 0 <= hlength [set` i].
 Proof.
 rewrite hlength_itv; case: ifPn => //; case: (i.1 : \bar _) => [r| |].
-- by rewrite suber_ge0//; exact: ltW.
+- rewrite suber_ge0//.
+  move=> /ltW. 
+  move=> /g_monotone.
+  done.
 - by rewrite ltNge leey.
 - by case: (i.2 : \bar _) => //= [r _]; rewrite leey.
 Qed.
@@ -142,13 +182,15 @@ have [J0|/set0P J0] := eqVneq J set0.
 move=> /subset_itvP ij; apply: lee_sub => /=.
   have [ui|ui] := asboolP (has_ubound I).
     have [uj /=|uj] := asboolP (has_ubound J); last by rewrite leey.
-    by rewrite lee_fin le_sup // => r Ir; exists r; split => //; apply: ij.
+    rewrite lee_fin.
+    apply f_monotone.
+    by rewrite le_sup// => r Ir; exists r; split => //; apply: ij.
   have [uj /=|//] := asboolP (has_ubound J).
   by move: ui; have := subset_has_ubound ij uj.
 have [lj /=|lj] := asboolP (has_lbound J); last by rewrite leNye.
 have [li /=|li] := asboolP (has_lbound I); last first.
   by move: li; have := subset_has_lbound ij lj.
-rewrite lee_fin ler_oppl opprK le_sup// ?has_inf_supN//; last first.
+rewrite lee_fin. apply f_monotone. rewrite ler_oppl opprK le_sup// ?has_inf_supN//; last first.
   by case: I0 => x Ix; exists (- x)%R, x.
 move=> r [r' Ir' <-{r}]; exists (- r')%R.
 by split => //; exists r' => //; apply: ij.
@@ -226,8 +268,10 @@ HB.instance Definition _  : isSemiRingOfSets itvs :=
 
 Definition itvs_semiRingOfSets := [the semiRingOfSetsType of itvs].
 
-Lemma hlength_ge0' (I : set itvs) : (0 <= hlength I)%E.
-Proof. by rewrite -hlength0 le_hlength. Qed.
+Lemma hlength_ge0' (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R}) (I : set itvs) : (0 <= hlength f I)%E.
+Proof.
+ rewrite -(hlength0 f).
+ rewrite le_hlength//. Qed.
 
 (* Unused *)
 (* Lemma hlength_semi_additive2 : semi_additive2 hlength. *)
@@ -260,7 +304,7 @@ Proof. by rewrite -hlength0 le_hlength. Qed.
 (* by rewrite lt_geF ?midf_lt//= andbF le_gtF ?midf_le//= ltW. *)
 (* Qed. *)
 
-Lemma hlength_semi_additive : semi_additive hlength.
+Lemma hlength_semi_additive (f : R -> R) : semi_additive (hlength f).
 Proof.
 move=> /= I n /(_ _)/cid2-/all_sig[b]/all_and2[_]/(_ _)/esym-/funext {I}->.
 move=> Itriv [[/= a1 a2] _] /esym /[dup] + ->.
@@ -325,20 +369,28 @@ apply/andP; split=> //; apply: contraTneq xbj => ->.
 by rewrite in_itv/= le_gtF// (itvP xabi).
 Qed.
 
-Canonical hlength_measure : {additive_measure set itvs -> \bar R}
-  := AdditiveMeasure (AdditiveMeasure.Axioms (@hlength0 _)
-     (@hlength_ge0') hlength_semi_additive).
+Canonical hlength_measure (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R}) :
+ {additive_measure set itvs -> \bar R}
+  := AdditiveMeasure (AdditiveMeasure.Axioms (hlength0 f)
+     (hlength_ge0' f_monotone) (hlength_semi_additive f)).
 
 Hint Extern 0 (measurable _) => solve [apply: is_ocitv] : core.
 
-Lemma hlength_sigma_sub_additive : sigma_sub_additive hlength.
+Lemma hlength_sigma_sub_additive (f:R -> R) (f_monotone:{homo f : x y / (x <= y)%R}) : sigma_sub_additive (hlength f).
 Proof.
 move=> I A /(_ _)/cid2-/all_sig[b]/all_and2[_]/(_ _)/esym AE.
 move=> [a _ <-]; rewrite hlength_itv ?lte_fin/= -EFinB => lebig.
-case: ifPn => a12; last by rewrite nneseries_esum// esum_ge0.
+case: ifPn => a12; last first. rewrite nneseries_esum//; last first.
+   move=> n _.
+   by apply:hlength_ge0'.      
+  rewrite esum_ge0//.
+  move=> n _.
+  by apply:hlength_ge0'.
 apply: lee_adde => e.
 rewrite [e%:num]splitr [in leRHS]EFinD addeA -lee_subl_addr//.
-apply: le_trans (epsilon_trick _ _ _) => //=.
+apply: le_trans (epsilon_trick _ _ _) => //=; last first.
+  move=> n .
+  by apply hlength_ge0'.
 have eVn_gt0 n : 0 < e%:num / 2 / (2 ^ n.+1)%:R.
   by rewrite divr_gt0// ltr0n// expn_gt0.
 have eVn_ge0 n := ltW (eVn_gt0 n).
@@ -346,7 +398,7 @@ pose Aoo i : set itvs :=
   (`]((b i).1), ((b i).2 + e%:num / 2 / (2 ^ i.+1)%:R)[)%classic.
 pose Aoc i : set itvs :=
   (`]((b i).1), ((b i).2 + e%:num / 2 / (2 ^ i.+1)%:R)])%classic.
-have: `[a.1 + e%:num / 2, a.2] `<=` \bigcup_i Aoo i.
+have: `[a.1 + e%:num / 2, a.2] `<=` \bigcup_i Aoo i. (* <- *)
   apply: (@subset_trans _ `]a.1, a.2]).
     move=> x; rewrite /= !in_itv /= => /andP[+ -> //].
     by move=> /lt_le_trans-> //; rewrite ltr_addl.
@@ -358,10 +410,16 @@ move=> /[apply]-[i _|X _ Xc]; first by rewrite /Aoo//; apply: interval_open.
 have: `](a.1 + e%:num / 2), a.2] `<=` \bigcup_(i in [set` X]) Aoc i.
   move=> x /subset_itv_oc_cc /Xc [i /= Xi] Aooix.
   by exists i => //; apply: subset_itv_oo_oc Aooix.
-have /[apply] := @content_sub_fsum _ _ [additive_measure of hlength] _ [set` X].
-move=> /(_ _ _ _)/Box[]//=; apply: le_le_trans.
+have /[apply] := @content_sub_fsum _ _ [additive_measure of (hlength f)] _ [set` X].
+move=> /(_ f_monotone _ _ _)/Box[]//=. apply: le_le_trans.
   rewrite hlength_itv ?lte_fin -?EFinD/= -addrA -opprD.
-  by case: ltP => //; rewrite lee_fin subr_le0.
+  case: ltP. 
+    rewrite lee_fin.
+    move=> ae.(* *)
+    apply ler_sub =>//.
+    rewrite lerr.
+  rewrite lee_fin. move=> ae. 
+  apply ler_sub =>//. rewrite subr_le0.
 rewrite nneseries_esum//; last by move=> *; rewrite adde_ge0//= ?lee_fin.
 rewrite esum_ge//; exists X => //; rewrite fsbig_finite// ?set_fsetK//=.
 rewrite lee_sum // => i _; rewrite ?AE// !hlength_itv/= ?lte_fin -?EFinD/=.
