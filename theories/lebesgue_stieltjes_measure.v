@@ -376,57 +376,60 @@ Canonical hlength_measure (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R}
 
 Hint Extern 0 (measurable _) => solve [apply: is_ocitv] : core.
 
-Lemma hlength_sigma_sub_additive (f:R -> R) (f_monotone:{homo f : x y / (x <= y)%R}) : sigma_sub_additive (hlength f).
+Lemma hlength_semi_additive_helper (F : R -> R) (n : nat) a0 b0 (a b :
+nat -> R) :
+  `[ a0,  b0] `<=` \big[setU/set0]_(i < n) `] a i, b i[%classic
+  ->
+  F b0 - F a0 <= \sum_(i < n) (F (b i) - F (a i)).
+Proof.
+Admitted.
+
+Lemma hlength_sigma_sub_additive (f : R -> R)
+    (f_monotone : {homo f : x y / (x <= y)%R}) :
+  sigma_sub_additive (hlength f).
 Proof.
 move=> I A /(_ _)/cid2-/all_sig[b]/all_and2[_]/(_ _)/esym AE.
 move=> [a _ <-]; rewrite hlength_itv ?lte_fin/= -EFinB => lebig.
-case: ifPn => a12; last first. rewrite nneseries_esum//; last first.
-   move=> n _.
-   by apply:hlength_ge0'.      
-  rewrite esum_ge0//.
-  move=> n _.
-  by apply:hlength_ge0'.
+case: ifPn => a12; last first. rewrite nneseries_esum; last first.
+   by move=> ? _; exact: hlength_ge0'.
+  by rewrite esum_ge0// => ? _; exact: hlength_ge0'.
 apply: lee_adde => e.
 rewrite [e%:num]splitr [in leRHS]EFinD addeA -lee_subl_addr//.
 apply: le_trans (epsilon_trick _ _ _) => //=; last first.
-  move=> n .
-  by apply hlength_ge0'.
-have eVn_gt0 n : 0 < e%:num / 2 / (2 ^ n.+1)%:R.
-  by rewrite divr_gt0// ltr0n// expn_gt0.
-have eVn_ge0 n := ltW (eVn_gt0 n).
-pose Aoo i : set itvs :=
-  (`]((b i).1), ((b i).2 + e%:num / 2 / (2 ^ i.+1)%:R)[)%classic.
-pose Aoc i : set itvs :=
-  (`]((b i).1), ((b i).2 + e%:num / 2 / (2 ^ i.+1)%:R)])%classic.
-have: `[a.1 + e%:num / 2, a.2] `<=` \bigcup_i Aoo i. (* <- *)
-  apply: (@subset_trans _ `]a.1, a.2]).
-    move=> x; rewrite /= !in_itv /= => /andP[+ -> //].
-    by move=> /lt_le_trans-> //; rewrite ltr_addl.
-  apply: (subset_trans lebig); apply: subset_bigcup => i _; rewrite AE /Aoo/=.
-  move=> x /=; rewrite !in_itv /= => /andP[-> /le_lt_trans->]//=.
-  by rewrite ltr_addl.
-have := @segment_compact _ (a.1 + e%:num / 2) a.2; rewrite compact_cover.
-move=> /[apply]-[i _|X _ Xc]; first by rewrite /Aoo//; apply: interval_open.
-have: `](a.1 + e%:num / 2), a.2] `<=` \bigcup_(i in [set` X]) Aoc i.
-  move=> x /subset_itv_oc_cc /Xc [i /= Xi] Aooix.
-  by exists i => //; apply: subset_itv_oo_oc Aooix.
-have /[apply] := @content_sub_fsum _ _ [additive_measure of (hlength f)] _ [set` X].
-move=> /(_ f_monotone _ _ _)/Box[]//=. apply: le_le_trans.
-  rewrite hlength_itv ?lte_fin -?EFinD/= -addrA -opprD.
-  case: ltP. 
-    rewrite lee_fin.
-    move=> ae.(* *)
-    apply ler_sub =>//.
-    rewrite lerr.
-  rewrite lee_fin. move=> ae. 
-  apply ler_sub =>//. rewrite subr_le0.
-rewrite nneseries_esum//; last by move=> *; rewrite adde_ge0//= ?lee_fin.
-rewrite esum_ge//; exists X => //; rewrite fsbig_finite// ?set_fsetK//=.
-rewrite lee_sum // => i _; rewrite ?AE// !hlength_itv/= ?lte_fin -?EFinD/=.
-do !case: ifPn => //= ?; do ?by rewrite ?adde_ge0 ?lee_fin// ?subr_ge0// ?ltW.
-  by rewrite addrAC.
-by rewrite addrAC lee_fin ler_add// subr_le0 leNgt.
-Qed.
+  by move=> ?; exact: hlength_ge0'.
+have [Delta hDelta] : exists Delta, f (a.1 + Delta) <= f a.1 + e%:num / 2.
+  (* by continuity *)
+  admit.
+have [delta hdelta] :
+    exists delta : nat -> R, forall i, f ((b i).2 + delta i) <= f ((b
+i).2) + (e%:num / 2) / 2 ^ i.+1.
+  suff : forall i, exists deltai, f ((b i).2 + deltai) <= f ((b i).2)
++ (e%:num / 2) / 2 ^ i.+1.
+    by move/choice => -[f' hf']; exists f'.
+  (* by continuity *)
+  admit.
+have H1 : `[ a.2 + Delta , a.1] `<=` \bigcup_i `](b i).1, (b i).2 +
+delta i[%classic.
+  admit.
+have [n hn] : exists n, `[ a.1 + Delta , a.2] `<=` \big[setU/set0]_(i
+< n) `](b i).1, (b i).2 + delta i[%classic.
+  (* by cover_compact *)
+  admit.
+have H2 : f a.2 - f (a.1 + Delta) <= \sum_(i < n) (f ((b i).2 + delta
+i) - f (b i).1).
+  (* by hlength_semi_additive_helper *)
+  admit.
+have H3 : (((f a.2 - f (a.1) - e%:num / 2))%:E <=
+  \sum_(i < n) ((hlength f) ( `](b i).1, (b i).2]%classic))
+  +
+  \sum_(i < n) (f ((b i).2 + delta i)%R - f (b i).2)%:E)%E.
+  admit.
+have H4 : (((f a.2 - f (a.1) - e%:num / 2))%:E <=
+  \sum_(i < n) ((hlength f) ( `](b i).1, (b i).2]%classic))
+  +
+  (e%:num / 2)%:E)%E.
+  admit.
+Admitted.
 
 Lemma hlength_sigma_finite : sigma_finite [set: itvs] hlength.
 Proof.
