@@ -75,7 +75,7 @@ Qed.
 Implicit Types i j : interval R.
 Definition itvs : Type := R.
 
-Definition hlength (A : set itvs): \bar R := 
+Definition hlength (A : set itvs): \bar R :=
   let i := Rhull A in g i.2 - g i.1.
 
 Lemma hlength0 : hlength (set0 : set R) = 0.
@@ -111,7 +111,7 @@ move: i => [[ba a|[]] [bb b|[]]] /neitvP //=; do ?by rewrite ?set_itvE ?eqxx.
 by move=> _; rewrite hlength_itv /= ltey.
 by move=> _; rewrite hlength_itv /= ltNye.
 by move=> _; rewrite hlength_itv.
-Qed. 
+Qed.
 
 Lemma finite_hlengthE i : neitv i -> hlength [set` i] < +oo ->
   hlength [set` i] = (fine (g i.2))%:E - (fine (g i.1))%:E.
@@ -162,7 +162,7 @@ Lemma hlength_ge0 i : 0 <= hlength [set` i].
 Proof.
 rewrite hlength_itv; case: ifPn => //; case: (i.1 : \bar _) => [r| |].
 - rewrite suber_ge0//.
-  move=> /ltW. 
+  move=> /ltW.
   move=> /g_monotone.
   done.
 - by rewrite ltNge leey.
@@ -268,41 +268,41 @@ HB.instance Definition _  : isSemiRingOfSets itvs :=
 
 Definition itvs_semiRingOfSets := [the semiRingOfSetsType of itvs].
 
-Lemma hlength_ge0' (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R}) (I : set itvs) : (0 <= hlength f I)%E.
-Proof.
- rewrite -(hlength0 f).
- rewrite le_hlength//. Qed.
+Lemma hlength_ge0' (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R})
+  (I : set itvs) : (0 <= hlength f I)%E.
+Proof. by rewrite -(hlength0 f) le_hlength. Qed.
 
-(* Unused *)
-(* Lemma hlength_semi_additive2 : semi_additive2 hlength. *)
-(* Proof. *)
-(* move=> I J /ocitvP[|[a a12]] ->; first by rewrite set0U hlength0 add0e. *)
-(* move=> /ocitvP[|[b b12]] ->; first by rewrite setU0 hlength0 adde0. *)
-(* rewrite -subset0 => + ab0 => /ocitvP[|[x x12] abx]. *)
-(*   by rewrite setU_eq0 => -[-> ->]; rewrite setU0 hlength0 adde0. *)
-(* rewrite abx !hlength_itv//= ?lte_fin a12 b12 x12/= -!EFinB -EFinD. *)
-(* wlog ab1 : a a12 b b12 ab0 abx / a.1 <= b.1 => [hwlog|]. *)
-(*   have /orP[ab1|ba1] := le_total a.1 b.1; first by apply: hwlog. *)
-(*   by rewrite [in RHS]addrC; apply: hwlog => //; rewrite (setIC, setUC). *)
-(* have := ab0; rewrite subset0 -set_itv_meet/=. *)
-(* rewrite /Order.join /Order.meet/= ?(andbF, orbF)/= ?(meetEtotal, joinEtotal). *)
-(* rewrite -negb_or le_total/=; set c := minr _ _; set d := maxr _ _. *)
-(* move=> /eqP/neitvP/=; rewrite bnd_simp/= /d/c (max_idPr _)// => /negP. *)
-(* rewrite -leNgt le_minl orbC lt_geF//= => {c} {d} a2b1. *)
-(* have ab i j : i \in `]a.1, a.2] -> j \in `]b.1, b.2] -> i <= j. *)
-(*   by move=> ia jb; rewrite (le_le_trans _ _ a2b1) ?(itvP ia) ?(itvP jb). *)
-(* have /(congr1 sup) := abx; rewrite sup_setU// ?sup_itv_bounded// => bx. *)
-(* have /(congr1 inf) := abx; rewrite inf_setU// ?inf_itv_bounded// => ax. *)
-(* rewrite -{}ax -{x}bx in abx x12 *. *)
-(* case: ltgtP a2b1 => // a2b1 _; last first. *)
-(*   by rewrite a2b1 [in RHS]addrC subrKA. *)
-(* exfalso; pose c := (a.2 + b.1) / 2%:R. *)
-(* have /predeqP/(_ c)[_ /(_ _)/Box[]] := abx. *)
-(*   apply: subset_itv_oo_oc; have := mid_in_itvoo a2b1. *)
-(*   by apply/subitvP; rewrite subitvE ?bnd_simp/= ?ltW. *)
-(* apply/not_orP; rewrite /= !in_itv/=. *)
-(* by rewrite lt_geF ?midf_lt//= andbF le_gtF ?midf_le//= ltW. *)
-(* Qed. *)
+(*Lemma hlength_semi_additive2 (f : R -> R) :
+  semi_additive2 (hlength f).
+Proof.
+move=> I J /ocitvP[|[a a12]] ->; first by rewrite set0U hlength0 add0e.
+move=> /ocitvP[|[b b12]] ->; first by rewrite setU0 hlength0 adde0.
+rewrite -subset0 => + ab0 => /ocitvP[|[x x12] abx].
+  by rewrite setU_eq0 => -[-> ->]; rewrite setU0 hlength0 adde0.
+rewrite abx !hlength_itv//= ?lte_fin a12 b12 x12/= -!EFinB -EFinD.
+wlog ab1 : a a12 b b12 ab0 abx / a.1 <= b.1 => [hwlog|].
+  have /orP[ab1|ba1] := le_total a.1 b.1; first by apply: hwlog.
+  by rewrite [in RHS]addrC; apply: hwlog => //; rewrite (setIC, setUC).
+have := ab0; rewrite subset0.
+ -set_itvI/=.
+rewrite /Order.join /Order.meet/= ?(andbF, orbF)/= ?(meetEtotal, joinEtotal).
+rewrite -negb_or le_total/=; set c := minr _ _; set d := maxr _ _.
+move=> /eqP/neitvP/=; rewrite bnd_simp/= /d/c (max_idPr _)// => /negP.
+rewrite -leNgt le_minl orbC lt_geF//= => {c} {d} a2b1.
+have ab i j : i \in `]a.1, a.2] -> j \in `]b.1, b.2] -> i <= j.
+  by move=> ia jb; rewrite (le_le_trans _ _ a2b1) ?(itvP ia) ?(itvP jb).
+have /(congr1 sup) := abx; rewrite sup_setU// ?sup_itv_bounded// => bx.
+have /(congr1 inf) := abx; rewrite inf_setU// ?inf_itv_bounded// => ax.
+rewrite -{}ax -{x}bx in abx x12 *.
+case: ltgtP a2b1 => // a2b1 _; last first.
+  by rewrite a2b1 [in RHS]addrC subrKA.
+exfalso; pose c := (a.2 + b.1) / 2%:R.
+have /predeqP/(_ c)[_ /(_ _)/Box[]] := abx.
+  apply: subset_itv_oo_oc; have := mid_in_itvoo a2b1.
+  by apply/subitvP; rewrite subitvE ?bnd_simp/= ?ltW.
+apply/not_orP; rewrite /= !in_itv/=.
+by rewrite lt_geF ?midf_lt//= andbF le_gtF ?midf_le//= ltW.
+Qed.*)
 
 Lemma hlength_semi_additive (f : R -> R) : semi_additive (hlength f).
 Proof.
@@ -376,12 +376,32 @@ Canonical hlength_measure (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R}
 
 Hint Extern 0 (measurable _) => solve [apply: is_ocitv] : core.
 
-Lemma hlength_semi_additive_helper (F : R -> R) (n : nat) a0 b0 (a b :
-nat -> R) :
-  `[ a0,  b0] `<=` \big[setU/set0]_(i < n) `] a i, b i[%classic
-  ->
+Lemma hlength_cc (F : R -> R) (a b : R) : a < b ->
+  hlength F `[a, b]%classic = (F b - F a)%:E.
+Proof.
+by move=> ab; rewrite hlength_itv/= lte_fin ab EFinN EFinB.
+Qed.
+
+Lemma hlength_semi_additive_helper (F : R -> R) (n : nat) a0 b0 (a b : nat -> R) :
+  {homo F : x y / x <= y} ->
+  `[a0, b0] `<=` \big[setU/set0]_(i < n) `] a i, b i[%classic ->
   F b0 - F a0 <= \sum_(i < n) (F (b i) - F (a i)).
 Proof.
+move=> ndF h.
+have H1 : (forall k, (k < n)%N -> @measurable itvs_semiRingOfSets `](a k), (b k)[%classic).
+  move=> k kn.
+  admit.
+have H2 : @measurable itvs_semiRingOfSets `[a0, b0]%classic.
+  admit.
+move/(@content_sub_additive R itvs_semiRingOfSets (@hlength_measure F ndF)
+  `[a0, b0]%classic (fun x => `](a x), (b x)[%classic) n H1 H2) : h.
+rewrite /=.
+have -> : hlength F `[a0, b0] = ((F b0) - (F a0))%:E.
+  rewrite hlength_cc//.
+  admit.
+have -> : (\sum_(k < n) hlength F `](a k), (b k)[ = \sum_(k < n) (F (b k) - F (a k))%:E)%E.
+  admit.
+by rewrite sumEFin.
 Admitted.
 
 Lemma hlength_sigma_sub_additive (f : R -> R)
@@ -390,8 +410,9 @@ Lemma hlength_sigma_sub_additive (f : R -> R)
 Proof.
 move=> I A /(_ _)/cid2-/all_sig[b]/all_and2[_]/(_ _)/esym AE.
 move=> [a _ <-]; rewrite hlength_itv ?lte_fin/= -EFinB => lebig.
-case: ifPn => a12; last first. rewrite nneseries_esum; last first.
-   by move=> ? _; exact: hlength_ge0'.
+case: ifPn => a12; last first.
+  rewrite nneseries_esum; last first.
+    by move=> ? _; exact: hlength_ge0'.
   by rewrite esum_ge0// => ? _; exact: hlength_ge0'.
 apply: lee_adde => e.
 rewrite [e%:num]splitr [in leRHS]EFinD addeA -lee_subl_addr//.
@@ -401,24 +422,19 @@ have [Delta hDelta] : exists Delta, f (a.1 + Delta) <= f a.1 + e%:num / 2.
   (* by continuity *)
   admit.
 have [delta hdelta] :
-    exists delta : nat -> R, forall i, f ((b i).2 + delta i) <= f ((b
-i).2) + (e%:num / 2) / 2 ^ i.+1.
-  suff : forall i, exists deltai, f ((b i).2 + deltai) <= f ((b i).2)
-+ (e%:num / 2) / 2 ^ i.+1.
+    exists delta : nat -> R, forall i, f ((b i).2 + delta i) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
+  suff : forall i, exists deltai, f ((b i).2 + deltai) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
     by move/choice => -[f' hf']; exists f'.
   (* by continuity *)
   admit.
-have H1 : `[ a.2 + Delta , a.1] `<=` \bigcup_i `](b i).1, (b i).2 +
-delta i[%classic.
+have H1 : `[ a.2 + Delta , a.1] `<=` \bigcup_i `](b i).1, (b i).2 + delta i[%classic.
   admit.
-have [n hn] : exists n, `[ a.1 + Delta , a.2] `<=` \big[setU/set0]_(i
-< n) `](b i).1, (b i).2 + delta i[%classic.
+have [n hn] : exists n, `[ a.1 + Delta , a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + delta i[%classic.
   (* by cover_compact *)
   admit.
-have H2 : f a.2 - f (a.1 + Delta) <= \sum_(i < n) (f ((b i).2 + delta
-i) - f (b i).1).
-  (* by hlength_semi_additive_helper *)
-  admit.
+have H2 : f a.2 - f (a.1 + Delta) <= \sum_(i < n) (f ((b i).2 + delta i) - f (b i).1).
+  exact: (@hlength_semi_additive_helper f n (a.1 + Delta) a.2
+    (fun x => (b x).1) (fun x => (b x).2 + delta x)).
 have H3 : (((f a.2 - f (a.1) - e%:num / 2))%:E <=
   \sum_(i < n) ((hlength f) ( `](b i).1, (b i).2]%classic))
   +
