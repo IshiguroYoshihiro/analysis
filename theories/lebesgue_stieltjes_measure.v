@@ -376,32 +376,70 @@ Canonical hlength_measure (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R}
 
 Hint Extern 0 (measurable _) => solve [apply: is_ocitv] : core.
 
-Lemma hlength_cc (F : R -> R) (a b : R) : a < b ->
-  hlength F `[a, b]%classic = (F b - F a)%:E.
+Lemma hlength_interval (F : R -> R) (a b : R) (x y : bool): a <= b ->
+  hlength F [set` (Interval (BSide x a) (BSide y b))] = (F b - F a)%:E.
 Proof.
-by move=> ab; rewrite hlength_itv/= lte_fin ab EFinN EFinB.
+move=> ab.
+rewrite hlength_itv.
+rewrite /=. 
+rewrite lte_fin.
+rewrite lt_neqAle.
+rewrite ab andbT. 
+case: ifPn.
+  by rewrite EFinN EFinB.
+rewrite negbK.
+move/eqP.
+move->.
+by rewrite subrr.
 Qed.
 
 Lemma hlength_semi_additive_helper (F : R -> R) (n : nat) a0 b0 (a b : nat -> R) :
-  {homo F : x y / x <= y} ->
+  {homo F : x y / x <= y} -> 
+  (forall i, (i < n)%nat -> (a i <= b i)) ->
   `[a0, b0] `<=` \big[setU/set0]_(i < n) `] a i, b i[%classic ->
   F b0 - F a0 <= \sum_(i < n) (F (b i) - F (a i)).
 Proof.
-move=> ndF h.
+move=> ndF ailtnbi h.
 have H1 : (forall k, (k < n)%N -> @measurable itvs_semiRingOfSets `](a k), (b k)[%classic).
   move=> k kn.
+  rewrite set_itv_splitI.
+  apply measurableI.
+  simpl.
+  admit.
   admit.
 have H2 : @measurable itvs_semiRingOfSets `[a0, b0]%classic.
   admit.
 move/(@content_sub_additive R itvs_semiRingOfSets (@hlength_measure F ndF)
   `[a0, b0]%classic (fun x => `](a x), (b x)[%classic) n H1 H2) : h.
 rewrite /=.
-have -> : hlength F `[a0, b0] = ((F b0) - (F a0))%:E.
-  rewrite hlength_cc//.
-  admit.
-have -> : (\sum_(k < n) hlength F `](a k), (b k)[ = \sum_(k < n) (F (b k) - F (a k))%:E)%E.
-  admit.
-by rewrite sumEFin.
+move=> h.
+case (leP a0 b0); last first.
+  move=> ba.
+  apply (@le_trans _ _ 0).
+    rewrite subr_le0.
+    apply ndF.
+    apply ltW.
+    done.
+  apply sumr_ge0.
+  move=> i _.
+  rewrite subr_ge0.
+  apply ndF.
+  apply ailtnbi.
+  done.
+
+move=> ab.
+move: h.
+rewrite hlength_interval//.
+move=> h.
+rewrite -lee_fin.
+rewrite (le_trans h)//.
+rewrite -sumEFin.
+apply:lee_sum.
+move=> i _.
+rewrite hlength_interval//.
+apply ailtnbi.
+done.
+
 Admitted.
 
 Lemma hlength_sigma_sub_additive (f : R -> R)
@@ -467,7 +505,6 @@ Definition lebesgue_measure : {measure set gitvs -> \bar R} :=
 
 End itv_semiRingOfSets.
 Arguments lebesgue_measure {R}.
-
 Section lebesgue_measure.
 Variable R : realType.
 Let gitvs := g_measurableType (@ocitv R).
