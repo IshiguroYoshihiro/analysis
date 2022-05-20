@@ -396,21 +396,23 @@ Qed.
 Lemma hlength_semi_additive_helper (F : R -> R) (n : nat) a0 b0 (a b : nat -> R) :
   {homo F : x y / x <= y} -> 
   (forall i, (i < n)%nat -> (a i <= b i)) ->
-  `[a0, b0] `<=` \big[setU/set0]_(i < n) `] a i, b i[%classic ->
+  `]a0, b0] `<=` \big[setU/set0]_(i < n) `] a i, b i]%classic ->
   F b0 - F a0 <= \sum_(i < n) (F (b i) - F (a i)).
 Proof.
 move=> ndF ailtnbi h.
-have H1 : (forall k, (k < n)%N -> @measurable itvs_semiRingOfSets `](a k), (b k)[%classic).
+have H1 : (forall k, (k < n)%N -> @measurable itvs_semiRingOfSets `](a k), (b k)]%classic).
   move=> k kn.
-  rewrite set_itv_splitI.
+  done.
+(*  rewrite set_itv_splitI.
   apply measurableI.
-  simpl.
-  admit.
-  admit.
-have H2 : @measurable itvs_semiRingOfSets `[a0, b0]%classic.
-  admit.
+    simpl.
+
+    admit.
+  admit.*)
+have H2 : @measurable itvs_semiRingOfSets `]a0, b0]%classic.
+  done.
 move/(@content_sub_additive R itvs_semiRingOfSets (@hlength_measure F ndF)
-  `[a0, b0]%classic (fun x => `](a x), (b x)[%classic) n H1 H2) : h.
+  `]a0, b0]%classic (fun x => `](a x), (b x)]%classic) n H1 H2) : h.
 rewrite /=.
 move=> h.
 case (leP a0 b0); last first.
@@ -439,14 +441,15 @@ move=> i _.
 rewrite hlength_interval//.
 apply ailtnbi.
 done.
-
-Admitted.
+Qed.
 
 Lemma hlength_sigma_sub_additive (f : R -> R)
     (f_monotone : {homo f : x y / (x <= y)%R}) :
   sigma_sub_additive (hlength f).
 Proof.
 move=> I A /(_ _)/cid2-/all_sig[b]/all_and2[_]/(_ _)/esym AE.
+have H0 : forall n, (b n).1 <= (b n).2.
+  admit.
 move=> [a _ <-]; rewrite hlength_itv ?lte_fin/= -EFinB => lebig.
 case: ifPn => a12; last first.
   rewrite nneseries_esum; last first.
@@ -456,27 +459,42 @@ apply: lee_adde => e.
 rewrite [e%:num]splitr [in leRHS]EFinD addeA -lee_subl_addr//.
 apply: le_trans (epsilon_trick _ _ _) => //=; last first.
   by move=> ?; exact: hlength_ge0'.
-have [Delta hDelta] : exists Delta, f (a.1 + Delta) <= f a.1 + e%:num / 2.
+have [Delta hDelta] : exists Delta : {posnum R}, f (a.1 + Delta%:num) <= f a.1 + e%:num / 2.
   (* by continuity *)
   admit.
 have [delta hdelta] :
-    exists delta : nat -> R, forall i, f ((b i).2 + delta i) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
-  suff : forall i, exists deltai, f ((b i).2 + deltai) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
+    exists delta : nat -> {posnum R}, forall i, f ((b i).2 + (delta i)%:num) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
+  suff : forall i, exists deltai : {posnum R}, f ((b i).2 + deltai%:num) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
     by move/choice => -[f' hf']; exists f'.
   (* by continuity *)
   admit.
-have H1 : `[ a.2 + Delta , a.1] `<=` \bigcup_i `](b i).1, (b i).2 + delta i[%classic.
+have H1 : `[ a.1 + Delta%:num , a.2] `<=` \bigcup_i `](b i).1, (b i).2 + (delta i)%:num[%classic.
+  apply (@subset_trans _ `]a.1, a.2]).
+    admit.
   admit.
-have [n hn] : exists n, `[ a.1 + Delta , a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + delta i[%classic.
+have [n hn] : exists n, `] a.1 + Delta%:num / 2, a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + (delta i)%:num]%classic.
+  suff : exists n, `[ a.1 + Delta%:num, a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + (delta i)%:num[%classic.
+    case=> n hn.
+    exists n.
+    apply (@subset_trans _ `[(a.1 + Delta%:num), a.2]).
+      admit.
+    apply (subset_trans hn).
+    admit.
   (* by cover_compact *)
   admit.
-have H2 : f a.2 - f (a.1 + Delta) <= \sum_(i < n) (f ((b i).2 + delta i) - f (b i).1).
-  exact: (@hlength_semi_additive_helper f n (a.1 + Delta) a.2
-    (fun x => (b x).1) (fun x => (b x).2 + delta x)).
+
+have H2 : f a.2 - f (a.1 + Delta%:num) <= \sum_(i < n) (f ((b i).2 + (delta i)%:num) - f (b i).1).
+  apply: (@hlength_semi_additive_helper f n (a.1 + Delta%:num) a.2
+    (fun x => (b x).1) (fun x => (b x).2 + (delta x)%:num)) =>//.
+  move => i iltnn.
+  apply (@le_trans _ _ (b i).2).
+    done.
+  by rewrite ler_addl.
+  
 have H3 : (((f a.2 - f (a.1) - e%:num / 2))%:E <=
   \sum_(i < n) ((hlength f) ( `](b i).1, (b i).2]%classic))
   +
-  \sum_(i < n) (f ((b i).2 + delta i)%R - f (b i).2)%:E)%E.
+  \sum_(i < n) (f ((b i).2 + (delta i)%:num)%R - f (b i).2)%:E)%E.
   admit.
 have H4 : (((f a.2 - f (a.1) - e%:num / 2))%:E <=
   \sum_(i < n) ((hlength f) ( `](b i).1, (b i).2]%classic))
