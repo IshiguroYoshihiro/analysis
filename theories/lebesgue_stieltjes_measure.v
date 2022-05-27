@@ -380,16 +380,11 @@ Lemma hlength_interval (F : R -> R) (a b : R) (x y : bool): a <= b ->
   hlength F [set` (Interval (BSide x a) (BSide y b))] = (F b - F a)%:E.
 Proof.
 move=> ab.
-rewrite hlength_itv.
-rewrite /=. 
-rewrite lte_fin.
-rewrite lt_neqAle.
-rewrite ab andbT. 
+rewrite hlength_itv/= lte_fin lt_neqAle ab andbT. 
 case: ifPn.
   by rewrite EFinN EFinB.
 rewrite negbK.
-move/eqP.
-move->.
+move/eqP ->.
 by rewrite subrr.
 Qed.
 
@@ -401,16 +396,9 @@ Lemma hlength_semi_additive_helper (F : R -> R) (n : nat) a0 b0 (a b : nat -> R)
 Proof.
 move=> ndF ailtnbi h.
 have H1 : (forall k, (k < n)%N -> @measurable itvs_semiRingOfSets `](a k), (b k)]%classic).
-  move=> k kn.
-  done.
-(*  rewrite set_itv_splitI.
-  apply measurableI.
-    simpl.
-
-    admit.
-  admit.*)
+  by move=> k kn.
 have H2 : @measurable itvs_semiRingOfSets `]a0, b0]%classic.
-  done.
+  apply is_ocitv.
 move/(@content_sub_additive R itvs_semiRingOfSets (@hlength_measure F ndF)
   `]a0, b0]%classic (fun x => `](a x), (b x)]%classic) n H1 H2) : h.
 rewrite /=.
@@ -420,36 +408,69 @@ case (leP a0 b0); last first.
   apply (@le_trans _ _ 0).
     rewrite subr_le0.
     apply ndF.
-    apply ltW.
-    done.
+    by apply ltW.
   apply sumr_ge0.
   move=> i _.
   rewrite subr_ge0.
   apply ndF.
-  apply ailtnbi.
-  done.
-
+  by apply ailtnbi.
 move=> ab.
 move: h.
 rewrite hlength_interval//.
 move=> h.
-rewrite -lee_fin.
-rewrite (le_trans h)//.
-rewrite -sumEFin.
+rewrite -lee_fin (le_trans h)// -sumEFin.
 apply:lee_sum.
 move=> i _.
 rewrite hlength_interval//.
-apply ailtnbi.
-done.
+by apply ailtnbi.
 Qed.
 
+Lemma monotone_right_continuous (a : R) (e : R) (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R}) (f_right_continuous : (right_continuous f)) :
+  e > 0 -> exists Delta : {posnum R}, f (a + Delta%:num) <= f a + e.
+Proof.
+move: e.
+move=> _ /posnumP[ e ].
+move:f_right_continuous.
+move=> /(_ a).
+move/(@cvg_dist _ [normedModType R of R^o]).
+move=> /(_ (e%:num)).
+move=> /(_ [gt0 of (e%:num)]).
+case.
+rewrite /=.
+move=> _ /posnumP[delta0 ].
+move=> /(_ (a + delta0%:num / 2)).
+rewrite /=.
+rewrite opprD.
+rewrite addrA.
+rewrite subrr.
+rewrite distrC.
+rewrite subr0.
+rewrite ger0_norm //.
+rewrite ltr_pdivr_mulr//.
+rewrite ltr_pmulr//.
+rewrite ltr1n.
+move=> /(_ erefl).
+rewrite ltr_addl. 
+rewrite divr_gt0//.
+move=> /(_ erefl).
+rewrite ler0_norm; last first.
+  rewrite subr_le0.
+  rewrite f_monotone//.
+  by rewrite ler_addl.
+rewrite opprB.
+rewrite ltr_subl_addl.
+move=> H.
+exists (PosNum [gt0 of (delta0%:num / 2)]).
+rewrite /=.
+by apply ltW.
+Qed.
+
+
 Lemma hlength_sigma_sub_additive (f : R -> R)
-    (f_monotone : {homo f : x y / (x <= y)%R}) :
+    (f_monotone : {homo f : x y / (x <= y)%R}) (f_right_continuous : right_continuous f) :
   sigma_sub_additive (hlength f).
 Proof.
 move=> I A /(_ _)/cid2-/all_sig[b]/all_and2[_]/(_ _)/esym AE.
-have H0 : forall n, (b n).1 <= (b n).2.
-  admit.
 move=> [a _ <-]; rewrite hlength_itv ?lte_fin/= -EFinB => lebig.
 case: ifPn => a12; last first.
   rewrite nneseries_esum; last first.
@@ -461,13 +482,18 @@ apply: le_trans (epsilon_trick _ _ _) => //=; last first.
   by move=> ?; exact: hlength_ge0'.
 have [Delta hDelta] : exists Delta : {posnum R}, f (a.1 + Delta%:num) <= f a.1 + e%:num / 2.
   (* by continuity *)
-  admit.
+  by apply monotone_right_continuous.
+
 have [delta hdelta] :
     exists delta : nat -> {posnum R}, forall i, f ((b i).2 + (delta i)%:num) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
   suff : forall i, exists deltai : {posnum R}, f ((b i).2 + deltai%:num) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
     by move/choice => -[f' hf']; exists f'.
   (* by continuity *)
-  admit.
+  move=> i.
+  apply monotone_right_continuous => //. 
+  rewrite divr_gt0 //.
+  rewrite exprn_gt0//.
+
 have H1 : `[ a.1 + Delta%:num , a.2] `<=` \bigcup_i `](b i).1, (b i).2 + (delta i)%:num[%classic.
   apply (@subset_trans _ `]a.1, a.2]).
     admit.
@@ -483,6 +509,8 @@ have [n hn] : exists n, `] a.1 + Delta%:num / 2, a.2] `<=` \big[setU/set0]_(i < 
   (* by cover_compact *)
   admit.
 
+have H0 : forall n, (b n).1 <= (b n).2.
+  admit.
 have H2 : f a.2 - f (a.1 + Delta%:num) <= \sum_(i < n) (f ((b i).2 + (delta i)%:num) - f (b i).1).
   apply: (@hlength_semi_additive_helper f n (a.1 + Delta%:num) a.2
     (fun x => (b x).1) (fun x => (b x).2 + (delta x)%:num)) =>//.
