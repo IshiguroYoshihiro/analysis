@@ -465,6 +465,16 @@ rewrite /=.
 by apply ltW.
 Qed.
 
+Lemma subset_interval'
+(a1 a2 b1 b2: R) (xa ya xb yb: bool): b1 <= a1 -> a2 <= b2 -> (xa <= xb)%O -> (yb <= ya)%O ->
+[set` (Interval (BSide xa a1) (BSide ya a2))] `<=` [set` (Interval (BSide xb b1) (BSide yb b2))].
+Proof.
+Admitted.
+
+Lemma subset_interval
+(a1 a2 b1 b2 : itv_bound R) : (b1 <= a1)%O -> (a2 <= b2)%O -> [set` (Interval a1 a2)] `<=` [set` (Interval b1 b2)].
+Proof.
+Admitted.
 
 Lemma hlength_sigma_sub_additive (f : R -> R)
     (f_monotone : {homo f : x y / (x <= y)%R}) (f_right_continuous : right_continuous f) :
@@ -496,16 +506,58 @@ have [delta hdelta] :
 
 have H1 : `[ a.1 + Delta%:num , a.2] `<=` \bigcup_i `](b i).1, (b i).2 + (delta i)%:num[%classic.
   apply (@subset_trans _ `]a.1, a.2]).
-    admit.
-  admit.
+    move=> r. 
+    rewrite /=.
+    rewrite !in_itv/=.
+    move=> /andP [+ ->].
+    rewrite andbT.
+    apply lt_le_trans.
+    by rewrite ltr_addl.
+  apply (subset_trans lebig).
+  move=> r.
+  rewrite /bigcup/=.
+  case.
+  move=> n _ Anr.
+  exists n => //. 
+  move: Anr.
+  rewrite AE /=. 
+  rewrite !in_itv/=.
+  move=> /andP [-> ]/=.
+  move/ le_lt_trans.
+  apply.
+  by rewrite ltr_addl.
 have [n hn] : exists n, `] a.1 + Delta%:num / 2, a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + (delta i)%:num]%classic.
-  suff : exists n, `[ a.1 + Delta%:num, a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + (delta i)%:num[%classic.
+(*  suff : exists n, `[ a.1 + Delta%:num, a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + (delta i)%:num[%classic.
     case=> n hn.
     exists n.
-    apply (@subset_trans _ `[(a.1 + Delta%:num), a.2]).
-      admit.
-    apply (subset_trans hn).
-    admit.
+    apply (@subset_trans _ `[(a.1 + Delta%:num / 4%:R), a.2]).
+      apply subset_interval => //=.
+      rewrite bnd_simp.
+      (*move=> r/=.
+      rewrite !in_itv/=.      
+      move=> /andP [+ ->].
+      rewrite andbT.
+      move/ ltW.
+      apply le_trans.*)
+      rewrite ler_add => //.
+      (*Unset Printing Notations.*)
+      rewrite ler_pmul //.
+      rewrite ler_pinv.
+          by rewrite ler_nat.
+        rewrite inE. 
+        rewrite ltr0n.
+        rewrite andbT.
+        by rewrite unitf_gt0.
+      rewrite inE ltr0n andbT.
+      by rewrite unitf_gt0.
+    
+    apply:subset_trans.
+    apply:subset_trans hn.
+    apply subset_interval.    
+    
+
+    move=> r/=.
+*)
   (* by cover_compact *)
   admit.
 
@@ -518,7 +570,8 @@ have H2 : f a.2 - f (a.1 + Delta%:num) <= \sum_(i < n) (f ((b i).2 + (delta i)%:
   apply (@le_trans _ _ (b i).2).
     done.
   by rewrite ler_addl.
-  
+  admit.  
+
 have H3 : (((f a.2 - f (a.1) - e%:num / 2))%:E <=
   \sum_(i < n) ((hlength f) ( `](b i).1, (b i).2]%classic))
   +
