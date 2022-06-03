@@ -379,212 +379,129 @@ Hint Extern 0 (measurable _) => solve [apply: is_ocitv] : core.
 Lemma hlength_interval (F : R -> R) (a b : R) (x y : bool): a <= b ->
   hlength F [set` (Interval (BSide x a) (BSide y b))] = (F b - F a)%:E.
 Proof.
-move=> ab.
-rewrite hlength_itv/= lte_fin lt_neqAle ab andbT. 
-case: ifPn.
-  by rewrite EFinN EFinB.
-rewrite negbK.
-move/eqP ->.
-by rewrite subrr.
+move=> a_leq_b; rewrite hlength_itv/= lte_fin lt_neqAle a_leq_b andbT.
+by have [-> /=|/= a_neq_b] := eqVneq a b; rewrite ?subrr// EFinN EFinB.
 Qed.
 
-Lemma hlength_semi_additive_helper (F : R -> R) (n : nat) a0 b0 (a b : nat -> R) :
-  {homo F : x y / x <= y} -> 
-  (forall i, (i < n)%nat -> (a i <= b i)) ->
-  `]a0, b0] `<=` \big[setU/set0]_(i < n) `] a i, b i]%classic ->
-  F b0 - F a0 <= \sum_(i < n) (F (b i) - F (a i)).
-Proof.
-move=> ndF ailtnbi h.
-have H1 : (forall k, (k < n)%N -> @measurable itvs_semiRingOfSets `](a k), (b k)]%classic).
-  by move=> k kn.
-have H2 : @measurable itvs_semiRingOfSets `]a0, b0]%classic.
-  apply is_ocitv.
-move/(@content_sub_additive R itvs_semiRingOfSets (@hlength_measure F ndF)
-  `]a0, b0]%classic (fun x => `](a x), (b x)]%classic) n H1 H2) : h.
-rewrite /=.
-move=> h.
-case (leP a0 b0); last first.
-  move=> ba.
-  apply (@le_trans _ _ 0).
-    rewrite subr_le0.
-    apply ndF.
-    by apply ltW.
-  apply sumr_ge0.
-  move=> i _.
-  rewrite subr_ge0.
-  apply ndF.
-  by apply ailtnbi.
-move=> ab.
-move: h.
-rewrite hlength_interval//.
-move=> h.
-rewrite -lee_fin (le_trans h)// -sumEFin.
-apply:lee_sum.
-move=> i _.
-rewrite hlength_interval//.
-by apply ailtnbi.
-Qed.
-
-Lemma monotone_right_continuous (a : R) (e : R) (f : R -> R) (f_monotone : {homo f : x y / (x <= y)%R}) (f_right_continuous : (right_continuous f)) :
+Lemma nondecreasing_right_continuous (a : R) (e : R) (f : R -> R)
+   (ndf : {homo f : x y / x <= y}) (rcf : (right_continuous f)) :
   e > 0 -> exists Delta : {posnum R}, f (a + Delta%:num) <= f a + e.
 Proof.
-move: e.
-move=> _ /posnumP[ e ].
-move:f_right_continuous.
-move=> /(_ a).
-move/(@cvg_dist _ [normedModType R of R^o]).
-move=> /(_ (e%:num)).
-move=> /(_ [gt0 of (e%:num)]).
-case.
-rewrite /=.
-move=> _ /posnumP[delta0 ].
-move=> /(_ (a + delta0%:num / 2)).
-rewrite /=.
-rewrite opprD.
-rewrite addrA.
-rewrite subrr.
-rewrite distrC.
-rewrite subr0.
-rewrite ger0_norm //.
-rewrite ltr_pdivr_mulr//.
-rewrite ltr_pmulr//.
-rewrite ltr1n.
-move=> /(_ erefl).
-rewrite ltr_addl. 
-rewrite divr_gt0//.
-move=> /(_ erefl).
-rewrite ler0_norm; last first.
-  rewrite subr_le0.
-  rewrite f_monotone//.
-  by rewrite ler_addl.
-rewrite opprB.
-rewrite ltr_subl_addl.
-move=> H.
-exists (PosNum [gt0 of (delta0%:num / 2)]).
-rewrite /=.
-by apply ltW.
+move=> e0.
+move: rcf => /(_ a)/(@cvg_dist _ [normedModType R of R^o]).
+move=> /(_ _ e0)[] _ /posnumP[delta0] => h.
+exists (PosNum [gt0 of (delta0%:num / 2)]) => //=.
+move: h => /(_ (a + delta0%:num / 2)) /=.
+rewrite opprD addrA subrr distrC subr0 ger0_norm //.
+rewrite ltr_pdivr_mulr// ltr_pmulr// ltr1n => /(_ erefl).
+rewrite ltr_addl divr_gt0// => /(_ erefl).
+rewrite ler0_norm; last by rewrite subr_le0 ndf// ler_addl.
+by rewrite opprB ltr_subl_addl => fa; exact: ltW.
 Qed.
 
-Lemma subset_interval'
+Lemma hlength_semi_additive_helper (f : R -> R) (D : {fset nat}) a0 b0
+    (a b : nat -> R) : {homo f : x y / x <= y} ->
+    (forall i, i \in D -> a i <= b i) ->
+    `]a0, b0] `<=` \big[setU/set0]_(i <- D) `] a i, b i]%classic ->
+  f b0 - f a0 <= \sum_(i <- D) (f (b i) - f (a i)).
+Proof.
+move=> ndf Dab h; have [ab|ab] := leP a0 b0; last first.
+  apply (@le_trans _ _ 0); first by rewrite subr_le0 ndf// ltW.
+  by rewrite big_seq sumr_ge0// => i iD; rewrite subr_ge0 ndf// Dab.
+have mab k :
+  [set` D] k -> @measurable itvs_semiRingOfSets `]a k, b k]%classic by [].
+move: h; rewrite -bigcup_fset.
+move/(@content_sub_fsum R _ (@hlength_measure f ndf) _ [set` D]
+  `]a0, b0]%classic (fun x => `](a x), (b x)]%classic) (finite_fset D) mab
+  (is_ocitv _ _)) => /=.
+rewrite hlength_interval// -lee_fin => /le_trans; apply.
+rewrite -sumEFin fsbig_finite//= set_fsetK// big_seq [in X in (_ <= X)%E]big_seq.
+by apply: lee_sum => i iD; rewrite hlength_interval// Dab.
+Qed.
+
+(*Lemma subset_interval'
 (a1 a2 b1 b2: R) (xa ya xb yb: bool): b1 <= a1 -> a2 <= b2 -> (xa <= xb)%O -> (yb <= ya)%O ->
 [set` (Interval (BSide xa a1) (BSide ya a2))] `<=` [set` (Interval (BSide xb b1) (BSide yb b2))].
 Proof.
-Admitted.
+Abort.
 
 Lemma subset_interval
 (a1 a2 b1 b2 : itv_bound R) : (b1 <= a1)%O -> (a2 <= b2)%O -> [set` (Interval a1 a2)] `<=` [set` (Interval b1 b2)].
 Proof.
-Admitted.
+Abort.*)
 
 Lemma hlength_sigma_sub_additive (f : R -> R)
-    (f_monotone : {homo f : x y / (x <= y)%R}) (f_right_continuous : right_continuous f) :
+    (ndf : {homo f : x y / (x <= y)%R}) (rcf : right_continuous f) :
   sigma_sub_additive (hlength f).
 Proof.
 move=> I A /(_ _)/cid2-/all_sig[b]/all_and2[_]/(_ _)/esym AE.
 move=> [a _ <-]; rewrite hlength_itv ?lte_fin/= -EFinB => lebig.
 case: ifPn => a12; last first.
-  rewrite nneseries_esum; last first.
-    by move=> ? _; exact: hlength_ge0'.
+  rewrite nneseries_esum; last by move=> ? _; exact: hlength_ge0'.
   by rewrite esum_ge0// => ? _; exact: hlength_ge0'.
+wlog wlogh : b A AE lebig / forall n, (b n).1 <= (b n).2.
+  move=> /= h.
+  set A' := fun n => if (b n).1 >= (b n).2 then set0 else A n.
+  set b' := fun n => if (b n).1 >= (b n).2 then (0, 0) else b n.
+  rewrite [X in (_ <= X)%E](_ : _ = \sum_(n <oo) hlength f (A' n))%E; last first.
+    apply: (@eq_nneseries _ (hlength f \o A) (hlength f \o A')) => k.
+    rewrite /= /A' AE; case: ifPn => // bn.
+    by rewrite set_itv_ge//= bnd_simp -leNgt.
+  apply (h b').
+  - move=> k; rewrite /A'; case: ifPn => // bk.
+    by rewrite set_itv_ge//= bnd_simp -leNgt /b' bk.
+  - by rewrite AE /b' (negbTE bk).
+  - apply: (subset_trans lebig); apply subset_bigcup => k _.
+    rewrite /A' AE; case: ifPn => bk //.
+    by rewrite subset0 set_itv_ge//= bnd_simp -leNgt.
+  - by move=> k; rewrite /b'; case: ifPn => //; rewrite -ltNge => /ltW.
 apply: lee_adde => e.
 rewrite [e%:num]splitr [in leRHS]EFinD addeA -lee_subl_addr//.
 apply: le_trans (epsilon_trick _ _ _) => //=; last first.
   by move=> ?; exact: hlength_ge0'.
-have [Delta hDelta] : exists Delta : {posnum R}, f (a.1 + Delta%:num) <= f a.1 + e%:num / 2.
-  (* by continuity *)
-  by apply monotone_right_continuous.
-
-have [delta hdelta] :
-    exists delta : nat -> {posnum R}, forall i, f ((b i).2 + (delta i)%:num) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
-  suff : forall i, exists deltai : {posnum R}, f ((b i).2 + deltai%:num) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
-    by move/choice => -[f' hf']; exists f'.
-  (* by continuity *)
-  move=> i.
-  apply monotone_right_continuous => //. 
-  rewrite divr_gt0 //.
-  rewrite exprn_gt0//.
-
-have H1 : `[ a.1 + Delta%:num , a.2] `<=` \bigcup_i `](b i).1, (b i).2 + (delta i)%:num[%classic.
+have [c ce] := nondecreasing_right_continuous a.1 ndf rcf [gt0 of e%:num / 2].
+have [d de] : exists d : nat -> {posnum R}, forall i,
+    f ((b i).2 + (d i)%:num) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
+  suff : forall i, exists di : {posnum R},
+      f ((b i).2 + di%:num) <= f ((b i).2) + (e%:num / 2) / 2 ^ i.+1.
+    by move/choice => -[g hg]; exists g.
+  move=> k; apply nondecreasing_right_continuous => //.
+  by rewrite divr_gt0 // exprn_gt0.
+have acbd : `[ a.1 + c%:num / 2, a.2] `<=` \bigcup_i `](b i).1, (b i).2 + (d i)%:num[%classic.
   apply (@subset_trans _ `]a.1, a.2]).
-    move=> r. 
-    rewrite /=.
-    rewrite !in_itv/=.
-    move=> /andP [+ ->].
-    rewrite andbT.
-    apply lt_le_trans.
-    by rewrite ltr_addl.
-  apply (subset_trans lebig).
-  move=> r.
-  rewrite /bigcup/=.
-  case.
-  move=> n _ Anr.
-  exists n => //. 
-  move: Anr.
-  rewrite AE /=. 
-  rewrite !in_itv/=.
-  move=> /andP [-> ]/=.
-  move/ le_lt_trans.
-  apply.
-  by rewrite ltr_addl.
-have [n hn] : exists n, `] a.1 + Delta%:num / 2, a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + (delta i)%:num]%classic.
-(*  suff : exists n, `[ a.1 + Delta%:num, a.2] `<=` \big[setU/set0]_(i < n) `](b i).1, (b i).2 + (delta i)%:num[%classic.
-    case=> n hn.
-    exists n.
-    apply (@subset_trans _ `[(a.1 + Delta%:num / 4%:R), a.2]).
-      apply subset_interval => //=.
-      rewrite bnd_simp.
-      (*move=> r/=.
-      rewrite !in_itv/=.      
-      move=> /andP [+ ->].
-      rewrite andbT.
-      move/ ltW.
-      apply le_trans.*)
-      rewrite ler_add => //.
-      (*Unset Printing Notations.*)
-      rewrite ler_pmul //.
-      rewrite ler_pinv.
-          by rewrite ler_nat.
-        rewrite inE. 
-        rewrite ltr0n.
-        rewrite andbT.
-        by rewrite unitf_gt0.
-      rewrite inE ltr0n andbT.
-      by rewrite unitf_gt0.
-    
-    apply:subset_trans.
-    apply:subset_trans hn.
-    apply subset_interval.    
-    
+    move=> r; rewrite /= !in_itv/= => /andP [+ ->].
+    by rewrite andbT; apply: lt_le_trans; rewrite ltr_addl.
+  apply (subset_trans lebig) => r [n _ Anr]; exists n => //.
+  move: Anr; rewrite AE /= !in_itv/= => /andP [->]/= /le_lt_trans.
+  by apply; rewrite ltr_addl.
+have := @segment_compact _ (a.1 + c%:num / 2) a.2; rewrite compact_cover.
+have obd k : [set: nat] k-> open `](b k).1, ((b k).2 + (d k)%:num)[%classic.
+  by move=> _; exact: interval_open.
+move=> /(_ _ _ _ obd acbd){obd acbd}.
+case=> X _ acXbd.
+rewrite -EFinD.
+apply: (@le_trans _ _ (\sum_(i <- X) (hlength f `](b i).1, (b i).2]%classic) +
+                       \sum_(i <- X) (f ((b i).2 + (d i)%:num)%R - f (b i).2)%:E)%E).
+  apply: (@le_trans _ _ (f a.2 - f (a.1 + c%:num / 2))%:E).
+    rewrite lee_fin -addrA -opprD ler_sub// (le_trans _ ce)// ndf//.
+    by rewrite ler_add2l ler_pdivr_mulr// ler_pmulr// ler1n.
+  apply: (@le_trans _ _ (\sum_(i <- X) (f ((b i).2 + (d i)%:num) - f (b i).1)%:E)%E).
+    rewrite sumEFin lee_fin hlength_semi_additive_helper//.
+      by move=> k kX; rewrite (@le_trans _ _ (b k).2)// ler_addl.
+    apply: subset_trans.
+      exact/(subset_trans _ acXbd)/subset_itv_oc_cc.
+    move=> x [k kX] kx; rewrite -bigcup_fset; exists k => //.
+    by move: x kx; exact: subset_itv_oo_oc.
+  rewrite addeC -big_split/=; apply: lee_sum => k _.
+  by rewrite !(EFinB, hlength_interval)// addeA subeK.
+rewrite -big_split/= nneseries_esum//; last first.
+  by move=> k _; rewrite adde_ge0// hlength_ge0'.
+rewrite esum_ge//; exists X => //.
+rewrite big_seq [in X in (_ <= X)%E]big_seq; apply: lee_sum => k kX.
+by rewrite AE lee_add2l// lee_fin ler_subl_addl natrX de.
+Qed.
 
-    move=> r/=.
-*)
-  (* by cover_compact *)
-  admit.
-
-have H0 : forall n, (b n).1 <= (b n).2.
-  admit.
-have H2 : f a.2 - f (a.1 + Delta%:num) <= \sum_(i < n) (f ((b i).2 + (delta i)%:num) - f (b i).1).
-  apply: (@hlength_semi_additive_helper f n (a.1 + Delta%:num) a.2
-    (fun x => (b x).1) (fun x => (b x).2 + (delta x)%:num)) =>//.
-  move => i iltnn.
-  apply (@le_trans _ _ (b i).2).
-    done.
-  by rewrite ler_addl.
-  admit.  
-
-have H3 : (((f a.2 - f (a.1) - e%:num / 2))%:E <=
-  \sum_(i < n) ((hlength f) ( `](b i).1, (b i).2]%classic))
-  +
-  \sum_(i < n) (f ((b i).2 + (delta i)%:num)%R - f (b i).2)%:E)%E.
-  admit.
-have H4 : (((f a.2 - f (a.1) - e%:num / 2))%:E <=
-  \sum_(i < n) ((hlength f) ( `](b i).1, (b i).2]%classic))
-  +
-  (e%:num / 2)%:E)%E.
-  admit.
-Admitted.
-
-Lemma hlength_sigma_finite : sigma_finite [set: itvs] hlength.
+Lemma hlength_sigma_finite (f : R -> R) : sigma_finite [set: itvs] (hlength f).
 Proof.
 exists (fun k : nat => `] (- k%:R)%R, k%:R]%classic).
   apply/esym; rewrite -subTset => /= x _ /=.
@@ -599,11 +516,16 @@ Qed.
 
 Let gitvs := g_measurableType ocitv.
 
-Definition lebesgue_measure : {measure set gitvs -> \bar R} :=
-  Hahn_ext_measure hlength_sigma_sub_additive.
+Definition lebesgue_stieltjes_measure (f : R -> R)
+    (ndf : {homo f : x y / x <= y}) (rcf : right_continuous f)
+  : {measure set gitvs -> \bar R} :=
+  @Hahn_ext_measure R _ (hlength_measure ndf) (hlength_sigma_sub_additive ndf rcf).
 
 End itv_semiRingOfSets.
-Arguments lebesgue_measure {R}.
+Arguments lebesgue_stieltjes_measure {R}.
+
+xxx
+
 Section lebesgue_measure.
 Variable R : realType.
 Let gitvs := g_measurableType (@ocitv R).
