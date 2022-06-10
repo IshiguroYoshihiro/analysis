@@ -524,6 +524,39 @@ Definition lebesgue_stieltjes_measure (f : R -> R)
 End itv_semiRingOfSets.
 Arguments lebesgue_stieltjes_measure {R}.
 
+Definition abs_continuous (T : measurableType) (R : realType)
+    (m1 m2 : {measure set T -> \bar R}) :=
+  forall A : set T, measurable A -> m2 A = 0%:E -> m1 A = 0%:E.
+
+Lemma ndidR (R : realType) : {homo (@idfun R) : x y / x <= y}.
+Proof.
+move=> x y /=.
+done.
+Qed.
+
+Lemma continuous_right_continuous (R : realType) (f : R -> R)
+  : continuous f -> right_continuous f.
+Proof.
+move=> cf.
+move=> x/=.
+rewrite/at_right.
+apply: cvg_within_filter.
+apply/cf.
+Qed.
+
+Lemma rcidR (R : realType) : right_continuous (@idfun R).
+Proof.
+apply/continuous_right_continuous.
+move=> x.
+exact: cvg_id.
+Qed.
+
+Definition lebesgue_measure (R : realType) := lebesgue_stieltjes_measure (@idfun R) (@ndidR R) (@rcidR R).
+
+Definition abs_continuous_function_over_R (R : realType) (f : R -> R)
+    (ndf : {homo f : x y / x <= y}) (rcf : right_continuous f)
+  := abs_continuous (lebesgue_stieltjes_measure f ndf rcf) (lebesgue_measure R).
+
 xxx
 
 Section lebesgue_measure.
@@ -538,6 +571,7 @@ move=> muE X mX; apply: Hahn_ext_unique => //=.
 - exact: hlength_sigma_sub_additive.
 - exact: hlength_sigma_finite.
 Qed.
+
 
 End lebesgue_measure.
 
@@ -558,7 +592,7 @@ by have [] := subset_set2 Aoo; move=> ->; constructor.
 Qed.
 
 Lemma setCU_Efin (A : set T) (B : set \bar T) : ps_infty B ->
-  ~` (EFin @` A) `&` ~` B = (EFin @` ~` A) `|` ([set -oo%E; +oo%E] `&` ~` B).
+                                                ~` (EFin @` A) `&` ~` B = (EFin @` ~` A) `|` ([set -oo%E; +oo%E] `&` ~` B).
 Proof.
 move=> ps_inftyB.
 have -> : ~` (EFin @` A) = EFin @` (~` A) `|` [set -oo; +oo]%E.
