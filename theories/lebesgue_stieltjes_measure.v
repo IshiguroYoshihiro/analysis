@@ -7,6 +7,7 @@ Require Import mathcomp_extra functions normedtype.
 From HB Require Import structures.
 Require Import sequences esum measure fsbigop cardinality set_interval.
 Require Import realfun.
+Require Import lebesgue_integral.
 
 (******************************************************************************)
 (*                            Lebesgue Measure                                *)
@@ -528,6 +529,8 @@ Definition abs_continuous (T : measurableType) (R : realType)
     (m1 m2 : {measure set T -> \bar R}) :=
   forall A : set T, measurable A -> m2 A = 0%:E -> m1 A = 0%:E.
 
+ Notation "m1 `<< m2" := (abs_continuous m1 m2) (at level 51). 
+
 Lemma ndidR (R : realType) : {homo (@idfun R) : x y / x <= y}.
 Proof.
 move=> x y /=.
@@ -556,6 +559,38 @@ Definition lebesgue_measure (R : realType) := lebesgue_stieltjes_measure (@idfun
 Definition abs_continuous_function_over_R (R : realType) (f : R -> R)
     (ndf : {homo f : x y / x <= y}) (rcf : right_continuous f)
   := abs_continuous (lebesgue_stieltjes_measure f ndf rcf) (lebesgue_measure R).
+
+(* maybe rewrite I : R * R to I : interval R *)
+Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R)
+    := forall e : {posnum R}, exists d : {posnum R}, forall J : nat -> R * R, forall n : nat, 
+       \sum_(k < n)((J k).2 - (J k).1) < d%:num -> trivIset setT (fun n => `[(J n).1, (J n).2]%classic) ->
+         (forall n, I.1 <= (J n).1 /\ (J n).2 <= I.2 ) ->
+           \sum_(k < n) `| f (J k).2 - f (J k).1 | < e%:num.
+
+(* 
+Theorem Hahn_decomposition : 
+*)
+
+Theorem Radon_Nikodym (R : realType) (X : measurableType) (mu nu: {measure set X -> \bar R}) :
+     nu `<< mu -> exists (f : X -> \bar R), (forall x, (f x >= 0)%E) /\ 
+        integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
+Proof.
+Abort.
+
+Definition summable (T : choiceType) (R : realType) (D : set T)
+  (f : T -> \bar R) := (\esum_(x in D) `| f x | < +oo)%E.
+
+Theorem FTC2 (R : realType) (f : R -> R) (a b : R)
+     (f_abscont : abs_continuous_function f (a, b) ) 
+       : exists f' : R -> \bar R, summable `[a, b] f' /\
+         {ae (lebesgue_measure R), forall x, x \in `[a, b] ->f' x \is a fin_num}
+           /\ forall x, x \in `[a, b] -> 
+             (f x - f a)%:E = (integral (lebesgue_measure R) `[a ,x] f').
+Proof.
+Abort.
+
+
+
 
 xxx
 
