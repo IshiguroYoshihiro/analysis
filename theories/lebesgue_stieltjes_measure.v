@@ -669,27 +669,57 @@ Proof.
  * Define the measurable subsets of X to be those subsets that belong to the σ-algebra measurable on which the measures mu and nu are defined.
  * 
  *)
+move=> mudomnu.
 pose G := [set g : X -> \bar R |
-            (forall x, (g x >= 0)%E /\
-               integrable mu setT g /\ 
-                 forall E, E \in measurable -> \int[mu]_(x \in E) g x <= nu E)%E ].
-have neG : nonempty G.
-  (*exists (fun x : X => (0 : R)).*)
+            [/\ (forall x, (g x >= 0)%E),
+               integrable mu setT g & 
+                 forall E, E \in measurable -> (\int[mu]_(x in E) g x <= nu E)%E] ].
+(* maybe define G : set R insted of set \bar R 
+pose G' := [set g : X -> \bar R |
+            [/\ (forall x, (g x >= 0)%E),
+               integrable mu setT g & 
+                 forall E, E \in measurable -> fine (\int[mu]_(x in E) g x) <= fine (nu E) ] ].
+*) 
+have neG : G !=set0.
+  exists (cst 0%E).
+  red.
+  rewrite /=.
+  rewrite /G /=.
+  split => //.
+    admit.
+  move=> E _.
+  by rewrite integral0.
+pose IG := [set (\int[mu]_x g x) | g in G]%E.
+have neIG : IG !=set0.
+  case: neG.  
+  move=> g.
+  case=> g0 g1 g2.
+  exists (\int[mu]_x g x)%E.
+  by exists g.
+have IGbound : exists (M : R), forall x, x \in IG -> (x <= M%:E)%E.
+  exists (fine (nu setT)).
+  move=> x.
+  rewrite inE.
+  case.
+  move=> g.
+  move=> [g0 g1 g2].
+  move=> <- {x}.
+  rewrite fineK.
+    apply: le_trans (g2 setT _) => //.
+    by rewrite inE.    
+  by rewrite ge0_fin_numE.
+pose M := ereal_sup IG.
+
+have H1: exists f : X -> \bar R, (\int[mu]_x f x = M)%E /\ forall E, E \in measurable -> (\int[mu]_(x in E) f x)%E = nu E.
   admit.
-have IG : set { x : R | exists g, g \in G /\ integral mu setT g = x} 
-(* have neIG : nonempty IG. *)
-(* forall g \in G, integral mu setT g <= nu X *)
-(* have : exists M : R, M = sup IG. *)
-(* M = sup IG *)
-have : exists M : R, forall M' : R, (forall g : G, (integral mu setT g <= M')%E ) -> M <= M'.
-
-
-
-(* have : exists (f : X -> \bar R), forall E \in meaurable, nu E = integral mu E f *)
- (*  have : exists (g : int -> X -> \bar R), forall m, integral mu setT (g m) >= M - 1 / m. *)
- (* f : int -> X -> \bar R *)
-
-
+have : exists (g : (X -> \bar R)^nat ), forall m, g m \in G /\ (\int[mu]_x (g m x) >= M - m.+1%:R^-1%:E )%E.
+  (* ub_ereal_sup_adherent *)
+(* f : int -> X -> \bar R *)
+ (* max_g2' : (T -> R)^nat :=
+  fun k t => (\big[maxr/0]_(i < k) (g2' i k) t)%R. *)
+(* Em : set^num := [set x | x in setT & ] *)
+admit.
+Admitted.
 
 Theorem Radon_Nikodym (R : realType) (X : measurableType) (mu nu: {signed measure set X -> \bar R}) (musigmafinite : sigma_finite R mu) (nusigmafinite : sigma_finite R nu):
      nu `<< mu -> exists (f : X -> \bar R),
