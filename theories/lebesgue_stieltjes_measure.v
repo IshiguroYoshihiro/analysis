@@ -661,9 +661,14 @@ Theorem Radon_Nikodym (R : realType) (X : measurableType) (mu nu: {signed measur
 =======
 
 Theorem Radon_Nikodym_finite_nonnegative (R : realType) (X : measurableType) (mu nu: {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E):
+<<<<<<< HEAD
      nu `<< mu -> exists (f : X -> \bar R), (forall x, (f x >= 0)%E) /\ 
 >>>>>>> 16584c9 (wip)
         integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
+=======
+     nu `<< mu -> exists (f : X -> \bar R), [/\(forall x, (f x >= 0)%E),
+        integrable mu setT f & forall E, E \in measurable -> nu E = integral mu E f].
+>>>>>>> c3158aa (wip)
 Proof.
 (*
  * Define the measurable subsets of X to be those subsets that belong to the σ-algebra measurable on which the measures mu and nu are defined.
@@ -714,11 +719,50 @@ have H1: exists f : X -> \bar R, (\int[mu]_x f x = M)%E /\ forall E, E \in measu
   admit.
 have : exists (g : (X -> \bar R)^nat ), forall m, g m \in G /\ (\int[mu]_x (g m x) >= M - m.+1%:R^-1%:E )%E.
   (* ub_ereal_sup_adherent *)
-(* f : int -> X -> \bar R *)
+admit.
+move=> [g H2].
+pose F (m : nat) (x : X) := \big[maxe/0%:E]_(j < m) (g j x).
+(* have : forall m x, F m x >= 0 
+ *   forall x, 0 <= g m x, g m in G
+ *)
  (* max_g2' : (T -> R)^nat :=
   fun k t => (\big[maxr/0]_(i < k) (g2' i k) t)%R. *)
-(* Em : set^num := [set x | x in setT & ] *)
-admit.
+pose E m j := [set x | F m x = g j x /\ (forall k, (k < j)%nat -> (F m x > g k x)%E ) ].
+have measurable_E m j : E m j \in measurable.
+  admit.
+have partition_E m : partition setT (E m) setT.
+  admit.
+(* Local Open Scope ereal_scope. *)
+have Fleqnu m E0 (mE : E0 \in measurable) : (\int[mu]_(x in E0) F m x <= nu E0)%E.  
+  have H'1 : (\int[mu]_(x in E0) F m x)%E = \big[adde/0%:E]_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) F m x)%E. 
+    admit.
+  have H'2 : (\sum_(j < m) \int[mu]_(x in (E0 `&` (E m j))) F m x)%E =
+           (\sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x))%E.
+    admit.
+  have H'3 : (\sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x) <=
+            \sum_(j < m) (nu (E0 `&` (E m j))))%E.
+    admit.
+  have H'4: (\sum_(j < m) (nu (E0 `&` (E m j))))%E = nu E0.
+    admit.
+  rewrite H'1 H'2.
+  rewrite -H'4.
+  exact H'3.
+have FminG m : F m \in G.
+  admit.
+have Fgeqg m : forall x, (F m x >= g m x)%E.
+  admit.
+have nd_F m x : nondecreasing_seq (F^~ x). 
+  admit.
+pose limF := fun (x : X) => lim (F^~ x).
+exists limF.
+have limFleqnu : forall E, (\int[mu]_(x in E) limF x <= nu E)%E.
+  admit.
+have limFXeqM : (\int[mu]_x limF x = M)%E.
+  admit.
+split.
+    admit.
+  admit.
+(* Reductio ad absurdum *)
 Admitted.
 
 Theorem Radon_Nikodym (R : realType) (X : measurableType) (mu nu: {signed measure set X -> \bar R}) (musigmafinite : sigma_finite R mu) (nusigmafinite : sigma_finite R nu):
