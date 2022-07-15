@@ -551,6 +551,7 @@ Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R)
 (* 
 Theorem Hahn_decomposition : 
 *)
+<<<<<<< HEAD
 (* Definition  : measureable -> R :=  *)
 
 
@@ -654,6 +655,41 @@ split.
 have : 
 
 Admitted.
+
+Theorem Radon_Nikodym (R : realType) (X : measurableType) (mu nu: {signed measure set X -> \bar R}) (musigmafinite : sigma_finite R mu) (nusigmafinite : sigma_finite R nu):
+     nu `<< mu -> exists (f : X -> \bar R),
+=======
+
+Theorem Radon_Nikodym_finite_nonnegative (R : realType) (X : measurableType) (mu nu: {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E):
+     nu `<< mu -> exists (f : X -> \bar R), (forall x, (f x >= 0)%E) /\ 
+>>>>>>> 16584c9 (wip)
+        integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
+Proof.
+(*
+ * Define the measurable subsets of X to be those subsets that belong to the σ-algebra measurable on which the measures mu and nu are defined.
+ * 
+ *)
+pose G := [set g : X -> \bar R |
+            (forall x, (g x >= 0)%E /\
+               integrable mu setT g /\ 
+                 forall E, E \in measurable -> \int[mu]_(x \in E) g x <= nu E)%E ].
+have neG : nonempty G.
+  (*exists (fun x : X => (0 : R)).*)
+  admit.
+have IG : set { x : R | exists g, g \in G /\ integral mu setT g = x} 
+(* have neIG : nonempty IG. *)
+(* forall g \in G, integral mu setT g <= nu X *)
+(* have : exists M : R, M = sup IG. *)
+(* M = sup IG *)
+have : exists M : R, forall M' : R, (forall g : G, (integral mu setT g <= M')%E ) -> M <= M'.
+
+
+
+(* have : exists (f : X -> \bar R), forall E \in meaurable, nu E = integral mu E f *)
+ (*  have : exists (g : int -> X -> \bar R), forall m, integral mu setT (g m) >= M - 1 / m. *)
+ (* f : int -> X -> \bar R *)
+
+
 
 Theorem Radon_Nikodym (R : realType) (X : measurableType) (mu nu: {signed measure set X -> \bar R}) (musigmafinite : sigma_finite R mu) (nusigmafinite : sigma_finite R nu):
      nu `<< mu -> exists (f : X -> \bar R),
