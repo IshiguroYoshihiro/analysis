@@ -7,6 +7,7 @@ Require Import mathcomp_extra functions normedtype.
 From HB Require Import structures.
 Require Import sequences esum measure fsbigop cardinality set_interval.
 Require Import realfun.
+Require Import lebesgue_integral.
 
 (******************************************************************************)
 (*                       Lebesgue Stieltjes Measure                           *)
@@ -508,7 +509,38 @@ Admitted.
 
 End lebesgue_stieltjes_measure_itv.
 
+Definition abs_continuous d (T : measurableType d) (R : realType)
+    (m1 m2 : set T -> \bar R) :=
+  forall A : set T, measurable A -> (m2 A = 0)%E -> (m1 A = 0)%E.
+
  Notation "m1 `<< m2" := (abs_continuous m1 m2) (at level 51). 
+
+HB.mixin Record isAdditiveSignedMeasure d
+    (R : numFieldType) (T : semiRingOfSetsType d) (mu : set T -> \bar R) := {
+  smeasure_semi_additive : semi_additive mu }.
+
+HB.structure Definition AdditiveSignedMeasure d
+    (R : numFieldType) (T : semiRingOfSetsType d) := {
+  mu & isAdditiveSignedMeasure d R T mu }.
+
+Notation additive_smeasure := AdditiveSignedMeasure.type.
+Notation "{ 'additive_smeasure' 'set' T '->' '\bar' R }" :=
+  (additive_smeasure R T) (at level 36, T, R at next level,
+    format "{ 'additive_smeasure'  'set'  T  '->'  '\bar'  R }") : ring_scope.
+
+HB.mixin Record isSignedMeasure0 d
+    (R : numFieldType) (T : semiRingOfSetsType d)
+    mu of isAdditiveSignedMeasure d R T mu := {
+  smeasure_semi_sigma_additive : semi_sigma_additive mu }.
+
+HB.structure Definition SignedMeasure d
+    (R : numFieldType) (T : semiRingOfSetsType d) :=
+  {mu of isSignedMeasure0 d R T mu & AdditiveSignedMeasure d mu}.
+
+Notation smeasure := SignedMeasure.type.
+Notation "{ 'smeasure' 'set' T '->' '\bar' R }" := (smeasure R T)
+  (at level 36, T, R at next level,
+    format "{ 'smeasure'  'set'  T  '->'  '\bar'  R }") : ring_scope.
 
 Lemma ndidR (R : realType) : {homo (@idfun R) : x y / x <= y}.
 Proof.
@@ -545,13 +577,22 @@ Definition abs_continuous_function_over_R d (R : realType) (f : R -> R)
 Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R)
     := forall e : {posnum R}, exists d : {posnum R}, forall J : nat -> R * R, forall n : nat, 
        \sum_(k < n)((J k).2 - (J k).1) < d%:num -> trivIset setT (fun n => `[(J n).1, (J n).2]%classic) ->
-         (forall n, I.1 <= (J n).1 /\ (J n).2 <= I.2 ) ->
+       (forall n, I.1 <= (J n).1 /\ (J n).2 <= I.2 ) ->
            \sum_(k < n) `| f (J k).2 - f (J k).1 | < e%:num.
 
-(* 
-Theorem Hahn_decomposition : 
-*)
-<<<<<<< HEAD
+Definition positive_set d (R : realType) (X : measurableType d) (nu : {smeasure set X -> \bar R}) (P : set X):= 
+    (P \in measurable) /\
+    forall E, (E \in measurable) -> (E `<=` P) -> (nu E >= 0)%E.
+Definition negative_set d (R : realType) (X : measurableType d) (nu : {smeasure set X -> \bar R}) (N : set X):= 
+    (N \in measurable) /\
+    forall E, (E \in measurable) -> (E `<=` N) -> (nu E <= 0)%E.
+
+
+Theorem Hahn_decomposition d (R : realType) (X : measurableType d) (nu : {smeasure set X -> \bar R}) :
+     exists P N, [/\ (positive_set nu P), (negative_set nu N), (P `|` N = setT) & (P `&` N = set0)].
+Proof.
+Admitted.
+
 (* Definition  : measureable -> R :=  *)
 
 
@@ -652,127 +693,32 @@ split.
     admit.
   admit.
 (* Reductio ad absurdum *)
-have : 
-
+move=> E0 mE0.
+apply /eqP.
+rewrite eq_le.
+rewrite limFleqnu.
+rewrite andbT.
+rewrite leNgt.
+apply /negP.
+move=> absurd.
+have : exists eps : {posnum R}, (\int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0)%E.
+  admit.
+move=> [eps].
+have sigma : {smeasure set X -> \bar R}.
+  admit.
+have sigmaE : forall F, sigma F = (nu F - \int[mu]_(x in F) (limF x + eps%:num%:E))%E.
+  admit.
+move : (Hahn_decomposition sigma). 
+move=> [P [N]].
+case.
+move=> posP negN PNX PN0.
 Admitted.
 
-Theorem Radon_Nikodym (R : realType) (X : measurableType) (mu nu: {signed measure set X -> \bar R}) (musigmafinite : sigma_finite R mu) (nusigmafinite : sigma_finite R nu):
-     nu `<< mu -> exists (f : X -> \bar R),
-=======
-
-Theorem Radon_Nikodym_finite_nonnegative (R : realType) (X : measurableType) (mu nu: {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E):
-<<<<<<< HEAD
-     nu `<< mu -> exists (f : X -> \bar R), (forall x, (f x >= 0)%E) /\ 
->>>>>>> 16584c9 (wip)
-        integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
-=======
-     nu `<< mu -> exists (f : X -> \bar R), [/\(forall x, (f x >= 0)%E),
-        integrable mu setT f & forall E, E \in measurable -> nu E = integral mu E f].
->>>>>>> c3158aa (wip)
-Proof.
-(*
- * Define the measurable subsets of X to be those subsets that belong to the σ-algebra measurable on which the measures mu and nu are defined.
- * 
- *)
-move=> mudomnu.
-pose G := [set g : X -> \bar R |
-            [/\ (forall x, (g x >= 0)%E),
-               integrable mu setT g & 
-                 forall E, E \in measurable -> (\int[mu]_(x in E) g x <= nu E)%E] ].
-(* maybe define G : set R insted of set \bar R 
-pose G' := [set g : X -> \bar R |
-            [/\ (forall x, (g x >= 0)%E),
-               integrable mu setT g & 
-                 forall E, E \in measurable -> fine (\int[mu]_(x in E) g x) <= fine (nu E) ] ].
-*) 
-have neG : G !=set0.
-  exists (cst 0%E).
-  red.
-  rewrite /=.
-  rewrite /G /=.
-  split => //.
-    admit.
-  move=> E _.
-  by rewrite integral0.
-pose IG := [set (\int[mu]_x g x) | g in G]%E.
-have neIG : IG !=set0.
-  case: neG.  
-  move=> g.
-  case=> g0 g1 g2.
-  exists (\int[mu]_x g x)%E.
-  by exists g.
-have IGbound : exists (M : R), forall x, x \in IG -> (x <= M%:E)%E.
-  exists (fine (nu setT)).
-  move=> x.
-  rewrite inE.
-  case.
-  move=> g.
-  move=> [g0 g1 g2].
-  move=> <- {x}.
-  rewrite fineK.
-    apply: le_trans (g2 setT _) => //.
-    by rewrite inE.    
-  by rewrite ge0_fin_numE.
-pose M := ereal_sup IG.
-
-have H1: exists f : X -> \bar R, (\int[mu]_x f x = M)%E /\ forall E, E \in measurable -> (\int[mu]_(x in E) f x)%E = nu E.
-  admit.
-have : exists (g : (X -> \bar R)^nat ), forall m, g m \in G /\ (\int[mu]_x (g m x) >= M - m.+1%:R^-1%:E )%E.
-  (* ub_ereal_sup_adherent *)
-admit.
-move=> [g H2].
-pose F (m : nat) (x : X) := \big[maxe/0%:E]_(j < m) (g j x).
-(* have : forall m x, F m x >= 0 
- *   forall x, 0 <= g m x, g m in G
- *)
- (* max_g2' : (T -> R)^nat :=
-  fun k t => (\big[maxr/0]_(i < k) (g2' i k) t)%R. *)
-pose E m j := [set x | F m x = g j x /\ (forall k, (k < j)%nat -> (F m x > g k x)%E ) ].
-have measurable_E m j : E m j \in measurable.
-  admit.
-have partition_E m : partition setT (E m) setT.
-  admit.
-(* Local Open Scope ereal_scope. *)
-have Fleqnu m E0 (mE : E0 \in measurable) : (\int[mu]_(x in E0) F m x <= nu E0)%E.  
-  have H'1 : (\int[mu]_(x in E0) F m x)%E = \big[adde/0%:E]_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) F m x)%E. 
-    admit.
-  have H'2 : (\sum_(j < m) \int[mu]_(x in (E0 `&` (E m j))) F m x)%E =
-           (\sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x))%E.
-    admit.
-  have H'3 : (\sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x) <=
-            \sum_(j < m) (nu (E0 `&` (E m j))))%E.
-    admit.
-  have H'4: (\sum_(j < m) (nu (E0 `&` (E m j))))%E = nu E0.
-    admit.
-  rewrite H'1 H'2.
-  rewrite -H'4.
-  exact H'3.
-have FminG m : F m \in G.
-  admit.
-have Fgeqg m : forall x, (F m x >= g m x)%E.
-  admit.
-have nd_F m x : nondecreasing_seq (F^~ x). 
-  admit.
-pose limF := fun (x : X) => lim (F^~ x).
-exists limF.
-have limFleqnu : forall E, (\int[mu]_(x in E) limF x <= nu E)%E.
-  admit.
-have limFXeqM : (\int[mu]_x limF x = M)%E.
-  admit.
-split.
-    admit.
-  admit.
-(* Reductio ad absurdum *)
-Admitted.
-
-Theorem Radon_Nikodym (R : realType) (X : measurableType) (mu nu: {signed measure set X -> \bar R}) (musigmafinite : sigma_finite R mu) (nusigmafinite : sigma_finite R nu):
+Theorem Radon_Nikodym d (R : realType) (X : measurableType d) (mu: {measure set X -> \bar R}) (nu: {smeasure set X -> \bar R}) (musigmafinite : sigma_finite setT mu):
      nu `<< mu -> exists (f : X -> \bar R),
         integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
 Proof.
 Abort.
-
-Definition summable (T : choiceType) (R : realType) (D : set T)
-  (f : T -> \bar R) := (\esum_(x in D) `| f x | < +oo)%E.
 
 Theorem FTC2 (R : realType) (f : R -> R) (a b : R)
      (f_abscont : abs_continuous_function f (a, b) ) 
