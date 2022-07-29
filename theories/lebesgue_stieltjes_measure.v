@@ -575,28 +575,29 @@ Definition abs_continuous_function_over_R d (R : realType) (f : R -> R)
 
 (* maybe rewrite I : R * R to I : interval R *)
 Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R)
-    := forall e : {posnum R}, exists d : {posnum R}, 
-         forall J : nat -> R * R, forall n : nat, 
+    := forall e : {posnum R}, exists d : {posnum R},
+         forall J : nat -> R * R, forall n : nat,
            \sum_(k < n)((J k).2 - (J k).1) < d%:num ->
              trivIset setT (fun n => `[(J n).1, (J n).2]%classic) ->
                (forall n, I.1 <= (J n).1 /\ (J n).2 <= I.2 ) ->
                  \sum_(k < n) `| f (J k).2 - f (J k).1 | < e%:num.
 
-Definition positive_set d (R : realType) (X : measurableType d) 
-             (nu : {smeasure set X -> \bar R}) (P : set X):= 
+Definition positive_set d (R : realType) (X : measurableType d)
+             (nu : {smeasure set X -> \bar R}) (P : set X):=
                (P \in measurable) /\
                  forall E, (E \in measurable) -> (E `<=` P) -> (nu E >= 0)%E.
-Definition negative_set d (R : realType) (X : measurableType d) 
-             (nu : {smeasure set X -> \bar R}) (N : set X):= 
+Definition negative_set d (R : realType) (X : measurableType d)
+             (nu : {smeasure set X -> \bar R}) (N : set X):=
                (N \in measurable) /\
                  forall E, (E \in measurable) -> (E `<=` N) -> (nu E <= 0)%E.
 (*
 ------------------------------------------------------------------------------80
 *)
+Lemma subset_refl (T : Type) (A : set T) : A `<=` A. Proof. by []. Qed.
 
-Proposition positive_set_0 d (R : realType) (X : measurableType d) 
+Proposition positive_set_0 d (R : realType) (X : measurableType d)
           (nu : {smeasure set X -> \bar R}) :
-            (forall N, negative_set nu N -> (nu N = 0)%E) -> 
+            (forall N, negative_set nu N -> (nu N = 0)%E) ->
               (forall S, (S \in measurable) -> (nu S >= 0)%E).
 Proof.
 (* Reductio ad absurdum *)
@@ -605,12 +606,37 @@ rewrite leNgt.
 apply /negP.
 move=> absurd.
 
-have : ~ negative_set nu S.
-  rewrite /negative_set.
-  case.
-  move=> _.
-  move=> /(_ _ Sm (fun x => id)).
-have : exists (F : nat -> measurable) (k : nat -> nat),
+have not_negative_set_S: ~ negative_set nu S.
+  move: absurd.
+  move=> /[swap].
+  move /H0.
+  move=> ->.
+  by rewrite ltxx.
+
+pose P S F x := F `<=` S /\ measurable F /\ (nu F >= (x%:R ^-1)%:E)%E.
+pose Q S m y := P (S `\` (\bigcup_(i in `I_m) (*(Fk i).1*) set0 )) y.1 y.2 /\
+      (forall (l : nat), (nu y.1 >= (l%:R ^-1)%:E)%E ->
+        (l >= y.2)%nat).
+have : { Fk : nat -> (set X) * nat &
+  forall m:nat,Q S m (Fk m) }.
+  apply choice.
+  rewrite /Q /P /=.
+  elim => /=.
+    admit.
+(*   [arg min_(i < i0 | P) M] == a value i : T minimizing M : R, subject to   *)
+(*                      the condition P (i may appear in P and M), and        *)
+(*                      provided P holds for i0.                              *)
+(*
+dependent_choice:
+  forall [X : Set] [R : X -> X -> Prop],
+  (forall x : X, {y : X | R x y}) ->
+  forall x0 : X, {f : nat -> X | f 0%N = x0 /\ (forall n : nat, R (f n) (f n.+1))}
+choice :
+forall [X Y : Type] [P : X -> Y -> Prop],
+(forall x : X, exists y : Y, P x y) -> {f : X -> Y & forall x : X, P x (f x)}
+*)
+  admit.
+have : trivIset F.
 Admitted.
 
 
