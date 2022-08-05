@@ -513,7 +513,11 @@ Definition abs_continuous d (T : measurableType d) (R : realType)
     (m1 m2 : set T -> \bar R) :=
   forall A : set T, measurable A -> (m2 A = 0)%E -> (m1 A = 0)%E.
 
- Notation "m1 `<< m2" := (abs_continuous m1 m2) (at level 51). 
+ Notation "m1 `<< m2" := (abs_continuous m1 m2) (at level 51).
+
+HB.mixin Record isFiniteSignedMeasure d (R : numFieldType)
+  (T : semiRingOfSetsType d) (mu : set T -> \bar R) := {
+    isfinite : forall U, mu U \is a fin_num}.
 
 HB.mixin Record isAdditiveSignedMeasure d
     (R : numFieldType) (T : semiRingOfSetsType d) (mu : set T -> \bar R) := {
@@ -521,7 +525,7 @@ HB.mixin Record isAdditiveSignedMeasure d
 
 HB.structure Definition AdditiveSignedMeasure d
     (R : numFieldType) (T : semiRingOfSetsType d) := {
-  mu & isAdditiveSignedMeasure d R T mu }.
+  mu of isAdditiveSignedMeasure d R T mu & isFiniteSignedMeasure d R T mu}.
 
 Notation additive_smeasure := AdditiveSignedMeasure.type.
 Notation "{ 'additive_smeasure' 'set' T '->' '\bar' R }" :=
@@ -530,7 +534,7 @@ Notation "{ 'additive_smeasure' 'set' T '->' '\bar' R }" :=
 
 HB.mixin Record isSignedMeasure0 d
     (R : numFieldType) (T : semiRingOfSetsType d)
-    mu of isAdditiveSignedMeasure d R T mu := {
+    (mu : set T -> \bar R) := {
   smeasure_semi_sigma_additive : semi_sigma_additive mu }.
 
 HB.structure Definition SignedMeasure d
@@ -593,7 +597,19 @@ Definition negative_set d (R : realType) (X : measurableType d)
 (*
 ------------------------------------------------------------------------------80
 *)
-Lemma subset_refl (T : Type) (A : set T) : A `<=` A. Proof. by []. Qed.
+
+Lemma floor_ge_int (R : realType) (x : R) (z : int) : (z%:~R <= x)%R = (z <= floor x)%R.
+Proof. by rewrite Rfloor_ge_int RfloorE ler_int. Qed.
+Lemma ceil_le_int (R : realType) (x : R) (z : int) : (x <= z%:~R)%R = (ceil x <= z)%R.
+Proof.
+rewrite /ceil.
+rewrite ler_oppl.
+rewrite -floor_ge_int//.
+rewrite -ler_oppr.
+rewrite mulrNz.
+rewrite opprK.
+done.
+Qed.
 
 Proposition positive_set_0 d (R : realType) (X : measurableType d)
           (nu : {smeasure set X -> \bar R}) :
@@ -613,14 +629,89 @@ have not_negative_set_S: ~ negative_set nu S.
   move=> ->.
   by rewrite ltxx.
 
-pose P S F x := F `<=` S /\ measurable F /\ (nu F >= (x%:R ^-1)%:E)%E.
-pose Q S m y := P (S `\` (\bigcup_(i in `I_m) (*(Fk i).1*) set0 )) y.1 y.2 /\
-      (forall (l : nat), (nu y.1 >= (l%:R ^-1)%:E)%E ->
-        (l >= y.2)%nat).
+have : exists F1 k1,  F1 `<=` S /\ measurable F1 /\ (nu F1 >= (k1%:R ^-1)%:E)%E /\
+      (forall (l : nat), (nu F1 >= (l%:R ^-1)%:E)%E ->
+        (l >= k1)%nat).
+  move:not_negative_set_S.
+  rewrite /negative_set.
+  move=> /not_andP.
+  case.
+    done.
+  move /existsNP.
+  case.
+  move=> F.
+  move /not_implyP.
+  case.
+  move=> mF.
+  move/not_implyP.
+  case.
+  move=> FS.
+  move/negP.
+  rewrite -ltNge.
+  move=> F0.
+  exists F.
+  exists `|(ceil (fine(nu F)) ^-1)|%N.
+  split => //.
+  split.
+    by rewrite inE in mF.
+  split.
+    rewrite [leRHS](_ : nu F = (fine (nu F))%:E); last first.
+      rewrite fineK//.
+      by apply isfinite.
+    rewrite lee_fin.
+    rewrite -[leRHS](invrK (fine (nu F))).
+    rewrite ler_pinv; last 2 first.
+        admit.
+      admit.
+    rewrite natr_absz.
+    rewrite ger0_norm; last first.
+      rewrite ceil_ge0 //.
+      rewrite invr_ge0.
+      rewrite le0R //.
+      by rewrite ltW.
+    exact : ceil_ge.
+  move=> l lF.
+  rewrite -(@ler_nat R).
+  rewrite natr_absz.
+  rewrite ger0_norm; last first.
+    admit.
+  rewrite -(absz_nat l).
+  rewrite natr_absz.
+  rewrite ler_int.
+  rewrite -ceil_le_int.
+  rewrite -natr_absz.
+  
+
+  rewrite /ceil.
+  rewrite floor_natz.
+  apply le_ceil.
+
+  pose k := arg_min _ _ ordinal n _ _.
+  pose k := [arg min_(k < 0 | ((k%:R^-1)%:E <= nu F)%E) k]%O.
+
+pose P S F k := F `<=` S /\ measurable F /\ (nu F >= (k%:R ^-1)%:E)%E.
+pose Q S (m:nat) Fk := P S Fk.1 Fk.2 /\
+      (forall (l : nat), (nu Fk.1 >= (l%:R ^-1)%:E)%E ->
+        (l >= Fk.2)%nat).
+
 have : { Fk : nat -> (set X) * nat &
   forall m:nat,Q S m (Fk m) }.
   apply choice.
-  rewrite /Q /P /=.
+
+pose Q' UFk Fk' := P S UFk.1 UFk.2 /\ P S Fk'.1 Fk'.2 /\
+       (Fk'.1 `<=` S `\` UFk.1 ) /\ (UFk.2 <= Fk'.2)%nat.
+
+Set Printing Universes.
+Check nat_ind.
+Check prod.
+Check set.
+
+have : { Fk : nat ->  (((set X) * nat)%type : Set ) |
+  Fk 0%N = (set0, 1%nat) /\ forall n : nat, Q' (Fk n) (Fk n.+1) }.
+  apply dependent_choice.
+
+
+  rewrite /Q. /P /=.
   elim => /=.
     admit.
 (*   [arg min_(i < i0 | P) M] == a value i : T minimizing M : R, subject to   *)
