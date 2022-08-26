@@ -652,9 +652,21 @@ Hint Resolve s_measure0 : core.
 
 Hint Resolve smeasure_semi_additive : core.
 
+Lemma s_semi_additive2E d (R : realType) (X : measurableType d)
+   (mu : {smeasure set X -> \bar R}) : semi_additive2 mu = additive2 mu.
+Proof.
+rewrite propeqE; split=> [amu A B ? ? ?|amu A B ? ? _ ?]; last by rewrite amu.
+by rewrite amu //; exact: measurableU.
+Qed.
+
 Lemma s_measure_semi_additive2 d (R : realType) (X : measurableType d)
    (mu : {smeasure set X -> \bar R}) : semi_additive2 mu.
 Proof. apply: s_semi_additiveW => //. Qed.
+#[global] Hint Resolve s_measure_semi_additive2 : core.
+
+Lemma s_measureU d (R : realType) (X : measurableType d)
+   (mu : {smeasure set X -> \bar R}) : additive2 mu.
+Proof. by rewrite -s_semi_additive2E. Qed.
 
 Lemma s_measureDI d (R : realType) (X : measurableType d)
    (mu : {smeasure set X -> \bar R}) (A B : set X) : measurable A -> measurable B ->
@@ -716,10 +728,10 @@ Proof.
 move=> H0 S Sm.
 rewrite leNgt.
 apply /negP.
-move=> absurd.
+move=> abs.
 
 have not_negative_set_S: ~ negative_set nu S.
-  move: absurd.
+  move: abs.
   move=> /[swap].
   move /H0.
   move=> ->.
@@ -924,7 +936,7 @@ have : exists F1 k1,  F1 `<=` S /\ measurable F1 /\ (nu F1 >= (k1%:R ^-1)%:E)%E
   admit.
 
 move=> [F1 [k1]].
-move=> [F1S [mF1 [k1F1 minimum_k1]]].
+move=> [F1S [mF1 [k1F1 [k1n0 minimum_k1]]]].
 have not_negative_set_SF1: ~ negative_set nu (S `\` F1).
   apply: (contra_not _ _ (H0 (S `\` F1))).
   apply/eqP.
@@ -933,7 +945,7 @@ have not_negative_set_SF1: ~ negative_set nu (S `\` F1).
     by rewrite inE in Sm.
   rewrite setIidr//.
   rewrite sube_lt0.
-    rewrite (lt_le_trans absurd)//.
+    rewrite (lt_le_trans abs)//.
     rewrite (le_trans _ k1F1)//.
   apply isfinite.
   exact:mF1.
@@ -941,91 +953,90 @@ have F10 : (0 < nu F1)%E.
   rewrite (lt_le_trans _ k1F1)//.
   admit.
 
-pose P (FkU1 FkU2: {A : set X | measurable A /\ (nu A > 0 )%E } *
-        nat * {A : set X | measurable A /\ A `<=` S}) :=
-       proj1_sig FkU2.1.1 `<=` S `\` (proj1_sig FkU1.2)
-        /\ ((nu (proj1_sig FkU2.1.1)) >= (FkU2.1.2%:R ^-1)%:E)%E
-          /\ (forall (l : nat), (nu (proj1_sig FkU2.1.1) >= (l%:R ^-1)%:E)%E
-             -> (l >= FkU2.1.2)%nat) /\ (FkU1.1.2 < FkU2.1.2)%nat
-             /\ (proj1_sig FkU2.2) = (proj1_sig FkU1.2) `|` proj1_sig FkU2.1.1.
-have : { FkU : nat -> {A : set X | measurable A  /\ (nu A > 0)%E  } *
-                         nat * {A : set X | measurable A /\ A `<=` S}|
+pose P (FkU1 FkU2:  {A : set X * nat * set X | measurable A.1.1 /\ A.1.1 `<=` S
+                     /\ (nu A.1.1 > 0 )%E
+                     /\ ((nu (A.1.1)) >= (A.1.2%:R ^-1)%:E)%E
+                     /\ (A.1.2 != 0)%nat
+                     /\ (forall (l : nat),
+                          (nu (A.1.1) >= (l%:R ^-1)%:E)%E
+                             -> (l >= A.1.2)%nat )
+                     /\ measurable A.2 /\ A.2 `<=` S /\ 0 < nu A.2} ):=
+       (proj1_sig FkU2).1.1
+       `<=` S `\` (proj1_sig FkU1).2
+          (*/\ ((proj1_sig FkU1).1.2 <= (proj1_sig FkU2).1.2)%nat*)
+          /\ ((proj1_sig FkU2).2) = (proj1_sig FkU1).2 `|` (proj1_sig FkU2).1.1.
+have : { FkU : nat -> {A : set X * nat * set X | measurable A.1.1
+                     /\ A.1.1 `<=` S
+                     /\ (nu A.1.1 > 0 )%E
+                     /\ ((nu (A.1.1)) >= (A.1.2%:R ^-1)%:E)%E
+                     /\ (A.1.2 != 0)%nat
+                     /\ (forall (l : nat),
+                          (nu (A.1.1) >= (l%:R ^-1)%:E)%E
+                             -> (l >= A.1.2)%nat )
+                     /\ measurable A.2 /\ A.2 `<=` S /\ 0 < nu A.2} |
            FkU 0%nat =
-             (((exist _ F1 (conj mF1 F10)), k1), (exist _ F1 (conj mF1 F1S)))
+             (((exist _ (F1, k1, F1) (conj mF1
+                                     (conj F1S
+                                     (conj F10
+                                     (conj k1F1
+                                     (conj k1n0
+                                     (conj minimum_k1
+                                     (conj mF1
+                                     (conj F1S
+                                           F10 ))))))))
+                                                 )))
                 /\ forall n, P (FkU n) (FkU n.+1) }.
   apply dependent_choice_Type.
-  move=> [[F k] U].
-
-  have : exists F' k',  F' `<=` S `\` (proj1_sig U) /\ measurable F'
-       /\ (nu F' >= (k'%:R ^-1)%:E)%E /\ (forall (l : nat),
+  move=> [[[F k] U] [mF [FS [F0 [Fk [kn0 [mink [mU [US U0]]]]]]]]].
+  have : exists F' k',  F' `<=` S `\` U
+                        /\ measurable F'
+                        /\ (nu F' >= (k'%:R ^-1)%:E)%E
+                        /\ k' != 0%N
+                        /\ (forall (l : nat),
          (nu F' >= (l%:R ^-1)%:E)%E -> (l >= k')%nat).
-    have not_negative_set_SU : ~ negative_set nu (S `\` proj1_sig U).
+    have not_negative_set_SU : ~ negative_set nu (S `\` U).
       apply: (contra_not _ _ (H0 (S `\` _))).
       apply/eqP.
       rewrite lt_eqF//.
-      rewrite s_measureD//; last 2 first.
-          by rewrite inE in Sm.
-        case:U => //=.
-        by move=> ?[].
-      rewrite setIidr// ; last first.
-        case:U =>/=.
-        by move=>?[].
+      rewrite s_measureD//; last first.
+        rewrite inE in Sm =>//.
+      rewrite setIidr//.
       rewrite sube_lt0.
-        rewrite (lt_le_trans absurd)//.
-        case:U =>//=.
-        admit.
-      admit.
-    admit.
-  move/cid=> [F'].
-  move/cid=> [k'].
-  move=> [F'SU [mF']].
-  move=> [k'F].
-  move=> Hk'.
-  have F'0 : 0 < nu F'.
-    admit.
-  have mUF' : measurable (proj1_sig U `|` F').
-    admit.
-  have UF'S : (proj1_sig U) `|` F' `<=` S.
-    admit.
-  exists ((exist _ F' (conj mF' F'0)),k',exist _ ((proj1_sig U) `|` F') (conj mUF' UF'S)).
-  rewrite /P /=.
-  split => //.
-  split => //.
-  split => //.
-  split.
-    admit.
-  done.
-
-(*
+        rewrite (lt_le_trans abs)//.
+        by rewrite ltW.
+        apply : isfinite.
+      exact mU.
     move:not_negative_set_SU.
     rewrite /negative_set.
     move=> /not_andP.
     case.
-      admit.
+      apply : absurd.
+      rewrite inE; apply : measurableD => //.
+      by rewrite inE in Sm.
     move /existsNP.
     case.
-    move=> F1.
+    move=> F2.
     move /not_implyP.
     case.
-    move=> mF1.
+    move=> mF2.
     move/not_implyP.
     case.
-    move=> F1SU.
+    move=> F2SU.
     move/negP.
     rewrite -ltNge.
-    move=> F10.
-    exists F1.
-    exists `|(ceil (fine(nu F1)) ^-1)|%N.
+    move=> F20.
+    exists F2.
+    exists `|(ceil (fine(nu F2)) ^-1)|%N.
     split => //.
     split.
-      by rewrite inE in mF1.
+      by rewrite inE in mF2.
     split.
-      rewrite [leRHS](_ : nu F1 = (fine (nu F1))%:E); last first.
+      rewrite [leRHS](_ : nu F2 = (fine (nu F2))%:E); last first.
         rewrite fineK//.
-        rewrite inE in mF1.
+        rewrite inE in mF2.
         rewrite isfinite //.
       rewrite lee_fin.
-      rewrite -[leRHS](invrK (fine (nu F1))).
+      rewrite -[leRHS](invrK (fine (nu F2))).
       rewrite ler_pinv; last 2 first.
           rewrite inE unitfE -normr_gt0 ger0_norm // andbb.
           rewrite ltr0n.
@@ -1034,19 +1045,19 @@ have : { FkU : nat -> {A : set X | measurable A  /\ (nu A > 0)%E  } *
           rewrite ceil_gt0//=.
           rewrite invr_gt0.
           rewrite lt0R//.
-          rewrite F10.
+          rewrite F20.
           rewrite andTb.
           rewrite -ge0_fin_numE ; last exact/ltW.
-          rewrite inE in mF1.
+          rewrite inE in mF2.
           by rewrite isfinite//.
         rewrite inE unitfE.
         rewrite andb_idl ; last by move/gt_eqF/negbT.
         rewrite invr_gt0.
         rewrite lt0R//.
-        rewrite F10.
+        rewrite F20.
         rewrite andTb.
         rewrite -ge0_fin_numE ; last exact/ltW.
-        rewrite inE in mF1.
+        rewrite inE in mF2.
         by rewrite isfinite.
       rewrite natr_absz.
       rewrite ger0_norm; last first.
@@ -1055,7 +1066,18 @@ have : { FkU : nat -> {A : set X | measurable A  /\ (nu A > 0)%E  } *
         rewrite le0R //.
         by rewrite ltW.
       exact : ceil_ge.
-    move=> l lF1.
+    split.
+      rewrite -lt0n.
+      rewrite absz_gt0.
+      rewrite gt_eqF//.
+      rewrite ceil_gt0//.
+      rewrite invr_gt0//.
+      apply/lt0R.
+      rewrite F20 //.
+      rewrite -ge0_fin_numE ; last exact/ltW.
+      rewrite inE in mF2.
+      by rewrite isfinite.
+    move=> l lF.
     rewrite -(@ler_nat R).
     rewrite natr_absz.
     rewrite ger0_norm; last first.
@@ -1066,10 +1088,10 @@ have : { FkU : nat -> {A : set X | measurable A  /\ (nu A > 0)%E  } *
       rewrite invr_ge0.
       apply/ltW.
       apply : lt0R.
-      rewrite F10.
+      rewrite F20.
       rewrite andTb.
       rewrite -ge0_fin_numE ; last exact/ltW.
-      rewrite inE in mF1.
+      rewrite inE in mF2.
       by rewrite isfinite.
     rewrite -(absz_nat l).
     rewrite natr_absz.
@@ -1077,71 +1099,78 @@ have : { FkU : nat -> {A : set X | measurable A  /\ (nu A > 0)%E  } *
     rewrite -ceil_le_int.
     rewrite -natr_absz.
     admit.
-  move/cid.
-  move=> [F1].
-  move=>/cid.
-  move=> [k1].
-  move=> [F1S].
-  move=> [mF1].
-  move=> [k1F1].
-  move=> H1.
-*)
-  exists (exist _ F1 mF1, k1, (exist _ ((proj1_sig U) `|` F1)
-           (measurableU _ _ (proj2_sig U) mF1))).
-  by rewrite /P/=.
+  move/cid=> [F'].
+  move/cid=> [k'].
+  move=> [F'SU [mF' [k'F' [k'n0 minimum_k']]]].
+  have F'S : F' `<=` S.
+    apply (subset_trans F'SU).
+    exact : subDsetl.
+  have F'0 : (nu F' > 0)%E.
+    apply : (lt_le_trans _ k'F').
+    rewrite lte_fin.
+    rewrite invr_gt0.
+    rewrite ltr0n.
+    by rewrite lt0n.
+  have mUF' : measurable (U `|` F').
+    exact :measurableU.
+  have UF'S : U `|` F' `<=` S.
+    by rewrite subUset.
+  have UF'0 : (nu (U `|` F') > 0)%E.
+    rewrite s_measureU //.
+      rewrite adde_gt0 //.
+    rewrite setIC.
+    apply/disjoints_subset.
+    apply (subset_trans F'SU).
+    rewrite -setTD.
+    by apply : setSD.
 
+  exists ((exist _ (F', k', U `|` F') (conj mF'
+                                      (conj F'S
+                                      (conj F'0
+                                      (conj k'F'
+                                      (conj k'n0
+                                      (conj minimum_k'
+                                      (conj mUF'
+                                      (conj UF'S
+                                            UF'0 ))))))))
+           )).
+  rewrite /P /=.
   split => //.
-  split => //.
-  split. 
-  have := (@dependent_choice_Type (set _ * nat * set _) P).
-  admit.
-
-  rewrite /ceil.
-  rewrite floor_natz.
-  apply le_ceil.
-
-  pose k := arg_min _ _ ordinal n _ _.
-  pose k := [arg min_(k < 0 | ((k%:R^-1)%:E <= nu F)%E) k]%O.
-
-pose P S F k := F `<=` S /\ measurable F /\ (nu F >= (k%:R ^-1)%:E)%E.
-pose Q S (m:nat) Fk := P S Fk.1 Fk.2 /\
-      (forall (l : nat), (nu Fk.1 >= (l%:R ^-1)%:E)%E ->
-        (l >= Fk.2)%nat).
-
-have : { Fk : nat -> (set X) * nat &
-  forall m:nat,Q S m (Fk m) }.
-  apply choice.
-
-pose Q' UFk Fk' := P S UFk.1 UFk.2 /\ P S Fk'.1 Fk'.2 /\
-       (Fk'.1 `<=` S `\` UFk.1 ) /\ (UFk.2 <= Fk'.2)%nat.
-
-Set Printing Universes.
-Check nat_ind.
-Check prod.
-Check set.
-
-have : { Fk : nat ->  (((set X) * nat)%type : Set ) |
-  Fk 0%N = (set0, 1%nat) /\ forall n : nat, Q' (Fk n) (Fk n.+1) }.
-  apply dependent_choice.
-
-
-  rewrite /Q. /P /=.
-  elim => /=.
+(*  apply mink => //=.
+  apply : (le_trans k'F').
+  rewrite leNgt.
+  apply /negP.
+  have : (k <= k')%N.*)
+case.
+move=> /= FkU.
+case.
+move=> FkU0.
+move=> Hn.
+pose F := \bigcup_n (proj1_sig (FkU n)).1.1.
+have /H0 : negative_set nu (S `\` F).
+  rewrite /negative_set.
+  split.
     admit.
-(*   [arg min_(i < i0 | P) M] == a value i : T minimizing M : R, subject to   *)
-(*                      the condition P (i may appear in P and M), and        *)
-(*                      provided P holds for i0.                              *)
-(*
-dependent_choice:
-  forall [X : Set] [R : X -> X -> Prop],
-  (forall x : X, {y : X | R x y}) ->
-  forall x0 : X, {f : nat -> X | f 0%N = x0 /\ (forall n : nat, R (f n) (f n.+1))}
-choice :
-forall [X Y : Type] [P : X -> Y -> Prop],
-(forall x : X, exists y : Y, P x y) -> {f : X -> Y & forall x : X, P x (f x)}
-*)
+  move=> G mG GSF.
+  have : forall n, (nu G < (proj1_sig (FkU n)).1.2%:R^-1%:E)%E.
+    have : forall n, (G `<=` S `\` (proj1_sig (FkU n)).2).
+      admit.
+    move=> GS n.
+    rewrite //=.
   admit.
-have : trivIset F.
+have : (nu (S `\` F) < 0).
+      rewrite s_measureD //.
+      have FS : F `<=` S.
+        admit.
+      rewrite setIidr =>//.
+      rewrite sube_lt0.
+        admit.
+      admit.
+    by rewrite inE in Sm.
+  admit.
+move=> /[swap].
+move=> ->.
+by rewrite ltxx.
 Admitted.
 
 
