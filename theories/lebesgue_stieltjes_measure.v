@@ -7,10 +7,7 @@ Require Import mathcomp_extra functions normedtype.
 From HB Require Import structures.
 Require Import sequences esum measure fsbigop cardinality set_interval.
 Require Import realfun.
-<<<<<<< abs_cont_measure
-=======
 Require Import lebesgue_integral.
->>>>>>> abs_cont_measure
 
 (******************************************************************************)
 (*                       Lebesgue Stieltjes Measure                           *)
@@ -436,15 +433,9 @@ apply: (@le_trans _ _ (\sum_(i <- X) (hlength f `](b i).1, (b i).2]%classic) +
   by rewrite !(EFinB, hlength_itv_bnd)// addeA subeK.
 rewrite -big_split/= nneseries_esum//; last first.
   by move=> k _; rewrite adde_ge0// hlength_ge0'.
-<<<<<<< abs_cont_measure
 rewrite esum_ge//; exists [set` X] => //; rewrite fsbig_finite// ?set_fsetK//=.
 rewrite lee_sum // => k _; rewrite ?AE// !hlength_itv/= ?lte_fin -?EFinD/=.
 by case: ifPn => ?; rewrite ?add0e ?lee_add2l// lee_fin ler_subl_addl natrX De.
-=======
-rewrite esum_ge//; exists X => //.
-rewrite big_seq [in X in (_ <= X)%E]big_seq; apply: lee_sum => k kX.
-by rewrite AE lee_add2l// lee_fin ler_subl_addl natrX De.
->>>>>>> abs_cont_measure
 Qed.
 
 Let gitvs := [the measurableType _ of salgebraType ocitv].
@@ -492,50 +483,28 @@ apply/seteqP; split => [_ -> k _ /=|].
 move=> y h; apply/eqP/negPn/negP => yx.
 red in h.
 simpl in h.
-<<<<<<< abs_cont_measure
 Abort.
-=======
-Admitted.
->>>>>>> abs_cont_measure
 
 Let lebesgue_stieltjes_measure_set1 (a : R) :
   m [set a] = ((f a)%:E - (lim (f @ at_left a))%:E)%E.
 Proof.
-<<<<<<< abs_cont_measure
 (*rewrite (set1Ebigcap a).*)
 Abort.
-=======
-rewrite (set1Ebigcap a).
-Admitted.
->>>>>>> abs_cont_measure
 
 Let lebesgue_stieltjes_measure_itvoo (a b : R) : a <= b ->
   m `]a, b[%classic = ((lim (f @ at_left b))%:E - (f a)%:E)%E.
 Proof.
-<<<<<<< abs_cont_measure
 Abort.
-=======
-Admitted.
->>>>>>> abs_cont_measure
 
 Let lebesgue_stieltjes_measure_itvcc (a b : R) : a <= b ->
   m `[a, b]%classic = ((f b)%:E - (lim (f @ at_left a))%:E)%E.
 Proof.
-<<<<<<< abs_cont_measure
 Abort.
-=======
-Admitted.
->>>>>>> abs_cont_measure
 
 Let lebesgue_stieltjes_measure_itvco (a b : R) : a <= b ->
   m `[a, b[%classic = ((lim (f @ at_left b))%:E - (lim (f @ at_left a))%:E)%E.
 Proof.
-<<<<<<< abs_cont_measure
 Abort.
-=======
-Admitted.
->>>>>>> abs_cont_measure
-
 
 End lebesgue_stieltjes_measure_itv.
 
@@ -641,11 +610,7 @@ Definition negative_set d (R : realType) (X : measurableType d)
 Lemma subset_nonnegative_set d (R : realType) (X : measurableType d)
              (nu : {smeasure set X -> \bar R}) (N M : set X) : (M `<=` N) ->
               (nu N < 0)%E -> (nu M > 0)%E -> (~ negative_set nu N) -> (~ negative_set nu (N `\` M)).
-<<<<<<< abs_cont_measure
 Abort.
-=======
-Admitted.
->>>>>>> abs_cont_measure
 
 Local Open Scope ereal_scope.
 
@@ -714,14 +679,6 @@ move=> mA mB; rewrite -s_measure_semi_additive2.
 - by rewrite setDE setIACA setICl setI0.
 Qed.
 
-<<<<<<< abs_cont_measure
-=======
-Lemma lte_ninfty_eq (R : realDomainType) (x : \bar R) :
-   (-oo < x) = (x \is a fin_num) || (x == +oo).
-Proof.
-Admitted.
-
->>>>>>> abs_cont_measure
 Lemma s_measureD d (R : realType) (X : measurableType d)
    (mu : {smeasure set X -> \bar R}) (A B : set X) :
   measurable A -> measurable B ->
@@ -729,22 +686,14 @@ Lemma s_measureD d (R : realType) (X : measurableType d)
 Proof.
 move=> mA mB.
 rewrite (s_measureDI mu mA mB) addeK// fin_numE 1?gt_eqF 1?lt_eqF//.
-<<<<<<< abs_cont_measure
 - rewrite ltey_eq.
   rewrite isfinite //.
   exact:measurableI.
 - rewrite ltNye_eq.
-=======
-- rewrite lte_pinfty_eq.
-  rewrite isfinite //.
-  exact:measurableI.
-- rewrite lte_ninfty_eq.
->>>>>>> abs_cont_measure
   rewrite isfinite//.
   exact:measurableI.
 Qed.
 
-<<<<<<< abs_cont_measure
 Lemma inv_cvg (R : realType) (u : R ^nat) :
   (forall n, 0 < u n)%R ->
   (fun n => (u n)^-1) --> (0 : R)%R -> u --> +oo%R.
@@ -1102,490 +1051,11 @@ Qed.
 
 Theorem Hahn_decomposition d (X : measurableType d) (R : realType) (nu : {smeasure set X -> \bar R}) :
   exists P N, [/\ positive_set nu P, negative_set nu N, P `|` N = setT & P `&` N = set0].
-=======
-Lemma floor_ge_int (R : realType) (x : R) (z : int) : (z%:~R <= x)%R = (z <= floor x)%R.
-Proof. by rewrite Rfloor_ge_int RfloorE ler_int. Qed.
-Lemma ceil_le_int (R : realType) (x : R) (z : int) : (x <= z%:~R)%R = (ceil x <= z)%R.
-Proof.
-rewrite /ceil.
-rewrite ler_oppl.
-rewrite -floor_ge_int//.
-rewrite -ler_oppr.
-rewrite mulrNz.
-rewrite opprK.
-done.
-Qed.
-
-Lemma sube_lt0 (R : realDomainType) (x y : \bar R) : y \is a fin_num -> (x - y < 0) = (x < y).
-Admitted.
-
-Lemma lt_succ_floor: forall [R : realType] (x : R), (x < ((floor x)%:~R + 1))%R.
-Admitted.
-
-Proposition positive_set_0 d (R : realType) (X : measurableType d)
-          (nu : {smeasure set X -> \bar R}) :
-            (forall N, negative_set nu N -> (nu N = 0)%E) ->
-              (forall S, (S \in measurable) -> (nu S >= 0)%E).
-Proof.
-(* Reductio ad absurdum *)
-move=> H0 S Sm.
-rewrite leNgt.
-apply /negP.
-move=> abs.
-
-have not_negative_set_S: ~ negative_set nu S.
-  move: abs.
-  move=> /[swap].
-  move /H0.
-  move=> ->.
-  by rewrite ltxx.
-(*
-have : exists F1 k1,  F1 `<=` S /\ measurable F1 /\
-      (nu F1 >= (k1.+1 %:R ^-1)%:E)%E /\
-        (forall (l : nat), (nu F1 >= (l%:R ^-1)%:E)%E ->
-          (l >= k1.+1)%nat).
-  move:not_negative_set_S.
-  rewrite /negative_set.
-  move=> /not_andP.
-  case.
-    done.
-  move /existsNP.
-  case.
-  move=> F.
-  move /not_implyP.
-  case.
-  move=> mF.
-  move/not_implyP.
-  case.
-  move=> FS.
-  move/negP.
-  rewrite -ltNge.
-  move=> F0.
-  exists F.
-  exists `|(floor (fine(nu F)) ^-1)|%N.
-  split => //.
-  split.
-    by rewrite inE in mF.
-  split.
-    rewrite [leRHS](_ : nu F = (fine (nu F))%:E); last first.
-      rewrite fineK//.
-      rewrite inE in mF.
-      rewrite isfinite //.
-    rewrite lee_fin.
-    rewrite -[leRHS](invrK (fine (nu F))).
-    rewrite ler_pinv; last 2 first.
-        rewrite inE unitfE -normr_gt0 ger0_norm // andbb.
-        rewrite ltr0n //.
-(*
-        rewrite absz_gt0.
-        rewrite gt_eqF//.
-        rewrite ceil_gt0//=.
-        rewrite invr_gt0.
-        rewrite lt0R//.
-        rewrite F0.
-        rewrite andTb.
-        rewrite -ge0_fin_numE ; last exact/ltW.
-        rewrite inE in mF.
-        by rewrite isfinite//.
-*)
-      rewrite inE unitfE.
-      rewrite andb_idl ; last by move/gt_eqF/negbT.
-      rewrite invr_gt0.
-      rewrite lt0R//.
-      rewrite F0.
-      rewrite andTb.
-      rewrite -ge0_fin_numE ; last exact/ltW.
-      rewrite inE in mF.
-      by rewrite isfinite.
-    rewrite -addn1.
-    rewrite natrD.
-    rewrite natr_absz.
-    rewrite ger0_norm; last first.
-      rewrite floor_ge0 //.
-      rewrite invr_ge0.
-      rewrite le0R //.
-      exact:ltW.
-    apply/ltW.
-    by rewrite lt_succ_floor.
-(*
-    rewrite natr_absz.
-    rewrite ger0_norm; last first.
-      rewrite ceil_ge0 //.
-      rewrite invr_ge0.
-      rewrite le0R //.
-      by rewrite ltW.
-    exact : ceil_ge.
-*)
-  move=> l lF.
-  rewrite -(@ler_nat R).
-  rewrite -addn1.
-  rewrite natrD.
-  rewrite natr_absz.
-  rewrite ger0_norm; last first.
-    rewrite floor_ge0 //.
-    rewrite invr_ge0.
-    apply/ltW.
-    apply : lt0R.
-    rewrite F0.
-    rewrite andTb.
-    rewrite -ge0_fin_numE ; last exact/ltW.
-    rewrite inE in mF.
-    by rewrite isfinite.
-
-rewrite (_ : _ + _ = (floor (fine (nu F))^-1 + 1)%:~R ); last first.
-  rewrite -natrD.
-  rewrite addn1.
-  rewrite -(absz_nat l).
-  rewrite natr_absz.
-  rewrite (natz 1).
-  rewrite ler_int.
-  rewrite -floor_le_int.
-  rewrite -natr_absz.
-  admit.
-*)
-have : exists F1 k1,  F1 `<=` S /\ measurable F1 /\ (nu F1 >= (k1%:R ^-1)%:E)%E
-      /\ k1 != 0%N /\ (forall (l : nat), (nu F1 >= (l%:R ^-1)%:E)%E ->
-        (l >= k1)%nat).
-  move:not_negative_set_S.
-  rewrite /negative_set.
-  move=> /not_andP.
-  case.
-    done.
-  move /existsNP.
-  case.
-  move=> F.
-  move /not_implyP.
-  case.
-  move=> mF.
-  move/not_implyP.
-  case.
-  move=> FS.
-  move/negP.
-  rewrite -ltNge.
-  move=> F0.
-  exists F.
-  exists `|(ceil (fine(nu F)) ^-1)|%N.
-  split => //.
-  split.
-    by rewrite inE in mF.
-  split.
-    rewrite [leRHS](_ : nu F = (fine (nu F))%:E); last first.
-      rewrite fineK//.
-      rewrite inE in mF.
-      rewrite isfinite //.
-    rewrite lee_fin.
-    rewrite -[leRHS](invrK (fine (nu F))).
-    rewrite ler_pinv; last 2 first.
-        rewrite inE unitfE -normr_gt0 ger0_norm // andbb.
-        rewrite ltr0n.
-        rewrite absz_gt0.
-        rewrite gt_eqF//.
-        rewrite ceil_gt0//=.
-        rewrite invr_gt0.
-        rewrite lt0R//.
-        rewrite F0.
-        rewrite andTb.
-        rewrite -ge0_fin_numE ; last exact/ltW.
-        rewrite inE in mF.
-        by rewrite isfinite//.
-      rewrite inE unitfE.
-      rewrite andb_idl ; last by move/gt_eqF/negbT.
-      rewrite invr_gt0.
-      rewrite lt0R//.
-      rewrite F0.
-      rewrite andTb.
-      rewrite -ge0_fin_numE ; last exact/ltW.
-      rewrite inE in mF.
-      by rewrite isfinite.
-    rewrite natr_absz.
-    rewrite ger0_norm; last first.
-      rewrite ceil_ge0 //.
-      rewrite invr_ge0.
-      rewrite le0R //.
-      by rewrite ltW.
-    exact : ceil_ge.
-  split.
-    rewrite -lt0n.
-    rewrite absz_gt0.
-    rewrite gt_eqF//.
-    rewrite ceil_gt0//.
-    rewrite invr_gt0//.
-    apply/lt0R.
-    rewrite F0 //.
-    rewrite -ge0_fin_numE ; last exact/ltW.
-    rewrite inE in mF.
-    by rewrite isfinite.
-  move=> l lF.
-  rewrite -(@ler_nat R).
-  rewrite natr_absz.
-  rewrite ger0_norm; last first.
-    rewrite /ceil.
-    rewrite oppr_ge0.
-    rewrite floor_le0 //.
-    rewrite oppr_le0.
-    rewrite invr_ge0.
-    apply/ltW.
-    apply : lt0R.
-    rewrite F0.
-    rewrite andTb.
-    rewrite -ge0_fin_numE ; last exact/ltW.
-    rewrite inE in mF.
-    by rewrite isfinite.
-  rewrite -(absz_nat l).
-  rewrite natr_absz.
-  rewrite ler_int.
-  rewrite -ceil_le_int.
-  rewrite -natr_absz.
-  admit.
-
-move=> [F1 [k1]].
-move=> [F1S [mF1 [k1F1 [k1n0 minimum_k1]]]].
-have not_negative_set_SF1: ~ negative_set nu (S `\` F1).
-  apply: (contra_not _ _ (H0 (S `\` F1))).
-  apply/eqP.
-  rewrite lt_eqF//.
-  rewrite s_measureD//; last first.
-    by rewrite inE in Sm.
-  rewrite setIidr//.
-  rewrite sube_lt0.
-    rewrite (lt_le_trans abs)//.
-    rewrite (le_trans _ k1F1)//.
-  apply isfinite.
-  exact:mF1.
-have F10 : (0 < nu F1)%E.
-  rewrite (lt_le_trans _ k1F1)//.
-  admit.
-
-pose P (FkU1 FkU2:  {A : set X * nat * set X | measurable A.1.1 /\ A.1.1 `<=` S
-                     /\ (nu A.1.1 > 0 )%E
-                     /\ ((nu (A.1.1)) >= (A.1.2%:R ^-1)%:E)%E
-                     /\ (A.1.2 != 0)%nat
-                     /\ (forall (l : nat),
-                          (nu (A.1.1) >= (l%:R ^-1)%:E)%E
-                             -> (l >= A.1.2)%nat )
-                     /\ measurable A.2 /\ A.2 `<=` S /\ 0 < nu A.2} ):=
-       (proj1_sig FkU2).1.1
-       `<=` S `\` (proj1_sig FkU1).2
-          (*/\ ((proj1_sig FkU1).1.2 <= (proj1_sig FkU2).1.2)%nat*)
-          /\ ((proj1_sig FkU2).2) = (proj1_sig FkU1).2 `|` (proj1_sig FkU2).1.1.
-have : { FkU : nat -> {A : set X * nat * set X | measurable A.1.1
-                     /\ A.1.1 `<=` S
-                     /\ (nu A.1.1 > 0 )%E
-                     /\ ((nu (A.1.1)) >= (A.1.2%:R ^-1)%:E)%E
-                     /\ (A.1.2 != 0)%nat
-                     /\ (forall (l : nat),
-                          (nu (A.1.1) >= (l%:R ^-1)%:E)%E
-                             -> (l >= A.1.2)%nat )
-                     /\ measurable A.2 /\ A.2 `<=` S /\ 0 < nu A.2} |
-           FkU 0%nat =
-             (((exist _ (F1, k1, F1) (conj mF1
-                                     (conj F1S
-                                     (conj F10
-                                     (conj k1F1
-                                     (conj k1n0
-                                     (conj minimum_k1
-                                     (conj mF1
-                                     (conj F1S
-                                           F10 ))))))))
-                                                 )))
-                /\ forall n, P (FkU n) (FkU n.+1) }.
-  apply dependent_choice_Type.
-  move=> [[[F k] U] [mF [FS [F0 [Fk [kn0 [mink [mU [US U0]]]]]]]]].
-  have : exists F' k',  F' `<=` S `\` U
-                        /\ measurable F'
-                        /\ (nu F' >= (k'%:R ^-1)%:E)%E
-                        /\ k' != 0%N
-                        /\ (forall (l : nat),
-         (nu F' >= (l%:R ^-1)%:E)%E -> (l >= k')%nat).
-    have not_negative_set_SU : ~ negative_set nu (S `\` U).
-      apply: (contra_not _ _ (H0 (S `\` _))).
-      apply/eqP.
-      rewrite lt_eqF//.
-      rewrite s_measureD//; last first.
-        rewrite inE in Sm =>//.
-      rewrite setIidr//.
-      rewrite sube_lt0.
-        rewrite (lt_le_trans abs)//.
-        by rewrite ltW.
-        apply : isfinite.
-      exact mU.
-    move:not_negative_set_SU.
-    rewrite /negative_set.
-    move=> /not_andP.
-    case.
-      apply : absurd.
-      rewrite inE; apply : measurableD => //.
-      by rewrite inE in Sm.
-    move /existsNP.
-    case.
-    move=> F2.
-    move /not_implyP.
-    case.
-    move=> mF2.
-    move/not_implyP.
-    case.
-    move=> F2SU.
-    move/negP.
-    rewrite -ltNge.
-    move=> F20.
-    exists F2.
-    exists `|(ceil (fine(nu F2)) ^-1)|%N.
-    split => //.
-    split.
-      by rewrite inE in mF2.
-    split.
-      rewrite [leRHS](_ : nu F2 = (fine (nu F2))%:E); last first.
-        rewrite fineK//.
-        rewrite inE in mF2.
-        rewrite isfinite //.
-      rewrite lee_fin.
-      rewrite -[leRHS](invrK (fine (nu F2))).
-      rewrite ler_pinv; last 2 first.
-          rewrite inE unitfE -normr_gt0 ger0_norm // andbb.
-          rewrite ltr0n.
-          rewrite absz_gt0.
-          rewrite gt_eqF//.
-          rewrite ceil_gt0//=.
-          rewrite invr_gt0.
-          rewrite lt0R//.
-          rewrite F20.
-          rewrite andTb.
-          rewrite -ge0_fin_numE ; last exact/ltW.
-          rewrite inE in mF2.
-          by rewrite isfinite//.
-        rewrite inE unitfE.
-        rewrite andb_idl ; last by move/gt_eqF/negbT.
-        rewrite invr_gt0.
-        rewrite lt0R//.
-        rewrite F20.
-        rewrite andTb.
-        rewrite -ge0_fin_numE ; last exact/ltW.
-        rewrite inE in mF2.
-        by rewrite isfinite.
-      rewrite natr_absz.
-      rewrite ger0_norm; last first.
-        rewrite ceil_ge0 //.
-        rewrite invr_ge0.
-        rewrite le0R //.
-        by rewrite ltW.
-      exact : ceil_ge.
-    split.
-      rewrite -lt0n.
-      rewrite absz_gt0.
-      rewrite gt_eqF//.
-      rewrite ceil_gt0//.
-      rewrite invr_gt0//.
-      apply/lt0R.
-      rewrite F20 //.
-      rewrite -ge0_fin_numE ; last exact/ltW.
-      rewrite inE in mF2.
-      by rewrite isfinite.
-    move=> l lF.
-    rewrite -(@ler_nat R).
-    rewrite natr_absz.
-    rewrite ger0_norm; last first.
-      rewrite /ceil.
-      rewrite oppr_ge0.
-      rewrite floor_le0 //.
-      rewrite oppr_le0.
-      rewrite invr_ge0.
-      apply/ltW.
-      apply : lt0R.
-      rewrite F20.
-      rewrite andTb.
-      rewrite -ge0_fin_numE ; last exact/ltW.
-      rewrite inE in mF2.
-      by rewrite isfinite.
-    rewrite -(absz_nat l).
-    rewrite natr_absz.
-    rewrite ler_int.
-    rewrite -ceil_le_int.
-    rewrite -natr_absz.
-    admit.
-  move/cid=> [F'].
-  move/cid=> [k'].
-  move=> [F'SU [mF' [k'F' [k'n0 minimum_k']]]].
-  have F'S : F' `<=` S.
-    apply (subset_trans F'SU).
-    exact : subDsetl.
-  have F'0 : (nu F' > 0)%E.
-    apply : (lt_le_trans _ k'F').
-    rewrite lte_fin.
-    rewrite invr_gt0.
-    rewrite ltr0n.
-    by rewrite lt0n.
-  have mUF' : measurable (U `|` F').
-    exact :measurableU.
-  have UF'S : U `|` F' `<=` S.
-    by rewrite subUset.
-  have UF'0 : (nu (U `|` F') > 0)%E.
-    rewrite s_measureU //.
-      rewrite adde_gt0 //.
-    rewrite setIC.
-    apply/disjoints_subset.
-    apply (subset_trans F'SU).
-    rewrite -setTD.
-    by apply : setSD.
-
-  exists ((exist _ (F', k', U `|` F') (conj mF'
-                                      (conj F'S
-                                      (conj F'0
-                                      (conj k'F'
-                                      (conj k'n0
-                                      (conj minimum_k'
-                                      (conj mUF'
-                                      (conj UF'S
-                                            UF'0 ))))))))
-           )).
-  rewrite /P /=.
-  split => //.
-(*  apply mink => //=.
-  apply : (le_trans k'F').
-  rewrite leNgt.
-  apply /negP.
-  have : (k <= k')%N.*)
-case.
-move=> /= FkU.
-case.
-move=> FkU0.
-move=> Hn.
-pose F := \bigcup_n (proj1_sig (FkU n)).1.1.
-have /H0 : negative_set nu (S `\` F).
-  rewrite /negative_set.
-  split.
-    admit.
-  move=> G mG GSF.
-  have : forall n, (nu G < (proj1_sig (FkU n)).1.2%:R^-1%:E)%E.
-    have : forall n, (G `<=` S `\` (proj1_sig (FkU n)).2).
-      admit.
-    move=> GS n.
-    rewrite //=.
-  admit.
-have : (nu (S `\` F) < 0).
-      rewrite s_measureD //.
-      have FS : F `<=` S.
-        admit.
-      rewrite setIidr =>//.
-      rewrite sube_lt0.
-        admit.
-      admit.
-    by rewrite inE in Sm.
-  admit.
-move=> /[swap].
-move=> ->.
-by rewrite ltxx.
-Admitted.
-
-
-Theorem Hahn_decomposition d (R : realType) (X : measurableType d) (nu : {smeasure set X -> \bar R}) :
-     exists P N, [/\ (positive_set nu P), (negative_set nu N), (P `|` N = setT) & (P `&` N = set0)].
->>>>>>> abs_cont_measure
 Proof.
 Admitted.
 
 (* Definition  : measureable -> R :=  *)
 
-<<<<<<< abs_cont_measure
 Require Import lebesgue_integral.
 
 Theorem Radon_Nikodym_finite_nonnegative d (X : measurableType d) (R : realType)
@@ -1632,81 +1102,16 @@ have [g H2] : exists g : (X -> \bar R)^nat, forall m, g m \in G /\ \int[mu]_x (g
   admit.
 pose F (m : nat) (x : X) := \big[maxe/0%:E]_(j < m) (g j x).
 (* have : forall m x, F m x >= 0
-=======
-
-Theorem Radon_Nikodym_finite_nonnegative d (R : realType) (X : measurableType d) (mu nu: {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E):
-     nu `<< mu -> exists (f : X -> \bar R), [/\(forall x, (f x >= 0)%E),
-        integrable mu setT f & forall E, E \in measurable -> nu E = integral mu E f].
-Proof.
-(*
- * Define the measurable subsets of X to be those subsets that belong to the σ-algebra measurable on which the measures mu and nu are defined.
- * 
- *)
-move=> mudomnu.
-pose G := [set g : X -> \bar R |
-            [/\ (forall x, (g x >= 0)%E),
-               integrable mu setT g & 
-                 forall E, E \in measurable -> (\int[mu]_(x in E) g x <= nu E)%E] ].
-(* maybe define G : set R insted of set \bar R 
-pose G' := [set g : X -> \bar R |
-            [/\ (forall x, (g x >= 0)%E),
-               integrable mu setT g & 
-                 forall E, E \in measurable -> fine (\int[mu]_(x in E) g x) <= fine (nu E) ] ].
-*) 
-have neG : G !=set0.
-  exists (cst 0%E).
-  red.
-  rewrite /=.
-  rewrite /G /=.
-  split => //.
-    admit.
-  move=> E _.
-  by rewrite integral0.
-pose IG := [set (\int[mu]_x g x) | g in G]%E.
-have neIG : IG !=set0.
-  case: neG.  
-  move=> g.
-  case=> g0 g1 g2.
-  exists (\int[mu]_x g x)%E.
-  by exists g.
-have IGbound : exists (M : R), forall x, x \in IG -> (x <= M%:E)%E.
-  exists (fine (nu setT)).
-  move=> x.
-  rewrite inE.
-  case.
-  move=> g.
-  move=> [g0 g1 g2].
-  move=> <- {x}.
-  rewrite fineK.
-    apply: le_trans (g2 setT _) => //.
-    by rewrite inE.
-  by rewrite ge0_fin_numE.
-pose M := ereal_sup IG.
-
-have H1: exists f : X -> \bar R, (\int[mu]_x f x = M)%E /\ forall E, E \in measurable -> (\int[mu]_(x in E) f x)%E = nu E.
-  admit.
-have : exists (g : (X -> \bar R)^nat ), forall m, g m \in G /\ (\int[mu]_x (g m x) >= M - m.+1%:R^-1%:E )%E.
-  (* ub_ereal_sup_adherent *)
-admit.
-move=> [g H2].
-pose F (m : nat) (x : X) := \big[maxe/0%:E]_(j < m) (g j x).
-(* have : forall m x, F m x >= 0 
->>>>>>> abs_cont_measure
  *   forall x, 0 <= g m x, g m in G
  *)
  (* max_g2' : (T -> R)^nat :=
   fun k t => (\big[maxr/0]_(i < k) (g2' i k) t)%R. *)
-<<<<<<< abs_cont_measure
 pose E m j := [set x | F m x = g j x /\ forall k, (k < j)%nat -> F m x > g k x ].
-=======
-pose E m j := [set x | F m x = g j x /\ (forall k, (k < j)%nat -> (F m x > g k x)%E ) ].
->>>>>>> abs_cont_measure
 have measurable_E m j : E m j \in measurable.
   admit.
 have partition_E m : partition setT (E m) setT.
   admit.
 (* Local Open Scope ereal_scope. *)
-<<<<<<< abs_cont_measure
 have Fleqnu m E0 (mE : E0 \in measurable) : \int[mu]_(x in E0) F m x <= nu E0.
   have H'1 : \int[mu]_(x in E0) F m x = \sum_(j < m) \int[mu]_(x in (E0 `&` (E m j))) F m x.
     admit.
@@ -1751,76 +1156,17 @@ Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
     (musigmafinite : sigma_finite setT mu) :
   nu `<< mu -> exists f : X -> \bar R,
   integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
-=======
-have Fleqnu m E0 (mE : E0 \in measurable) : (\int[mu]_(x in E0) F m x <= nu E0)%E.  
-  have H'1 : (\int[mu]_(x in E0) F m x)%E = \big[adde/0%:E]_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) F m x)%E. 
-    admit.
-  have H'2 : (\sum_(j < m) \int[mu]_(x in (E0 `&` (E m j))) F m x)%E =
-           (\sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x))%E.
-    admit.
-  have H'3 : (\sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x) <=
-            \sum_(j < m) (nu (E0 `&` (E m j))))%E.
-    admit.
-  have H'4: (\sum_(j < m) (nu (E0 `&` (E m j))))%E = nu E0.
-    admit.
-  rewrite H'1 H'2.
-  rewrite -H'4.
-  exact H'3.
-have FminG m : F m \in G.
-  admit.
-have Fgeqg m : forall x, (F m x >= g m x)%E.
-  admit.
-have nd_F m x : nondecreasing_seq (F^~ x). 
-  admit.
-pose limF := fun (x : X) => lim (F^~ x).
-exists limF.
-have limFleqnu : forall E, (\int[mu]_(x in E) limF x <= nu E)%E.
-  admit.
-have limFXeqM : (\int[mu]_x limF x = M)%E.
-  admit.
-split.
-    admit.
-  admit.
-(* Reductio ad absurdum *)
-move=> E0 mE0.
-apply /eqP.
-rewrite eq_le.
-rewrite limFleqnu.
-rewrite andbT.
-rewrite leNgt.
-apply /negP.
-move=> absurd.
-have : exists eps : {posnum R}, (\int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0)%E.
-  admit.
-move=> [eps].
-have sigma : {smeasure set X -> \bar R}.
-  admit.
-have sigmaE : forall F, sigma F = (nu F - \int[mu]_(x in F) (limF x + eps%:num%:E))%E.
-  admit.
-move : (Hahn_decomposition sigma). 
-move=> [P [N]].
-case.
-move=> posP negN PNX PN0.
-Admitted.
-
-Theorem Radon_Nikodym d (R : realType) (X : measurableType d) (mu: {measure set X -> \bar R}) (nu: {smeasure set X -> \bar R}) (musigmafinite : sigma_finite setT mu):
-     nu `<< mu -> exists (f : X -> \bar R),
-        integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
->>>>>>> abs_cont_measure
 Proof.
 Abort.
 
-Theorem FTC2 (R : realType) (f : R -> R) (a b : R)
-     (f_abscont : abs_continuous_function f (a, b) ) 
-       : exists f' : R -> \bar R, summable `[a, b] f' /\
-         {ae (lebesgue_measure R), forall x, x \in `[a, b] ->f' x \is a fin_num}
-           /\ forall x, x \in `[a, b] -> 
-             (f x - f a)%:E = (integral (lebesgue_measure R) `[a ,x] f').
+Theorem FTC2 d (R : realType) (f : R -> R) (a b : R)
+     (f_abscont : abs_continuous_function f (a, b) )
+       : exists f' : R -> \bar R, summable [set` `[a, b]] f' /\
+         {ae @lebesgue_measure d R, forall x, x \in [set` `[a, b]] ->f' x \is a fin_num}
+           /\ forall x, x \in `[a, b] ->
+             (f x - f a)%:E = (integral (@lebesgue_measure d R) `[a ,x] f').
 Proof.
 Abort.
-
-
-
 
 xxx
 
