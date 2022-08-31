@@ -1049,8 +1049,8 @@ apply/negP.
 by rewrite -ltnNge.
 Qed.
 
-Theorem Hahn_decomposition d (R : realType) (X : measurableType d) (nu : {smeasure set X -> \bar R}) :
-     exists P N, [/\ (positive_set nu P), (negative_set nu N), (P `|` N = setT) & (P `&` N = set0)].
+Theorem Hahn_decomposition d (X : measurableType d) (R : realType) (nu : {smeasure set X -> \bar R}) :
+  exists P N, [/\ positive_set nu P, negative_set nu N, P `|` N = setT & P `&` N = set0].
 Proof.
 Admitted.
 
@@ -1058,127 +1058,104 @@ Admitted.
 
 Require Import lebesgue_integral.
 
-Theorem Radon_Nikodym_finite_nonnegative d (R : realType) (X : measurableType d) (mu nu: {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E):
-     nu `<< mu -> exists (f : X -> \bar R), [/\(forall x, (f x >= 0)%E),
-        integrable mu setT f & forall E, E \in measurable -> nu E = integral mu E f].
+Theorem Radon_Nikodym_finite_nonnegative d (X : measurableType d) (R : realType)
+    (mu nu : {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E) :
+   nu `<< mu -> exists f : X -> \bar R, [/\
+        forall x, f x >= 0,
+        integrable mu setT f &
+        forall E, E \in measurable -> nu E = integral mu E f].
 Proof.
 (*
- * Define the measurable subsets of X to be those subsets that belong to the σ-algebra measurable on which the measures mu and nu are defined.
- * 
+ * Define the measurable subsets of X to be those subsets that belong to the
+ *  σ-algebra measurable on which the measures mu and nu are defined.
  *)
 move=> mudomnu.
-pose G := [set g : X -> \bar R |
-            [/\ (forall x, (g x >= 0)%E),
-               integrable mu setT g & 
-                 forall E, E \in measurable -> (\int[mu]_(x in E) g x <= nu E)%E] ].
-(* maybe define G : set R insted of set \bar R 
+pose G := [set g : X -> \bar R | [/\
+  forall x, (g x >= 0)%E,
+  integrable mu setT g &
+  forall E, E \in measurable -> (\int[mu]_(x in E) g x <= nu E)%E] ].
+(* maybe define G : set R insted of set \bar R
 pose G' := [set g : X -> \bar R |
             [/\ (forall x, (g x >= 0)%E),
-               integrable mu setT g & 
+               integrable mu setT g &
                  forall E, E \in measurable -> fine (\int[mu]_(x in E) g x) <= fine (nu E) ] ].
-*) 
+*)
 have neG : G !=set0.
-  exists (cst 0%E).
-  red.
-  rewrite /=.
-  rewrite /G /=.
-  split => //.
-    admit.
-  move=> E _.
-  by rewrite integral0.
-pose IG := [set (\int[mu]_x g x) | g in G]%E.
+  exists (cst 0%E); split; first by [].
+  - exact: integrable0.
+  - by move=> E _; by rewrite integral0.
+pose IG := [set \int[mu]_x g x | g in G]%E.
 have neIG : IG !=set0.
-  case: neG.  
-  move=> g.
-  case=> g0 g1 g2.
-  exists (\int[mu]_x g x)%E.
-  by exists g.
-have IGbound : exists (M : R), forall x, x \in IG -> (x <= M%:E)%E.
-  exists (fine (nu setT)).
-  move=> x.
-  rewrite inE.
-  case.
-  move=> g.
-  move=> [g0 g1 g2].
-  move=> <- {x}.
-  rewrite fineK.
-    apply: le_trans (g2 setT _) => //.
-    by rewrite inE.
-  by rewrite ge0_fin_numE.
+  case: neG => g [g0 g1 g2].
+  by exists (\int[mu]_x g x)%E, g.
+have IGbound : exists M, forall x, x \in IG -> (x <= M%:E)%E.
+  exists (fine (nu setT)) => x.
+  rewrite inE => -[g [g0 g1 g2] <-{x}].
+  rewrite fineK; last by rewrite ge0_fin_numE.
+  by rewrite (le_trans (g2 setT _))// inE.
 pose M := ereal_sup IG.
-
-have H1: exists f : X -> \bar R, (\int[mu]_x f x = M)%E /\ forall E, E \in measurable -> (\int[mu]_(x in E) f x)%E = nu E.
+have H1 : exists f : X -> \bar R, \int[mu]_x f x = M /\
+                           forall E, E \in measurable -> (\int[mu]_(x in E) f x)%E = nu E.
   admit.
-have : exists (g : (X -> \bar R)^nat ), forall m, g m \in G /\ (\int[mu]_x (g m x) >= M - m.+1%:R^-1%:E )%E.
+have [g H2] : exists g : (X -> \bar R)^nat, forall m, g m \in G /\ \int[mu]_x (g m x) >= M - m.+1%:R^-1%:E.
   (* ub_ereal_sup_adherent *)
-admit.
-move=> [g H2].
+  admit.
 pose F (m : nat) (x : X) := \big[maxe/0%:E]_(j < m) (g j x).
-(* have : forall m x, F m x >= 0 
+(* have : forall m x, F m x >= 0
  *   forall x, 0 <= g m x, g m in G
  *)
  (* max_g2' : (T -> R)^nat :=
   fun k t => (\big[maxr/0]_(i < k) (g2' i k) t)%R. *)
-pose E m j := [set x | F m x = g j x /\ (forall k, (k < j)%nat -> (F m x > g k x)%E ) ].
+pose E m j := [set x | F m x = g j x /\ forall k, (k < j)%nat -> F m x > g k x ].
 have measurable_E m j : E m j \in measurable.
   admit.
 have partition_E m : partition setT (E m) setT.
   admit.
 (* Local Open Scope ereal_scope. *)
-have Fleqnu m E0 (mE : E0 \in measurable) : (\int[mu]_(x in E0) F m x <= nu E0)%E.  
-  have H'1 : (\int[mu]_(x in E0) F m x)%E = \big[adde/0%:E]_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) F m x)%E. 
+have Fleqnu m E0 (mE : E0 \in measurable) : \int[mu]_(x in E0) F m x <= nu E0.
+  have H'1 : \int[mu]_(x in E0) F m x = \sum_(j < m) \int[mu]_(x in (E0 `&` (E m j))) F m x.
     admit.
-  have H'2 : (\sum_(j < m) \int[mu]_(x in (E0 `&` (E m j))) F m x)%E =
-           (\sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x))%E.
+  have H'2 : \sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) F m x) =
+             \sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x).
     admit.
-  have H'3 : (\sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x) <=
-            \sum_(j < m) (nu (E0 `&` (E m j))))%E.
+  have H'3 : \sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x) <=
+             \sum_(j < m) nu (E0 `&` (E m j)).
     admit.
-  have H'4: (\sum_(j < m) (nu (E0 `&` (E m j))))%E = nu E0.
+  have H'4 : \sum_(j < m) (nu (E0 `&` (E m j))) = nu E0.
     admit.
-  rewrite H'1 H'2.
-  rewrite -H'4.
-  exact H'3.
+  by rewrite H'1 H'2 -H'4; exact H'3.
 have FminG m : F m \in G.
   admit.
-have Fgeqg m : forall x, (F m x >= g m x)%E.
+have Fgeqg m : forall x, F m x >= g m x.
   admit.
-have nd_F m x : nondecreasing_seq (F^~ x). 
+have nd_F m x : nondecreasing_seq (F ^~ x).
   admit.
 pose limF := fun (x : X) => lim (F^~ x).
 exists limF.
-have limFleqnu : forall E, (\int[mu]_(x in E) limF x <= nu E)%E.
+have limFleqnu : forall E, \int[mu]_(x in E) limF x <= nu E.
   admit.
-have limFXeqM : (\int[mu]_x limF x = M)%E.
+have limFXeqM : \int[mu]_x limF x = M.
   admit.
 split.
+- admit.
+- admit.
+- (* Reductio ad absurdum *)
+  move=> E0 mE0.
+  apply/eqP; rewrite eq_le limFleqnu andbT; apply/negP => abs.
+  have [eps] : exists eps : {posnum R}, \int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0.
     admit.
-  admit.
-(* Reductio ad absurdum *)
-move=> E0 mE0.
-apply /eqP.
-rewrite eq_le.
-rewrite limFleqnu.
-rewrite andbT.
-rewrite leNgt.
-apply /negP.
-move=> absurd.
-have : exists eps : {posnum R}, (\int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0)%E.
-  admit.
-move=> [eps].
-have sigma : {smeasure set X -> \bar R}.
-  admit.
-have sigmaE : forall F, sigma F = (nu F - \int[mu]_(x in F) (limF x + eps%:num%:E))%E.
-  admit.
-move : (Hahn_decomposition sigma). 
-move=> [P [N]].
-case.
-move=> posP negN PNX PN0.
+  have sigma : {smeasure set X -> \bar R}.
+    admit.
+  have sigmaE : forall F, sigma F = nu F - \int[mu]_(x in F) (limF x + eps%:num%:E).
+    admit.
+  move : (Hahn_decomposition sigma) => [P [N [posP negN PNX PN0]]].
 Admitted.
 
-Theorem Radon_Nikodym d (R : realType) (X : measurableType d) (mu: {measure set X -> \bar R}) (nu: {smeasure set X -> \bar R}) (musigmafinite : sigma_finite setT mu):
-     nu `<< mu -> exists (f : X -> \bar R),
-        integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
+Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
+    (mu : {measure set X -> \bar R}) (nu : {smeasure set X -> \bar R})
+    (musigmafinite : sigma_finite setT mu) :
+  nu `<< mu -> exists f : X -> \bar R,
+  integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
 Proof.
 Abort.
 
