@@ -505,7 +505,6 @@ Let lebesgue_stieltjes_measure_itvco (a b : R) : a <= b ->
 Proof.
 Abort.
 
-
 End lebesgue_stieltjes_measure_itv.
 
 Definition abs_continuous d (T : measurableType d) (R : realType)
@@ -1159,17 +1158,14 @@ Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
 Proof.
 Abort.
 
-Theorem FTC2 (R : realType) (f : R -> R) (a b : R)
-     (f_abscont : abs_continuous_function f (a, b) ) 
-       : exists f' : R -> \bar R, summable `[a, b] f' /\
-         {ae (lebesgue_measure R), forall x, x \in `[a, b] ->f' x \is a fin_num}
-           /\ forall x, x \in `[a, b] -> 
-             (f x - f a)%:E = (integral (lebesgue_measure R) `[a ,x] f').
+Theorem FTC2 d (R : realType) (f : R -> R) (a b : R)
+     (f_abscont : abs_continuous_function f (a, b) )
+       : exists f' : R -> \bar R, summable [set` `[a, b]] f' /\
+         {ae @lebesgue_measure d R, forall x, x \in [set` `[a, b]] ->f' x \is a fin_num}
+           /\ forall x, x \in `[a, b] ->
+             (f x - f a)%:E = (integral (@lebesgue_measure d R) `[a ,x] f').
 Proof.
 Abort.
-
-
-
 
 xxx
 
