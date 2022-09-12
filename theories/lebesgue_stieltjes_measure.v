@@ -1112,7 +1112,7 @@ End s_measure_restr.
 
 Lemma positive_set_0' d (X : measurableType d) (R : realType) (P : set X)
     (mP : measurable P) (nu : {smeasure set X -> \bar R}) :
-  (forall N, negative_set nu (N `&` P) -> s_mrestr nu mP N = 0) ->
+  (forall N, measurable N -> negative_set nu (N `&` P) -> s_mrestr nu mP N = 0) ->
     forall S, S \in measurable -> S `<=` P -> s_mrestr nu mP S >= 0.
 Proof.
 move=> h S /[1!inE] mS SP.
@@ -1140,6 +1140,85 @@ rewrite subset0 => ->.
 by rewrite s_measure0.
 Qed.
 
+Lemma Hahn_decomposition_lemma d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}):
+  let negatives := [set Z | negative_set nu Z] in
+  let measure_negatives := [set nu Z | Z in negatives] in
+  let alpha := ereal_inf measure_negatives in
+  { N : (set X) ^nat |
+  [/\ (forall i, negatives (N i)),
+     (fun i => nu (N i)) --> alpha &
+     alpha <= 0]}.
+Proof.
+move=> negatives.
+move=> measure_negatives.
+move=> alpha.
+Admitted.
+
+Lemma lte_naddl {R : realDomainType} (x : \bar R) [y : \bar R] :
+  x \is a fin_num -> y < 0 -> x + y < x.
+Proof.
+move=> xf x0.
+by rewrite -lte_suber_addr// lte_addl// lte_oppr oppe0.
+Qed.
+
+Lemma bigcup_negative_set d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) (N_ : (set X)^nat) :
+  (forall i, negative_set nu (N_ i)) ->
+  negative_set nu (\bigcup_i N_ i).
+Proof.
+move=> H.
+have mN : measurable (\bigcup_i N_ i).
+  apply: bigcup_measurable => n _.
+  by have [/[1!inE]] := H n.
+split=> [/[1!inE]//| S /[1!inE] mS SN].
+pose S_ m := (S `&` N_ m) `\` \bigcup_(j in `I_m) N_ j.
+have S_E : S_ = seqDU (fun n => S `&` N_ n).
+  apply/funext => m; rewrite /S_ -setIDA.
+  (* TODO: lemma *) apply/seteqP; split.
+    (* NB: lemma? *)
+    move=> x [Sx [Nmx Nx]]; split=> //.
+    apply: contra_not Nx => /=.
+    rewrite bigcup_mkord.
+    by rewrite -big_distrr/= => -[].
+  rewrite /seqDU -setIDA bigcup_mkord -big_distrr/=.
+  by rewrite setDIr setIUr setDIK set0U.
+have tS_ : trivIset setT S_.
+  by rewrite S_E; exact: trivIset_seqDU.
+have SN_ m : S_ m `<=` N_ m by move=> x [[]].
+have SS_ : S = \bigcup_i S_ i.
+  transitivity (\bigcup_i seqDU (fun n : nat => S `&` N_ n) i); last first.
+    by apply: eq_bigcup => // n _; rewrite S_E.
+  by rewrite -seqDU_bigcup_eq -setI_bigcupr setIidl.
+have ? : forall n, measurable (S_ n).
+  move=> n; rewrite /S_; apply: measurableD.
+    apply: measurableI => //.
+    by have [/[1!inE]] := H n.
+  apply: bigcup_measurable => // k _.
+  by have [/[1!inE]] := H k.
+have S_S : (fun n => \sum_(0 <= i < n) nu (S_ i)) --> nu S.
+  rewrite SS_; apply: smeasure_semi_sigma_additive => //.
+  exact: bigcup_measurable.
+have nuS_ m : nu (S_ m) <= 0.
+  have [_] := H m.
+  by apply => //; first by rewrite inE.
+rewrite (_ : nu S = lim (fun n => \sum_(0 <= i < n) (nu (S_ i)))); last first.
+  exact/esym/cvg_lim.
+apply: ereal_lim_le.
+  apply/cvg_ex => /=; first eexists; exact: S_S.
+by apply: nearW => n; exact: sume_le0.
+Qed.
+
+Lemma negative_setU d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) N M :
+  negative_set nu N -> negative_set nu M -> negative_set nu (N `|` M).
+Proof.
+move=> nN nM.
+rewrite -bigcup2E.
+apply: bigcup_negative_set => -[//|[//|/= _]].
+exact: negative_set0.
+Qed.
+
 Theorem Hahn_decomposition d (X : measurableType d) (R : realType)
     (nu : {smeasure set X -> \bar R}) :
   exists P N,
@@ -1150,36 +1229,44 @@ Theorem Hahn_decomposition d (X : measurableType d) (R : realType)
 Proof.
 pose negatives := [set Z | negative_set nu Z].
 have negatives_nonempty : negatives !=set0.
-  (* exists empty *)
-  exists set0.
-  apply negative_set0.
+  by exists set0; apply: negative_set0.
 pose measure_negatives := [set nu Z | Z in negatives].
 pose alpha := ereal_inf measure_negatives. (* ereal_inf_EFin *)
-have : exists N : (set X) ^nat,
-  (forall i, negatives (N i)) /\ (
-  (fun i => nu (N i)) --> alpha).
-  admit.
-move=> [N [negN limN]].
-pose UN := \bigcup_i (N i).
-have mUN : measurable UN.
-  apply bigcup_measurable.
-  move:(negN).
-  rewrite /negatives //= /negative_set.
-  (* ? *)
-  admit.
-have negative_set_UN: negative_set nu UN.
-  admit.
-have : nu UN = alpha.
-  apply /eqP.
-  rewrite eq_le.
-  apply /andP.
-  split; last first.
-    apply ereal_inf_lb.
-    exists UN => //.
-    apply lb_ereal_inf.
-    rewrite /lbound //=.
-    (* ? *) admit.
-pose P := setT `\` UN.
+have [N_ [negN_ cvgN_ alpha0]]: {N : (set X) ^nat |
+  [/\ (forall i, negatives (N i)),
+     (fun i => nu (N i)) --> alpha &
+     alpha <= 0]}.
+  exact: Hahn_decomposition_lemma.
+pose N := \bigcup_i (N_ i).
+have mN : measurable N.
+  apply: bigcup_measurable => n _.
+  by have [/[1!inE]] := negN_ n.
+have negative_set_N : negative_set nu N.
+  apply: bigcup_negative_set => i.
+  by have [] := negN_ i.
+have nuN_alpha : nu N = alpha.
+  have H1 m : nu (N `\` N_ m) <= 0.
+    apply negative_set_N.2.
+      rewrite inE; apply: measurableD => //.
+      by have [/[1!inE]] := negN_ m.
+      exact: subDsetl.
+  have {H1}H2 m : nu N <= nu (N_ m).
+    rewrite -(@setDUK _ (N_ m) N); last exact: bigcup_sup.
+    rewrite s_measureU//; last 3 first.
+      by have [/[1!inE]] := negN_ m.
+      apply: measurableD => //.
+      by have [/[1!inE]] := negN_ m.
+      by rewrite setDIK.
+      by rewrite gee_addl.
+  have {H2}H3 : nu N <= alpha.
+    rewrite [leRHS](_ : _ = lim (nu \o N_)); last exact/esym/cvg_lim.
+    apply: ereal_lim_ge.
+      by apply/cvg_ex => /=; first eexists; exact: cvgN_.
+    exact: nearW.
+  apply/eqP; rewrite eq_le H3 /=.
+  by apply: ereal_inf_lb; exists N.
+have alphay : alpha > -oo by rewrite -nuN_alpha ltNye_eq isfinite.
+pose P := setT `\` N.
 have mP : measurable P.
 apply measurableD => //.
 have positive_P : positive_set nu P.
@@ -1188,7 +1275,7 @@ have positive_P : positive_set nu P.
   rewrite (_ : nu E = s_mrestr nu mP E); last by rewrite /s_mrestr setIidl.
   move: E mE EP.
   apply: positive_set_0' => //.
-  move=> N' negativeN'.
+  move=> N' mN' negativeN'.
   apply /eqP.
   rewrite eq_le.
   rewrite -(negbK (_&&_)).
@@ -1196,12 +1283,26 @@ have positive_P : positive_set nu P.
   rewrite -ltNge.
   apply/negP.
   move=> N'0.
-  pose UNN' := UN `|` N'.
+  pose UNN' := N `|` (N' `&` P).
   have mUNN' : measurable UNN'.
-    apply : measurableU => //=.
+    apply: measurableU => //.
+    by apply: measurableI => //.
   have : nu UNN' < alpha.
-    rewrite s_measureU => //.
-Admitted.
+    rewrite s_measureU //; last 2 first.
+      by have [/[1!inE]] := negativeN'.
+      have N'N : (N' `&` P) `<=` ~` N.
+        have N'P : N' `&` P `<=` P.
+          exact: subIsetr.
+        by rewrite -setTD.
+      by rewrite setIC; apply/disjoints_subset.
+    by rewrite -nuN_alpha lte_naddl// isfinite//.
+  rewrite ltNge => /negP; apply.
+  have ? : negative_set nu UNN' by exact: negative_setU.
+  by apply: ereal_inf_lb; exists UNN'.
+exists P, N; split => //.
+by rewrite /P setTD setvU.
+by rewrite /P setTD setvI.
+Qed.
 
 (* Definition  : measureable -> R :=  *)
 
