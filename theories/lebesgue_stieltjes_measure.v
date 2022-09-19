@@ -1304,9 +1304,92 @@ by rewrite /P setTD setvU.
 by rewrite /P setTD setvI.
 Qed.
 
+Definition is_Hahn_decomposition d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) :=
+  fun P N =>
+   [/\ positive_set nu P,
+      negative_set nu N,
+      P `|` N = setT &
+      P `&` N = set0].
+
+Lemma positive_negative0  d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) :
+    forall P N, positive_set nu P -> negative_set nu N ->
+            forall S, measurable S -> nu (S `&` P `&` N) = 0.
+Proof.
+move=> P N [mP posP] [mN negN] S mS.
+rewrite !inE in mP mN mS.
+apply /eqP.
+rewrite eq_le.
+apply /andP; split.
+  apply negN.
+    rewrite inE.
+    apply measurableI => //; apply: measurableI => //.
+  apply setIidPl.
+  by rewrite -setIA setIid.
+rewrite -setIAC.
+apply posP.
+  rewrite inE.
+  apply measurableI => //; apply measurableI => //.
+apply setIidPl.
+by rewrite -setIA setIid.
+Qed.
+
+Lemma s_measure_Hahn_decomposition d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) :
+    forall P N, is_Hahn_decomposition nu P N ->
+      forall S, measurable S -> nu S = nu (S `&` P) + nu (S `&` N).
+Proof.
+move=> P N [[mP posP] [mN negP] PNT PN0] S mS.
+rewrite !inE in mP mN.
+
+rewrite -{1}(setIT S) -PNT setIUr s_measureU//.
+  1,2:by apply measurableI.
+by rewrite setICA -(setIA S P N) PN0 setIA setI0.
+Qed.
+
+(* memo : trying to auto resolve a following lemma but it doesn't work *)
+(*
+Lemma positive_set_is_measurable d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) :
+      forall P, positive_set nu P -> measurable P.
+Proof.
+move=> P [mP _].
+by rewrite inE in mP.
+Qed.
+
+Hint Resolve positive_set_is_measurable.
+*)
+
+Lemma Hahn_decomposition_measure_uniqueness
+  d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) :
+  forall P1 N1 P2 N2,
+   is_Hahn_decomposition nu P1 N1 -> is_Hahn_decomposition nu P2 N2 ->
+   forall S, measurable S ->
+          nu (S `&` P1) = nu (S `&` P2) /\ nu (S `&` N1) = nu (S `&` N2).
+Proof.
+move=> P1 N1 P2 N2 Hahn1 Hahn2 S mS.
+move: (Hahn1) (Hahn2) => [posP1 negN1 _ _] [posP2 negN2 _ _].
+move: (posP1) (negN1) (posP2) (negN2) => [mP1 _] [mN1 _] [mP2 _] [mN2 _].
+rewrite !inE in mP1 mN1 mP2 mN2.
+split.
+  apply (@eq_trans _ _ (nu (S `&` P1 `&` P2))).
+    by rewrite (s_measure_Hahn_decomposition Hahn2 (measurableI S P1 mS mP1))
+                 (positive_negative0 posP1 negN2)// adde0.
+    by rewrite (s_measure_Hahn_decomposition Hahn1 (measurableI S P2 mS mP2))
+                 (positive_negative0 posP2 negN1)// adde0 setIAC.
+apply (@eq_trans _ _ (nu (S `&` N1 `&` N2))).
+  by rewrite (s_measure_Hahn_decomposition Hahn2 (measurableI S N1 mS mN1))
+            {1}setIAC (positive_negative0 posP2 negN1)// add0e.
+  by rewrite (s_measure_Hahn_decomposition Hahn1 (measurableI S N2 mS mN2))
+            (setIAC S N2 P1) (positive_negative0 posP1 negN2)// add0e setIAC.
+Qed.
+
 (* Definition  : measureable -> R :=  *)
 
 Require Import lebesgue_integral.
+
 
 Theorem Radon_Nikodym_finite_nonnegative d (X : measurableType d) (R : realType)
     (mu nu : {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E) :
