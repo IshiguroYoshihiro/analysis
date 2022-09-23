@@ -1335,14 +1335,12 @@ apply setIidPl.
 by rewrite -setIA setIid.
 Qed.
 
-Lemma s_measure_Hahn_decomposition d (X : measurableType d) (R : realType)
+Lemma s_measure_partition2 d (X : measurableType d) (R : realType)
     (nu : {smeasure set X -> \bar R}) :
-    forall P N, is_Hahn_decomposition nu P N ->
+    forall P N, measurable P -> measurable N -> P `|` N = setT -> P `&` N = set0 ->
       forall S, measurable S -> nu S = nu (S `&` P) + nu (S `&` N).
 Proof.
-move=> P N [[mP posP] [mN negP] PNT PN0] S mS.
-rewrite !inE in mP mN.
-
+move=> P N mP mN PNT PN0 S mS.
 rewrite -{1}(setIT S) -PNT setIUr s_measureU//.
   1,2:by apply measurableI.
 by rewrite setICA -(setIA S P N) PN0 setIA setI0.
@@ -1370,11 +1368,12 @@ Lemma Hahn_decomposition_measure_uniqueness
           nu (S `&` P1) = nu (S `&` P2) /\ nu (S `&` N1) = nu (S `&` N2).
 Proof.
 move=> P1 N1 P2 N2 Hahn1 Hahn2 S mS.
-move: (Hahn1) (Hahn2) => [posP1 negN1 _ _] [posP2 negN2 _ _].
+move: (Hahn1) (Hahn2) => [posP1 negN1 PN1T PN10] [posP2 negN2 PN2T PN20].
 move: (posP1) (negN1) (posP2) (negN2) => [mP1 _] [mN1 _] [mP2 _] [mN2 _].
 rewrite !inE in mP1 mN1 mP2 mN2.
 split.
   apply (@eq_trans _ _ (nu (S `&` P1 `&` P2))).
+    rewrite (s_measure_partition2 nu mP1 mN1 PN1T PN10).
     by rewrite (s_measure_Hahn_decomposition Hahn2 (measurableI S P1 mS mP1))
                  (positive_negative0 posP1 negN2)// adde0.
     by rewrite (s_measure_Hahn_decomposition Hahn1 (measurableI S P2 mS mP2))
