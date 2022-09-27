@@ -1317,7 +1317,6 @@ split => //.
 - split.
     by rewrite inE; apply: measurableD => //.
   move=> E /[1!inE] mE EB.
-  admit.
 Admitted.
 
 End hahn_decomposition_lemma.
@@ -1603,18 +1602,21 @@ move=> P1 N1 P2 N2 Hahn1 Hahn2 S mS.
 move: (Hahn1) (Hahn2) => [posP1 negN1 PN1T PN10] [posP2 negN2 PN2T PN20].
 move: (posP1) (negN1) (posP2) (negN2) => [mP1 _] [mN1 _] [mP2 _] [mN2 _].
 rewrite !inE in mP1 mN1 mP2 mN2.
+have mSP1 := (measurableI S P1 mS mP1).
+have mSN1 := (measurableI S N1 mS mN1).
+have mSP2 := (measurableI S P2 mS mP2).
+have mSN2 := (measurableI S N2 mS mN2).
 split.
   apply (@eq_trans _ _ (nu (S `&` P1 `&` P2))).
-    rewrite (s_measure_partition2 nu mP1 mN1 PN1T PN10).
-    by rewrite (s_measure_Hahn_decomposition Hahn2 (measurableI S P1 mS mP1))
-                 (positive_negative0 posP1 negN2)// adde0.
-    by rewrite (s_measure_Hahn_decomposition Hahn1 (measurableI S P2 mS mP2))
-                 (positive_negative0 posP2 negN1)// adde0 setIAC.
+     by rewrite (s_measure_partition2 nu mP2 mN2 PN2T PN20)//
+       (positive_negative0 posP1 negN2 mS) adde0.
+   by rewrite [RHS](s_measure_partition2 nu mP1 mN1 PN1T PN10)//
+     (positive_negative0 posP2 negN1 mS) adde0 setIAC.
 apply (@eq_trans _ _ (nu (S `&` N1 `&` N2))).
-  by rewrite (s_measure_Hahn_decomposition Hahn2 (measurableI S N1 mS mN1))
-            {1}setIAC (positive_negative0 posP2 negN1)// add0e.
-  by rewrite (s_measure_Hahn_decomposition Hahn1 (measurableI S N2 mS mN2))
-            (setIAC S N2 P1) (positive_negative0 posP1 negN2)// add0e setIAC.
+   by rewrite (s_measure_partition2 nu mP2 mN2 PN2T PN20)//
+     {1}setIAC (positive_negative0 posP2 negN1 mS) add0e.
+ by rewrite [RHS](s_measure_partition2 nu mP1 mN1 PN1T PN10)//
+   (setIAC _ _ P1) (positive_negative0 posP1 negN2 mS) add0e setIAC.
 Qed.
 
 (* Definition  : measureable -> R :=  *)
