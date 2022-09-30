@@ -1167,6 +1167,7 @@ move=> AAD muD0.
 pose seq_type (A : set X * \bar R * set X) :=
   measurable A.1.1 /\
   0 <= mu A.1.1 /\
+  0 <= A.1.2 /\
   A.1.1 `<=` D /\
   mu A.1.1 >= mine (A.1.2 * 2^-1%:E) 1.
 pose P (A1 A2 : {A : set X * \bar R * set X | seq_type A}) :=
@@ -1205,7 +1206,7 @@ have [A0 [mA0 A0d0 A0D muA0_ge0]] :
   by rewrite (le_trans _ (ltW m0muA0))// ltW.
 pose U0 : set X := set0.
 have : {AdU : nat -> {A : set X * \bar R * set X | seq_type A} |
-  AdU 0%N = (exist _ (A0, d0, A0) (conj mA0 (conj muA0_ge0 (conj A0D A0d0)))) /\
+  AdU 0%N = (exist _ (A0, d0, A0) (conj mA0 (conj muA0_ge0 (conj d0_ge0 (conj A0D A0d0))))) /\
   forall n, P (AdU n) (AdU n.+1)}.
   apply dependent_choice_Type => -[[[An dn] Un] [/= mAn mAn_ge0]].
   pose dn1 := ereal_sup [set mE | exists E, [/\ mE = mu E, measurable E & E `<=` D `\` Un] ].
@@ -1244,7 +1245,7 @@ have : {AdU : nat -> {A : set X * \bar R * set X | seq_type A} |
   have An1D : An1 `<=` D.
     apply: (subset_trans An1UN).
     by apply: subDsetl.
-  exists (exist _ (An1, dn1, Un `|` An1) (conj mAn1 (conj muAn1_ge0 (conj An1D An1d1)))).
+  exists (exist _ (An1, dn1, Un `|` An1) (conj mAn1 (conj muAn1_ge0 (conj dn1_ge0 (conj An1D An1d1))))).
   split => /=.
   - done.
   - split => //.
@@ -1301,22 +1302,43 @@ have A_cvg_0 :  (fun n => mu (proj1_sig (AdU n)).1.1) --> 0.
     rewrite isfinite//.
   apply/cvg_ex.
   by exists (fine (mu Aoo)).
-have H1 : mu D >= mu B.
-  rewrite -(@setDUK _ Aoo D); last first.
-    rewrite /Aoo.
-    apply: bigcup_sub => i _.
+have mine_cvg_0 : (fun n => mine ((proj1_sig (AdU n)).1.2 * (2^-1)%:E) 1) --> 0.
+  apply: (@ereal_squeeze _ (cst 0) _ (fun n => mu (proj1_sig (AdU n)).1.1)); [|exact: cvg_cst|by []].
+  apply: nearW => n /=.
+  case: (AdU n) => [[[A_ d_] _] [/= _ [mu_ge0 [d_ge0 [_ ->]]]]].
+  by rewrite andbT le_minr lee01 andbT mule_ge0.
+
+have dn0 : (fun n => ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU n)).1.2) --> 0.
+  have : exists (N : nat), forall n, (n > N)%nat -> mine ((proj1_sig (AdU n)).1.2 * (2^-1)%:E) 1 =
+                       ((proj1_sig (AdU n)).1.2 * (2^-1)%:E).
+Admitted.
+
+
+have EUn :forall n, E `<=` D `\` ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU n)).2.
+  move=> n.
+  apply (subset_trans EB).
+  rewrite /B.
+  apply setDSS => //.
+  rewrite /Aoo.
+  rewrite Ubig.
+  rewrite /sval.
+  admit.
+have Edn: forall n, mu E <= ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU n)).1.2.
+  elim.
     rewrite /sval.
-    by case: (AdU i) => -[[? ?] ?] [? [? []]].
-  rewrite s_measureU//; last 2 first.
-    by apply: measurableD => //.
-    by rewrite setDIK.
-  by rewrite -/B lee_addr.
-split => //.
-- rewrite /B.
-  exact: subDsetl.
-- split.
-    by rewrite inE; apply: measurableD => //.
-  move=> E /[1!inE] mE EB.
+    rewrite AdU0 //=.
+    rewrite /d0.
+    rewrite -(ereal_sup1 (mu E)).
+    apply le_ereal_sup.
+    move=> muE//= H.
+    exists E.
+    split=> //.
+    apply (subset_trans EB).
+    rewrite /B.
+    apply subDsetl.
+  move=> n Hn.
+  admit.
+
 Admitted.
 
 End hahn_decomposition_lemma.
