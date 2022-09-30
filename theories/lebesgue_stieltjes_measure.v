@@ -1145,6 +1145,9 @@ rewrite subset0 => ->.
 by rewrite s_measure0.
 Qed.
 
+Lemma fine_le (R : numDomainType) : {in fin_num &, {homo @fine R : x y / x <= y >-> (x <= y)%R}}.
+Proof. by move=> [? [?| |]| |]. Qed.
+
 Lemma sum_fine (R : numDomainType) (I : eqType) s (P : pred I) (F : I -> \bar R) :
   (forall i, (i \in s) || P i -> F i \is a fin_num) ->
   (\sum_(i <- s | P i) fine (F i) = fine (\sum_(i <- s | P i) F i))%R.
@@ -1307,38 +1310,74 @@ have mine_cvg_0 : (fun n => mine ((proj1_sig (AdU n)).1.2 * (2^-1)%:E) 1) --> 0.
   apply: nearW => n /=.
   case: (AdU n) => [[[A_ d_] _] [/= _ [mu_ge0 [d_ge0 [_ ->]]]]].
   by rewrite andbT le_minr lee01 andbT mule_ge0.
-
-have dn0 : (fun n => ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU n)).1.2) --> 0.
-  have : exists (N : nat), forall n, (n > N)%nat -> mine ((proj1_sig (AdU n)).1.2 * (2^-1)%:E) 1 =
-                       ((proj1_sig (AdU n)).1.2 * (2^-1)%:E).
-Admitted.
-
-
-have EUn :forall n, E `<=` D `\` ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU n)).2.
-  move=> n.
-  apply (subset_trans EB).
-  rewrite /B.
-  apply setDSS => //.
-  rewrite /Aoo.
-  rewrite Ubig.
-  rewrite /sval.
-  admit.
-have Edn: forall n, mu E <= ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU n)).1.2.
-  elim.
+have dn0 : (fun n => (proj1_sig (AdU n)).1.2) --> 0.
+  move/ereal_cvg_real : A_cvg_0; rewrite /sval/= => -[_ A_cvg_0].
+  move/(@cvg_distP _ [normedModType R of R^o]) : A_cvg_0.
+  move=> /(_ _ ltr01).
+  rewrite near_map => -[N _ hN].
+  have H1 : \forall x \near \oo, (let (a, _) := AdU x in a).1.2 \is a fin_num.
+    near=> n.
+    have /hN : (N <= n)%N by near: n; exists N.
+    rewrite sub0r normrN /=.
+    rewrite ger0_norm; last first.
+      rewrite fine_ge0//.
+      by case: (AdU n) => -[[A_ d_] ?] [_ []].
+    case: (AdU n) => -[[A_ d_] ?] /= [? [_ [? [_]]]] /=.
+    rewrite /mine.
+    case: ifPn.
+      move=> + _ _.
+      rewrite lte_pdivr_mulr// mul1e => d2.
+      by rewrite ge0_fin_numE// (lt_le_trans d2)// leey.
+    move=> _ /[swap]; rewrite ltNge => -/[swap].
+    by move/fine_le => -> //; rewrite isfinite.
+  apply/ereal_cvg_real; split => //.
+  apply/(@cvg_distP _ [normedModType R of R^o]) => e e0.
+  rewrite near_map.
+  move/ereal_cvg_real : mine_cvg_0; rewrite /sval/= => -[_ mine_cvg_0].
+  move/(@cvg_distP _ [normedModType R of R^o]) : mine_cvg_0.
+  have e2 : (0 < minr (e / 2) 1)%R by rewrite lt_minr// ltr01 andbT divr_gt0.
+  move=> /(_ _ e2).
+  rewrite near_map => -[M _ hM].
+  near=> n.
+  rewrite sub0r normrN.
+  have /hM : (M <= n)%N by near: n; exists M.
+  rewrite sub0r normrN.
+  rewrite /mine/=.
+  case: ifPn.
+    move=> _.
+    rewrite fineM//=; last first.
+      near: n.
+      exact: H1.
+    rewrite normrM (@gtr0_norm _ 2^-1%R); last by rewrite invr_gt0.
+    rewrite ltr_pdivr_mulr//.
+    move/lt_le_trans; apply.
+    rewrite /minr; case: ifPn.
+      by rewrite -mulrA mulVr// ?mulr1// unitfE.
+    rewrite -leNgt.
+    by rewrite -ler_pdivl_mulr//.
+  rewrite -leNgt.
+  rewrite /minr.
+  case: ifPn.
+    rewrite ger0_norm//= => abs _.
+    by rewrite ltNge (ltW abs).
+    by rewrite ger0_norm//= ltxx.
+have H1 : mu D >= mu B.
+  rewrite -(@setDUK _ Aoo D); last first.
+    rewrite /Aoo.
+    apply: bigcup_sub => i _.
     rewrite /sval.
-    rewrite AdU0 //=.
-    rewrite /d0.
-    rewrite -(ereal_sup1 (mu E)).
-    apply le_ereal_sup.
-    move=> muE//= H.
-    exists E.
-    split=> //.
-    apply (subset_trans EB).
-    rewrite /B.
-    apply subDsetl.
-  move=> n Hn.
+    by case: (AdU i) => -[[? ?] ?] [? [? [? []]]].
+  rewrite s_measureU//; last 2 first.
+    by apply: measurableD => //.
+    by rewrite setDIK.
+  by rewrite -/B lee_addr.
+split => //.
+- rewrite /B.
+  exact: subDsetl.
+- split.
+    by rewrite inE; apply: measurableD => //.
+  move=> E /[1!inE] mE EB.
   admit.
-
 Admitted.
 
 End hahn_decomposition_lemma.
