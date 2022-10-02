@@ -1145,6 +1145,7 @@ rewrite subset0 => ->.
 by rewrite s_measure0.
 Qed.
 
+(* this is a PR in progress *)
 Lemma fine_le (R : numDomainType) : {in fin_num &, {homo @fine R : x y / x <= y >-> (x <= y)%R}}.
 Proof. by move=> [? [?| |]| |]. Qed.
 
@@ -1157,6 +1158,9 @@ move=> h; apply: EFin_inj; rewrite -sumEFin fineK; last first.
 by apply eq_bigr => i Pi; rewrite fineK ?h ?Pi ?orbT.
 Qed.
 
+Lemma set1_subset (T : Type) (x : T) A : ([set x] `<=` A) = (x \in A).
+Proof. by apply/propext; split=> [|/[!inE] xA _ ->//]; rewrite inE; exact. Qed.
+
 Section hahn_decomposition_lemma.
 Variables (d : _) (X : measurableType d) (R : realType).
 Variables (mu : {smeasure set X -> \bar R}).
@@ -1164,7 +1168,7 @@ Variables (mu : {smeasure set X -> \bar R}).
 Let AA := @measurable _ X.
 
 Lemma prop57 D : AA D -> mu D <= 0 ->
-  {A | [/\ A `<=` D, negative_set mu A & mu A <= mu D] }.
+  {A | [/\ A `<=` D, measurable A, negative_set mu A & mu A <= mu D] }.
 Proof.
 move=> AAD muD0.
 pose seq_type (A : set X * \bar R * set X) :=
@@ -1185,27 +1189,20 @@ have [A0 [mA0 A0d0 A0D muA0_ge0]] :
     {A0 | [/\ measurable A0, mu A0 >= mine (d0 * 2^-1%R%:E) 1%E, A0 `<=` D & mu A0 >= 0] }.
   pose m0 := mine (d0 * 2^-1%R%:E) 1%E.
   apply/cid.
-  move: d0_ge0; rewrite le_eqVlt => /orP[/eqP <-|d0_ge0].
-    exists set0; split => //.
-    rewrite mul0e.
-    by rewrite min_l// s_measure0.
-    by rewrite s_measure0.
-  have m0_gt0 : 0 < m0.
-    by rewrite /m0 lt_minr lte01 andbT mule_gt0//.
+  move: d0_ge0; rewrite le_eqVlt => /predU1P[<-|d0_gt0].
+    by exists set0; split => //; rewrite s_measure0.
+  have m0_gt0 : 0 < m0 by rewrite /m0 lt_minr lte01 andbT mule_gt0.
   have m0d0 : m0 < d0.
-    rewrite /m0.
-    have [->|d0oo] := eqVneq d0 +oo.
-      by rewrite min_r// ?ltey// gt0_mulye// leey.
+    rewrite /m0; have [->|d0oo] := eqVneq d0 +oo.
+      by rewrite min_r ?ltey// gt0_mulye// leey.
     rewrite -(@fineK _ d0); last first.
-      by rewrite ge0_fin_numE// ?(ltW d0_ge0)// lt_neqAle d0oo leey.
-    rewrite -EFinM minEFin lte_fin lt_minl.
-    apply/orP; left.
-    rewrite ltr_pdivr_mulr// ltr_pmulr// ?ltr1n// fine_gt0// d0_ge0/=.
+      by rewrite ge0_fin_numE// ?(ltW d0_gt0)// lt_neqAle d0oo leey.
+    rewrite -EFinM minEFin lte_fin lt_minl; apply/orP; left.
+    rewrite ltr_pdivr_mulr// ltr_pmulr// ?ltr1n// fine_gt0// d0_gt0/=.
     by rewrite lt_neqAle d0oo/= leey.
   move: (m0d0).
   move=> /ereal_sup_gt/cid2[x/= /cid[A0 [->{x} mA0 A0D m0muA0]]].
-  exists A0; split => //.
-  exact/ltW.
+  exists A0; split => //; first exact/ltW.
   by rewrite (le_trans _ (ltW m0muA0))// ltW.
 pose U0 : set X := set0.
 have : {AdU : nat -> {A : set X * \bar R * set X | seq_type A} |
@@ -1215,43 +1212,29 @@ have : {AdU : nat -> {A : set X * \bar R * set X | seq_type A} |
   pose dn1 := ereal_sup [set mE | exists E, [/\ mE = mu E, measurable E & E `<=` D `\` Un] ].
   have dn1_ge0 : 0 <= dn1.
     by apply: ereal_sup_ub => /=; exists set0; split => //; rewrite s_measure0.
-  have [An1 [mAn1 An1d1 An1UN muAn1_ge0] ] : {An1 | [/\ measurable An1,
+  have [An1 [mAn1 An1d1 An1Un muAn1_ge0] ] : {An1 | [/\ measurable An1,
                               mu An1 >= mine (dn1 * 2^-1%:E) 1,
                               An1 `<=` D `\` Un &
                               mu An1 >= 0] }.
     pose mn1 := mine (dn1 * 2^-1%R%:E) 1%E.
     apply/cid.
-    move: dn1_ge0; rewrite le_eqVlt => /orP[/eqP <-|dn1_gt0].
-      exists set0; split => //.
-      rewrite mul0e.
-      by rewrite min_l// s_measure0.
-      by rewrite s_measure0.
-    have mn1_gt0 : 0 < mn1.
-      by rewrite /mn1 lt_minr lte01 andbT mule_gt0//.
+    move: dn1_ge0; rewrite le_eqVlt => /predU1P[<-|dn1_gt0].
+      by exists set0; split => //; rewrite s_measure0.
+    have mn1_gt0 : 0 < mn1 by rewrite /mn1 lt_minr lte01 andbT mule_gt0.
     have : mn1 < dn1.
-      rewrite /mn1.
-      have [->|dn1oo] := eqVneq dn1 +oo.
+      rewrite /mn1; have [->|dn1oo] := eqVneq dn1 +oo.
         by rewrite min_r// ?ltey// gt0_mulye// leey.
       rewrite -(@fineK _ dn1); last first.
         by rewrite ge0_fin_numE// ?(ltW dn1_gt0)// lt_neqAle dn1oo leey.
-      rewrite -EFinM minEFin lte_fin lt_minl.
-      apply/orP; left.
+      rewrite -EFinM minEFin lte_fin lt_minl; apply/orP; left.
       rewrite ltr_pdivr_mulr// ltr_pmulr// ?ltr1n// fine_gt0// dn1_gt0/=.
       by rewrite lt_neqAle dn1oo/= leey.
     move=> /ereal_sup_gt/cid2[x/= /cid[An1 [xE mAn1 An1DUn mn1x]]].
-    exists An1; split.
-    exact: mAn1.
-    by rewrite -xE (le_trans _ (ltW mn1x))// /mn1.
-    done.
-    rewrite -xE (le_trans _ (ltW mn1x))// /mn1.
-    by rewrite -/mn1 ltW.
-  have An1D : An1 `<=` D.
-    apply: (subset_trans An1UN).
-    by apply: subDsetl.
-  exists (exist _ (An1, dn1, Un `|` An1) (conj mAn1 (conj muAn1_ge0 (conj dn1_ge0 (conj An1D An1d1))))).
-  split => /=.
-  - done.
-  - split => //.
+    exists An1; split => //.
+      by rewrite -xE (le_trans _ (ltW mn1x)).
+    by rewrite -xE (le_trans _ (ltW mn1x))// ltW.
+  have An1D : An1 `<=` D by apply: (subset_trans An1Un); apply: subDsetl.
+  by exists (exist _ (An1, dn1, Un `|` An1) (conj mAn1 (conj muAn1_ge0 (conj dn1_ge0 (conj An1D An1d1))))).
 move=> [AdU [AdU0 AdUn]].
 set Aoo := \bigcup_k (proj1_sig (AdU k)).1.1.
 have mAoo : measurable Aoo.
@@ -1264,24 +1247,18 @@ have Ubig n : (proj1_sig (AdU n)).2 = \big[setU/set0]_(i < n.+1) (proj1_sig (AdU
   rewrite /sval/= in ih.
   have [_ [_ ->]] := AdUn n.
   by rewrite big_ord_recr/= -ih.
-have tA : trivIset [set: nat]
-  (fun n : nat => ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU n)).1.1).
+have tA : trivIset [set: nat] (fun n => (proj1_sig (AdU n)).1.1).
   apply: subsetC_trivIset; rewrite /sval/= => n.
   have [_ [K1 _]] := AdUn n.
   apply (subset_trans K1).
   rewrite -setTD.
   apply: setDSS => //.
-  rewrite Ubig.
-  by rewrite big_ord_recr/=.
+  by rewrite Ubig big_ord_recr.
 exists B.
-have mA : (forall k : nat, d.-measurable ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU k)).1.1).
+have mA : (forall k, d.-measurable (proj1_sig (AdU k)).1.1).
   move=> k; rewrite /sval/=.
   by case: (AdU k) => -[[? ?] ?] [].
-have cvg_muA : (fun n : nat =>
-   \sum_(0 <= i < n)
-      mu
-        ((@sval) (set X * \bar R * set X) [eta seq_type]
-           (AdU i)).1.1) --> mu Aoo.
+have cvg_muA : (fun n => \sum_(0 <= i < n) mu (proj1_sig (AdU i)).1.1) --> mu Aoo.
   exact: (@smeasure_semi_sigma_additive _ _ _ mu (fun n => (proj1_sig (AdU n)).1.1) mA tA mAoo).
 have muUA : mu Aoo >= 0.
   move/cvg_lim : cvg_muA => <-//=; apply: nneseries_ge0 => n _.
@@ -1289,30 +1266,25 @@ have muUA : mu Aoo >= 0.
 have A_cvg_0 :  (fun n => mu (proj1_sig (AdU n)).1.1) --> 0.
   rewrite [X in X --> _](_ : _ = EFin \o (fun n => fine (mu (proj1_sig (AdU n)).1.1))); last first.
     apply/funext => n/=.
-    by rewrite fineK// isfinite//=.
+    by rewrite fineK// isfinite.
   apply: continuous_cvg => //.
   apply/(@cvg_series_cvg_0 _ [normedModType R of R^o]).
   move: cvg_muA.
   rewrite -(@fineK _ (mu Aoo)) ?isfinite//.
   move/ereal_cvg_real => [H1 H2].
-  rewrite (_ : series _ = fine \o (fun n : nat =>
-     \sum_(0 <= i < n)
-        mu
-          ((@sval) (set X * \bar R * set X) [eta seq_type]
-             (AdU i)).1.1)); last first.
+  rewrite (_ : series _ = fine \o (fun n => \sum_(0 <= i < n) mu (proj1_sig (AdU i)).1.1)); last first.
     apply/funext => n /=.
     rewrite /series/= sum_fine//= => i _.
-    rewrite isfinite//.
-  apply/cvg_ex.
-  by exists (fine (mu Aoo)).
+    by rewrite isfinite.
+  by apply/cvg_ex; exists (fine (mu Aoo)).
 have mine_cvg_0 : (fun n => mine ((proj1_sig (AdU n)).1.2 * (2^-1)%:E) 1) --> 0.
   apply: (@ereal_squeeze _ (cst 0) _ (fun n => mu (proj1_sig (AdU n)).1.1)); [|exact: cvg_cst|by []].
   apply: nearW => n /=.
   case: (AdU n) => [[[A_ d_] _] [/= _ [mu_ge0 [d_ge0 [_ ->]]]]].
   by rewrite andbT le_minr lee01 andbT mule_ge0.
 have dn0 : (fun n => (proj1_sig (AdU n)).1.2) --> 0.
-  move/ereal_cvg_real : A_cvg_0; rewrite /sval/= => -[_ A_cvg_0].
-  move/(@cvg_distP _ [normedModType R of R^o]) : A_cvg_0.
+  move/ereal_cvg_real : A_cvg_0; rewrite /sval/= => -[_].
+  move/(@cvg_distP _ [normedModType R of R^o]).
   move=> /(_ _ ltr01).
   rewrite near_map => -[N _ hN].
   have H1 : \forall x \near \oo, (let (a, _) := AdU x in a).1.2 \is a fin_num.
@@ -1343,8 +1315,7 @@ have dn0 : (fun n => (proj1_sig (AdU n)).1.2) --> 0.
   have /hM : (M <= n)%N by near: n; exists M.
   rewrite sub0r normrN.
   rewrite /mine/=.
-  case: ifPn.
-    move=> _.
+  case: ifPn => [_|].
     rewrite fineM//=; last first.
       near: n.
       exact: H1.
@@ -1353,14 +1324,13 @@ have dn0 : (fun n => (proj1_sig (AdU n)).1.2) --> 0.
     move/lt_le_trans; apply.
     rewrite /minr; case: ifPn.
       by rewrite -mulrA mulVr// ?mulr1// unitfE.
-    rewrite -leNgt.
-    by rewrite -ler_pdivl_mulr//.
+    by rewrite -leNgt -ler_pdivl_mulr.
   rewrite -leNgt.
   rewrite /minr.
   case: ifPn.
     rewrite ger0_norm//= => abs _.
     by rewrite ltNge (ltW abs).
-    by rewrite ger0_norm//= ltxx.
+  by rewrite ger0_norm//= ltxx.
 have H1 : mu D >= mu B.
   rewrite -(@setDUK _ Aoo D); last first.
     rewrite /Aoo.
@@ -1368,84 +1338,72 @@ have H1 : mu D >= mu B.
     rewrite /sval.
     by case: (AdU i) => -[[? ?] ?] [? [? [? []]]].
   rewrite s_measureU//; last 2 first.
-    by apply: measurableD => //.
+    exact: measurableD.
     by rewrite setDIK.
   by rewrite -/B lee_addr.
 split => //.
 - rewrite /B.
   exact: subDsetl.
+- exact: measurableD.
 - split.
-    by rewrite inE; apply: measurableD => //.
+    by rewrite inE; exact: measurableD.
   move=> E /[1!inE] mE EB.
-  admit.
-Admitted.
+  pose C := [set mE | exists E, [/\ mE = mu E, measurable E & E `<=` B] ].
+  have K1 : mu E \in C by rewrite /C/= inE; exists E.
+  have K2 n : C `<=`
+      [set mE | exists E, [/\ mE = mu E, measurable E & E `<=` D `\` \big[setU/set0]_(i < n) (proj1_sig (AdU i)).1.1] ].
+    move=> x/= [F [L1 L2 L3]].
+    exists F; split => //.
+    apply: (subset_trans L3).
+    rewrite /B.
+    apply: setDS.
+    rewrite /Aoo.
+    exact: bigsetU_bigcup.
+  have K3 n : [set mu E] `<=`
+    [set mE | exists E, [/\ mE = mu E, measurable E & E `<=` D `\` \big[setU/set0]_(i < n) (proj1_sig (AdU i)).1.1]].
+    move: K1.
+    rewrite -set1_subset => /subset_trans; apply.
+    exact: (K2 n).
+  have mudelta n : mu E <= (proj1_sig (AdU n)).1.2.
+    destruct n.
+      rewrite AdU0/=.
+      rewrite /d0.
+      apply: ereal_sup_ub => /=.
+      exists E; split => //.
+      apply: (subset_trans EB).
+      rewrite /B.
+      exact: subDsetl.
+    suff : mu E <= ereal_sup
+         [set mE | (exists E : set X,
+                      [/\ mE = mu E, d.-measurable E
+                        & E `<=` D `\` (proj1_sig (AdU n)).2])].
+      have [+ _] := AdUn n.
+      by move=> <-.
+    have := K3 n.+1.
+    move/le_ereal_sup.
+    rewrite ereal_sup1 => /le_trans; apply.
+    apply/le_ereal_sup => x/= [A [L1 L2 L3]].
+    exists A; split => //.
+    apply: (subset_trans L3).
+    apply: setDS.
+    by rewrite Ubig.
+  apply: (@closed_cvg _ _ _ _ _ (fun v => mu E <= v) _ _ _ dn0) => //.
+  exact: closed_ereal_le_ereal.
+  exact: nearW.
+Unshelve. all: by end_near. Qed.
+(* ref: https://proofwiki.org/wiki/Measurable_Set_with_Negative_Measure_has_Negative_Subset
+mais y'a quelques fautes  *)
 
 End hahn_decomposition_lemma.
 
-Lemma Hahn_decomposition_lemma d (X : measurableType d) (R : realType)
-    (nu : {smeasure set X -> \bar R}) :
-  let negatives := [set Z | negative_set nu Z] in
-  let measure_negatives := [set nu Z | Z in negatives] in
-  let alpha := ereal_inf measure_negatives in
-  { N : (set X) ^nat |
-  [/\ (forall i, negatives (N i)),
-     (fun i => nu (N i)) --> alpha &
-     alpha <= 0]}.
-Proof.
-move=> negatives.
-move=> measure_negatives.
-move=> alpha.
-pose seq_type (A : set X * \bar R * set X) :=
-  measurable A.1.1 /\
-  nu A.1.1 <= 0.
-pose P (A1 A2 : {A : set X * \bar R * set X | seq_type A}) :=
-  (proj1_sig A2).1.2 = ereal_inf [set mE | exists E, [/\ mE = nu E, measurable E & E `<=` setT `\` (proj1_sig A1).2] ].
-pose s0 : \bar R := ereal_inf [set mE | exists E, [/\ mE = nu E, measurable E & E `<=` setT] ].
-have s0_le0 : s0 <= 0.
-  by apply: ereal_inf_lb => /=; exists set0; split => //; rewrite s_measure0.
-have [A0 [mA0 A0d0 muA0_le0]] :
-    {A0 | [/\ measurable A0, nu A0 <= maxe (s0 * 2^-1%R%:E) (- 1%E) & nu A0 <= 0] }.
-  pose m0 := maxe (s0 * 2^-1%R%:E) (- 1%E).
-  have : s0 < m0.
-    rewrite /m0.
-    admit.
-  move=> /ereal_inf_lt/cid2[x/= /cid[A0 [->{x} mA0 A0D m0muA0]]].
-  exists A0; split => //.
-  exact/ltW.
-  admit.
-pose U0 : set X := set0.
-have : {AdU : nat -> {A : set X * \bar R * set X | seq_type A} |
-  AdU 0%N = (exist _ (A0, s0, setT) (conj mA0 muA0_le0)) /\
-  forall n, P (AdU n) (AdU n.+1)}.
-  apply dependent_choice_Type => -[[[An dn] Un] [/= mAn nuAn_le0]].
-  pose sn1 := ereal_inf [set mE : \bar R | exists E, [/\ mE = nu E, measurable E & E `<=` setT `\` Un] ].
-  have sn1_le0 : sn1 <= 0.
-    admit.
-  have [An1 [mAn1 An1d1 muAn1_ge0] ] : {An1 | [/\ measurable An1,
-                              nu An1 <= maxe (s0 * 2^-1%:E) (- 1%E)%E &
-                              nu An1 <= 0] }.
-    pose mn1 := maxe (sn1 * 2^-1%R%:E) (- 1%E).
-    have [Nn [NnAn negativeNn nuNnAn]] := prop57 mAn nuAn_le0.
-    have : sn1 < mn1.
-      rewrite /mn1.
-      admit.
-    move=> /ereal_inf_lt/cid2[x/= /cid[An1 [xE mAn1 An1DUn mn1x]]].
-    exists An1; split.
-    exact: mAn1.
-    rewrite -xE (le_trans (ltW mn1x))// /mn1.
-    admit.
-    rewrite -xE (le_trans (ltW mn1x))// /mn1.
-    admit.
-  exists (exist _ (An1, sn1, setT `\` An `|` An1) (conj mAn1 muAn1_ge0)).
-  split => /=.
-move=> [AdU [AdU0 AdUn]].
-exists (fun n => (proj1_sig (AdU n)).1.1).
-split => //.
-- move=> n.
-  admit.
-- admit.
-- admit.
-Admitted.
+Lemma le0_fin_numE {R : realDomainType} [x : \bar R] : x <= 0 -> (x \is a fin_num) = (-oo < x).
+Proof. by move: x => [x| |]//=; rewrite lee_fin => x0; rewrite ltNye. Qed.
+
+Lemma fine_lt0 {R : numDomainType} [x : \bar R] : -oo < x < 0 -> (fine x < 0)%R.
+Proof. by move: x => [x| |] //= /andP[_]; rewrite lte_fin. Qed.
+
+Lemma lteN10 (R : numDomainType) : (- (1) < 0 :> \bar R)%E.
+Proof. by rewrite lte_fin ltrN10. Qed.
 
 Lemma lte_naddl {R : realDomainType} (x : \bar R) [y : \bar R] :
   x \is a fin_num -> y < 0 -> x + y < x.
@@ -1511,6 +1469,61 @@ apply: bigcup_negative_set => -[//|[//|/= _]].
 exact: negative_set0.
 Qed.
 
+Lemma lee_sum_npos_ord (R : realDomainType) (f : nat -> \bar R) (P : pred nat) :
+  (forall n, P n -> f n <= 0) ->
+  {homo (fun n => \sum_(i < n | P i) f i) : i j / (i <= j)%N >-> j <= i}.
+Proof.
+move=> f0 i j le_ij.
+rewrite [in leRHS](big_ord_widen_cond j) // big_mkcondr /=.
+by rewrite lee_sum// => k ?; case: ifP => // _; exact: f0.
+Qed.
+
+Lemma lee_sum_npos_natr (R : realDomainType) (f : nat -> \bar R) (P : pred nat) m :
+  (forall n, (m <= n)%N -> P n -> f n <= 0) ->
+  {homo (fun n => \sum_(m <= i < n | P i) (f i)) : i j / (i <= j)%N >-> j <= i}.
+Proof.
+move=> f0 i j le_ij; rewrite -[m]add0n !big_addn !big_mkord.
+apply: (@lee_sum_npos_ord _ (fun k => f (k + m)%N) (fun k => P (k + m)%N));
+  by [move=> n /f0; apply; rewrite leq_addl | rewrite leq_sub2r].
+Qed.
+
+Lemma is_cvg_ereal_npos_natsum_cond (R : realType) m (u_ : (\bar R)^nat)
+  (P : pred nat) : (forall n, (m <= n)%N -> P n -> u_ n <= 0) ->
+  cvg (fun n => \sum_(m <= i < n | P i) u_ i).
+Proof.
+move/lee_sum_npos_natr/ereal_nonincreasing_cvg => cu; apply: cvgP; exact: cu.
+Qed.
+
+Lemma lee_npeseries (R : realType) (u v : (\bar R)^nat) (P : pred nat) :
+  (forall i, P i -> u i <= 0) -> (forall n, P n -> v n <= u n) ->
+  \sum_(i <oo | P i) v i <= \sum_(i <oo | P i) u i.
+Proof.
+move=> u0 Puv; apply: lee_lim.
+- by apply: is_cvg_ereal_npos_natsum_cond => n _ /[dup] Pn /Puv/le_trans; apply; apply/u0.
+- by apply: is_cvg_ereal_npos_natsum_cond => n _ Pn; exact/u0.
+- by near=> n; exact: lee_sum.
+Unshelve. all: by end_near. Qed.
+
+Lemma is_cvg_npeseries_cond (R : realType) (u_ : (\bar R)^nat)
+  (P : pred nat) : (forall n, P n -> u_ n <= 0) ->
+  cvg (fun n => \sum_(0 <= i < n | P i) u_ i).
+Proof. by move=> u_le0; apply: is_cvg_ereal_npos_natsum_cond => n _ /u_le0. Qed.
+
+Lemma is_cvg_npeseries (R : realType) (u_ : (\bar R)^nat)
+  (P : pred nat) : (forall n, P n -> u_ n <= 0) ->
+  cvg (fun n => \sum_(0 <= i < n | P i) u_ i).
+Proof. by move=> ?; exact: is_cvg_npeseries_cond. Qed.
+
+Lemma nneseries_le0 [R : realType] [u_ : (\bar R) ^nat] [P : pred nat] :
+  (forall n : nat, P n -> u_ n <= 0) -> \sum_(i <oo | P i) u_ i <= 0.
+Proof.
+move=> u0; apply: (ereal_lim_le (is_cvg_npeseries u0)).
+by near=> k; rewrite sume_le0 // => i; apply: u0.
+Unshelve. all: by end_near. Qed.
+
+Lemma fine_le0 {R : numDomainType} [x : \bar R] : x <= 0 -> (fine x <= 0)%R.
+Proof. by case: x. Qed.
+
 Theorem Hahn_decomposition d (X : measurableType d) (R : realType)
     (nu : {smeasure set X -> \bar R}) :
   exists P N,
@@ -1519,82 +1532,249 @@ Theorem Hahn_decomposition d (X : measurableType d) (R : realType)
       P `|` N = setT &
       P `&` N = set0].
 Proof.
-pose negatives := [set Z | negative_set nu Z].
-have negatives_nonempty : negatives !=set0.
-  by exists set0; apply: negative_set0.
-pose measure_negatives := [set nu Z | Z in negatives].
-pose alpha := ereal_inf measure_negatives. (* ereal_inf_EFin *)
-have [N_ [negN_ cvgN_ alpha0]]: {N : (set X) ^nat |
-  [/\ (forall i, negatives (N i)),
-     (fun i => nu (N i)) --> alpha &
-     alpha <= 0]}.
-  exact: Hahn_decomposition_lemma.
-pose N := \bigcup_i (N_ i).
+pose seq_type (A : set X * \bar R * set X) :=
+  measurable A.1.1 /\
+  nu A.1.1 <= 0 /\
+  A.1.2 <= 0 /\
+  negative_set nu A.1.1 /\
+  nu A.1.1 <= maxe (A.1.2 * 2^-1%:E) (- ( 1))%E.
+pose Q (A1 A2 : {A : set X * \bar R * set X | seq_type A}) :=
+  (proj1_sig A2).1.2 = ereal_inf
+    [set mE | exists E, [/\ mE = nu E, measurable E & E `<=` setT `\` (proj1_sig A1).2] ] /\
+  (proj1_sig A2).1.1 `<=` setT `\` (proj1_sig A1).2 /\
+  (proj1_sig A2).2 = (proj1_sig A1).2 `|` (proj1_sig A2).1.1.
+pose s0 : \bar R := ereal_inf [set mE | exists E, [/\ mE = nu E, measurable E & E `<=` setT] ].
+have s0_le0 : s0 <= 0.
+  by apply: ereal_inf_lb => /=; exists set0; split => //; rewrite s_measure0.
+have [A0 [mA0 A0d0 muA0_le0 negative_set_A0]] :
+    {A0 | [/\ measurable A0, nu A0 <= maxe (s0 * 2^-1%R%:E) (- 1%E), nu A0 <= 0 & negative_set nu A0] }.
+  pose m0 := maxe (s0 * 2^-1%R%:E) (- 1%E).
+  apply/cid.
+  move: s0_le0; rewrite le_eqVlt => /predU1P[->|s0_lt0].
+    exists set0; split => //; rewrite ?s_measure0//.
+    exact: negative_set0.
+  have m0_lt0 : m0 < 0 by rewrite /m0 lt_maxl lteN10 andbT nmule_rlt0.
+  have s0m0 : s0 < m0.
+    rewrite /m0; have [->|s0oo] := eqVneq s0 -oo.
+      by rewrite max_r ?ltNye// gt0_mulNye// leNye.
+    rewrite -(@fineK _ s0); last first.
+      by rewrite le0_fin_numE// ?(ltW s0_lt0)// lt_neqAle leNye eq_sym s0oo.
+    rewrite -EFinM maxEFin lte_fin lt_maxr; apply/orP; left.
+    rewrite ltr_pdivl_mulr// gtr_nmulr ?ltr1n// fine_lt0// s0_lt0/=.
+    by rewrite lt_neqAle s0oo/= leNye.
+  move: (s0m0).
+  move=> /ereal_inf_lt/cid2[x/= /cid[A0 [->{x} mA0 A0X nuA0m0]]].
+  have nuA0_le0 : nu A0 <= 0.
+    by rewrite (le_trans (ltW nuA0m0))// ltW.
+  have [N1 [N1A9 mN1 negativeN1 nuN1A0]] := prop57 mA0 nuA0_le0.
+  exists N1; split => //.
+  by rewrite (le_trans nuN1A0)// (le_trans (ltW nuA0m0))//.
+  by rewrite (le_trans nuN1A0).
+(*  exact/ltW.
+  by rewrite (le_trans (ltW nuA0m0))// ltW.*)
+pose U0 : set X := set0.
+have : {AdU : nat -> {A : set X * \bar R * set X | seq_type A} |
+  AdU 0%N = (exist _ (A0, s0, A0) (conj mA0 (conj muA0_le0 (conj s0_le0 (conj negative_set_A0 A0d0))))) /\
+  forall n, Q (AdU n) (AdU n.+1)}.
+  apply dependent_choice_Type => -[[[An dn] Un] [/= mAn [nuAn_le0 negative_set_An]]].
+  pose sn1 := ereal_inf [set mE : \bar R | exists E, [/\ mE = nu E, measurable E & E `<=` setT `\` Un] ].
+  have sn1_le0 : sn1 <= 0.
+    by apply: ereal_inf_lb => /=; exists set0; split => //; rewrite s_measure0.
+  have [An1 [mAn1 An1d1 An1Un muAn1_ge0] ] : {An1 | [/\ measurable An1,
+                              nu An1 <= maxe (sn1 * 2^-1%:E) (- 1%E)%E,
+                              An1 `<=` setT `\` Un &
+                              nu An1 <= 0] }.
+    pose mn1 := maxe (sn1 * 2^-1%R%:E) (- 1%E).
+    apply/cid.
+    move: sn1_le0; rewrite le_eqVlt => /predU1P[->|sn1_lt0].
+      by exists set0; split => //; rewrite s_measure0.
+    have mn1_lt0 : mn1 < 0 by rewrite /mn1 lt_maxl lteN10 andbT nmule_rlt0.
+    have : sn1 < mn1.
+      rewrite /mn1; have [->|sn1oo] := eqVneq sn1 -oo.
+        by rewrite max_r ?ltNye// gt0_mulNye// leNye.
+      rewrite -(@fineK _ sn1); last first.
+        by rewrite le0_fin_numE// ?(ltW sn1_lt0)// lt_neqAle leNye eq_sym sn1oo.
+      rewrite -EFinM maxEFin lte_fin lt_maxr; apply/orP; left.
+      rewrite ltr_pdivl_mulr// gtr_nmulr ?ltr1n// fine_lt0// sn1_lt0/=.
+      by rewrite lt_neqAle sn1oo/= leNye.
+    move=> /ereal_inf_lt/cid2[x/= /cid[An1 [xE mAn1 An1DUn mn1x]]].
+    exists An1; split => //.
+      by rewrite -xE (le_trans _ (ltW mn1x)).
+    by rewrite -xE (le_trans (ltW mn1x))// ltW.
+  have [Nn [NnAn mNn negativeNn nuNnAn]] := prop57 mAn1 muAn1_ge0.
+  have muNn_ge0 : nu Nn <= 0.
+    by rewrite (le_trans nuNnAn).
+  have H : nu Nn <= maxe (sn1 * (2^-1)%:E) (- (1)).
+    by rewrite (le_trans nuNnAn).
+  exists (exist _ (Nn, sn1, Un `|` Nn) (conj mNn (conj muNn_ge0 (conj sn1_le0 (conj negativeNn H))))).
+  rewrite /Q /=; split => //.
+  split => //.
+  by apply: (subset_trans NnAn).
+move=> [AdU [AdU0 AdUn]].
+set N := \bigcup_k (proj1_sig (AdU k)).1.1.
 have mN : measurable N.
-  apply: bigcup_measurable => n _.
-  by have [/[1!inE]] := negN_ n.
+  apply bigcup_measurable => k _ /=.
+  by case: (AdU k) => -[[? ?] ? []].
+have Ubig n : (proj1_sig (AdU n)).2 = \big[setU/set0]_(i < n.+1) (proj1_sig (AdU i)).1.1.
+  elim: n => [|n ih]; rewrite /sval/=.
+    by rewrite AdU0/= big_ord_recr/= big_ord0 set0U AdU0/=.
+  rewrite /sval/= in ih.
+  have [_ [_ ->]] := AdUn n.
+  by rewrite big_ord_recr/= -ih.
+have tA : trivIset [set: nat]
+  (fun n => ((@sval) (set X * \bar R * set X) [eta seq_type] (AdU n)).1.1).
+  apply: subsetC_trivIset; rewrite /sval/= => n.
+  have [_ [K1 _]] := AdUn n.
+  apply (subset_trans K1).
+  rewrite -setTD.
+  apply: setDSS => //.
+  by rewrite Ubig big_ord_recr.
+have mNn n : d.-measurable (let (a, _) := AdU n in a).1.1.
+  by case: (AdU n) => [[[? ?] ?] []].
 have negative_set_N : negative_set nu N.
   apply: bigcup_negative_set => i.
-  by have [] := negN_ i.
-have nuN_alpha : nu N = alpha.
-  have H1 m : nu (N `\` N_ m) <= 0.
-    apply negative_set_N.2.
-      rewrite inE; apply: measurableD => //.
-      by have [/[1!inE]] := negN_ m.
-      exact: subDsetl.
-  have {H1}H2 m : nu N <= nu (N_ m).
-    rewrite -(@setDUK _ (N_ m) N); last exact: bigcup_sup.
-    rewrite s_measureU//; last 3 first.
-      by have [/[1!inE]] := negN_ m.
-      apply: measurableD => //.
-      by have [/[1!inE]] := negN_ m.
-      by rewrite setDIK.
-      by rewrite gee_addl.
-  have {H2}H3 : nu N <= alpha.
-    rewrite [leRHS](_ : _ = lim (nu \o N_)); last exact/esym/cvg_lim.
-    apply: ereal_lim_ge.
-      by apply/cvg_ex => /=; first eexists; exact: cvgN_.
-    exact: nearW.
-  apply/eqP; rewrite eq_le H3 /=.
-  by apply: ereal_inf_lb; exists N.
-have alphay : alpha > -oo by rewrite -nuN_alpha ltNye_eq isfinite.
+  rewrite /sval/=.
+  by case: (AdU i) => -[[? ?] ?] [_ [_ [_ []]]].
 pose P := setT `\` N.
-have mP : measurable P.
-apply measurableD => //.
-have positive_P : positive_set nu P.
-  rewrite /positive_set inE.
-  split=> [//|] E mE EP.
-  rewrite (_ : nu E = s_mrestr nu mP E); last by rewrite /s_mrestr setIidl.
-  move: E mE EP.
-  apply: positive_set_0' => //.
-  move=> N' mN' negativeN'.
-  apply /eqP.
-  rewrite eq_le.
-  rewrite -(negbK (_&&_)).
-  rewrite (negative_set_smeasure0 negativeN') /=.
-  rewrite -ltNge.
-  apply/negP.
-  move=> N'0.
-  pose UNN' := N `|` (N' `&` P).
-  have mUNN' : measurable UNN'.
-    apply: measurableU => //.
-    by apply: measurableI => //.
-  have : nu UNN' < alpha.
-    rewrite s_measureU //; last 2 first.
-      by have [/[1!inE]] := negativeN'.
-      have N'N : (N' `&` P) `<=` ~` N.
-        have N'P : N' `&` P `<=` P.
-          exact: subIsetr.
-        by rewrite -setTD.
-      by rewrite setIC; apply/disjoints_subset.
-    by rewrite -nuN_alpha lte_naddl// isfinite//.
-  rewrite ltNge => /negP; apply.
-  have ? : negative_set nu UNN' by exact: negative_setU.
-  by apply: ereal_inf_lb; exists UNN'.
+have mP : measurable P by exact: measurableD.
 exists P, N; split => //.
-by rewrite /P setTD setvU.
-by rewrite /P setTD setvI.
-Qed.
+- rewrite /positive_set inE.
+  split=> // D; rewrite inE => mD DP; rewrite leNgt; apply/negP => nuD0.
+  have snuD : forall n, (proj1_sig (AdU n)).1.2 <= nu D.
+    move=> n.
+    rewrite /sval/=.
+    destruct n.
+      rewrite AdU0//= /s0.
+      apply: ereal_inf_lb => /=.
+      by exists D; split => //.
+    have [+ [H1 H2]] := AdUn n.
+    rewrite /sval => ->.
+    apply: ereal_inf_lb => /=.
+    exists D; split => //.
+    apply: (subset_trans DP).
+    apply: setDS.
+    rewrite /N.
+    have := Ubig n.
+    rewrite /sval/= => ->.
+    exact: bigsetU_bigcup.
+  rewrite /sval in snuD.
+  have Htmp n : maxe ((proj1_sig (AdU n)).1.2 * (2^-1)%:E) (- (1)) <= 0.
+    rewrite /maxe; case: ifPn => // _.
+    by rewrite pmule_lle0// (le_trans (snuD _))// ltW.
+  have abs1 : ~ (fun n =>  (let (a, _) := AdU n in a).1.2) --> 0.
+    move/ereal_cvg_real => -[sfin].
+    have nuD2 : (0 < `|fine (nu D)|)%R.
+      by rewrite normr_gt0// fine_eq0// ?lt_eqF// isfinite.
+    move/(@cvg_distP _ [normedModType R of R^o]) => /(_ _ nuD2).
+    rewrite near_map => -[M _ hM].
+    near \oo => n.
+    have /hM : (M <= n)%N by near: n; exists M.
+    rewrite sub0r normrN.
+    simpl.
+    rewrite ler0_norm//; last first.
+      rewrite fine_le0//.
+      by case: (AdU n) => [[[? ?] ?] [_ [_ []]]]/=.
+    rewrite ltr0_norm//; last first.
+      by rewrite fine_lt0// nuD0 andbT ltNye_eq isfinite//.
+    (* TODO: define ltr_opp for ssrnum *)
+    rewrite ltr_oppr opprK.
+    apply/negP.
+    rewrite -leNgt.
+    apply: fine_le => //.
+    near: n.
+    exact.
+    by rewrite isfinite.
+  have nuN : nu N = \sum_(n <oo) nu (proj1_sig (AdU n)).1.1.
+    apply/esym/cvg_lim => //.
+    apply: smeasure_semi_sigma_additive.
+    move=> i.
+    by case: (AdU i) => [[[? ?] ?] []]/=.
+    exact: tA.
+    apply: bigcup_measurable => k _.
+    by case: (AdU k) => [[[? ?] ?] []]/=.
+  have H1 : \sum_(n <oo) nu (proj1_sig (AdU n)).1.1 <=
+    \sum_(n <oo) maxe (((proj1_sig (AdU n)).1.2) * (2^-1)%:E) (- (1)).
+    rewrite /sval.
+    have H1 : forall n, nu (let (a, _) := AdU n in a).1.1 <=
+                  maxe ((let (a, _) := AdU n in a).1.2 * 2^-1%:E) (- (1)).
+      move=> n.
+      by case: (AdU n) => [[[? ?] ?] [_ [_ [_ []]]]].
+    apply: lee_npeseries => //.
+    by move=> k _; exact: Htmp.
+  have : cvg (fun n => \sum_(0 <= k < n) maxe ((proj1_sig (AdU k)).1.2 * (2^-1)%:E) (- (1))).
+    apply: is_cvg_ereal_npos_natsum_cond => n _ _.
+    exact: Htmp.
+  move=> /cvg_ex[[l| |]].
+  - move=> H3.
+    move/ereal_cvg_real : H3 => [Hfin cvgl].
+    have : cvg (series (fun n => fine (maxe ((proj1_sig (AdU n)).1.2 * (2^-1)%:E) (- (1))))).
+      apply/cvg_ex; exists l.
+      move: cvgl.
+      rewrite [X in X --> _](_ : _ = (fun n => \sum_(0 <= k < n) fine (maxe ((proj1_sig (AdU k)).1.2 * (2^-1)%:E) (- (1)))%E)%R); last first.
+        apply/funext => n/=.
+        rewrite sum_fine// => i _.
+        case: (AdU i) => -[[A s] U [/= ? [? [? [? numax]]]]].
+        rewrite le0_fin_numE.
+          by rewrite (lt_le_trans _ numax)// -le0_fin_numE// isfinite.
+        by rewrite /maxe; case: ifPn => // _; rewrite mule_le0_ge0.
+      by [].
+    move/(@cvg_series_cvg_0 _ [normedModType R of R^o]) => H2.
+    have H3 : (fun n => (let (a, _) := AdU n in a).1.2) --> 0.
+      have H3 : (fun n => (let (a, _) := AdU n in a).1.2 * 2^-1%:E) --> 0.
+        apply/ereal_cvg_real; split.
+          move/(@cvg_distP _ [normedModType R of R^o]) : H2.
+          move/(_ _ ltr01).
+          rewrite near_map => -[M _ hM].
+          near=> n.
+          have /hM : (M <= n)%N by near: n; exists M.
+          rewrite sub0r normrN.
+          rewrite /sval/= => abs.
+          rewrite fin_numE; apply/andP; split.
+            apply/negP => /eqP h.
+            by rewrite h max_r// ?leNye//= normrN normr1 ltxx in abs.
+          rewrite lt_eqF// (@le_lt_trans _ _ 0)//.
+          rewrite mule_le0_ge0//.
+          by case: (AdU n) => -[[A s] U [/= ? [? [? [? numax]]]]].
+        apply/(@cvg_distP _ [normedModType R of R^o]) => e e0.
+        rewrite near_map.
+        move/(@cvg_distP _ [normedModType R of R^o]) : H2.
+        have e0' : (0 < minr e 1%R)%R.
+          by rewrite lt_minr// e0 ltr01.
+        move=> /(_ _ e0').
+        rewrite near_map => -[M _ hM].
+        near=> n.
+        rewrite sub0r normrN.
+        have /hM : (M <= n)%N by near: n; exists M.
+        rewrite sub0r normrN.
+        rewrite /maxe/=.
+        case: ifPn => [_|]; rewrite /sval/=.
+          rewrite normrN normr1 /minr.
+          case: ifPn; rewrite ?ltxx//.
+          by rewrite ltNge => /[swap] /ltW ->.
+        rewrite -leNgt => ?.
+        move/lt_le_trans; apply.
+        rewrite /minr; case: ifPn => //.
+        by rewrite -leNgt.
+      rewrite [X in X --> _](_ : _ = ((fun n => ((let (a, _) := AdU n in a).1.2) * (2^-1)%:E) \* (cst 2%:E))%E); last first.
+        apply/funext => n/=.
+        by rewrite -muleA -EFinM mulVr ?mule1// unitfE.
+      rewrite (_ : 0 = 0 * 2%:E); last by rewrite mul0e.
+      apply: ereal_cvgM => //=.
+        by rewrite mule_def_fin.
+      exact: cvg_cst.
+    by [].
+  - move/cvg_lim => H3.
+    have := @nneseries_le0 _ (fun n => maxe ((proj1_sig (AdU n)).1.2 * (2^-1)%:E) (- (1))) xpredT.
+    rewrite H3// leNgt.
+    by move=> /(_ (fun n _ => Htmp n))/negP; apply.
+  - move/cvg_lim => H3.
+    have : nu N <= -oo by rewrite -H3// nuN.
+    rewrite leeNy_eq => /eqP nuNoo.
+    have := @isfinite _ _ _ nu N mN.
+    by rewrite fin_numE => /andP[+ _] => /eqP; apply.
+- by rewrite /P setTD setvU.
+- by rewrite /P setTD setvI.
+Unshelve. all: by end_near. Qed.
 
 Definition is_Hahn_decomposition d (X : measurableType d) (R : realType)
     (nu : {smeasure set X -> \bar R}) :=
