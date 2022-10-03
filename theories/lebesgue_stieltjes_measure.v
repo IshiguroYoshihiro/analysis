@@ -1769,13 +1769,52 @@ split.
 - (* Reductio ad absurdum *)
   move=> E0 mE0.
   apply/eqP; rewrite eq_le limFleqnu andbT; apply/negP => abs.
-  have [eps] : exists eps : {posnum R}, \int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0.
+  have [eps Heps] : exists eps : {posnum R}, \int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0.
     admit.
   have sigma : {smeasure set X -> \bar R}.
     admit.
   have sigmaE : forall F, sigma F = nu F - \int[mu]_(x in F) (limF x + eps%:num%:E).
     admit.
   move : (Hahn_decomposition sigma) => [P [N [posP negN PNX PN0]]].
+pose E0P := E0 `&` P.
+pose E0N := E0 `&` N.
+move: (posP) => [mP _].
+move: negN => [mN negN].
+rewrite !inE in mE0 mP mN.
+have mE0P : measurable E0P.
+  apply measurableI => //.
+have muE0P0: mu E0P > 0.
+  rewrite /abs_continuous.
+  rewrite lt_neqAle.
+  rewrite measure_ge0.
+  rewrite andbT.
+  move : mudomnu.
+  rewrite /abs_continuous.
+  move=> /(_ E0P).
+  move=> H.
+  move: (H mE0P) => mu0nu0.
+Check nu E0P = 0 .
+  move: (contra_not_neq mu0nu0).
+  move=> HH.
+  rewrite eq_sym.
+  apply HH.
+  apply /eqP.
+  rewrite gt_eqF //.
+  have : sigma E0P > 0.
+   apply (@lt_le_trans _ _ (sigma E0)) ; last first.
+      rewrite (s_measure_partition2 _ mP mN PNX PN0) //.
+      rewrite gee_addl //.
+      apply negN => //.
+      rewrite inE.
+      apply measurableI => //.
+    rewrite sigmaE.
+    rewrite sube_gt0 //.
+  rewrite sigmaE.
+  rewrite sube_gt0.
+  apply : le_lt_trans.
+  apply integral_ge0.
+  admit.
+
 Admitted.
 
 Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
