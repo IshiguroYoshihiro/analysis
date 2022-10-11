@@ -7,13 +7,10 @@ Require Import mathcomp_extra functions normedtype.
 From HB Require Import structures.
 Require Import sequences esum measure fsbigop cardinality set_interval.
 Require Import realfun.
-Require Import lebesgue_measure.
+Require Import lebesgue_measure lebesgue_integral.
 
 (******************************************************************************)
-(*                       Lebesgue Stieltjes Measure                           *)
-(*                                                                            *)
-(* This file contains a formalization of the Lebesgue-Stieltjes measure using *)
-(* the Extension theorem available in measure.v.                              *)
+(*                     scratch file for Radon-Nikodym                         *)
 (*                                                                            *)
 (******************************************************************************)
 
@@ -26,62 +23,7 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
-(* TODO: move *)
-(* included in lebesgue_stieltjes_measure.v *)
-Notation right_continuous f :=
-  (forall x, f%function @ at_right x --> f%function x).
-
-Lemma nondecreasing_right_continuousP (R : realType) (a : R) (e : R)
-    (f : R -> R) (ndf : {homo f : x y / x <= y}) (rcf : (right_continuous f)) :
-  e > 0 -> exists d : {posnum R}, f (a + d%:num) <= f a + e.
-Proof.
-move=> e0; move: rcf => /(_ a)/(@cvg_dist _ [normedModType R of R^o]).
-move=> /(_ _ e0)[] _ /posnumP[d] => h.
-exists (PosNum [gt0 of (d%:num / 2)]) => //=.
-move: h => /(_ (a + d%:num / 2)) /=.
-rewrite opprD addrA subrr distrC subr0 ger0_norm //.
-rewrite ltr_pdivr_mulr// ltr_pmulr// ltr1n => /(_ erefl).
-rewrite ltr_addl divr_gt0// => /(_ erefl).
-rewrite ler0_norm; last by rewrite subr_le0 ndf// ler_addl.
-by rewrite opprB ltr_subl_addl => fa; exact: ltW.
-Qed.
-(*
-(* TODO: move and use in lebesgue_measure.v? *)
-
-Variable rcf : right_continuous f.
-
-Let lebesgue_stieltjes_measure0 : lebesgue_stieltjes_measure set0 = 0%E.
-Proof. by []. Qed.
-
-Let lebesgue_stieltjes_measure_ge0 : forall x, (0 <= lebesgue_stieltjes_measure x)%E.
-Proof. exact: measure.Hahn_ext_ge0. Qed.
-
-Let lebesgue_stieltjes_measure_semi_sigma_additive : semi_sigma_additive lebesgue_stieltjes_measure.
-Proof. exact/measure.Hahn_ext_sigma_additive/hlength_sigma_sub_additive. Qed.
-
-HB.instance Definition _ := isMeasure.Build _ _ _ lebesgue_stieltjes_measure
-  lebesgue_stieltjes_measure0 lebesgue_stieltjes_measure_ge0 lebesgue_stieltjes_measure_semi_sigma_additive.
-
-End itv_semiRingOfSets.
-Arguments lebesgue_stieltjes_measure {R}.
-
-Section lebesgue_stieltjes_measure_itv.
-Variables (d : measure_display) (R : realType) (f : R -> R).
-Hypotheses (ndf : {homo f : x y / x <= y}) (rcf : right_continuous f).
-
-Let m := lebesgue_stieltjes_measure d f ndf.
-
-Let g : \bar R -> \bar R := EFinf f.
-
-Let lebesgue_stieltjes_measure_itvoc (a b : R) :
-  (m `]a, b] = hlength f `]a, b])%classicpunct_eitv_bnd_pinfty.
-Proof.
-rewrite /m /lebesgue_stieltjes_measure /= /Hahn_ext measurable_mu_extE//; last first.
-  by exists (a, b).
-exact: hlength_sigma_sub_additive.
-Qed.
-
-Lemma set1Ebigcap (x : R) : [set x] = \bigcap_k `](x - k.+1%:R^-1)%R, x]%classic.
+Lemma set1Ebigcap {R : realType} (x : R) : [set x] = \bigcap_k `](x - k.+1%:R^-1)%R, x]%classic.
 Proof.
 apply/seteqP; split => [_ -> k _ /=|].
   by rewrite in_itv/= lexx andbT ltr_subl_addl ltr_addr invr_gt0.
@@ -90,37 +32,13 @@ red in h.
 simpl in h.
 Abort.
 
-Let lebesgue_stieltjes_measure_set1 (a : R) :
-  m [set a] = ((f a)%:E - (lim (f @ at_left a))%:E)%E.
-Proof.
-(*rewrite (set1Ebigcap a).*)
-Abort.
-
-Let lebesgue_stieltjes_measure_itvoo (a b : R) : a <= b ->
-  m `]a, b[%classic = ((lim (f @ at_left b))%:E - (f a)%:E)%E.
-Proof.
-Abort.
-
-Let lebesgue_stieltjes_measure_itvcc (a b : R) : a <= b ->
-  m `[a, b]%classic = ((f b)%:E - (lim (f @ at_left a))%:E)%E.
-Proof.
-Abort.
-
-Let lebesgue_stieltjes_measure_itvco (a b : R) : a <= b ->
-  m `[a, b[%classic = ((lim (f @ at_left b))%:E - (lim (f @ at_left a))%:E)%E.
-Proof.
-Abort.
-
-
-End lebesgue_stieltjes_measure_itv.
-*)
-
 Definition abs_continuous d (T : measurableType d) (R : realType)
     (m1 m2 : set T -> \bar R) :=
   forall A : set T, measurable A -> (m2 A = 0)%E -> (m1 A = 0)%E.
 
- Notation "m1 `<< m2" := (abs_continuous m1 m2) (at level 51).
+Notation "m1 `<< m2" := (abs_continuous m1 m2) (at level 51).
 
+(* NB: to appear in the next release of Coq *)
 Section dependent_choice_Type.
 Variables (X : Type) (R : X -> X -> Prop).
 
@@ -134,71 +52,6 @@ intro n; induction n; simpl; apply proj2_sig.
 Qed.
 End dependent_choice_Type.
 
-HB.mixin Record isFiniteSignedMeasure d (R : numFieldType)
-  (T : semiRingOfSetsType d) (mu : set T -> \bar R) := {
-    isfinite : forall U, measurable U -> mu U \is a fin_num}.
-
-HB.structure Definition FiniteSignedMeasure d
-    (R : numFieldType) (T : semiRingOfSetsType d) := {
-  mu of isFiniteSignedMeasure d R T mu }.
-
-HB.mixin Record isAdditiveSignedMeasure d (R : numFieldType)
-    (T : semiRingOfSetsType d) mu of isFiniteSignedMeasure d R T mu := {
-  smeasure_semi_additive : semi_additive mu }.
-
-HB.structure Definition AdditiveSignedMeasure d (R : numFieldType)
-    (T : semiRingOfSetsType d) :=
-  { mu of isAdditiveSignedMeasure d R T mu & FiniteSignedMeasure d mu }.
-
-Notation additive_smeasure := AdditiveSignedMeasure.type.
-Notation "{ 'additive_smeasure' 'set' T '->' '\bar' R }" :=
-  (additive_smeasure R T) (at level 36, T, R at next level,
-    format "{ 'additive_smeasure'  'set'  T  '->'  '\bar'  R }") : ring_scope.
-
-HB.mixin Record isSignedMeasure0 d (R : numFieldType) (T : semiRingOfSetsType d)
-    mu of isAdditiveSignedMeasure d R T mu & isFiniteSignedMeasure d R T mu := {
-  smeasure_semi_sigma_additive : semi_sigma_additive mu }.
-
-HB.structure Definition SignedMeasure d (R : numFieldType)
-    (T : semiRingOfSetsType d) :=
-  { mu of isSignedMeasure0 d R T mu & AdditiveSignedMeasure d mu }.
-
-Notation smeasure := SignedMeasure.type.
-Notation "{ 'smeasure' 'set' T '->' '\bar' R }" := (smeasure R T)
-  (at level 36, T, R at next level,
-    format "{ 'smeasure'  'set'  T  '->'  '\bar'  R }") : ring_scope.
-
-Lemma ndidR (R : realType) : {homo (@idfun R) : x y / x <= y}.
-Proof.
-move=> x y /=.
-done.
-Qed.
-
-Lemma continuous_right_continuous (R : realType) (f : R -> R)
-  : continuous f -> right_continuous f.
-Proof.
-move=> cf.
-move=> x/=.
-rewrite/at_right.
-apply: cvg_within_filter.
-apply/cf.
-Qed.
-
-Lemma rcidR (R : realType) : right_continuous (@idfun R).
-Proof.
-apply/continuous_right_continuous.
-move=> x.
-exact: cvg_id.
-Qed.
-(*
-Definition lebesgue_measure d (R : realType) := lebesgue_stieltjes_measure d (@idfun R) (@ndidR R) (* (@rcidR R) *).
-*)
-(*
-Definition abs_continuous_function_over_R d (R : realType) (f : R -> R)
-    (ndf : {homo f : x y / x <= y}) (rcf : right_continuous f)
-  := abs_continuous (lebesgue_stieltjes_measure d f ndf rcf) (lebesgue_measure R).
-*)
-
 (* maybe rewrite I : R * R to I : interval R *)
 Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R)
     := forall e : {posnum R}, exists d : {posnum R},
@@ -207,20 +60,6 @@ Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R)
              trivIset setT (fun n => `[(J n).1, (J n).2]%classic) ->
                (forall n, I.1 <= (J n).1 /\ (J n).2 <= I.2 ) ->
                  \sum_(k < n) `| f (J k).2 - f (J k).1 | < e%:num.
-
-Definition positive_set d (R : realType) (X : measurableType d)
-             (nu : {smeasure set X -> \bar R}) (P : set X):=
-               (P \in measurable) /\
-                 forall E, (E \in measurable) -> (E `<=` P) -> (nu E >= 0)%E.
-Definition negative_set d (R : realType) (X : measurableType d)
-             (nu : {smeasure set X -> \bar R}) (N : set X):=
-               (N \in measurable) /\
-                 forall E, (E \in measurable) -> (E `<=` N) -> (nu E <= 0)%E.
-
-Lemma subset_nonnegative_set d (R : realType) (X : measurableType d)
-             (nu : {smeasure set X -> \bar R}) (N M : set X) : (M `<=` N) ->
-              (nu N < 0)%E -> (nu M > 0)%E -> (~ negative_set nu N) -> (~ negative_set nu (N `\` M)).
-Abort.
 
 Local Open Scope ereal_scope.
 
@@ -306,6 +145,78 @@ Proof.
 move=> u0; apply: (ereal_lim_le (is_cvg_npeseries u0)).
 by near=> k; rewrite sume_le0 // => i; apply: u0.
 Unshelve. all: by end_near. Qed.
+
+(* NB: PR in progress *)
+Lemma inv_cvg (R : realType) (u : R ^nat) :
+  (forall n, 0 < u n)%R ->
+  (fun n => (u n)^-1) --> (0 : R)%R -> u --> +oo%R.
+Proof.
+move=> u0 uV0; apply/cvgPpinfty => M.
+move/(@cvg_distP _ [normedModType R of R^o]) : uV0 => /(_ (`|M| + 1)^-1%R).
+rewrite invr_gt0 ltr_paddl// => /(_ erefl); rewrite !near_map.
+apply: filterS => n.
+rewrite sub0r normrN normrV ?unitfE ?gt_eqF//.
+rewrite ger0_norm; last by rewrite ltW.
+rewrite ltr_pinv; last 2 first.
+  by rewrite inE unitfE u0 andbT gt_eqF.
+  by rewrite inE unitfE ltr_paddl// andbT gt_eqF.
+move/ltW; apply: le_trans.
+by rewrite (le_trans (ler_norm _))// ler_addl.
+Qed.
+
+(* NB: PR in progress *)
+Lemma nneseries_is_cvg (R : realType) (u : nat -> R) :
+  (forall i, 0 <= u i)%R -> \sum_(k <oo) (u k)%:E < +oo -> cvg (series u).
+Proof.
+move=> ? ?; apply: nondecreasing_is_cvg.
+  move=> m n mn; rewrite /series/=.
+  rewrite -(subnKC mn) {2}/index_iota subn0 iotaD big_cat/=.
+  by rewrite add0n -{2}(subn0 m) -/(index_iota _ _) ler_addl sumr_ge0.
+exists (fine (\sum_(k <oo) (u k)%:E)).
+rewrite /ubound/= => _ [n _ <-]; rewrite -lee_fin fineK//; last first.
+  rewrite fin_num_abs gee0_abs//; apply: nneseries_ge0 => // i _.
+  by rewrite lee_fin.
+by rewrite -sumEFin; apply: nneseries_lim_ge => i _; rewrite lee_fin.
+Qed.
+
+(* NB: PR in progress *)
+Lemma bigsetU_sup T (F : nat -> set T) n i : (i < n)%N ->
+  F i `<=` \big[setU/set0]_(j < n) F j.
+Proof. by move: n => // n ni; rewrite -bigcup_mkord; exact/bigcup_sup. Qed.
+
+HB.mixin Record isFiniteSignedMeasure d (R : numFieldType)
+  (T : semiRingOfSetsType d) (mu : set T -> \bar R) := {
+    isfinite : forall U, measurable U -> mu U \is a fin_num}.
+
+HB.structure Definition FiniteSignedMeasure d
+    (R : numFieldType) (T : semiRingOfSetsType d) := {
+  mu of isFiniteSignedMeasure d R T mu }.
+
+HB.mixin Record isAdditiveSignedMeasure d (R : numFieldType)
+    (T : semiRingOfSetsType d) mu of isFiniteSignedMeasure d R T mu := {
+  smeasure_semi_additive : semi_additive mu }.
+
+HB.structure Definition AdditiveSignedMeasure d (R : numFieldType)
+    (T : semiRingOfSetsType d) :=
+  { mu of isAdditiveSignedMeasure d R T mu & FiniteSignedMeasure d mu }.
+
+Notation additive_smeasure := AdditiveSignedMeasure.type.
+Notation "{ 'additive_smeasure' 'set' T '->' '\bar' R }" :=
+  (additive_smeasure R T) (at level 36, T, R at next level,
+    format "{ 'additive_smeasure'  'set'  T  '->'  '\bar'  R }") : ring_scope.
+
+HB.mixin Record isSignedMeasure0 d (R : numFieldType) (T : semiRingOfSetsType d)
+    mu of isAdditiveSignedMeasure d R T mu & isFiniteSignedMeasure d R T mu := {
+  smeasure_semi_sigma_additive : semi_sigma_additive mu }.
+
+HB.structure Definition SignedMeasure d (R : numFieldType)
+    (T : semiRingOfSetsType d) :=
+  { mu of isSignedMeasure0 d R T mu & AdditiveSignedMeasure d mu }.
+
+Notation smeasure := SignedMeasure.type.
+Notation "{ 'smeasure' 'set' T '->' '\bar' R }" := (smeasure R T)
+  (at level 36, T, R at next level,
+    format "{ 'smeasure'  'set'  T  '->'  '\bar'  R }") : ring_scope.
 
 Lemma s_semi_additiveW d (R : realType) (X : measurableType d)
    (mu : {smeasure set X -> \bar R}) : mu set0 = 0 -> semi_additive mu -> semi_additive2 mu.
@@ -436,6 +347,20 @@ HB.instance Definition _ :=
 
 End s_measure_restr.
 
+Definition positive_set d (R : realType) (X : measurableType d)
+             (nu : {smeasure set X -> \bar R}) (P : set X):=
+               (P \in measurable) /\
+                 forall E, (E \in measurable) -> (E `<=` P) -> (nu E >= 0)%E.
+Definition negative_set d (R : realType) (X : measurableType d)
+             (nu : {smeasure set X -> \bar R}) (N : set X):=
+               (N \in measurable) /\
+                 forall E, (E \in measurable) -> (E `<=` N) -> (nu E <= 0)%E.
+
+Lemma subset_nonnegative_set d (R : realType) (X : measurableType d)
+             (nu : {smeasure set X -> \bar R}) (N M : set X) : (M `<=` N) ->
+              (nu N < 0)%E -> (nu M > 0)%E -> (~ negative_set nu N) -> (~ negative_set nu (N `\` M)).
+Abort.
+
 Lemma negative_set0 d (X : measurableType d) (R : realType)
     (nu : {smeasure set X -> \bar R}) : negative_set nu set0.
 Proof.
@@ -447,43 +372,6 @@ by rewrite s_measure0.
 Qed.
 
 (* TODO: PR *)
-Lemma inv_cvg (R : realType) (u : R ^nat) :
-  (forall n, 0 < u n)%R ->
-  (fun n => (u n)^-1) --> (0 : R)%R -> u --> +oo%R.
-Proof.
-move=> u0 uV0; apply/cvgPpinfty => M.
-move/(@cvg_distP _ [normedModType R of R^o]) : uV0 => /(_ (`|M| + 1)^-1%R).
-rewrite invr_gt0 ltr_paddl// => /(_ erefl); rewrite !near_map.
-apply: filterS => n.
-rewrite sub0r normrN normrV ?unitfE ?gt_eqF//.
-rewrite ger0_norm; last by rewrite ltW.
-rewrite ltr_pinv; last 2 first.
-  by rewrite inE unitfE u0 andbT gt_eqF.
-  by rewrite inE unitfE ltr_paddl// andbT gt_eqF.
-move/ltW; apply: le_trans.
-by rewrite (le_trans (ler_norm _))// ler_addl.
-Qed.
-
-(* TODO: PR *)
-Lemma nneseries_is_cvg (R : realType) (u : nat -> R) :
-  (forall i, 0 <= u i)%R -> \sum_(k <oo) (u k)%:E < +oo -> cvg (series u).
-Proof.
-move=> ? ?; apply: nondecreasing_is_cvg.
-  move=> m n mn; rewrite /series/=.
-  rewrite -(subnKC mn) {2}/index_iota subn0 iotaD big_cat/=.
-  by rewrite add0n -{2}(subn0 m) -/(index_iota _ _) ler_addl sumr_ge0.
-exists (fine (\sum_(k <oo) (u k)%:E)).
-rewrite /ubound/= => _ [n _ <-]; rewrite -lee_fin fineK//; last first.
-  rewrite fin_num_abs gee0_abs//; apply: nneseries_ge0 => // i _.
-  by rewrite lee_fin.
-by rewrite -sumEFin; apply: nneseries_lim_ge => i _; rewrite lee_fin.
-Qed.
-
-(* TODO: PR *)
-Lemma bigsetU_sup T (F : nat -> set T) n i : (i < n)%N ->
-  F i `<=` \big[setU/set0]_(j < n) F j.
-Proof. by move: n => // n ni; rewrite -bigcup_mkord; exact/bigcup_sup. Qed.
-
 Lemma lt_trivIset T (F : nat -> set T) :
   (forall n m, (m < n)%N -> F m `&` F n = set0) -> trivIset setT F.
 Proof.
@@ -491,6 +379,7 @@ move=> h; apply/trivIsetP => m n _ _; rewrite neq_lt => /orP[|]; first exact: h.
 by rewrite setIC; exact: h.
 Qed.
 
+(* TODO: PR *)
 Lemma subsetC_trivIset T (F : nat -> set T) :
   (forall n, F n.+1 `<=` ~` \big[setU/set0]_(i < n.+1) F i) -> trivIset setT F.
 Proof.
@@ -498,6 +387,14 @@ move=> ACU; apply: lt_trivIset => n m mn; rewrite setIC; apply/disjoints_subset.
 case: n mn => // n mn.
 by apply: (subset_trans (ACU n)); exact/subsetC/bigsetU_sup.
 Qed.
+
+(* TODO: PR *)
+Lemma fin_num_ltey (R : realDomainType) (x : \bar R) : x \is a fin_num -> x < +oo.
+Proof. by move: x => [r| |]// _; rewrite ltey. Qed.
+
+(* TODO: PR *)
+Lemma gt0_fin_numE {R : realDomainType} [x : \bar R] : 0 < x -> (x \is a fin_num) = (x < +oo).
+Proof. by rewrite lt_neqAle => /andP[_]; exact: ge0_fin_numE. Qed.
 
 Lemma negative_set_smeasure0 d (X : measurableType d) (R : realType)
     (nu : {smeasure set X -> \bar R}) :
@@ -508,23 +405,24 @@ Lemma negative_set_bound d (R : realType) (X : measurableType d)
     (nu : {smeasure set X -> \bar R}) S : measurable S ->
   ~ negative_set nu S -> exists l,
     (l != 0%N) &&
-    `[< exists F, [/\ F `<=` S, measurable F & nu F >= (l%:R^-1)%:E] >].
+    `[< exists F, [/\ F `<=` S, measurable F & nu F >= l%:R^-1%:E] >].
 Proof.
 move=> mS=> /not_andP[/[1!inE]//|].
 move=> /existsNP[F] /not_implyP[/[1!inE] mF] /not_implyP[FS].
 move/negP; rewrite -ltNge => nuF0.
 exists `|ceil (fine(nu F))^-1|%N; apply/andP; split.
   rewrite -lt0n absz_gt0 gt_eqF// ceil_gt0// invr_gt0// fine_gt0// nuF0/=.
-  by rewrite -ge0_fin_numE ?isfinite// ltW.
+  by rewrite fin_num_ltey// isfinite.
 apply/asboolP; exists F; split => //.
+rewrite natr_absz ger0_norm; last by rewrite ceil_ge0// invr_ge0 fine_ge0 ?ltW.
 rewrite -[leRHS](@fineK _ (nu F)) ?isfinite// lee_fin.
 rewrite -[leRHS](invrK (fine (nu F))) ler_pinv; last 2 first.
-    rewrite inE unitfE -normr_gt0 ger0_norm// andbb.
-    rewrite ltr0n absz_gt0 gt_eqF// ceil_gt0//= invr_gt0 fine_gt0// nuF0/=.
-    by rewrite -ge0_fin_numE ?isfinite// ltW.
+    rewrite inE unitfE andb_idl; last by move=> ?; rewrite gt_eqF.
+    rewrite ltr0z ceil_gt0// invr_gt0// fine_gt0// nuF0/= fin_num_ltey//.
+    by rewrite isfinite.
   rewrite inE unitfE andb_idl; last by move/gt_eqF/negbT.
-  by rewrite invr_gt0 fine_gt0// nuF0/= -ge0_fin_numE ?isfinite// ltW.
-by rewrite natr_absz ger0_norm ?ceil_ge// ceil_ge0// invr_ge0 fine_ge0// ltW.
+  by rewrite invr_gt0 fine_gt0// nuF0/= fin_num_ltey// isfinite.
+by rewrite ceil_ge// ceil_ge0// invr_ge0 fine_ge0// ltW.
 Qed.
 
 Section positive_set_0.
@@ -535,47 +433,42 @@ Variable S : set X.
 Hypothesis mS : measurable S.
 
 Let elt_prop (A : set X * nat * set X) :=
-  measurable A.1.1 /\
-  A.1.1 `<=` S /\
-  A.1.2 != 0%N /\
-  (A.1.2%:R^-1%:E <= nu A.1.1 /\
-  measurable A.2 /\
-  A.2 `<=` S /\
-  0 <= nu A.2).
+  [/\ measurable A.1.1 /\ A.1.1 `<=` S,
+     A.1.2 != 0%N /\ A.1.2%:R^-1%:E <= nu A.1.1 &
+     [/\ measurable A.2, A.2 `<=` S & 0 <= nu A.2] ].
 
 Let elt_type := {A : set X * nat * set X | elt_prop A}.
 
 Let F_ (x : elt_type) := (proj1_sig x).1.1.
-Let k_ (x : elt_type) := (proj1_sig x).1.2.
+Let s_ (x : elt_type) := (proj1_sig x).1.2.
 Let U_ (x : elt_type) := (proj1_sig x).2.
 
 Let elt_measurable (x : elt_type) : measurable (F_ x).
-Proof. by case: x => [[[? ?] ?]]; rewrite /F_/= => -[/=]. Qed.
+Proof. by case: x => [[[? ?] ?]] => -[[]]. Qed.
 
 Let elt_FS (x : elt_type) : F_ x `<=` S.
-Proof. by case: x => [[[? ?] ?]]; rewrite /F_/= => -[/= _ []]. Qed.
+Proof. by case: x => [[[? ?] ?]]; rewrite /F_/= => -[[]]. Qed.
 
-Let elt_s_k0 (x : elt_type) : k_ x != 0%N.
-Proof. by case: x => [[[? ?] ?]]; rewrite /k_/= => -[/= _ [_ []]]. Qed.
+Let elt_s0 (x : elt_type) : s_ x != 0%N.
+Proof. by case: x => [[[? ?] ?]]; rewrite /s_/= => -[_ []]. Qed.
 
-Let elt_s_F (x : elt_type) : (k_ x)%:R^-1%:E <= nu (F_ x).
-Proof. by case: x => [[[? ?] ?]]; rewrite /k_ /F_/= => -[/= _ [_ [_ []]]]. Qed.
+Let elt_s_F (x : elt_type) : (s_ x)%:R^-1%:E <= nu (F_ x).
+Proof. by case: x => [[[? ?] ?]]; rewrite /s_/F_/= => -[_ []]. Qed.
 
 Let seq_min (a b : elt_type):=
-  (forall l B, l != 0%N -> measurable B -> B `<=` S `\` U_ a -> l%:R^-1%:E <= nu B -> (l >= k_ b)%N) /\
+  (forall l B, l != 0%N -> measurable B -> B `<=` S `\` U_ a -> l%:R^-1%:E <= nu B -> (l >= s_ b)%N) /\
   F_ b `<=` S `\` U_ a /\
   U_ b = U_ a `|` F_ b.
 
 Lemma positive_set_0 : nu S >= 0.
 Proof.
 rewrite leNgt; apply/negP => nuS0.
-suff [Fs [mF [FS [spos [tF [nuF smalls]]]]]] :
-    {Fs : nat -> set X * nat |
-    let F := fst \o Fs in let s := snd \o Fs in
+suff [Fs [mF [FS [tF [spos [nuF smalls]]]]]] :
+    {Fs : nat -> set X * nat | let F := fst \o Fs in let s := snd \o Fs in
     (forall n, measurable (F n)) /\
     (forall n, F n `<=` S) /\
-    (forall n, s n != O) /\
     trivIset setT F /\
+    (forall n, s n != O) /\
     (forall n, nu (F n) >= (s n)%:R^-1%:E) /\
     (forall n B, measurable B -> B `<=` S `\` \bigcup_i (F i) -> nu B < (s n)%:R^-1%:E) }.
   set F := fst \o Fs; set s := snd \o Fs.
@@ -591,8 +484,7 @@ suff [Fs [mF [FS [spos [tF [nuF smalls]]]]]] :
     rewrite (@le_lt_trans _ _ (nu UF))// ?ltey_eq ?isfinite// nuUF.
     by apply: lee_nneseries => k _; [rewrite lee_fin|exact: nuF].
   have /neg_set_0 nuSUF : negative_set nu (S `\` UF).
-    split; first by rewrite inE; exact: measurableD.
-    move=> G /[1!inE] mG GSF.
+    split; [by rewrite inE; exact: measurableD|move=> G /[1!inE] mG GSF].
     have Gk m : nu G < (s m)%:R^-1%:E.
       by have /smalls : G `<=` S `\` UF by []; exact.
     rewrite -(@fineK _ (nu G)) ?isfinite// lee_fin.
@@ -611,75 +503,65 @@ suff [Fs [mF [FS [spos [tF [nuF smalls]]]]]] :
   by rewrite nuSUF ltxx.
 have not_neg_set_S : ~ negative_set nu S.
   by move: nuS0 => /[swap] /neg_set_0 ->; rewrite ltxx.
-have H0 := negative_set_bound mS not_neg_set_S.
-pose k0 := ex_minn H0.
+pose s0 := ex_minn (negative_set_bound mS not_neg_set_S).
 apply/cid.
-have [k0_neq0 [F0 [F0S mF0 k0F0]]] : k0 != O /\
-    exists F0, [/\ F0 `<=` S, measurable F0 & nu F0 >= (k0%:R ^-1)%:E].
-  rewrite {}/k0.
-  case: ex_minnP => l /andP[l0 /asboolP[F0 [F0S mF0 lF0]]] Sl.
+have [s00 [F0 [F0S mF0 s0F0]]] : s0 != O /\
+    exists F0, [/\ F0 `<=` S, measurable F0 & s0%:R^-1%:E <= nu F0].
+  rewrite {}/s0; case: ex_minnP => l /andP[l0 /asboolP[F0 [F0S mF0 lF0]]] Sl.
   by split => //; exists F0.
-have nuF0_ge0 : 0 <= nu F0 by rewrite (le_trans _ k0F0).
+have nuF00 : 0 <= nu F0 by apply: le_trans s0F0.
 have [v [v0 Pv]] : { v : nat -> elt_type |
-    v 0%nat = exist _ (F0, k0, F0)
-      (conj mF0 (conj F0S (conj k0_neq0 (conj k0F0 (conj mF0 (conj F0S nuF0_ge0)))))) /\
+    v 0%nat = exist _ (F0, s0, F0)
+      (And3 (conj mF0 F0S) (conj s00 s0F0) (And3 mF0 F0S nuF00)) /\
     forall n, seq_min (v n) (v n.+1) }.
-  apply dependent_choice_Type.
-  move=> [[[F k] U] [/= mF [FS [k_neq0 [kF [mU [US nuU0]]]]]]].
+  apply: dependent_choice_Type.
+  move=> [[[F s] U] [[mF FS] [s_neq0 sF] [mU US nuU0]]].
+
   have not_neg_set_SU : ~ negative_set nu (S `\` U).
-    apply: (contra_not (@neg_set_0 (S `\` _))).
-    apply/eqP.
+    apply: (contra_not (@neg_set_0 (S `\` _))); apply/eqP.
     by rewrite lt_eqF// s_measureD// setIidr// suber_lt0 ?isfinite// (lt_le_trans nuS0).
   have mSU : measurable (S `\` U) by exact: measurableD.
-  have H1 := negative_set_bound mSU not_neg_set_SU.
-  pose k1 := ex_minn H1.
+  pose s1 := ex_minn (negative_set_bound mSU not_neg_set_SU).
   apply/cid.
-  have [k1_neq0 [F1 [F1SU mF1 k1F1]]] : k1 != O /\
-    exists F1, [/\ F1 `<=` S `\` U, measurable F1 & (k1%:R ^-1)%:E <= nu F1].
-    rewrite {}/k1.
-    case: ex_minnP => l /andP[l0 /asboolP[F2 [F2S mF2 lF2]]] saidai.
+  have [s10 [F1 [F1SU mF1 s1F1]]] : s1 != O /\
+    exists F1, [/\ F1 `<=` S `\` U, measurable F1 & s1%:R^-1%:E <= nu F1].
+    rewrite {}/s1; case: ex_minnP => l /andP[l0 /asboolP[F2 [F2S mF2 lF2]]] saidai.
     by split => //; exists F2.
   have F1S : F1 `<=` S by apply: (subset_trans F1SU); exact: subDsetl.
-  pose U1 := U `|` F1.
-  have mU1 : measurable U1 by exact: measurableU.
-  have U1S : U1 `<=` S by rewrite /U1 subUset.
-  have nuU1_ge0 : 0 <= nu U1.
-    rewrite s_measureU//; first by rewrite adde_ge0// (le_trans _ k1F1).
+  pose UF1 := U `|` F1.
+  have mUF1 : measurable UF1 by exact: measurableU.
+  have UF1S : UF1 `<=` S by rewrite /UF1 subUset.
+  have nuUF1_ge0 : 0 <= nu UF1.
+    rewrite s_measureU//; first by rewrite adde_ge0// (le_trans _ s1F1).
     rewrite setIC; apply/disjoints_subset.
-    apply (subset_trans F1SU).
-    rewrite -setTD.
-    exact: setSD.
-  exists (exist _ (F1, k1, U1) (conj mF1 (conj F1S (conj k1_neq0 (conj k1F1 (conj mU1 (conj U1S nuU1_ge0))))))).
-  split; last by [].
-  move=> l B l0 mB BSU lB.
-  rewrite /k_ /sval/= /k1.
+    by apply (subset_trans F1SU); exact: subDsetr.
+  exists (exist _ (F1, s1, UF1)
+    (And3 (conj mF1 F1S) (conj s10 s1F1) (And3 mUF1 UF1S nuUF1_ge0))).
+  split => // l B l0 mB BSU lB.
+  rewrite /s_ /sval/= /s1.
   case: ex_minnP => m /andP[m0 /asboolP[C [CSU mC mnuC]]] h.
   apply h.
-  apply/andP; split => //.
-  by apply/asboolP; exists B; split.
+  by apply/andP; split => //; apply/asboolP; exists B; split.
 exists (fun n => (proj1_sig (v n)).1) => F s.
 split; first by move=> n; exact: elt_measurable.
 split; first by move=> n; exact: elt_FS.
-split; first by move=> n; exact: elt_s_k0.
 have Ubig n : U_ (v n) = \big[setU/set0]_(i < n.+1) F_ (v i).
   elim: n => [|n ih]; first by rewrite v0/= big_ord_recr/= big_ord0 set0U v0.
-  have [_ [_ ->]] := Pv n.
-  by rewrite big_ord_recr/= -ih.
+  by have [_ [_ ->]] := Pv n; rewrite big_ord_recr/= -ih.
 split.
   apply: subsetC_trivIset => n /=.
   have [_ [+ _]] := Pv n.
   move/subset_trans; apply.
-  rewrite -setTD.
-  apply: setDSS => //.
+  rewrite -setTD; apply: setDSS => //.
   by rewrite Ubig big_ord_recr.
+split; first by move=> n; exact: elt_s0.
 split; first by move=> n; exact: elt_s_F.
 move=> n G mG GFS; rewrite ltNge; apply/negP => knG.
-have limk : (fun m => (k_ (v m))%:R : R) --> +oo%R.
-  suff : (fun m => (k_ (v m))%:R^-1) --> (0 : R)%R.
+have limk : (fun m => (s_ (v m))%:R : R) --> +oo%R.
+  suff : (fun m => (s_ (v m))%:R^-1) --> (0 : R)%R.
     apply: inv_cvg => // m.
-    by rewrite lt_neqAle eq_sym pnatr_eq0 elt_s_k0/= ler0n.
-  apply: (@cvg_series_cvg_0 _ [normedModType R of R^o]).
-  apply: nneseries_is_cvg => //.
+    by rewrite lt_neqAle eq_sym pnatr_eq0 elt_s0/= ler0n.
+  apply: (@cvg_series_cvg_0 _ [normedModType R of R^o]); apply: nneseries_is_cvg => //.
   pose UF := \bigcup_m F_ (v m).
   have mUF : measurable UF.
     by apply: bigcupT_measurable => i; exact: elt_measurable.
@@ -690,30 +572,28 @@ have limk : (fun m => (k_ (v m))%:R : R) --> +oo%R.
     apply: subsetC_trivIset => i.
     have [_ [+ _]] := Pv i.
     move/subset_trans; apply.
-    by rewrite Ubig -setTD; exact: setSD.
+    by rewrite Ubig; exact: subDsetr.
   rewrite (@le_lt_trans _ _ (nu UF))//.
     rewrite nuUF.
     apply: lee_nneseries => k _; [by rewrite lee_fin|].
     exact: elt_s_F.
   by rewrite ltey_eq isfinite.
-have [m [nm Hm]] : exists m, (n < m)%N /\ (k_ (v n) < k_ (v m))%N.
-  move/cvgPpinfty_lt : limk => /(_ (k_ (v n))%:R) [m _ Hm].
+have [m [nm svnm]] : exists m, (n < m /\ s_ (v n) < s_ (v m))%N.
+  move/cvgPpinfty_lt : limk => /(_ (s_ (v n))%:R) [m _ Hm].
   exists (n + m.+1)%N.
   by rewrite addnS ltnS leq_addr -(@ltr_nat R) Hm//= -addSn leq_addl.
 have {}GFS : G `<=` S `\` \big[setU/set0]_(i < m) (F_ (v i)).
   apply: (subset_trans GFS).
-  apply: setDS.
-  exact: bigsetU_bigcup.
+  by apply: setDS; exact: bigsetU_bigcup.
 have [+ _] := Pv m.-1.
-rewrite Ubig.
-move/(_ (k_ (v n)) G (elt_s_k0 (v n)) mG).
-rewrite prednK//; last by rewrite (leq_trans _ nm).
-move=> /(_ GFS knG).
-by apply/negP; rewrite -ltnNge.
+move/(_ _ _ (elt_s0 (v n)) mG).
+rewrite Ubig prednK//; last by rewrite (leq_trans _ nm).
+by move=> /(_ GFS knG); rewrite leqNgt svnm.
 Qed.
 
 End positive_set_0.
 
+(* NB: unused *)
 Lemma positive_set_0_restr d (X : measurableType d) (R : realType) (P : set X)
     (mP : measurable P) (nu : {smeasure set X -> \bar R}) :
   (forall N, measurable N -> negative_set nu (N `&` P) -> s_mrestr nu mP N = 0) ->
@@ -734,8 +614,40 @@ have : forall N, negative_set mu N -> mu N = 0.
 by move/(@positive_set_0 _ _ _ mu); exact.
 Qed.
 
-Lemma gt0_fin_numE {R : realDomainType} [x : \bar R] : 0 < x -> (x \is a fin_num) = (x < +oo).
-Proof. by rewrite lt_neqAle => /andP[_]; exact: ge0_fin_numE. Qed.
+
+Lemma positive_negative0  d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) :
+    forall P N, positive_set nu P -> negative_set nu N ->
+            forall S, measurable S -> nu (S `&` P `&` N) = 0.
+Proof.
+move=> P N [mP posP] [mN negN] S mS.
+rewrite !inE in mP mN mS.
+apply /eqP.
+rewrite eq_le.
+apply /andP; split.
+  apply negN.
+    rewrite inE.
+    apply measurableI => //; apply: measurableI => //.
+  apply setIidPl.
+  by rewrite -setIA setIid.
+rewrite -setIAC.
+apply posP.
+  rewrite inE.
+  apply measurableI => //; apply measurableI => //.
+apply setIidPl.
+by rewrite -setIA setIid.
+Qed.
+
+Lemma s_measure_partition2 d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) :
+    forall P N, measurable P -> measurable N -> P `|` N = setT -> P `&` N = set0 ->
+      forall S, measurable S -> nu S = nu (S `&` P) + nu (S `&` N).
+Proof.
+move=> P N mP mN PNT PN0 S mS.
+rewrite -{1}(setIT S) -PNT setIUr s_measureU//.
+  1,2:by apply measurableI.
+by rewrite setICA -(setIA S P N) PN0 setIA setI0.
+Qed.
 
 Section hahn_decomposition_lemma.
 Variables (d : _) (X : measurableType d) (R : realType).
@@ -905,22 +817,19 @@ have EH n : [set mu E] `<=` H n.
   move=> x/= [F [? ? FB]].
   exists F; split => //.
   apply: (subset_trans FB).
-  apply: setDS.
-  exact: bigsetU_bigcup.
+  by apply: setDS; exact: bigsetU_bigcup.
 have mudelta n : mu E <= d_ (v n).
   move: n => [|n].
     rewrite v0/=.
     apply: ereal_sup_ub => /=; exists E; split => //.
-    apply: (subset_trans EDAoo).
-    exact: setDS.
+    by apply: (subset_trans EDAoo); exact: setDS.
   suff : mu E <= dd (U_ (v n)) by have [<- _] := Pv n.
   have /le_ereal_sup := EH n.+1.
   rewrite ereal_sup1 => /le_trans; apply.
   apply/le_ereal_sup => x/= [A' [? ? A'D]].
   exists A'; split => //.
   apply: (subset_trans A'D).
-  apply: setDS.
-  by rewrite Ubig.
+  by apply: setDS; rewrite Ubig.
 apply: (@closed_cvg _ _ _ _ _ (fun v => mu E <= v) _ _ _ d_cvg_0) => //.
   exact: closed_ereal_le_ereal.
 exact: nearW.
@@ -928,50 +837,45 @@ Unshelve. all: by end_near. Qed.
 
 End hahn_decomposition_lemma.
 
+(* TODO: rename seqDUE to seqDU_seqD *)
+Lemma seqDUE' X (S : set X) (F : (set X)^nat) :
+  (fun n => S `&` F n `\` \bigcup_(i in `I_n) F i) = seqDU (fun n => S `&` F n).
+Proof.
+apply/funext => n; rewrite -setIDA; apply/seteqP; split.
+  move=> x [Sx [Fnx UFx]]; split=> //; apply: contra_not UFx => /=.
+  by rewrite bigcup_mkord -big_distrr/= => -[].
+by rewrite /seqDU -setIDA bigcup_mkord -big_distrr/= setDIr setIUr setDIK set0U.
+Qed.
+
 Lemma bigcup_negative_set d (X : measurableType d) (R : realType)
-    (nu : {smeasure set X -> \bar R}) (N_ : (set X)^nat) :
-  (forall i, negative_set nu (N_ i)) ->
-  negative_set nu (\bigcup_i N_ i).
+    (nu : {smeasure set X -> \bar R}) (F : (set X)^nat) :
+  (forall i, negative_set nu (F i)) ->
+  negative_set nu (\bigcup_i F i).
 Proof.
 move=> H.
-have mN : measurable (\bigcup_i N_ i).
-  apply: bigcup_measurable => n _.
-  by have [/[1!inE]] := H n.
-split=> [/[1!inE]//| S /[1!inE] mS SN].
-pose S_ m := (S `&` N_ m) `\` \bigcup_(j in `I_m) N_ j.
-have S_E : S_ = seqDU (fun n => S `&` N_ n).
-  apply/funext => m; rewrite /S_ -setIDA.
-  (* TODO: lemma *) apply/seteqP; split.
-    (* NB: lemma? *)
-    move=> x [Sx [Nmx Nx]]; split=> //.
-    apply: contra_not Nx => /=.
-    rewrite bigcup_mkord.
-    by rewrite -big_distrr/= => -[].
-  rewrite /seqDU -setIDA bigcup_mkord -big_distrr/=.
-  by rewrite setDIr setIUr setDIK set0U.
-have tS_ : trivIset setT S_.
-  by rewrite S_E; exact: trivIset_seqDU.
-have SN_ m : S_ m `<=` N_ m by move=> x [[]].
-have SS_ : S = \bigcup_i S_ i.
-  transitivity (\bigcup_i seqDU (fun n : nat => S `&` N_ n) i); last first.
-    by apply: eq_bigcup => // n _; rewrite S_E.
+have mUF : measurable (\bigcup_i F i).
+  by apply: bigcup_measurable => n _; have [/[1!inE]] := H n.
+split=> [/[1!inE]//| S /[1!inE] mS SUF].
+pose SF n := (S `&` F n) `\` \bigcup_(i in `I_n) F i.
+have SFE : SF = seqDU (fun n => S `&` F n) by rewrite -seqDUE'.
+have tS_ : trivIset setT SF by rewrite SFE; exact: trivIset_seqDU.
+have SSF : S = \bigcup_i SF i.
+  transitivity (\bigcup_i seqDU (fun n => S `&` F n) i); last first.
+    by apply: eq_bigcup => // n _; rewrite SFE.
   by rewrite -seqDU_bigcup_eq -setI_bigcupr setIidl.
-have ? : forall n, measurable (S_ n).
-  move=> n; rewrite /S_; apply: measurableD.
-    apply: measurableI => //.
-    by have [/[1!inE]] := H n.
-  apply: bigcup_measurable => // k _.
-  by have [/[1!inE]] := H k.
-have S_S : (fun n => \sum_(0 <= i < n) nu (S_ i)) --> nu S.
-  rewrite SS_; apply: smeasure_semi_sigma_additive => //.
+have mSF : forall n, measurable (SF n).
+  move=> n; rewrite /SF; apply: measurableD.
+    by apply: measurableI => //; have [/[1!inE]] := H n.
+  by apply: bigcup_measurable => // k _; have [/[1!inE]] := H k.
+have SFS : (fun n => \sum_(0 <= i < n) nu (SF i)) --> nu S.
+  rewrite SSF; apply: smeasure_semi_sigma_additive => //.
   exact: bigcup_measurable.
-have nuS_ m : nu (S_ m) <= 0.
-  have [_] := H m.
-  by apply => //; first by rewrite inE.
-rewrite (_ : nu S = lim (fun n => \sum_(0 <= i < n) (nu (S_ i)))); last first.
-  exact/esym/cvg_lim.
+have nuS_ n : nu (SF n) <= 0.
+  have [_] := H n.
+  by apply; rewrite ?inE// => x -[[]].
+move/cvg_lim : (SFS) => <-//.
 apply: ereal_lim_le.
-  apply/cvg_ex => /=; first eexists; exact: S_S.
+  by apply/cvg_ex => /=; first eexists; exact: SFS.
 by apply: nearW => n; exact: sume_le0.
 Qed.
 
@@ -1017,7 +921,8 @@ Proof. by move: x => [[[? ?] ?]] -[]. Qed.
 Let elt_maxe (x : elt_type) : nu (A_ x) <= maxe (s_ x * 2^-1%:E) (- ( 1)).
 Proof. by move: x => [[[? ?] ?]] -[]. Qed.
 
-Let set_mE A := [set mE | exists E, [/\ mE = nu E, measurable E & E `<=` setT `\` A] ].
+Let set_mE A :=
+  [set mE | exists E, [/\ mE = nu E, measurable E & E `<=` setT `\` A] ].
 
 Let ss A := ereal_inf (set_mE A).
 
@@ -1187,40 +1092,6 @@ Definition is_Hahn_decomposition d (X : measurableType d) (R : realType)
       P `|` N = setT &
       P `&` N = set0].
 
-Lemma positive_negative0  d (X : measurableType d) (R : realType)
-    (nu : {smeasure set X -> \bar R}) :
-    forall P N, positive_set nu P -> negative_set nu N ->
-            forall S, measurable S -> nu (S `&` P `&` N) = 0.
-Proof.
-move=> P N [mP posP] [mN negN] S mS.
-rewrite !inE in mP mN mS.
-apply /eqP.
-rewrite eq_le.
-apply /andP; split.
-  apply negN.
-    rewrite inE.
-    apply measurableI => //; apply: measurableI => //.
-  apply setIidPl.
-  by rewrite -setIA setIid.
-rewrite -setIAC.
-apply posP.
-  rewrite inE.
-  apply measurableI => //; apply measurableI => //.
-apply setIidPl.
-by rewrite -setIA setIid.
-Qed.
-
-Lemma s_measure_partition2 d (X : measurableType d) (R : realType)
-    (nu : {smeasure set X -> \bar R}) :
-    forall P N, measurable P -> measurable N -> P `|` N = setT -> P `&` N = set0 ->
-      forall S, measurable S -> nu S = nu (S `&` P) + nu (S `&` N).
-Proof.
-move=> P N mP mN PNT PN0 S mS.
-rewrite -{1}(setIT S) -PNT setIUr s_measureU//.
-  1,2:by apply measurableI.
-by rewrite setICA -(setIA S P N) PN0 setIA setI0.
-Qed.
-
 (* memo : trying to auto resolve a following lemma but it doesn't work *)
 (*
 Lemma positive_set_is_measurable d (X : measurableType d) (R : realType)
@@ -1263,10 +1134,7 @@ apply (@eq_trans _ _ (nu (S `&` N1 `&` N2))).
    (setIAC _ _ P1) (positive_negative0 posP1 negN2 mS) add0e setIAC.
 Qed.
 
-(* Definition  : measureable -> R :=  *)
-
-Require Import lebesgue_integral.
-
+(* TODO: PR *)
 Section maxe_monoid.
 Context {R : realDomainType}.
 
@@ -1299,11 +1167,12 @@ by rewrite big_mkord.
 Qed.
 
 Theorem Radon_Nikodym_finite_nonnegative d (X : measurableType d) (R : realType)
-    (mu nu : {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E) :
-   nu `<< mu -> exists f : X -> \bar R, [/\
+    (mu nu : {measure set X -> \bar R})
+    (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E) :
+  nu `<< mu -> exists f : X -> \bar R, [/\
         forall x, f x >= 0,
         integrable mu setT f &
-        forall E, E \in measurable -> nu E = integral mu E f].
+        forall E, E \in measurable -> nu E = \int[mu]_(x in E) f x].
 Proof.
 (*
  * Define the measurable subsets of X to be those subsets that belong to the
@@ -1522,12 +1391,6 @@ apply /negP.
 have hnuN : forall S, measurable S -> S `<=` N -> \int[mu]_(x in S) h x <= nu S.
   admit.
 *)
-Admitted.
-
-Lemma bigmaxe (R : realType) (F : (\bar R)^nat) :
-  forall n, 0 <= F n -> \big[maxe/0]_(j < n) F j = \big[maxe/-oo]_(j < n) F j.
-Proof.
-move=> n F0.
 Admitted.
 
 Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
