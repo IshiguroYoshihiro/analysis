@@ -26,6 +26,7 @@ Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
 (* TODO: move *)
+
 Notation right_continuous f :=
   (forall x, f%function @ at_right x --> f%function x).
 
@@ -43,7 +44,7 @@ rewrite ltr_addl divr_gt0// => /(_ erefl).
 rewrite ler0_norm; last by rewrite subr_le0 ndf// ler_addl.
 by rewrite opprB ltr_subl_addl => fa; exact: ltW.
 Qed.
-
+(*
 (* TODO: move and use in lebesgue_measure.v? *)
 Lemma le_inf (R : realType) (S1 S2 : set R) :
   -%R @` S2 `<=` down (-%R @` S1) -> nonempty S2 -> has_inf S1
@@ -468,7 +469,7 @@ Let m := lebesgue_stieltjes_measure d f ndf.
 Let g : \bar R -> \bar R := EFinf f.
 
 Let lebesgue_stieltjes_measure_itvoc (a b : R) :
-  (m `]a, b] = hlength f `]a, b])%classic.
+  (m `]a, b] = hlength f `]a, b])%classicpunct_eitv_bnd_pinfty.
 Proof.
 rewrite /m /lebesgue_stieltjes_measure /= /Hahn_ext measurable_mu_extE//; last first.
   by exists (a, b).
@@ -507,6 +508,8 @@ Abort.
 
 
 End lebesgue_stieltjes_measure_itv.
+*)
+Require Import lebesgue_measure.
 
 Definition abs_continuous d (T : measurableType d) (R : realType)
     (m1 m2 : set T -> \bar R) :=
@@ -583,9 +586,9 @@ apply/continuous_right_continuous.
 move=> x.
 exact: cvg_id.
 Qed.
-
+(*
 Definition lebesgue_measure d (R : realType) := lebesgue_stieltjes_measure d (@idfun R) (@ndidR R) (* (@rcidR R) *).
-
+*)
 (*
 Definition abs_continuous_function_over_R d (R : realType) (f : R -> R)
     (ndf : {homo f : x y / x <= y}) (rcf : right_continuous f)
@@ -919,7 +922,7 @@ rewrite -[leRHS](invrK (fine (nu F))) ler_pinv; last 2 first.
   by rewrite invr_gt0 fine_gt0// nuF0/= -ge0_fin_numE ?isfinite// ltW.
 by rewrite natr_absz ger0_norm ?ceil_ge// ceil_ge0// invr_ge0 fine_ge0// ltW.
 Qed.
-
+(*
 Section positive_set_0.
 Variables (d : _) (X : measurableType d) (R : realType).
 Variable nu : {smeasure set X -> \bar R}.
@@ -1126,7 +1129,7 @@ have : forall N, negative_set mu N -> mu N = 0.
   by have [] := ENP _ Ex.
 by move/(@positive_set_0 _ _ _ mu); exact.
 Qed.
-
+*)
 Lemma gt0_fin_numE {R : realDomainType} [x : \bar R] : 0 < x -> (x \is a fin_num) = (x < +oo).
 Proof. by rewrite lt_neqAle => /andP[_]; exact: ge0_fin_numE. Qed.
 
@@ -1660,6 +1663,36 @@ Qed.
 
 Require Import lebesgue_integral.
 
+Section maxe_monoid.
+Context {R : realDomainType}.
+
+Lemma maxeA : associative (S := \bar R) maxe.
+Proof. exact maxA. Qed.
+
+Lemma maxNye : left_id (-oo : \bar R) maxe.
+Proof. move=> x. rewrite maxC. exact : maxeNy. Qed.
+
+Canonical maxe_monoid := Monoid.Law maxeA maxNye maxeNy.
+End maxe_monoid.
+
+Lemma bigmax_lee (R : realType)
+    : forall (F : (\bar R)^nat) (n m : nat), (n <= m)%nat ->
+  \big[maxe/-oo]_(j < n) F j <=
+  \big[maxe/-oo]_(j < m) F j.
+Proof.
+move=> F n m nm.
+rewrite -[in leRHS](subnKC nm).
+rewrite -[in leRHS](big_mkord xpredT F).
+rewrite/index_iota.
+rewrite subn0.
+rewrite iotaD.
+rewrite big_cat /=.
+rewrite le_maxr.
+apply /orP.
+left.
+rewrite -[in iota _ _](subn0 n).
+by rewrite big_mkord.
+Qed.
 
 Theorem Radon_Nikodym_finite_nonnegative d (X : measurableType d) (R : realType)
     (mu nu : {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E) :
@@ -1697,13 +1730,27 @@ have IGbound : exists M, forall x, x \in IG -> (x <= M%:E)%E.
   rewrite fineK; last by rewrite ge0_fin_numE.
   by rewrite (le_trans (g2 setT _))// inE.
 pose M := ereal_sup IG.
+have M0 : 0 <= M.
+  rewrite -(ereal_sup1 0).
+  apply (@le_ereal_sup _ [set 0] IG).
+  rewrite sub1set inE.
+  exists (fun x => 0%E); last first.
+    exact: integral0.
+  split => //.
+    exact : integrable0.
+  move=> E.
+  by rewrite integral0.
+have finM : M < +oo.
+  admit.
+have finnumM : in_mem M (mem fin_num).
+  by rewrite ge0_fin_numE.
 have H1 : exists f : X -> \bar R, \int[mu]_x f x = M /\
                            forall E, E \in measurable -> (\int[mu]_(x in E) f x)%E = nu E.
   admit.
 have [g H2] : exists g : (X -> \bar R)^nat, forall m, g m \in G /\ \int[mu]_x (g m x) >= M - m.+1%:R^-1%:E.
   (* ub_ereal_sup_adherent *)
   admit.
-pose F (m : nat) (x : X) := \big[maxe/0%:E]_(j < m) (g j x).
+pose F (m : nat) (x : X) := \big[maxe/-oo]_(j < m) (g j x).
 (* have : forall m x, F m x >= 0
  *   forall x, 0 <= g m x, g m in G
  *)
@@ -1728,13 +1775,35 @@ have Fleqnu m E0 (mE : E0 \in measurable) : \int[mu]_(x in E0) F m x <= nu E0.
     admit.
   by rewrite H'1 H'2 -H'4; exact H'3.
 have FminG m : F m \in G.
-  admit.
+    admit.
 have Fgeqg m : forall x, F m x >= g m x.
   admit.
 have nd_F m x : nondecreasing_seq (F ^~ x).
   admit.
-pose limF := fun (x : X) => lim (F^~ x).
+pose limF := fun (x : X) => lim (F^~ x) : \bar R.
 exists limF.
+have mlimF : @measurable_fun _ _ X _ setT limF.
+  admit.
+have limF0 x : 0 <= limF x.
+  rewrite /limF.
+  apply ereal_lim_ge.
+    apply ereal_nondecreasing_is_cvg.
+    move=> n m.
+    rewrite /F.
+    move=> nm.
+    by apply (bigmax_lee (fun n => g n x)).
+ (* note: rename homo_le_bigmax *)
+  near=> n.
+  have n0 : (0 < n)%nat.
+    near: n.
+    by exists 1%nat.
+  rewrite /F.
+  destruct n => //.
+  apply : (bigmax_sup ord_max) => //.
+  have := H2 n.
+  case.
+  rewrite inE /G /=.
+  by case.
 have limFleqnu : forall E, \int[mu]_(x in E) limF x <= nu E.
   admit.
 have limFXeqM : \int[mu]_x limF x = M.
@@ -1789,8 +1858,72 @@ Check nu E0P = 0 .
   rewrite sube_gt0.
   apply : le_lt_trans.
   apply integral_ge0.
+  move=> x _.
+  by rewrite adde_ge0.
+pose h x := if (x \in E0P) then (limF x + (eps%:num)%:E) else (limF x).
+have hnu : forall S, measurable S -> \int[mu]_(x in S) h x <= nu S.
   admit.
+(* have posE0P : positive_set sigma E0P. *)
+have : \int[mu]_(x in setT) h x > M.
+  rewrite -(setUv E0P).
+  rewrite integral_setU //; last 4 first.
+          by apply measurableC.
+        rewrite (setUv E0P).
+        admit.
+      admit.
+    apply /disj_set2P.
+    exact : setIv.
+  rewrite /h.
+  rewrite -(eq_integral _ (fun x => limF x + (eps%:num)%:E)); last first.
+    move=> x xE0P.
+    by rewrite ifT.
+  rewrite -[\int[mu]_(x in ~` E0P) _](eq_integral _ (fun x => limF x)); last first.
+    move=> x xnE0P.
+    rewrite ifF //.
+    apply negbTE.
+    by rewrite -in_setC.
+  rewrite ge0_integralD//; last 2 first.
+      admit.
+    exact : measurable_fun_cst.
+  rewrite integral_cst //.
+  rewrite addeAC.
+  rewrite -integral_setU //; last 3 first. (* 上のintegral_setU以降と同じ *)
+        admit.
+      admit.
+    admit.
+  rewrite setUv.
+  rewrite limFXeqM.
+  rewrite -lte_subel_addl; last first.
+    rewrite ge0_fin_numE //.
+  rewrite subee //.
+  apply mule_gt0 => //.
+have hinG: G h.
+  rewrite /G //=.
+  split.
+      admit. (* *)
+    admit.
+  move=> S.
+  rewrite inE.
+  apply : hnu.
+have : (\int[mu]_x h x <= M).
+  rewrite -(ereal_sup1 (\int[mu]_x h x)).
+  apply (@le_ereal_sup _ [set \int[mu]_x h x] IG).
+  rewrite sub1set inE.
+  exists h => //.
+rewrite leNgt.
+apply /negP.
+(*have hnuP: forall S, measurable S -> S `<=` P -> \int[mu]_(x in S) h x <= nu S.
+  move=> S mS SP.
+  admit.
+have hnuN : forall S, measurable S -> S `<=` N -> \int[mu]_(x in S) h x <= nu S.
+  admit.
+*)
+Admitted.
 
+Lemma bigmaxe (R : realType) (F : (\bar R)^nat) :
+  forall n, 0 <= F n -> \big[maxe/0]_(j < n) F j = \big[maxe/-oo]_(j < n) F j.
+Proof.
+move=> n F0.
 Admitted.
 
 Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
