@@ -1187,7 +1187,7 @@ HB.instance Definition _ := @isMeasurable.Build default_measure_display rat
 
 End discrete_measurable_rat.
 *)
-Lemma measurable_eq_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
+Lemma measurable_lt_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
    measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x < g x].
 Proof.
 move=> mf mg.
@@ -1197,12 +1197,24 @@ apply : emeasurable_fun_o_infty => //.
 apply emeasurable_funB => //.
 Qed.
 
+Lemma measurable_le_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
+   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x <= g x].
+Proof.
+move=> mf mg.
+apply : measurableD.
+
+Lemma measurable_eq_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
+   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x = g x].
+Proof.
+
+Qed.
+
 (*
 Lemma measurable_fun_0 d (X : measurableType d) (R : realType) (g : (X -> \bar R)) :
   (fun x : X => \big[maxe/-oo]_(j < 0) g j x) = (fun x : X => \big[maxe/-oo]_(j < 0) g j x)
 *)
 (* auxiliary lemma *)
-Lemma mF_0 d (X : measurableType d) (R : realType) (g : (X -> \bar R) ^nat) :
+Lemma F_0 d (X : measurableType d) (R : realType) (g : (X -> \bar R) ^nat) :
   (fun x : X => \big[maxe/-oo]_(j < 0) g j x) = (fun x : X => -oo).
 Proof.
 apply funext.
@@ -1210,7 +1222,7 @@ move=> x.
 by rewrite big_ord0.
 Qed.
 
-Lemma mF_step d (X : measurableType d) (R : realType) (g : (X -> \bar R) ^nat) :
+Lemma F_step d (X : measurableType d) (R : realType) (g : (X -> \bar R) ^nat) :
   forall n, (fun x : X => \big[maxe/-oo]_(j < n.+1) g j x) =
          (fun x : X => maxe (\big[maxe/-oo]_(j < n) g j x) (g n x)).
 Proof.
@@ -1227,6 +1239,9 @@ Lemma mkcover_function (T I J : Type) (g : I -> J -> T) (P : T -> Prop ):
       (fun (y : I) => [set x | P (g y x) ]) setT.
 Abort.
 *)
+
+
+
 (* --- *)
 
 Theorem Radon_Nikodym_finite_nonnegative d (X : measurableType d) (R : realType)
@@ -1317,23 +1332,36 @@ move=> mgn.
 have mF n: measurable_fun setT (F n).
   induction n.
     rewrite /F.
-    rewrite mF_0.
+    under eq_fun do rewrite big_ord0 ; rewrite -/(measurable_fun _ _).
     exact: measurable_fun_cst.
   rewrite /F.
   move=> m.
-  rewrite  mF_step.
-  by apply : emeasurable_fun_max.
+  under eq_fun do rewrite  big_ord_recr.
+  apply : emeasurable_fun_max => //.
 pose E m j := [set x | F m x = g j x /\ forall k, (k < j)%nat -> F m x > g k x ].
+
+have H1 m j : E m j = [set x| F m x = g j x] `&` [set x |forall k, (k < j)%nat -> (g k x < g j x)%E].
+  apply /seteqP.
+  split; move=> x; rewrite /E /=; by case => ->.
+have : (E 0%nat 0%nat) = setT.
+  rewrite /E.
+  rewrite /F.
+
+have :forall m j, (j < m.+1)%nat -> E m.+1 j = (E m j) `\` (E m.+1 m.+1).
+
 have partition_E n : partition setT (E n) setT.
-  split =>//.
-      rewrite /E .
+  split => //.
+      rewrite /E.
       admit.
     admit.
   admit.
   (* set の分解? *)
 have measurable_E m j : E m j \in measurable.
   rewrite inE.
+  rewrite H1.
+  apply measurableI => /=.
   rewrite /E /=.
+  rewrite H1.
   admit.
 (* Local Open Scope ereal_scope. *)
 have Fleqnu m E0 (mE : E0 \in measurable) : \int[mu]_(x in E0) F m x <= nu E0.
