@@ -1201,12 +1201,26 @@ Lemma measurable_le_fun d (X : measurableType d) (R : realType) (f g : X -> \bar
    measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x <= g x].
 Proof.
 move=> mf mg.
-apply : measurableD.
+under eq_set do rewrite leNgt.
+rewrite (_ : [set _ | _] = ~` [set x | g x < f x]).
+  apply measurableC.
+  exact : measurable_lt_fun.
+apply/seteqP.
+split; by move=> x /= /negP.
+Qed.
 
 Lemma measurable_eq_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
    measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x = g x].
 Proof.
-
+move=> mf mg.
+rewrite (_ : [set x | _ = _] = [set x | f x <= g x] `\` [set x | f x < g x]).
+  apply measurableD.
+    exact : measurable_le_fun.
+  exact : measurable_lt_fun.
+apply/seteqP.
+split => x /=.
+  move=> fg ;split ;rewrite fg;by rewrite ?le_refl ?lt_irreflexive.
+move=>[] /=; by rewrite le_eqVlt => /orP[/eqP| ->].
 Qed.
 
 (*
@@ -1343,26 +1357,35 @@ pose E m j := [set x | F m x = g j x /\ forall k, (k < j)%nat -> F m x > g k x ]
 have H1 m j : E m j = [set x| F m x = g j x] `&` [set x |forall k, (k < j)%nat -> (g k x < g j x)%E].
   apply /seteqP.
   split; move=> x; rewrite /E /=; by case => ->.
-have : (E 0%nat 0%nat) = setT.
+have : (E 1%nat 0%nat) = setT.
   rewrite /E.
   rewrite /F.
+admit.
+have coverE n: cover [set: nat] (E n) = [set: X].
+admit.
+have trivE n : trivIset [set: nat] (E n).
+admit.
 
-have :forall m j, (j < m.+1)%nat -> E m.+1 j = (E m j) `\` (E m.+1 m.+1).
-
-have partition_E n : partition setT (E n) setT.
-  split => //.
-      rewrite /E.
-      admit.
-    admit.
-  admit.
   (* set の分解? *)
+have mE_step :forall m j, (j < m.+1)%nat -> E m.+1 j = (E m j) `\` (E m.+1 m.+1).
+admit.
 have measurable_E m j : E m j \in measurable.
   rewrite inE.
   rewrite H1.
   apply measurableI => /=.
   rewrite /E /=.
-  rewrite H1.
-  admit.
+  apply : measurable_eq_fun.
+        exact: mF.
+      exact : mgn.
+(* TODO : want to use \bigcap_(k < j) [set x | g k x < g j x]) *)
+    rewrite [T in measurable T]
+      (_ : _ = \bigcap_(k in `I_j) [set x | g k x < g j x]).
+      apply bigcap_measurable.
+      move=> k _.
+      apply : measurable_lt_fun; exact : mgn.
+    apply/seteqP.
+    by split => x /=.
+
 (* Local Open Scope ereal_scope. *)
 have Fleqnu m E0 (mE : E0 \in measurable) : \int[mu]_(x in E0) F m x <= nu E0.
   have H'1 : \int[mu]_(x in E0) F m x = \sum_(j < m) \int[mu]_(x in (E0 `&` (E m j))) F m x.
