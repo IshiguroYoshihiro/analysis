@@ -1355,16 +1355,34 @@ have mF n: measurable_fun setT (F n).
 pose E m j := [set x | F m x = g j x /\ forall k, (k < j)%nat -> F m x > g k x ].
 
 have H1 m j : E m j = [set x| F m x = g j x] `&` [set x |forall k, (k < j)%nat -> (g k x < g j x)%E].
-  apply /seteqP.
-  split; move=> x; rewrite /E /=; by case => ->.
-have : (E 1%nat 0%nat) = setT.
-  rewrite /E.
+  by apply/seteqP; by split; move=> x; rewrite /E /=; by case => ->.
+have tE m : trivIset setT (E m).
+  apply/trivIsetP => /= i j _ _ ij.
+  apply/seteqP; split => // x []; rewrite /E/= => -[+ + [+ +]].
+  wlog : i j ij / (i < j)%N.
+    move=> h Fmgi iFm Fmgj jFm.
+    have := ij; rewrite neq_lt => /orP[ji|ji]; first exact: (h i j).
+    by apply: (h j i) => //; rewrite eq_sym.
+  by move=> {}ij -> _ _ => /(_ _ ij); rewrite ltxx.
+have XE m : [set: X] = \big[setU/set0]_(j : 'I_m.+1) E m.+1 j.
+  apply/seteqP; split => // x _.
+  rewrite -bigcup_mkord.
+  (* TODO: fix arg max notation spacing *)
+  exists [arg max_(j > @ord0 m) g j x]%O.
+    by rewrite /=; case: arg_maxP.
+  rewrite /E/=.
+  split.
+    rewrite /F.
+    rewrite -(@bigmax_eq_arg _ _ [the finType of 'I_m.+1] -oo ord0 xpredT (g ^~ x))//; last first.
+    by move=> i _; rewrite leNye.
+  move=> k kgx.
   rewrite /F.
-admit.
-have coverE n: cover [set: nat] (E n) = [set: X].
-admit.
-have trivE n : trivIset [set: nat] (E n).
-admit.
+  rewrite (@bigmax_eq_arg _ _ [the finType of 'I_m.+1] -oo ord0 xpredT (g ^~ x))//; last first.
+    by move=> i _; rewrite leNye.
+  case: arg_maxP kgx => //= j _ hj kj.
+  admit.
+have ? : (E 1%nat 0%nat) = setT.
+  admit.
 
   (* set の分解? *)
 have mE_step :forall m j, (j < m.+1)%nat -> E m.+1 j = (E m j) `\` (E m.+1 m.+1).
@@ -1561,4 +1579,3 @@ Theorem FTC2 (R : realType) (f : R -> R) (a b : R)
              (f x - f a)%:E = (integral lebesgue_measure `[a ,x] f').
 Proof.
 Abort.
-x
