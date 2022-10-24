@@ -1253,9 +1253,25 @@ Lemma mkcover_function (T I J : Type) (g : I -> J -> T) (P : T -> Prop ):
       (fun (y : I) => [set x | P (g y x) ]) setT.
 Abort.
 *)
+Lemma measurable_fun_bigcup d (X : measurableType d) (R : realType) :
+forall (n : nat) (E : `I_n -> set X) (mu : {measure set X -> \bar R})
+ (f : X -> \bar R), measurable_fun (\bigcup_i E i) f.
+Proof.
+case.
+  rewrite II0.
+  move=> E.
+Admitted.
 
-
-
+Lemma integrable_bigcup d (X : measurableType d) (R : realType) (n : nat)
+  (E : `I_n -> set X) (mu : {measure set X -> \bar R}) (f : X -> \bar R):
+    (forall i : `I_n, integrable mu (E i) f) ->
+                    integrable mu (\bigcup_i E i) f.
+Proof.
+rewrite /integrable.
+move=> H.
+split.
+  apply measurable_fun_bigcup.
+Admitted.
 (* --- *)
 
 Theorem Radon_Nikodym_finite_nonnegative d (X : measurableType d) (R : realType)
@@ -1364,8 +1380,9 @@ have tE m : trivIset setT (E m).
     have := ij; rewrite neq_lt => /orP[ji|ji]; first exact: (h i j).
     by apply: (h j i) => //; rewrite eq_sym.
   by move=> {}ij -> _ _ => /(_ _ ij); rewrite ltxx.
-have XE m : [set: X] = \big[setU/set0]_(j : 'I_m.+1) E m.+1 j.
-  apply/seteqP; split => // x _.
+have XE m : [set: X] `<=` \big[setU/set0]_(j : 'I_m.+1) E m.+1 j.
+  move=> x _ /=.
+  (* apply/seteqP; split => // x _. *)
   rewrite -bigcup_mkord.
   (* TODO: fix arg max notation spacing *)
   exists [arg max_(j > @ord0 m) g j x]%O.
@@ -1405,8 +1422,22 @@ have measurable_E m j : E m j \in measurable.
     by split => x /=.
 
 (* Local Open Scope ereal_scope. *)
-have Fleqnu m E0 (mE : E0 \in measurable) : \int[mu]_(x in E0) F m x <= nu E0.
+have partX n D (mD : D \in measurable) : D = \bigcup_i (D `&` (E n i)).
+  admit.
+
+have Fleqnu m E0 (mE0 : E0 \in measurable) : \int[mu]_(x in E0) F m x <= nu E0.
   have H'1 : \int[mu]_(x in E0) F m x = \sum_(j < m) \int[mu]_(x in (E0 `&` (E m j))) F m x.
+    rewrite {1}(partX m E0) //.
+    rewrite ge0_integral_bigcup ; last 4 first.
+            move=> k.
+            apply measurableI.
+              by rewrite inE in mE0.
+            have mEmk := (measurable_E m k).
+            by rewrite inE in mEmk.
+          apply : (eq_integrable _ (g k)).
+          
+Unset Printing Notations.
+      apply subset_integral.
     admit.
   have H'2 : \sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) F m x) =
              \sum_(j < m) (\int[mu]_(x in (E0 `&` (E m j))) g m x).
