@@ -1253,24 +1253,61 @@ Lemma mkcover_function (T I J : Type) (g : I -> J -> T) (P : T -> Prop ):
       (fun (y : I) => [set x | P (g y x) ]) setT.
 Abort.
 *)
-Lemma measurable_fun_bigcup d (X : measurableType d) (R : realType) :
-forall (n : nat) (E : `I_n -> set X) (mu : {measure set X -> \bar R})
- (f : X -> \bar R), measurable_fun (\bigcup_i E i) f.
+Lemma measurable_fun_bigcup d (X : measurableType d) (R : realType)
+  (n : nat) (E : nat -> set X) (mu : {measure set X -> \bar R})
+    (f : X -> \bar R) : (forall i, (i < n)%nat -> measurable (E i) /\ measurable_fun (E i) f) ->
+                          measurable_fun (\bigcup_(i in `I_n) E i) f.
 Proof.
-case.
-  rewrite II0.
-  move=> E.
-Admitted.
+move=> mfE mE /= Y mY.
+rewrite setI_bigcupl.
+apply bigcup_measurable.
+move=> i iltn.
+apply mfE => //.
+by apply mfE.
+Qed.
 
 Lemma integrable_bigcup d (X : measurableType d) (R : realType) (n : nat)
-  (E : `I_n -> set X) (mu : {measure set X -> \bar R}) (f : X -> \bar R):
-    (forall i : `I_n, integrable mu (E i) f) ->
-                    integrable mu (\bigcup_i E i) f.
+  (E : nat -> set X) (mu : {measure set X -> \bar R}) (f : X -> \bar R) :
+    (forall i, (i < n)%nat -> measurable (E i) /\ integrable mu (E i) f) ->
+                    integrable mu (\bigcup_(i in `I_n) E i) f.
 Proof.
 rewrite /integrable.
 move=> H.
 split.
-  apply measurable_fun_bigcup.
+  apply measurable_fun_bigcup => //.
+  move=> i iltn.
+  split; apply H => //.
+have : exists F : nat -> set X, (forall i, (i < n)%nat -> measurable (F i)) /\
+                          \bigcup_(i in `I_n) F i = \bigcup_(i in `I_n) E i.
+  exists (fun (n : nat) => E n `\` \bigcup_(i in `I_n) E i).
+  split.
+    move=> i iltn.
+    apply measurableD.
+      by apply H.
+    apply bigcup_measurable => /=.
+    move=> k klti.
+    apply H.
+    by apply (@lt_trans _ _ i).
+  rewrite seteqP.
+  split.
+    by apply subset_bigcup.
+
+  move:H.
+  case : n.
+    move=> H x.
+    move=> H2.
+    rewrite /bigcup /=.
+    under eq_fun do rewrite ltn0.
+    under eq_exists2 do rewrite andFb.
+  apply bigcupP.
+  move=> bigE.
+  rewrite bigcup_set.
+  rewrite -inE in bigE.
+  have bigE' : (\bigcup_(i in `I_n) E i) = (\bigcup_(i | (i < n)%nat ) E i).
+Check (bigcupP bigE).
+  move : (bigcupP bigE).
+apply (le_lt_trans (\sum_(i in `I_n) (\int[mu]_(x in E i) `|f x|))).
+rewrite ge0_integral_bigsetU.
 Admitted.
 (* --- *)
 
