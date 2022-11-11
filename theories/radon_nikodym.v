@@ -1744,9 +1744,9 @@ pose E0P := E0 `&` P.
 pose E0N := E0 `&` N.
 move: (posP) => [mP _].
 move: negN => [mN negN].
-rewrite !inE in mE0 mP mN.
+rewrite !inE in (*mE0*) mP mN.
 have mE0P : measurable E0P.
-  apply measurableI => //.
+  exact: measurableI.
 have muE0P0: mu E0P > 0.
   rewrite /abs_continuous.
   rewrite lt_neqAle.
@@ -1764,21 +1764,22 @@ have muE0P0: mu E0P > 0.
   apply /eqP.
   rewrite gt_eqF //.
   have : sigma E0P > 0.
-   apply (@lt_le_trans _ _ (sigma E0)) ; last first.
+    apply (@lt_le_trans _ _ (sigma E0)) ; last first.
       rewrite (s_measure_partition2 _ mP mN PNX PN0) //.
       rewrite gee_addl //.
       apply negN => //.
       rewrite inE.
-      apply measurableI => //.
+      by apply measurableI => //.
     rewrite sigmaE.
-    rewrite sube_gt0 //.
-  rewrite sigmaE.
+    rewrite sube_gt0//.
+    exact: Heps.
+  rewrite /sigma/=/sigma'/=.
   rewrite sube_gt0.
   apply : le_lt_trans.
   apply integral_ge0.
   move=> x _.
   by rewrite adde_ge0.
-pose h x := if (x \in P) then (limF x + (eps%:num)%:E) else (limF x).
+pose h x := if (x \in P) then (limF x + ((eps mE0 abs)%:num)%:E) else (limF x).
 have hnu : forall S, measurable S -> \int[mu]_(x in S) h x <= nu S.
   admit.
 (* have posE0P : positive_set sigma E0P. *)
@@ -1790,7 +1791,7 @@ have : \int[mu]_(x in setT) h x > M.
           by apply measurableC.
         split.
           apply (@measurable_restrict _ _ _ _ P setT h) => //.
-          have hp : h \_ P = (fun x => limF x + (eps%:num)%:E) \_ P.
+          have hp : h \_ P = (fun x => limF x + ((eps mE0 abs)%:num)%:E) \_ P.
             apply eq_restrictP.
             move=> x xp.
             by rewrite /h ifT.
@@ -1804,7 +1805,7 @@ have : \int[mu]_(x in setT) h x > M.
       apply /disj_set2P.
     exact : setICr.
   rewrite /h.
-  rewrite -(eq_integral _ (fun x => limF x + (eps%:num)%:E)); last first.
+  rewrite -(eq_integral _ (fun x => limF x + ((eps mE0 abs)%:num)%:E)); last first.
     move=> x xE0P.
     by rewrite ifT.
   rewrite -[\int[mu]_(x in ~` P) _](eq_integral _ (fun x => limF x)); last first.
@@ -1849,6 +1850,8 @@ have hnuN : forall S, measurable S -> S `<=` N -> \int[mu]_(x in S) h x <= nu S.
   admit.
 *)
 Admitted.
+
+End Radon_Nikodym_finite_ge0.
 
 Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
     (mu : {measure set X -> \bar R}) (nu : {smeasure set X -> \bar R})
