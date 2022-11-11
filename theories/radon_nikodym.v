@@ -1298,7 +1298,8 @@ have : exists F : nat -> set X, (forall i, (i < n)%nat -> measurable (F i)) /\
     move=> H2.
     rewrite /bigcup /=.
     under eq_fun do rewrite ltn0.
-    under eq_exists2 do rewrite andFb.
+(*
+    exists 0%nat.
   apply bigcupP.
   move=> bigE.
   rewrite bigcup_set.
@@ -1307,7 +1308,7 @@ have : exists F : nat -> set X, (forall i, (i < n)%nat -> measurable (F i)) /\
 Check (bigcupP bigE).
   move : (bigcupP bigE).
 apply (le_lt_trans (\sum_(i in `I_n) (\int[mu]_(x in E i) `|f x|))).
-rewrite ge0_integral_bigsetU.
+rewrite ge0_integral_bigsetU. *)
 Admitted.
 (* --- *)
 
@@ -1472,7 +1473,7 @@ have Fleqnu m E0 (mE : measurable E0) : \int[mu]_(x in E0) F m x <= nu E0.
   apply.
   by rewrite inE; exact: measurableI.
 have FminG m : F m \in G.
-    admit.
+  admit.
 have Fgeqg m : forall x, F m x >= g m x.
   admit.
 have nd_F m x : nondecreasing_seq (F ^~ x).
@@ -1536,7 +1537,6 @@ have muE0P0: mu E0P > 0.
   move=> /(_ E0P).
   move=> H.
   move: (H mE0P) => mu0nu0.
-Check nu E0P = 0 .
   move: (contra_not_neq mu0nu0).
   move=> HH.
   rewrite eq_sym.
@@ -1558,18 +1558,30 @@ Check nu E0P = 0 .
   apply integral_ge0.
   move=> x _.
   by rewrite adde_ge0.
-pose h x := if (x \in E0P) then (limF x + (eps%:num)%:E) else (limF x).
+pose h x := if (x \in P) then (limF x + (eps%:num)%:E) else (limF x).
 have hnu : forall S, measurable S -> \int[mu]_(x in S) h x <= nu S.
   admit.
 (* have posE0P : positive_set sigma E0P. *)
 have : \int[mu]_(x in setT) h x > M.
-  rewrite -(setUv E0P).
+  rewrite -(setUv P).
   rewrite integral_setU //; last 4 first.
           by apply measurableC.
-        rewrite (setUv E0P).
+        rewrite measurable_funU //; last first.
+          by apply measurableC.
+        split.
+          apply (@measurable_restrict _ _ _ _ P setT h) => //.
+          have hp : h \_ P = (fun x => limF x + (eps%:num)%:E) \_ P.
+            apply eq_restrictP.
+            move=> x xp.
+            by rewrite /h ifT.
+          rewrite hp.
+          move=> S /= T mT.
+          apply measurableI => //.
+          rewrite /measurable.
         admit.
       admit.
-    apply /disj_set2P.
+
+      apply /disj_set2P.
     exact : setICr.
   rewrite /h.
   rewrite -(eq_integral _ (fun x => limF x + (eps%:num)%:E)); last first.
@@ -1581,7 +1593,7 @@ have : \int[mu]_(x in setT) h x > M.
     apply negbTE.
     by rewrite -in_setC.
   rewrite ge0_integralD//; last 2 first.
-      admit.
+      apply (@measurable_funS _ _ _ _ setT E0P) => //.
     exact : measurable_fun_cst.
   rewrite integral_cst //.
   rewrite addeAC.
