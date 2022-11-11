@@ -1312,9 +1312,410 @@ rewrite ge0_integral_bigsetU. *)
 Admitted.
 (* --- *)
 
-Theorem Radon_Nikodym_finite_nonnegative d (X : measurableType d) (R : realType)
-    (mu nu : {measure set X -> \bar R})
-    (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E) :
+Section Radon_Nikodym_finite_ge0.
+Variables (d : _) (X : measurableType d) (R : realType).
+Variables (mu nu : {measure set X -> \bar R}).
+Hypotheses (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E).
+
+(* maybe define G : set R insted of set \bar R
+pose G' := [set g : X -> \bar R |
+            [/\ (forall x, (g x >= 0)%E),
+               integrable mu setT g &
+                 forall E, E \in measurable -> fine (\int[mu]_(x in E) g x) <= fine (nu E) ] ].
+*)
+Let G := [set g : X -> \bar R | [/\
+  forall x, (g x >= 0)%E,
+  integrable mu setT g &
+  forall E, E \in measurable -> (\int[mu]_(x in E) g x <= nu E)%E] ].
+
+Let neG : G !=set0.
+Proof.
+exists (cst 0%E); split; first by [].
+- exact: integrable0.
+- by move=> E _; by rewrite integral0.
+Qed.
+
+Let IG := [set \int[mu]_x g x | g in G]%E.
+
+Let neIG : IG !=set0.
+Proof.
+case: neG => g [g0 g1 g2].
+by exists (\int[mu]_x g x)%E, g.
+Qed.
+
+Let IGbound : exists M, forall x, x \in IG -> (x <= M%:E)%E.
+Proof.
+exists (fine (nu setT)) => x.
+rewrite inE => -[g [g0 g1 g2] <-{x}].
+rewrite fineK; last by rewrite ge0_fin_numE.
+by rewrite (le_trans (g2 setT _))// inE.
+Qed.
+
+Let M := ereal_sup IG.
+
+Let M0 : 0 <= M.
+Proof.
+rewrite -(ereal_sup1 0).
+apply (@le_ereal_sup _ [set 0] IG).
+rewrite sub1set inE.
+exists (fun x => 0%E); last first.
+  exact: integral0.
+split => //.
+  exact : integrable0.
+move=> E.
+by rewrite integral0.
+Qed.
+
+Let finM : M < +oo.
+Proof.
+rewrite /M.
+move: IGbound.
+move=> [m] IGbound'.
+apply : (@le_lt_trans _ _ m%:E); last by rewrite ltey.
+apply ub_ereal_sup.
+move=> x IGx.
+apply IGbound'.
+by rewrite inE.
+Qed.
+
+Let finnumM : in_mem M (mem fin_num). (* M \is fin_num *)
+Proof.
+by rewrite ge0_fin_numE.
+Qed.
+
+Let g_H2 : { g : (X -> \bar R)^nat | forall m, g m \in G /\
+    \int[mu]_x (g m x) > M - m.+1%:R^-1%:E }.
+Proof.
+pose P (m: nat) (g : X -> \bar R) := g \in G /\ M - (m.+1%:R^-1)%:E < \int[mu]_x g x.
+suff : { g : (X -> \bar R) ^nat & forall m : nat, P m (g m)}.
+  case => g Hg.
+  by exists g.
+apply choice.
+move=> m.
+rewrite /P.
+have /(@ub_ereal_sup_adherent _ IG) : (0 < m.+1%:R^-1 :> R)%R by rewrite invr_gt0.
+move/(_ finnumM) => [_ [h Gh <-]].
+by exists h; rewrite inE; split => //; rewrite -/M in q.
+Qed.
+
+Let g : (X -> \bar R)^nat := proj1_sig g_H2.
+
+Let H2 : forall m, g m \in G /\
+    \int[mu]_x (g m x) > M - m.+1%:R^-1%:E.
+Proof.
+exact: (proj2_sig g_H2).
+Qed.
+
+Let g_ge0 x n : 0 <= g n x.
+Proof.
+by have [+ _]:= H2 n; rewrite inE /G /= => -[].
+Qed.
+
+Let F (m : nat) (x : X) := \big[maxe/-oo]_(j < m.+1) g j x.
+
+Let mgn n : measurable_fun setT (g n).
+Proof.
+move: (H2 n).
+rewrite /G.
+by rewrite inE /= => -[[_ []]].
+Qed.
+
+Let mF n : measurable_fun setT (F n).
+Proof.
+induction n.
+  rewrite /F.
+  under eq_fun do rewrite big_ord_recr/=; rewrite -/(measurable_fun _ _).
+  under eq_fun do rewrite big_ord0; rewrite -/(measurable_fun _ _).
+  under eq_fun do rewrite maxNye; rewrite -/(measurable_fun _ _).
+  have [+ _] := H2 0%N.
+  by rewrite inE /G/= => -[].
+rewrite /F.
+move=> m.
+under eq_fun do rewrite big_ord_recr.
+exact : emeasurable_fun_max.
+Qed.
+
+Let E m j := [set x | F m x = g j x /\ forall k, (k < j)%N -> g j x > g k x].
+
+Let hE m j x : E m j x -> forall k : 'I_m.+1, (k >= j)%N -> g j x >= g k x.
+Proof.
+move=> -[Fmgj h] k; rewrite leq_eqVlt => /orP[/eqP ->//|jk].
+rewrite leNgt; apply/negP => gjk.
+have : F m x > g j x by apply/bigmax_gtP => /=; right; exists k.
+by rewrite Fmgj ltxx.
+Qed.
+
+Let E_setI m j : E m j = [set x| F m x = g j x] `&`
+    [set x |forall k, (k < j)%nat -> g k x < g j x].
+Proof.
+by apply/seteqP; split.
+Qed.
+
+Let tE m : trivIset setT (E m).
+Proof.
+apply/trivIsetP => /= i j _ _ ij.
+apply/seteqP; split => // x []; rewrite /E/= => -[+ + [+ +]].
+wlog : i j ij / (i < j)%N.
+  move=> h Fmgi iFm Fmgj jFm.
+  have := ij; rewrite neq_lt => /orP[ji|ji]; first exact: (h i j).
+  by apply: (h j i) => //; rewrite eq_sym.
+by move=> {}ij Fmgi h Fmgj  => /(_ _ ij); rewrite -Fmgi -Fmgj ltxx.
+Qed.
+
+Let XE m : [set: X] = \big[setU/set0]_(j < m.+1) E m j.
+Proof.
+apply/seteqP; split => // x _; rewrite -bigcup_mkord.
+(* TODO: fix arg max notation spacing *)
+pose j := [arg max_(j > @ord0 m) g j x]%O.
+have j0_proof : exists k, (k < m.+1)%N && (g k x == g j x).
+  by exists j => //; rewrite eqxx andbT.
+pose j0 := ex_minn j0_proof.
+have j0m : (j0 < m.+1)%N by rewrite /j0; case: ex_minnP => // ? /andP[].
+have j0max k : (k < j0)%N -> g k x < g j0 x.
+  rewrite /j0; case: ex_minnP => //= j' /andP[j'm j'j] h kj'.
+  rewrite lt_neqAle; apply/andP; split; last first.
+    rewrite (eqP j'j) /j; case: arg_maxP => //= i _.
+    by move/(_ (Ordinal (ltn_trans kj' j'm))); exact.
+  apply/negP => /eqP gkj'.
+  have := h k; rewrite -(eqP j'j) -gkj' eqxx andbT (ltn_trans kj' j'm).
+  by move=> /(_ erefl); rewrite leqNgt kj'.
+exists j0 => //; split.
+  rewrite /F (bigmax_eq_arg _ ord0)//; last by move=> ? _; rewrite leNye.
+  by rewrite /j0; case: ex_minnP => //= j' /andP[j'm /eqP -> h].
+by move=> k kj; exact: j0max.
+Qed.
+
+Let measurable_E m j : measurable (E m j).
+Proof.
+rewrite E_setI; apply measurableI => /=.
+  by apply: measurable_eq_fun; [exact: mF|exact: mgn].
+(* TODO : want to use \bigcap_(k < j) [set x | g k x < g j x]) *)
+rewrite [T in measurable T](_ : _ = \bigcap_(k in `I_j) [set x | g k x < g j x]).
+  by apply bigcap_measurable => k _; apply : measurable_lt_fun; exact : mgn.
+by apply/seteqP; split.
+Qed.
+
+Let Fleqnu m E0 (mE : measurable E0) : \int[mu]_(x in E0) F m x <= nu E0.
+Proof.
+have -> : \int[mu]_(x in E0) F m x = \sum_(j < m.+1) \int[mu]_(x in (E0 `&` (E m j))) F m x.
+  rewrite -[in LHS](setIT E0) (XE m) big_distrr/=.
+  rewrite (@ge0_integral_bigsetU _ _ _ _ (fun n => E0 `&` E m n))//.
+  - by move=> n; exact: measurableI.
+  - exact: (@measurable_funS _ _ _ _ setT).
+  - move=> x _; rewrite /F; apply: (@le_trans _ _ (g ord0 x)); last exact: le_bigmax.
+    exact: g_ge0.
+  apply: trivIset_setI.
+  by apply: (@sub_trivIset _ _ _ setT (fun i => E m i)) => //.
+have -> : \sum_(j < m.+1) (\int[mu]_(x in (E0 `&` (E m j))) F m x) =
+          \sum_(j < m.+1) (\int[mu]_(x in (E0 `&` (E m j))) g j x).
+  apply eq_bigr => i _; apply eq_integral => x; rewrite inE => -[?] [] Fmgi h.
+  by apply/eqP; rewrite eq_le; rewrite Fmgi lexx.
+have <- : \sum_(j < m.+1) (nu (E0 `&` (E m j))) = nu E0.
+  rewrite -(@measure_semi_additive _ _ _ nu (fun i => E0 `&` E m i))//.
+  - by rewrite -big_distrr/= -XE// setIT.
+  - by move=> k; exact: measurableI.
+  - exact: trivIset_setI.
+  - by apply: bigsetU_measurable => /= i _; exact: measurableI.
+apply: lee_sum => //= i _.
+have [+ _] := H2 i.
+rewrite inE /G/= => -[_ _].
+apply.
+by rewrite inE; exact: measurableI.
+Qed.
+
+Let F_ge0 m x : 0 <= F m x.
+Proof.
+by apply/bigmax_geP; right => /=; exists ord0.
+Qed.
+
+Let FminG m : F m \in G.
+Proof.
+rewrite inE /G/=; split => //.
+- split => //.
+  under eq_integral.
+    by move=> x _; rewrite gee0_abs; last exact: F_ge0; over.
+  by have /le_lt_trans := Fleqnu m measurableT; apply.
+- by move=> E0; rewrite inE; exact: Fleqnu.
+Qed.
+
+Let Fgeqg m x : F m x >= g m x.
+Proof.
+by apply/bigmax_geP; right => /=; exists ord_max.
+Qed.
+
+Let H3 m :  M - (m.+1%:R^-1)%:E < \int[mu]_x g m x /\
+             \int[mu]_x g m x <= \int[mu]_x F m x <= M.
+Proof.
+split; first by have [] := H2 m.
+apply/andP; split; first exact: ge0_le_integral.
+apply: ereal_sup_ub; exists (F m) => //.
+by have := FminG m; rewrite inE.
+Qed.
+
+Let nd_F x : nondecreasing_seq (F ^~ x).
+Proof.
+by move=> a b ab; rewrite /F; exact: (@bigmax_lee R (g ^~ x)).
+Qed.
+
+Let is_cvg_F n : cvg (F ^~ n).
+Proof.
+by apply: ereal_nondecreasing_is_cvg; exact: nd_F.
+Qed.
+
+Let limF := fun x => lim (F^~ x).
+
+Let mlimF : measurable_fun setT limF.
+Proof.
+rewrite (_ : limF = fun x => elim_sup (F ^~ x)).
+  exact: measurable_fun_elim_sup.
+by apply/funext => n; rewrite /limF is_cvg_elim_supE.
+Qed.
+
+Let limF_ge0 x : 0 <= limF x.
+Proof.
+by apply: ereal_lim_ge => //; exact: nearW.
+Qed.
+
+Let int_limFE E0 : measurable E0 ->
+    \int[mu]_(x in E0) limF x = lim (fun n : nat => \int[mu]_(x in E0) F n x).
+Proof.
+move=> mE0; rewrite monotone_convergence//.
+by move=> n; exact: measurable_funS (mF n).
+Qed.
+
+Let is_cvg_int_F E0 : measurable E0 -> cvg (fun n => \int[mu]_(x in E0) F n x).
+Proof.
+move=> mE0; apply: ereal_nondecreasing_is_cvg => a b ab.
+by apply ge0_le_integral => //; [exact: measurable_funS (mF a) |
+  exact: measurable_funS (mF b) | by move=> x _; exact: nd_F].
+Qed.
+
+Let limFoo : \int[mu]_x `|limF x| < +oo.
+Proof.
+rewrite (@le_lt_trans _ _ M)//.
+under eq_integral.
+  by move=> x _; rewrite gee0_abs; last exact: limF_ge0; over.
+rewrite int_limFE// ereal_lim_le//; first exact: is_cvg_int_F.
+by apply: nearW => n; have [_ /andP[_ ]] := H3 n.
+Qed.
+
+Let limFleqnu E0 : measurable E0 -> \int[mu]_(x in E0) limF x <= nu E0.
+Proof.
+move=> mE0; rewrite int_limFE// ereal_lim_le //; first exact: is_cvg_int_F.
+by apply: nearW => n; exact: Fleqnu.
+Qed.
+
+Let limFXeqM : \int[mu]_x limF x = M.
+Proof.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  rewrite int_limFE// ereal_lim_le //; first exact: is_cvg_int_F.
+  by apply: nearW => n; have [_ /andP[_]] := H3 n.
+rewrite int_limFE//.
+have Htmp : (fun m => M - (m.+1%:R^-1)%:E) --> M.
+  rewrite -[X in _ --> X]sube0.
+  apply: ereal_cvgB.
+  + by rewrite fin_num_adde_def.
+  + exact: cvg_cst.
+  + apply/ereal_cvg_real; split; first by apply: nearW.
+    rewrite [X in X --> _](_ : _ = (fun x => (x.+1%:R^-1))) //.
+    admit. (* PR in progress *)
+have : lim (fun m => M - (m.+1%:R^-1)%:E) <= lim (fun m => \int[mu]_x F m x).
+  apply: lee_lim.
+  - by apply/cvg_ex; exists M.
+  - exact: is_cvg_int_F.
+  - apply: nearW => m.
+    by have [/[swap] /andP[? _] /ltW/le_trans] := H3 m; exact.
+by apply: le_trans; move/cvg_lim : Htmp => ->.
+Unshelve. all: by end_near. Admitted.
+
+Lemma muE0oo : forall E0 : set X, d.-measurable E0 ->
+  mu E0 < +oo.
+Proof.
+move=> E0 mE0.
+by rewrite (le_lt_trans _ mufinite)// le_measure// inE.
+Qed.
+
+Lemma eps_construction : forall E0 : set X, d.-measurable E0 ->
+  \int[mu]_(x in E0) limF x < nu E0 ->
+  { eps : {posnum R} | \int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0 }.
+Proof.
+move=> E0 mE0 abs.
+have [muE0_eq0|] := eqVneq (mu E0) 0.
+  exists (PosNum ltr01).
+  under eq_integral.
+    move=> x _.
+    rewrite -(@gee0_abs _ (_ + _)); last first.
+      by rewrite adde_ge0.
+    over.
+  rewrite (@integral_abs_eq0 _ _ _ _ setT)//.
+    by rewrite (le_lt_trans _ abs)// integral_ge0//.
+  apply: emeasurable_funD => //.
+  exact: measurable_fun_cst.
+rewrite neq_lt ltNge measure_ge0/= => muE0_gt0.
+pose mid := ((fine (nu E0) - fine (\int[mu]_(x in E0) limF x)) / 2)%R.
+pose e := (mid / fine (mu E0))%R.
+have ? : \int[mu]_(x in E0) limF x \is a fin_num.
+  rewrite ge0_fin_numE// ?isfinite// ?(lt_le_trans abs)// ?leey//.
+  exact: integral_ge0.
+have ? : nu E0 \is a fin_num.
+  rewrite ge0_fin_numE// (le_lt_trans _ nufinite)//.
+  by apply: le_measure => //; rewrite ?inE.
+have e_gt0 : (0 < e)%R.
+  rewrite /e divr_gt0//; last by rewrite fine_gt0// muE0oo// andbT.
+  by rewrite divr_gt0// subr_gt0// fine_lt.
+exists (PosNum e_gt0); rewrite ge0_integralD//; last 2 first.
+  exact: measurable_funS mlimF.
+  exact: measurable_fun_cst.
+rewrite integral_cst// -lte_subr_addr//; last first.
+  by rewrite fin_numM// ?ge0_fin_numE// muE0oo.
+rewrite -{2}(@fineK _ (mu E0)); last by rewrite ge0_fin_numE// muE0oo.
+rewrite -EFinM -mulrA mulVr ?mulr1; last first.
+  by rewrite unitfE gt_eqF// fine_gt0// muE0_gt0// muE0oo.
+rewrite lte_subr_addl// addeC -lte_subr_addl//; last first.
+rewrite -(@fineK _ (nu E0))//.
+rewrite -[X in _ - X](@fineK _)//.
+rewrite -EFinB lte_fin /mid ltr_pdivr_mulr// ltr_pmulr// ?ltr1n//.
+by rewrite subr_gt0 fine_lt.
+Qed.
+
+Let eps := fun (E0 : set X) (muE0 : d.-measurable E0)
+  (abs : \int[mu]_(x in E0) limF x < nu E0) => proj1_sig (eps_construction muE0 abs) : {posnum R}.
+
+Let Heps := fun (E0 : set X) (muE0 : d.-measurable E0)
+  (abs : \int[mu]_(x in E0) limF x < nu E0) => proj2_sig (eps_construction muE0 abs).
+
+Let sigma' (E0 : set X) (muE0 : d.-measurable E0)
+    (abs : \int[mu]_(x in E0) limF x < nu E0) (F : set X) :=
+  nu F - \int[mu]_(x in F) (limF x + (eps muE0 abs)%:num%:E)%E.
+
+Let sigma'_isfinite (E0 : set X) (muE0 : d.-measurable E0)
+    (abs : \int[mu]_(x in E0) limF x < nu E0) :
+  forall U, measurable U -> (sigma' muE0 abs) U \is a fin_num.
+Admitted.
+
+HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
+    (abs : \int[mu]_(x in E0) limF x < nu E0) :=
+  @isFiniteSignedMeasure.Build _ _ _ (sigma' muE0 abs) (sigma'_isfinite muE0 abs).
+
+Let sigma'_semi_additive (E0 : set X) (muE0 : d.-measurable E0)
+    (abs : \int[mu]_(x in E0) limF x < nu E0) :
+  semi_additive (sigma' muE0 abs).
+Admitted.
+
+HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
+    (abs : \int[mu]_(x in E0) limF x < nu E0) :=
+  @isAdditiveSignedMeasure.Build _ _ _ (sigma' muE0 abs) (sigma'_semi_additive muE0 abs).
+
+Let sigma'_semi_sigma_additive (E0 : set X) (muE0 : d.-measurable E0)
+   (abs : \int[mu]_(x in E0) limF x < nu E0) :
+  semi_sigma_additive (sigma' muE0 abs).
+Admitted.
+
+HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
+    (abs : \int[mu]_(x in E0) limF x < nu E0) :=
+  @isSignedMeasure0.Build _ _ _ (sigma' muE0 abs) (@sigma'_semi_sigma_additive _ muE0 abs).
+
+Theorem Radon_Nikodym_finite_nonnegative :
   nu `<< mu -> exists f : X -> \bar R, [/\
         forall x, f x >= 0,
         integrable mu setT f &
@@ -1325,208 +1726,27 @@ Proof.
  *  σ-algebra measurable on which the measures mu and nu are defined.
  *)
 move=> mudomnu.
-pose G := [set g : X -> \bar R | [/\
-  forall x, (g x >= 0)%E,
-  integrable mu setT g &
-  forall E, E \in measurable -> (\int[mu]_(x in E) g x <= nu E)%E] ].
-(* maybe define G : set R insted of set \bar R
-pose G' := [set g : X -> \bar R |
-            [/\ (forall x, (g x >= 0)%E),
-               integrable mu setT g &
-                 forall E, E \in measurable -> fine (\int[mu]_(x in E) g x) <= fine (nu E) ] ].
-*)
-have neG : G !=set0.
-  exists (cst 0%E); split; first by [].
-  - exact: integrable0.
-  - by move=> E _; by rewrite integral0.
-pose IG := [set \int[mu]_x g x | g in G]%E.
-have neIG : IG !=set0.
-  case: neG => g [g0 g1 g2].
-  by exists (\int[mu]_x g x)%E, g.
-have IGbound : exists M, forall x, x \in IG -> (x <= M%:E)%E.
-  exists (fine (nu setT)) => x.
-  rewrite inE => -[g [g0 g1 g2] <-{x}].
-  rewrite fineK; last by rewrite ge0_fin_numE.
-  by rewrite (le_trans (g2 setT _))// inE.
-pose M := ereal_sup IG.
-have M0 : 0 <= M.
-  rewrite -(ereal_sup1 0).
-  apply (@le_ereal_sup _ [set 0] IG).
-  rewrite sub1set inE.
-  exists (fun x => 0%E); last first.
-    exact: integral0.
-  split => //.
-    exact : integrable0.
-  move=> E.
-  by rewrite integral0.
-have finM : M < +oo.
-  rewrite /M.
-  move: IGbound.
-  move=> [m] IGbound.
-  apply : (@le_lt_trans _ _ m%:E); last by rewrite ltey.
-  apply ub_ereal_sup.
-  move=> x IGx.
-  apply IGbound.
-  by rewrite inE.
-have finnumM : in_mem M (mem fin_num). (* M \is fin_num *)
-  by rewrite ge0_fin_numE.
-have [g H2] : exists g : (X -> \bar R)^nat, forall m, g m \in G /\ \int[mu]_x (g m x) >= M - m.+1%:R^-1%:E.
-  pose P (m: nat) (g : X -> \bar R) := g \in G /\ M - (m.+1%:R^-1)%:E <= \int[mu]_x g x.
-  suff : { g : (X -> \bar R) ^nat & forall m : nat, P m (g m)}.
-    case => g Hg.
-    by exists g.
-  apply choice.
-  move=> m.
-  rewrite /P.
-  have /(@ub_ereal_sup_adherent _ IG) : (0 < m.+1%:R^-1 :> R)%R by rewrite invr_gt0.
-  move/(_ finnumM) => [_ [h Gh <-]].
-  exists h; rewrite inE; split => //; rewrite -/M in q.
-  exact/ltW.
-pose F (m : nat) (x : X) := \big[maxe/-oo]_(j < m.+1) g j x.
 (* have : forall m x, F m x >= 0
  *   forall x, 0 <= g m x, g m in G
  *)
  (* max_g2' : (T -> R)^nat :=
   fun k t => (\big[maxr/0]_(i < k) (g2' i k) t)%R. *)
-have mgn n : measurable_fun setT (g n).
-  move: (H2 n).
-  rewrite /G.
-  by rewrite inE /= => -[[_ []]].
-have mF n: measurable_fun setT (F n).
-  induction n.
-    rewrite /F.
-    under eq_fun do rewrite big_ord_recr/=; rewrite -/(measurable_fun _ _).
-    under eq_fun do rewrite big_ord0; rewrite -/(measurable_fun _ _).
-    under eq_fun do rewrite maxNye; rewrite -/(measurable_fun _ _).
-    have [+ _] := H2 0%N.
-    by rewrite inE /G/= => -[].
-  rewrite /F.
-  move=> m.
-  under eq_fun do rewrite big_ord_recr.
-  exact : emeasurable_fun_max.
-pose E m j := [set x | F m x = g j x /\ forall k, (k < j)%N -> g j x > g k x].
-have hE m j x : E m j x -> forall k : 'I_m.+1, (k >= j)%N -> g j x >= g k x.
-  move=> -[Fmgj h] k; rewrite leq_eqVlt => /orP[/eqP ->//|jk].
-  rewrite leNgt; apply/negP => gjk.
-  have : F m x > g j x by apply/bigmax_gtP => /=; right; exists k.
-  by rewrite Fmgj ltxx.
-have E_setI m j : E m j = [set x| F m x = g j x] `&`
-    [set x |forall k, (k < j)%nat -> g k x < g j x].
-  by apply/seteqP; split.
-have tE m : trivIset setT (E m).
-  apply/trivIsetP => /= i j _ _ ij.
-  apply/seteqP; split => // x []; rewrite /E/= => -[+ + [+ +]].
-  wlog : i j ij / (i < j)%N.
-    move=> h Fmgi iFm Fmgj jFm.
-    have := ij; rewrite neq_lt => /orP[ji|ji]; first exact: (h i j).
-    by apply: (h j i) => //; rewrite eq_sym.
-  by move=> {}ij Fmgi h Fmgj  => /(_ _ ij); rewrite -Fmgi -Fmgj ltxx.
-have XE m : [set: X] = \big[setU/set0]_(j < m.+1) E m j.
-  apply/seteqP; split => // x _; rewrite -bigcup_mkord.
-  (* TODO: fix arg max notation spacing *)
-  pose j := [arg max_(j > @ord0 m) g j x]%O.
-  have j0_proof : exists k, (k < m.+1)%N && (g k x == g j x).
-    by exists j => //; rewrite eqxx andbT.
-  pose j0 := ex_minn j0_proof.
-  have j0m : (j0 < m.+1)%N by rewrite /j0; case: ex_minnP => // ? /andP[].
-  have j0max k : (k < j0)%N -> g k x < g j0 x.
-    rewrite /j0; case: ex_minnP => //= j' /andP[j'm j'j] h kj'.
-    rewrite lt_neqAle; apply/andP; split; last first.
-      rewrite (eqP j'j) /j; case: arg_maxP => //= i _.
-      by move/(_ (Ordinal (ltn_trans kj' j'm))); exact.
-    apply/negP => /eqP gkj'.
-    have := h k; rewrite -(eqP j'j) -gkj' eqxx andbT (ltn_trans kj' j'm).
-    by move=> /(_ erefl); rewrite leqNgt kj'.
-  exists j0 => //; split.
-    rewrite /F (bigmax_eq_arg _ ord0)//; last by move=> ? _; rewrite leNye.
-    by rewrite /j0; case: ex_minnP => //= j' /andP[j'm /eqP -> h].
-  by move=> k kj; exact: j0max.
-have measurable_E m j : measurable (E m j).
-  rewrite E_setI; apply measurableI => /=.
-    by apply: measurable_eq_fun; [exact: mF|exact: mgn].
-(* TODO : want to use \bigcap_(k < j) [set x | g k x < g j x]) *)
-  rewrite [T in measurable T](_ : _ = \bigcap_(k in `I_j) [set x | g k x < g j x]).
-    by apply bigcap_measurable => k _; apply : measurable_lt_fun; exact : mgn.
-  by apply/seteqP; split.
-have Fleqnu m E0 (mE : measurable E0) : \int[mu]_(x in E0) F m x <= nu E0.
-  have -> : \int[mu]_(x in E0) F m x = \sum_(j < m.+1) \int[mu]_(x in (E0 `&` (E m j))) F m x.
-    rewrite -[in LHS](setIT E0) (XE m) big_distrr/=.
-    rewrite (@ge0_integral_bigsetU _ _ _ _ (fun n => E0 `&` E m n))//.
-    - by move=> n; exact: measurableI.
-    - exact: (@measurable_funS _ _ _ _ setT).
-    - move=> x _; rewrite /F; apply: (@le_trans _ _ (g ord0 x)); last exact: le_bigmax.
-      by have := H2 ord0 => /(_ O)[]; rewrite inE /G/= => -[].
-    by apply: trivIset_setI; exact: sub_trivIset (tE m).
-  have -> : \sum_(j < m.+1) (\int[mu]_(x in (E0 `&` (E m j))) F m x) =
-             \sum_(j < m.+1) (\int[mu]_(x in (E0 `&` (E m j))) g j x).
-    apply eq_bigr => i _; apply eq_integral => x; rewrite inE => -[?] [] Fmgi h.
-    by apply/eqP; rewrite eq_le; rewrite Fmgi lexx.
-  have <- : \sum_(j < m.+1) (nu (E0 `&` (E m j))) = nu E0.
-    rewrite -(@measure_semi_additive _ _ _ nu (fun i => E0 `&` E m i))//.
-    by rewrite -big_distrr/= -XE// setIT.
-    - by move=> k; exact: measurableI.
-    - exact: trivIset_setI.
-    - by apply: bigsetU_measurable => /= i _; exact: measurableI.
-  apply: lee_sum => //= i _.
-  have [+ _] := H2 i.
-  rewrite inE /G/= => -[_ _].
-  apply.
-  by rewrite inE; exact: measurableI.
-have FminG m : F m \in G.
-  admit.
-have Fgeqg m : forall x, F m x >= g m x.
-  admit.
-have nd_F m x : nondecreasing_seq (F ^~ x).
-  admit.
-pose limF := fun (x : X) => lim (F^~ x) : \bar R.
-exists limF.
-have mlimF : @measurable_fun _ _ X _ setT limF.
-  admit.
-have limF0 x : 0 <= limF x.
-  rewrite /limF.
-  apply ereal_lim_ge.
-    apply ereal_nondecreasing_is_cvg.
-    move=> n m.
-    rewrite /F.
-    move=> nm.
-    by apply (bigmax_lee (fun n => g n x)).
- (* note: rename homo_le_bigmax *)
-  near=> n.
-  have n0 : (0 < n)%nat.
-    near: n.
-    by exists 1%nat.
-  rewrite /F.
-  destruct n => //.
-  apply : (bigmax_sup ord_max) => //.
-  have := H2 n.
-  case.
-  rewrite inE /G /=.
-  case.
-  admit.
-have limFleqnu : forall E, \int[mu]_(x in E) limF x <= nu E.
-  admit.
-have limFXeqM : \int[mu]_x limF x = M.
-  admit.
-split.
-- admit.
-- admit.
-- (* Reductio ad absurdum *)
-  move=> E0 mE0.
-  apply/eqP; rewrite eq_le limFleqnu andbT; apply/negP => abs.
-  have [eps Heps] : exists eps : {posnum R}, \int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0.
-    admit.
-  have sigma : {smeasure set X -> \bar R}.
-    admit.
-  have sigmaE : forall F, sigma F = nu F - \int[mu]_(x in F) (limF x + eps%:num%:E).
-    admit.
-  move : (Hahn_decomposition sigma) => [P [N [posP negN PNX PN0]]].
+exists limF; split => //.
+(* Reductio ad absurdum *)
+move=> E0 /[!inE] mE0.
+apply/eqP; rewrite eq_le limFleqnu//.
+rewrite andbT leNgt; apply/negP => abs.
+pose sigma : {smeasure set X -> \bar R} := [the {smeasure set X -> \bar R} of sigma' mE0 abs].
+have sigmaE : forall F, sigma F = nu F - \int[mu]_(x in F) (limF x + (eps mE0 abs)%:num%:E).
+  by [].
+move : (Hahn_decomposition sigma) => [P [N [posP negN PNX PN0]]].
 pose E0P := E0 `&` P.
 pose E0N := E0 `&` N.
 move: (posP) => [mP _].
 move: negN => [mN negN].
-rewrite !inE in mE0 mP mN.
+rewrite !inE in (*mE0*) mP mN.
 have mE0P : measurable E0P.
-  apply measurableI => //.
+  exact: measurableI.
 have muE0P0: mu E0P > 0.
   rewrite /abs_continuous.
   rewrite lt_neqAle.
@@ -1544,21 +1764,22 @@ have muE0P0: mu E0P > 0.
   apply /eqP.
   rewrite gt_eqF //.
   have : sigma E0P > 0.
-   apply (@lt_le_trans _ _ (sigma E0)) ; last first.
+    apply (@lt_le_trans _ _ (sigma E0)) ; last first.
       rewrite (s_measure_partition2 _ mP mN PNX PN0) //.
       rewrite gee_addl //.
       apply negN => //.
       rewrite inE.
-      apply measurableI => //.
+      by apply measurableI => //.
     rewrite sigmaE.
-    rewrite sube_gt0 //.
-  rewrite sigmaE.
+    rewrite sube_gt0//.
+    exact: Heps.
+  rewrite /sigma/=/sigma'/=.
   rewrite sube_gt0.
   apply : le_lt_trans.
   apply integral_ge0.
   move=> x _.
   by rewrite adde_ge0.
-pose h x := if (x \in P) then (limF x + (eps%:num)%:E) else (limF x).
+pose h x := if (x \in P) then (limF x + ((eps mE0 abs)%:num)%:E) else (limF x).
 have hnu : forall S, measurable S -> \int[mu]_(x in S) h x <= nu S.
   admit.
 (* have posE0P : positive_set sigma E0P. *)
@@ -1570,7 +1791,7 @@ have : \int[mu]_(x in setT) h x > M.
           by apply measurableC.
         split.
           apply (@measurable_restrict _ _ _ _ P setT h) => //.
-          have hp : h \_ P = (fun x => limF x + (eps%:num)%:E) \_ P.
+          have hp : h \_ P = (fun x => limF x + ((eps mE0 abs)%:num)%:E) \_ P.
             apply eq_restrictP.
             move=> x xp.
             by rewrite /h ifT.
@@ -1580,20 +1801,20 @@ have : \int[mu]_(x in setT) h x > M.
           rewrite /measurable.
         admit.
       admit.
-
+      admit.
       apply /disj_set2P.
     exact : setICr.
   rewrite /h.
-  rewrite -(eq_integral _ (fun x => limF x + (eps%:num)%:E)); last first.
+  rewrite -(eq_integral _ (fun x => limF x + ((eps mE0 abs)%:num)%:E)); last first.
     move=> x xE0P.
     by rewrite ifT.
-  rewrite -[\int[mu]_(x in ~` E0P) _](eq_integral _ (fun x => limF x)); last first.
+  rewrite -[\int[mu]_(x in ~` P) _](eq_integral _ (fun x => limF x)); last first.
     move=> x xnE0P.
     rewrite ifF //.
     apply negbTE.
     by rewrite -in_setC.
   rewrite ge0_integralD//; last 2 first.
-      apply (@measurable_funS _ _ _ _ setT E0P) => //.
+      apply (@measurable_funS _ _ _ _ setT P) => //.
     exact : measurable_fun_cst.
   rewrite integral_cst //.
   rewrite addeAC.
@@ -1621,7 +1842,7 @@ have : (\int[mu]_x h x <= M).
   rewrite sub1set inE.
   exists h => //.
 rewrite leNgt.
-apply /negP.
+(*apply /negP.*)
 (*have hnuP: forall S, measurable S -> S `<=` P -> \int[mu]_(x in S) h x <= nu S.
   move=> S mS SP.
   admit.
@@ -1629,6 +1850,8 @@ have hnuN : forall S, measurable S -> S `<=` N -> \int[mu]_(x in S) h x <= nu S.
   admit.
 *)
 Admitted.
+
+End Radon_Nikodym_finite_ge0.
 
 Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
     (mu : {measure set X -> \bar R}) (nu : {smeasure set X -> \bar R})
