@@ -1269,30 +1269,29 @@ Qed.
 Lemma integrable_bigcup d (X : measurableType d) (R : realType) (n : nat)
   (E : nat -> set X) (mu : {measure set X -> \bar R}) (f : X -> \bar R) :
     (forall i, (i < n)%nat -> measurable (E i) /\ integrable mu (E i) f) ->
-                    integrable mu (\bigcup_(i in `I_n) E i) f.
+                    integrable mu (\bigcup_(i in `I_n (*MN: not genuine bigcup*)) E i) f.
 Proof.
-rewrite /integrable.
-move=> H.
+move=> h.
 split.
   apply measurable_fun_bigcup => //.
   move=> i iltn.
-  split; apply H => //.
+  by have [? []] := h _ iltn.
 have : exists F : nat -> set X, (forall i, (i < n)%nat -> measurable (F i)) /\
                           \bigcup_(i in `I_n) F i = \bigcup_(i in `I_n) E i.
   exists (fun (n : nat) => E n `\` \bigcup_(i in `I_n) E i).
   split.
     move=> i iltn.
     apply measurableD.
-      by apply H.
+      by apply h.
     apply bigcup_measurable => /=.
     move=> k klti.
-    apply H.
+    apply h.
     by apply (@lt_trans _ _ i).
   rewrite seteqP.
   split.
     by apply subset_bigcup.
 
-  move:H.
+  move:h.
   case : n.
     move=> H x.
     move=> H2.
@@ -1309,7 +1308,7 @@ Check (bigcupP bigE).
   move : (bigcupP bigE).
 apply (le_lt_trans (\sum_(i in `I_n) (\int[mu]_(x in E i) `|f x|))).
 rewrite ge0_integral_bigsetU. *)
-Admitted.
+Abort.
 (* --- *)
 
 Section Radon_Nikodym_finite_ge0.
@@ -1688,19 +1687,61 @@ Let sigma' (E0 : set X) (muE0 : d.-measurable E0)
     (abs : \int[mu]_(x in E0) limF x < nu E0) (F : set X) :=
   nu F - \int[mu]_(x in F) (limF x + (eps muE0 abs)%:num%:E)%E.
 
+Let htmp (E0 : set X) (muE0 : d.-measurable E0)
+    (abs : \int[mu]_(x in E0) limF x < nu E0) : forall U, measurable U ->
+  \int[mu]_(x in U) (limF x + ((eps muE0 abs)%:num)%:E) \is a fin_num.
+Proof.
+move=> u mU.
+rewrite ge0_integralD//; last 2 first.
+  exact: measurable_funS mlimF.
+  exact/EFin_measurable_fun/measurable_fun_cst.
+rewrite fin_numD integral_cst// fin_numM// ?andbT; last first.
+  by rewrite ge0_fin_numE// (le_lt_trans _ mufinite)//; apply: le_measure => //; rewrite inE.
+rewrite ge0_fin_numE; last exact: integral_ge0.
+rewrite (le_lt_trans _ limFoo)//.
+under [in leRHS]eq_integral.
+  move=> x _; rewrite gee0_abs//. over.
+exact: subset_integral.
+Qed.
+
 Let sigma'_isfinite (E0 : set X) (muE0 : d.-measurable E0)
     (abs : \int[mu]_(x in E0) limF x < nu E0) :
   forall U, measurable U -> (sigma' muE0 abs) U \is a fin_num.
-Admitted.
+Proof.
+move=> U mU.
+rewrite /sigma' fin_numB ge0_fin_numE// (le_lt_trans _ nufinite)/=; last first.
+  by apply: le_measure => //; rewrite inE.
+exact: htmp.
+Qed.
 
 HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
     (abs : \int[mu]_(x in E0) limF x < nu E0) :=
   @isFiniteSignedMeasure.Build _ _ _ (sigma' muE0 abs) (sigma'_isfinite muE0 abs).
 
+Lemma sumeN I r (P : pred I) (f : I -> \bar R) :
+  (forall i, P i -> f i \is a fin_num) ->
+  (\sum_(i <- r | P i) - f i = - (\sum_(i <- r | P i) f i)).
+Proof.
+move=> h; elim/big_rec2 : _ => //; first by rewrite oppe0.
+by move=> i y1 _ Pi ->; rewrite [in RHS]addeC oppeD ?h// addeC.
+Qed.
+
 Let sigma'_semi_additive (E0 : set X) (muE0 : d.-measurable E0)
     (abs : \int[mu]_(x in E0) limF x < nu E0) :
   semi_additive (sigma' muE0 abs).
-Admitted.
+Proof.
+move=> F' n mF' tF' mUF'.
+rewrite /sigma' measure_semi_additive// big_split/= sumeN; last first.
+  by move=> i _; rewrite htmp.
+congr (_ - _).
+rewrite ge0_integral_bigsetU//.
+- rewrite -bigcup_mkord.
+  have : measurable_fun setT (fun x => limF x + ((eps muE0 abs)%:num)%:E).
+    by apply: emeasurable_funD => //; exact/EFin_measurable_fun/measurable_fun_cst.
+  exact: measurable_funS.
+- by move=> x h; rewrite adde_ge0.
+- exact: sub_trivIset tF'.
+Qed.
 
 HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
     (abs : \int[mu]_(x in E0) limF x < nu E0) :=
@@ -1709,7 +1750,81 @@ HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
 Let sigma'_semi_sigma_additive (E0 : set X) (muE0 : d.-measurable E0)
    (abs : \int[mu]_(x in E0) limF x < nu E0) :
   semi_sigma_additive (sigma' muE0 abs).
-Admitted.
+Proof.
+move=> F' mF' tF' mUF'.
+rewrite /sigma'/=.
+rewrite [X in X --> _](_ : _ = (fun n =>
+  \sum_(0 <= i < n) (nu (F' i)) -
+  \sum_(0 <= i < n) (\int[mu]_(x in F' i) (limF x + ((eps muE0 abs)%:num)%:E)))); last first.
+  apply/funext => n.
+  rewrite big_split/= sumeN// => i _.
+  by rewrite htmp.
+apply: ereal_cvgB.
+  rewrite adde_defC fin_num_adde_def//.
+  rewrite ge0_fin_numE// (le_lt_trans _ nufinite)//.
+  apply: le_measure => //.
+  rewrite inE.
+  exact: bigcup_measurable.
+  by rewrite inE.
+  exact: measure_semi_sigma_additive.
+rewrite ge0_integral_bigcup; last 4 first.
+  done.
+  split.
+    have : measurable_fun setT (fun x : X => limF x + ((eps muE0 abs)%:num)%:E).
+      apply: emeasurable_funD => //.
+      exact/EFin_measurable_fun/measurable_fun_cst.
+    exact: measurable_funS.
+  apply: (@le_lt_trans _ _ (\int[mu]_(x in \bigcup_k F' k) `|limF x| + \int[mu]_(x in \bigcup_k F' k)`|((eps muE0 abs)%:num)%:E|)).
+    rewrite -integralD.
+    apply: ge0_le_integral => //.
+    apply: measurable_fun_comp => //.
+    apply: emeasurable_funD => //.
+    by apply: measurable_funS mlimF.
+    exact/EFin_measurable_fun/measurable_fun_cst.
+    apply: emeasurable_funD => //.
+    apply: measurable_fun_comp => //.
+    by apply: measurable_funS mlimF.
+    apply: measurable_fun_comp => //.
+    exact/EFin_measurable_fun/measurable_fun_cst.
+    move=> x _.
+    exact: lee_abs_add.
+    done.
+    (* TODO: lemma about integrability of abse *)
+    split.
+      apply: measurable_fun_comp => //.
+      by apply: measurable_funS mlimF.
+    rewrite (le_lt_trans _ limFoo)//.
+    under eq_integral do rewrite abse_id.
+    apply: subset_integral => //.
+    apply: measurable_fun_comp => //.
+    split.
+      apply: measurable_fun_comp => //.
+      exact/EFin_measurable_fun/measurable_fun_cst.
+    under eq_integral do rewrite abse_id.
+    rewrite integral_cst//=.
+    apply: lte_mul_pinfty => //.
+      rewrite lee_fin//.
+     by rewrite normr_ge0.
+    rewrite (le_lt_trans _ mufinite)//.
+    by apply: le_measure => //; rewrite inE.
+  apply: lte_add_pinfty.
+    rewrite (le_lt_trans _ limFoo)//.
+    apply: subset_integral => //.
+    by apply: measurable_fun_comp => //.
+  rewrite integral_cst//=.
+  apply: lte_mul_pinfty => //.
+    rewrite lee_fin//.
+    by rewrite normr_ge0.
+  rewrite (le_lt_trans _ mufinite)//.
+  by apply: le_measure => //; rewrite inE.
+  move=> x _.
+  by rewrite adde_ge0//.
+  done.
+have /cvg_ex[/= l hl] : cvg (fun x => \sum_(0 <= i < x) \int[mu]_(x0 in F' i) (limF x0 + ((eps muE0 abs)%:num)%:E)).
+  apply: is_cvg_ereal_nneg_natsum => n _.
+  by apply: integral_ge0 => x _; rewrite adde_ge0.
+by rewrite (@cvg_lim _ _ _ _ l).
+Qed.
 
 HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
     (abs : \int[mu]_(x in E0) limF x < nu E0) :=
