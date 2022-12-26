@@ -1435,20 +1435,16 @@ Qed.
 HB.instance Definition _ :=
   isAdditiveSignedMeasure.Build _ _ _ smscale smscale_semi_additive.
 
-(* how to solve? *)
 Let smscale_sigma_additive : semi_sigma_additive smscale.
 Proof.
-(*
-move=> F mF tF mUF; rewrite [X in X --> _](_ : _ =
-    (fun n => (r%:num)%:E * \sum_(0 <= i < n) m (F i))); last first.
-  by apply/funext => k; rewrite ge0_sume_distrr.
-rewrite /mscale; have [->|r0] := eqVneq r%:num 0%R.
+move=> F mF tF mUF; rewrite /smscale; rewrite [X in X --> _](_ : _ =
+    (fun n => r%:E * \sum_(0 <= i < n) m (F i))); last first.
+  by apply/funext => k; rewrite fin_num_sume_distrr// => n _; rewrite isfinite.
+rewrite /mscale; have [->|r0] := eqVneq r 0%R.
   rewrite mul0e [X in X --> _](_ : _ = (fun=> 0)); first exact: cvg_cst.
   by under eq_fun do rewrite mul0e.
-by apply: cvgeMl => //; exact: measure_semi_sigma_additive.
+by apply: cvgeMl => //; apply: smeasure_semi_sigma_additive.
 Qed.
-*)
-Admitted.
 
 HB.instance Definition _ := isSignedMeasure.Build _ _ _ smscale
   smscale_sigma_additive.
