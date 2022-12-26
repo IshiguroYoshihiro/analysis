@@ -1342,6 +1342,15 @@ rewrite -measure_bigcup //;last 2 first.
 by rewrite -setI_bigcupr TE setIT.
 Qed.
 
+(* TODO: move? *)
+Lemma fin_num_sume_distrr (R : realType) (I : Type) (s : seq I) r (P : pred I)
+    (F : I -> \bar R) : (forall i, P i -> F i \is a fin_num) ->
+  r%:E * (\sum_(i <- s | P i) F i) = \sum_(i <- s | P i) (r%:E * F i).
+Proof.
+move=> PF; elim/big_rec2 : _ => //; first by rewrite mule0.
+by move=> i y1 y2 Pi <-; rewrite muleDr// adde_defC fin_num_adde_def// PF.
+Qed.
+
 Section signed_measure_scale.
 Local Open Scope ereal_scope.
 Variables (d : measure_display) (T : measurableType d) (R : realType). (* R : realFieldType? *)
@@ -1419,89 +1428,9 @@ HB.instance Definition _ :=
 
 Let smscale_semi_additive : semi_additive smscale.
 Proof.
-move=> F n mF tF mU.
-rewrite /smscale smeasure_semi_additive //.
-
-(* sumに関するrewriteがしたい
- * -> ge0_mule_fsumrを使いたい
- * -> ge0が必要なので m (F i) を m (F i) - infm + infmとしたい
- * -> rewrite が通らないので under eq_esum をしたい
- * -> sumをesumに変換したいので rewrite fsbig_esum をしたい
- * -> ge0が必要 ???
- *)
-
-pose infm := ereal_inf [set mE | exists E, mE = m E /\ measurable E].
-have ge0minfm : forall U, measurable U -> 0 <= m U - infm.
-  move=> S mS.
-  rewrite sube_ge0 /infm.
-    apply: ereal_inf_lb => /=.
-    exists S.
-    by split.
-  apply/orP; right.
-  by apply: isfinite.
-have fininfm : infm \is a fin_num.
-  rewrite le0_fin_numE.
-    admit.
-  rewrite oppe_le0.
-  apply: ereal_sup_ub => /=.
-  exists 0; last first.
-    by rewrite oppe0.
-  exists set0; split; by [rewrite smeasure0|apply measurable0].
-
-
-
-rewrite (_ : \sum_(i < n) m (F i) = \esum_(i in `I_n) m (F i)); last first.
-
-  rewrite (_ : (\sum_(i < n) m (F i)) = (\sum_(i \in `I_n) m (F i)));last first.
-    admit.
-
-  under eq_sum.
-
-  rewrite fsbig_esum.
-      done.
-    done.
-  move=> /= .
-
-rewrite (_ : m (F i) = (fun i => (m (F i) - infm)) i + infm).
-rewrite big_mkcond.
-
-
-rewrite mule_. /=; last first.
-  move=> i.
-under eq_bigl.
-  
-rewrite fsbig_ord.
-(* want to do
-rewrite -ge0_mule_fsumr.
-but did not find a way to rewrite big_ord to fsbig
-*)
-(*c
-under eq_big.
-    rewrite /= => i.
-    over.
-  rewrite /= => i _.
-  rewrite -(@addeK _ infm (m (F i))); last first.
-    rewrite /infm /ereal_inf. 
-    rewrite fin_numN.
-    rewrite ge0_fin_numE.
-    have H : (forall S , m S < +oo ) -> ereal_sup [set x | x in [set mE | (exists E : set T, mE = m E /\ measurable E)]] < +oo.
-      move=> HH.
-      rewrite /ereal_sup.
-      rewrite /supremum ifF; last first.
-        apply/eqP.
-
-
-        rewrite eqbF_neg.
-        apply/negP.
-        apply/eqP.
-Unset Printing Notations.
-       rewrite set0P.
-ereal_supremums_neq0
-       rewrite eq_set.
-       apply/eqP.
+move=> F n mF tF mU; rewrite /smscale smeasure_semi_additive//.
+by rewrite fin_num_sume_distrr// => i _; rewrite isfinite.
 Qed.
-*)
-Admitted.
 
 HB.instance Definition _ :=
   isAdditiveSignedMeasure.Build _ _ _ smscale smscale_semi_additive.
