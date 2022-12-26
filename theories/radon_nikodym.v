@@ -1570,10 +1570,12 @@ Qed.
 
 Let nu_n' : {smeasure set X -> \bar R} := smscale (-1) (smrestr nu mN).
 
-
 Let positive_nu_n' : positive_set nu_n' setT.
-
-Admitted.
+Proof.
+split; first by rewrite inE.
+move=> E /[1!inE]mE _; rewrite /nu_n' /= /smscale /= /smrestr muleC mule_le0//.
+by move: nuPN => [_ [_ +] _ _] => ->//; rewrite inE; exact: measurableI.
+Qed.
 
 Let nu_p : {measure set X -> \bar R} := measure_of_smeasure positive_nu_p'.
 Let nu_n : {measure set X -> \bar R} := measure_of_smeasure positive_nu_n'.
