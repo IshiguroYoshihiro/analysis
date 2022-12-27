@@ -768,3 +768,115 @@ apply (@eq_trans _ _ (nu (S `&` N1 `&` N2))).
  by rewrite [RHS](s_measure_partition2 nu mP1 mN1 PN1T PN10)//
    (setIAC _ _ P1) (positive_negative0 posP1 negN2 mS) add0e setIAC.
 Qed.
+
+Section smeasure_sum.
+Variables (d : measure_display) (T : measurableType d) (R : realType).
+Variables (m : {smeasure set T -> \bar R}^nat) (n : nat).
+
+Variables (mp mn : {measure set T -> \bar R}^nat).
+
+Hypothesis m_dcmp : forall (n : nat) S, measurable S -> m n S = mp n S - mn n S.
+
+Definition smsum (A : set T) : \bar R := \sum_(k < n) m k A.
+
+Let smsum0 : smsum set0 = 0.
+Proof.
+rewrite /smsum big1 //.
+move=> i _.
+by apply: smeasure0.
+Qed.
+
+Let smsum_isfinite B : measurable B -> smsum B \is a fin_num.
+Proof.
+move=> mB.
+rewrite /smsum.
+rewrite fin_numElt.
+apply/andP.
+
+have H: \sum_(k < n) m k B = \esum_(k in `I_n) m k B.
+  admit.
+rewrite H.
+under eq_esum => /= i _.
+  rewrite (funeposneg (m i)) //.
+  
+  over.
+  split.
+Admitted.
+
+HB.instance Definition _ :=
+  isSignedMeasure0.Build _ _ _ smsum smsum_isfinite.
+
+Let smsum_semi_additive : semi_additive smsum.
+Proof.
+Admitted.
+
+HB.instance Definition _ :=
+  isAdditiveSignedMeasure.Build _ _ _ smsum smsum_semi_additive.
+
+Let smsum_sigma_additive : semi_sigma_additive smsum.
+Proof.
+move=> F mF tF mUF.
+rewrite [X in _ --> X](_ : _ =
+    lim (fun n => \sum_(0 <= i < n) smsum (F i))).
+  admit.
+rewrite nneseries_sum//. apply: eq_bigr => /= i _.
+
+(* exact: measure_semi_bigcup. *)
+Admitted.
+
+HB.instance Definition _ := isSignedMeasure.Build _ _ _ smsum
+ smsum_sigma_additive.
+
+End smeasure_sum.
+
+Arguments msum {d T R}.
+
+Section measure_zero.
+Local Open Scope ereal_scope.
+Variables (d : measure_display) (T : measurableType d) (R : realType).
+
+Definition smzero (A : set T) : \bar R := 0.
+
+Let smzero0 : smzero set0 = 0. Proof. by []. Qed.
+
+Let smzero_isfinite B :measurable B -> smzero B \is a fin_num. Proof. by []. Qed.
+
+HB.instance Definition _ := isSignedMeasure0.Build _ _ _ smzero
+  smzero_isfinite.
+
+Let smzero_semi_additive : semi_additive smzero.
+move=> F n mF tF mUF.
+rewrite /smzero.
+Admitted.
+
+HB.instance Definition _ :=
+  isAdditiveSignedMeasure.Build _ _ _ smzero smzero_semi_additive.
+
+Let smzero_sigma_additive : semi_sigma_additive smzero.
+Proof.
+move=> F mF tF mUF; rewrite [X in X --> _](_ : _ = cst 0); first exact: cvg_cst.
+by apply/funext => n; rewrite big1.
+Qed.
+
+HB.instance Definition _ :=
+  isSignedMeasure.Build _ _ _ smzero smzero_sigma_additive.
+
+End measure_zero.
+Arguments smzero {d T R}.
+
+Lemma smsum_mzero (d : _) (T : measurableType d) (R : realType)
+    (m_ : {smeasure set T -> \bar R}^nat) :
+  smsum m_ 0 = smzero.
+Proof. by apply/funext => A/=; rewrite /smsum big_ord0. Qed.
+
+Section smeasure_add.
+Local Open Scope ereal_scope.
+Variables (d : measure_display) (T : measurableType d) (R : realType).
+Variables (m1 m2 : {smeasure set T -> \bar R}).
+
+Definition smeasure_add := smsum (fun n => if n is 0%N then m1 else m2) 2.
+
+Lemma smeasure_addE A : smeasure_add A = m1 A + m2 A.
+Proof. by rewrite /smeasure_add/= /smsum 2!big_ord_recl/= big_ord0 adde0. Qed.
+
+End smeasure_add.
