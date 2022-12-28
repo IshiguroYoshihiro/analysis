@@ -38,6 +38,11 @@ Definition abs_continuous d (T : measurableType d) (R : realType)
 
 Notation "m1 `<< m2" := (abs_continuous m1 m2) (at level 51).
 
+Lemma abs_continuous_trans d (T : measurableType d) (R : realType)
+    (m1 m2 m3 : set T -> \bar R) :
+  m1 `<< m2 -> m2 `<< m3 -> m1 `<< m3.
+Proof. by move=> m12 m23 A mA /m23-/(_ mA) /m12; exact. Qed.
+
 (* maybe rewrite I : R * R to I : interval R *)
 Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R)
     := forall e : {posnum R}, exists d : {posnum R},
@@ -1473,68 +1478,75 @@ End measure_of_smeasure.
 Arguments measure_of_smeasure {d X R}.
 
 Section Jordan_measure_decomposition.
-Context (d : _) (X : measurableType d) (R : realType).
+Variables (d : _) (X : measurableType d) (R : realType).
 Variables (nu: {smeasure set X -> \bar R}).
 
-Local Notation Hahn := (Hahn_decomposition nu).
+(* P N mP mNを Hahn_decomposition nuから取り出して一度に全てまとめて定義したい *)
+(*
+Definition [P [N [[mP posP] [mN negN] PN0 PNT] := Hahn_decomposition nu.
+*)
 
-Let X_P := (proj1_sig (cid Hahn)).
+Variables (P N: set X).
+Hypothesis nuPN : is_Hahn_decomposition nu P N.
 
-Let X_N := (proj1_sig (cid (proj2_sig (cid Hahn)))).
-
-Let nuPN := (proj2_sig (cid (proj2_sig (cid Hahn)))).
-
-Let mP : measurable X_P.
-Proof.
-by have [[mP _] _ _ _] := nuPN; rewrite inE in mP.
+Let mP : measurable P.
+by have [[mP _] _ _ _] := nuPN ; rewrite inE in mP.
 Qed.
 
-Let mN : measurable X_N.
-Proof.
+Let mN : measurable N.
 by have [_ [mN _] _ _] := nuPN; rewrite inE in mN.
 Qed.
 
-Local Notation nu_p' := (smrestr nu mP).
+Definition nu_p' : {smeasure set X -> \bar R} := smrestr nu mP.
 
-Let positive_nu_p' : positive_set nu_p' setT.
+Definition positive_nu_p' : positive_set nu_p' setT.
 have [posP _ _ _] := nuPN.
 split;[|move=> E]; rewrite inE // => mE _.
 rewrite /nu_p'/smrestr/=/smrestr.
 by apply posP; rewrite ?inE; [apply measurableI|apply subIsetr].
 Qed.
 
-Local Notation nu_n' := (smscale (-1) (smrestr nu mN)).
+Definition nu_n' : {smeasure set X -> \bar R} := smscale (-1) (smrestr nu mN).
 
-Let positive_nu_n' : positive_set nu_n' setT.
+Definition positive_nu_n' : positive_set nu_n' setT.
 Proof.
 split; first by rewrite inE.
 move=> E /[1!inE]mE _; rewrite /nu_n' /= /smscale /= /smrestr muleC mule_le0//.
 by move: nuPN => [_ [_ +] _ _] => ->//; rewrite inE; exact: measurableI.
 Qed.
 
-Let nu_p : {measure set X -> \bar R} :=
-measure_of_smeasure nu_p' positive_nu_p'.
-Let nu_n : {measure set X -> \bar R} := measure_of_smeasure nu_n' positive_nu_n'.
+Definition nu_p : {measure set X -> \bar R} := measure_of_smeasure _ positive_nu_p'.
+Definition nu_n : {measure set X -> \bar R} := measure_of_smeasure _ positive_nu_n'.
 
-Let nu_p_finite : nu_p setT < +oo.
+Lemma nu_pfinite : nu_p setT < +oo.
 Proof.
-rewrite /nu_p /=.
-rewrite /smrestr setTI.
-apply: fin_num_ltey.
-by apply: isfinite.
+by rewrite /nu_p/= /smrestr setTI fin_num_ltey// isfinite.
 Qed.
 
-Let nu_n_finite : nu_n setT < +oo.
+Lemma nu_nfinite : nu_n setT < +oo.
 Proof.
-rewrite /=/smscale/=/smrestr setTI.
-apply: fin_num_ltey.
-rewrite muleC muleN1 fin_numN.
-by apply: isfinite.
+rewrite /nu_n/= /smscale/= EFinN mulN1e /smrestr setTI fin_num_ltey//.
+by rewrite fin_numN isfinite.
 Qed.
 
-Definition Jordan_measure_decomposition := ((nu_p, nu_p_finite), (nu_n, nu_n_finite)).
+Lemma nu_pfinite : nu_p setT < +oo.
+Proof.
+by rewrite /nu_p/= /smrestr setTI fin_num_ltey// isfinite.
+Qed.
 
-Lemma Jordan_measure_decompositionE A : measurable A -> nu A = nu_p A - nu_n A.
+Lemma nu_nfinite : nu_n setT < +oo.
+Proof.
+rewrite /nu_n/= /smscale/= EFinN mulN1e /smrestr setTI fin_num_ltey//.
+by rewrite fin_numN isfinite.
+Qed.
+
+(* Jordan_measure_decomposition のargumentsがnuだけになるようにしたい*)
+
+Definition Jordan_measure_decomposition := (nu_p, nu_n).
+
+(* Lemma nu_dcmp : nu = smeasure_add nu'_p nu'_n. *)
+
+Lemma nu_dcmp A : measurable A -> nu A = nu_p A - nu_n A.
 Proof.
 move=> mA; rewrite /= /smscale /= /smrestr /= -[in LHS](setIT A).
 case: nuPN => _ _ <- PN0; rewrite setIUr smeasureU//; last 3 first.
@@ -1544,62 +1556,210 @@ case: nuPN => _ _ <- PN0; rewrite setIUr smeasureU//; last 3 first.
 by rewrite EFinN mulN1e oppeK.
 Qed.
 
+(*
+HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
+    (abs : \int[mu]_(x in E0) limF x < nu E0) :=
+  @isAdditiveSignedMeasure.Build _ _ _ (sigma' muE0 abs) (sigma'_semi_additive muE0 abs).
+*)
+
+
 End Jordan_measure_decomposition.
+
+(*Section smeasure_sum.
+Variables (d : measure_display) (T : measurableType d) (R : realType).
+Variables (m : {smeasure set T -> \bar R}^nat) (n : nat).
+
+Variables (mp mn : {measure set T -> \bar R}^nat).
+
+Hypothesis m_dcmp : forall (n : nat) S, measurable S -> m n S = mp n S - mn n S.
+
+Definition smsum (A : set T) : \bar R := \sum_(k < n) m k A.
+
+Let smsum0 : smsum set0 = 0.
+Proof.
+rewrite /smsum big1 //.
+move=> i _.
+by apply: smeasure0.
+Qed.
+
+Let smsum_isfinite B : measurable B -> smsum B \is a fin_num.
+Proof.
+move=> mB.
+rewrite /smsum.
+rewrite fin_numElt.
+apply/andP.
+
+have H: \sum_(k < n) m k B = \esum_(k in `I_n) m k B.
+  admit.
+rewrite H.
+under eq_esum => /= i _.
+  rewrite (funeposneg (m i)) //.
+  
+  over.
+  split.
+Admitted.
+
+HB.instance Definition _ :=
+  isSignedMeasure0.Build _ _ _ smsum smsum_isfinite.
+
+Let smsum_semi_additive : semi_additive smsum.
+Proof.
+Admitted.
+
+HB.instance Definition _ :=
+  isAdditiveSignedMeasure.Build _ _ _ smsum smsum_semi_additive.
+
+Let smsum_sigma_additive : semi_sigma_additive smsum.
+Proof.
+move=> F mF tF mUF.
+rewrite [X in _ --> X](_ : _ =
+    lim (fun n => \sum_(0 <= i < n) smsum (F i))).
+  admit.
+rewrite nneseries_sum//. apply: eq_bigr => /= i _.
+
+(* exact: measure_semi_bigcup. *)
+Admitted.
+
+HB.instance Definition _ := isSignedMeasure.Build _ _ _ smsum
+ smsum_sigma_additive.
+
+End smeasure_sum.
+
+Arguments msum {d T R}.*)
+
+Section measure_zero.
+Local Open Scope ereal_scope.
+Variables (d : measure_display) (T : measurableType d) (R : realType).
+
+Definition smzero (A : set T) : \bar R := 0.
+
+Let smzero0 : smzero set0 = 0. Proof. by []. Qed.
+
+Let smzero_isfinite B :measurable B -> smzero B \is a fin_num. Proof. by []. Qed.
+
+HB.instance Definition _ := isSignedMeasure0.Build _ _ _ smzero
+  smzero_isfinite.
+
+Let smzero_semi_additive : semi_additive smzero.
+move=> F n mF tF mUF.
+rewrite /smzero.
+by rewrite big1.
+Qed.
+
+HB.instance Definition _ :=
+  isAdditiveSignedMeasure.Build _ _ _ smzero smzero_semi_additive.
+
+Let smzero_sigma_additive : semi_sigma_additive smzero.
+Proof.
+move=> F mF tF mUF; rewrite [X in X --> _](_ : _ = cst 0); first exact: cvg_cst.
+by apply/funext => n; rewrite big1.
+Qed.
+
+HB.instance Definition _ :=
+  isSignedMeasure.Build _ _ _ smzero smzero_sigma_additive.
+
+End measure_zero.
+Arguments smzero {d T R}.
+
+(*Lemma smsum_mzero (d : _) (T : measurableType d) (R : realType)
+    (m_ : {smeasure set T -> \bar R}^nat) :
+  smsum m_ 0 = smzero.
+Proof. by apply/funext => A/=; rewrite /smsum big_ord0. Qed.*)
+
+Section smeasure_add.
+Local Open Scope ereal_scope.
+Variables (d : measure_display) (T : measurableType d) (R : realType).
+Variables (m1 m2 : {smeasure set T -> \bar R}).
+
+(*Definition smeasure_add := smsum (fun n => if n is 0%N then m1 else m2) 2.
+
+Lemma smeasure_addE A : smeasure_add A = m1 A + m2 A.
+Proof. by rewrite /smeasure_add/= /smsum 2!big_ord_recl/= big_ord0 adde0. Qed.*)
+
+End smeasure_add.
+
+(*
+Definition is_Jordan_measure_decomposition d (X : measurableType d) (R : realType)
+(nu : {smeasure set X -> \bar R}) (nup nun : {measure set X -> \bar R})
+(P N : set X) (HahnPN : is_Hahn_decomposition nu P N) :=
+(forall E, measurable E -> nup E = nu (E `&` P))
+  /\ (forall E, measurable E -> nun E = nu (E `&` N)).
+
+Definition Jordan_decompositionE d (X : measurableType d) (R : realType)
+    (nu : {smeasure set X -> \bar R}) (nup nun : {measure set X -> \bar R})
+    (P N : set X) (HahnPN : is_Hahn_decomposition nu P N)
+    (JordanPN : is_Jordan_measure_decomposition nup nun HahnPN)
+: 
+  nu = smeasure_add (measure_of_smeasure nup) nun.
+ *)
+(* --- *)
 
 Theorem Radon_Nikodym d (X : measurableType d) (R : realType)
     (mu : {measure set X -> \bar R}) (nu : {smeasure set X -> \bar R})
     (sigma_finite_mu : sigma_finite setT mu) :
   nu `<< mu -> exists f : X -> \bar R,
-  integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
+    integrable mu setT f /\
+    forall E, E \in measurable -> nu E = \int[mu]_(x in E) f x.
 Proof.
 move=> nudommu.
-
-have Hahn_dcmp := Hahn_decomposition nu.
-
+have [P [N HahnPN]] := Hahn_decomposition nu.
+have [posP negN PNX PN0] := HahnPN.
+have [mN _] := negN.
+rewrite inE in mN.
 (* Jordan decomposition *)
-
-have [[nu_p nu_p_finite] [nu_n nu_n_finite]] := Jordan_measure_decomposition nu.
-(* Jordan_decompositionEの形が変 *)
-(* 特にrewrite nu_dcmpができなくなっている *)
-(* Jordan_decompositionEの中でJordan_decompositionを再度使っているのが原因? *)
-have nu_dcmp :=
-  Jordan_measure_decompositionE nu; move : nu_dcmp.
-rewrite /=.
-rewrite /smrestr.
-rewrite /smscale /=.
-rewrite /smrestr.
-rewrite /sval .
-pose P := (let (a, _) := cid (Hahn_decomposition nu) in a).
-pose N := (let (a, _) := cid (proj2_sig (cid (Hahn_decomposition nu))) in a).
-rewrite -/P -/N.
- move=> nu_dcmp.
-
-(* nu_p and nu_n are finite measures *)
-have nu_pfinite : nu_p setT < +oo.
-  admit.
-have nu_nfinite : nu_n setT < +oo.
-  admit.
+pose nu_p := nu_p HahnPN.
+pose nu_n := nu_n HahnPN.
+(* nu_p an_d nu_n are finite measures *)
+have nu_pfinite : nu_p setT < +oo by exact: nu_pfinite.
+have nu_nfinite : nu_n setT < +oo by exact: nu_nfinite.
 have nu_pdommu : nu_p `<< mu.
-  admit.
+  move=> A mA muA0.
+  have := nudommu A mA muA0.
+  rewrite (nu_dcmp HahnPN)//=.
+  rewrite /smrestr/= /smscale/= /smrestr/= EFinN mulN1e oppeK.
+  have mAP : measurable (A `&` P).
+    apply: measurableI => //.
+    by case: posP; rewrite inE.
+  have muAP0 : mu (A `&` P) = 0.
+    apply/eqP; rewrite eq_le; apply/andP; split.
+      rewrite -muA0.
+      apply: le_measure => //.
+      by rewrite inE.
+      by rewrite inE.
+    by rewrite measure_ge0.
+  by have -> := nudommu _ mAP muAP0.
 have nu_ndommu : nu_n `<< mu.
-  admit.
+  move=> A mA muA0.
+  have := nudommu A mA muA0.
+  rewrite (nu_dcmp HahnPN)//=.
+  rewrite /smrestr/= /smscale/= /smrestr/= EFinN mulN1e oppeK.
+  have mAN : measurable (A `&` N).
+    by apply: measurableI => //.
+  have muAN0 : mu (A `&` N) = 0.
+    apply/eqP; rewrite eq_le; apply/andP; split.
+      rewrite -muA0.
+      apply: le_measure => //.
+      by rewrite inE.
+      by rewrite inE.
+    by rewrite measure_ge0.
+  have -> := nudommu _ mAN muAN0.
+  by rewrite oppe0.
 (* f_p := Radon_Nikodym_sigma_finite_ge0 nu_pdommu*)
 have [f_p [intf_p f_pE]] := Radon_Nikodym_sigma_finite_ge0 nu_pfinite sigma_finite_mu nu_pdommu.
 have [f_n [intf_n f_nE]] := Radon_Nikodym_sigma_finite_ge0 nu_nfinite sigma_finite_mu nu_ndommu.
-
 pose f := f_p \- f_n.
 exists f.
 split.
   apply: integrableB => //.
 move=> E.
 rewrite inE => mE.
-rewrite nu_dcmp // integralB; last 3 first.
+rewrite [LHS](nu_dcmp HahnPN mE)// integralB; last 3 first.
       exact: mE.
     by apply: (integrableS measurableT).
   by apply: (integrableS measurableT).
-rewrite -f_pE ?inE // -f_nE ?inE //.
-rewrite /nu_p.
-Abort.
+rewrite -f_pE//; last by rewrite inE.
+by rewrite -f_nE//; last by rewrite inE.
+Qed.
 
 (* Need lebesgue_stieltjes measure
 Proposition abs_continuous_fun_measure d (R : realType)
