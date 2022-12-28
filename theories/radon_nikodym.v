@@ -14,6 +14,8 @@ Require Import lebesgue_measure lebesgue_integral smeasure. (* lebesgue_stieltje
 (*                                                                            *)
 (******************************************************************************)
 
+Reserved Notation "m1 `<< m2" (at level 51).
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -23,44 +25,117 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
-Lemma set1Ebigcap {R : realType} (x : R) : [set x] = \bigcap_k `](x - k.+1%:R^-1)%R, x]%classic.
+(* TODO: move to classical_sets? *)
+Section preimage_bool.
+Context d (T : measurableType d).
+Implicit Type D : set T.
+
+Lemma preimage_mem_true D : mem D @^-1` [set true] = D.
+Proof. by apply/seteqP; split => [x/= /set_mem//|x /mem_set]. Qed.
+
+Lemma preimage_mem_false D : mem D @^-1` [set false] = ~` D.
 Proof.
-apply/seteqP; split => [_ -> k _ /=|].
-  by rewrite in_itv/= lexx andbT ltr_subl_addl ltr_addr invr_gt0.
-move=> y h; apply/eqP/negPn/negP => yx.
-red in h.
-simpl in h.
-Abort.
+apply/seteqP; split => [x/=|x/=]; last exact: memNset.
+by apply: contraFnot; exact/mem_set.
+Qed.
 
-Definition abs_continuous d (T : measurableType d) (R : realType)
-    (m1 m2 : set T -> \bar R) :=
-  forall A : set T, measurable A -> (m2 A = 0)%E -> (m1 A = 0)%E.
+End preimage_bool.
 
-Notation "m1 `<< m2" := (abs_continuous m1 m2) (at level 51).
+Section move_to_measure.
+Local Open Scope ereal_scope.
 
-Lemma abs_continuous_trans d (T : measurableType d) (R : realType)
-    (m1 m2 m3 : set T -> \bar R) :
-  m1 `<< m2 -> m2 `<< m3 -> m1 `<< m3.
-Proof. by move=> m12 m23 A mA /m23-/(_ mA) /m12; exact. Qed.
+Lemma measurable_lt_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
+   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x < g x].
+Proof.
+move=> mf mg; under eq_set do rewrite -sube_gt0; rewrite -[X in measurable X]setTI.
+by apply : emeasurable_fun_o_infty => //; exact: emeasurable_funB.
+Qed.
 
+Lemma measurable_le_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
+   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x <= g x].
+Proof.
+move=> mf mg; under eq_set do rewrite leNgt.
+rewrite [X in measurable X](_ : _ = ~` [set x | g x < f x]).
+  by apply measurableC; exact : measurable_lt_fun.
+by apply/seteqP; split => x /= /negP.
+Qed.
+
+Lemma measurable_eq_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
+   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x = g x].
+Proof.
+move=> mf mg.
+rewrite [X in measurable X](_ : _ = [set x | f x <= g x] `\` [set x | f x < g x]).
+  by apply measurableD; [exact : measurable_le_fun|exact : measurable_lt_fun].
+apply/seteqP; split => [x/= ->|x []/=]; first by split => //; rewrite ltxx.
+by rewrite le_eqVlt => /orP[/eqP ->|].
+Qed.
+
+Lemma measurable_fun_bigcup d (X : measurableType d) (R : realType)
+  (n : nat) (E : (set X)^nat) (mu : {measure set X -> \bar R}) (f : X -> \bar R) :
+    (forall i, measurable (E i) /\ measurable_fun (E i) f) ->
+     measurable_fun (\bigcup_i E i) f.
+Proof.
+move=> mfE mE /= Y mY; rewrite setI_bigcupl; apply: bigcup_measurable => i _.
+by apply mfE => //; apply mfE.
+Qed.
+
+(* NB: this definition is now in master *)
+Definition finite_measure d (T : measurableType d) (R : realType)
+    (mu : set T -> \bar R) := mu setT < +oo.
+
+Lemma fmuy d (X : measurableType d) (R : realType)
+    (mu : {measure set X -> \bar R}) : finite_measure mu ->
+  forall E, measurable E -> mu E < +oo.
+Proof.
+by move=> fmu E mE; rewrite (le_lt_trans _ fmu)// le_measure// inE.
+Qed.
+
+End move_to_measure.
+
+(* TODO: rename to abs_continuous *)
 (* maybe rewrite I : R * R to I : interval R *)
-Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R)
-    := forall e : {posnum R}, exists d : {posnum R},
-         forall J : nat -> R * R, forall n : nat,
-           \sum_(k < n)((J k).2 - (J k).1) < d%:num ->
-             trivIset setT (fun n => `[(J n).1, (J n).2]%classic) ->
-               (forall n, I.1 <= (J n).1 /\ (J n).2 <= I.2 ) ->
-                 \sum_(k < n) `| f (J k).2 - f (J k).1 | < e%:num.
+Definition abs_continuous_function (R : realType) (f : R -> R) (I : R * R) :=
+  forall e : {posnum R}, exists d : {posnum R},
+    forall J : nat -> R * R, forall n : nat,
+      \sum_(k < n)((J k).2 - (J k).1) < d%:num ->
+        trivIset setT (fun n => `[(J n).1, (J n).2]%classic) ->
+          (forall n, I.1 <= (J n).1 /\ (J n).2 <= I.2) ->
+            \sum_(k < n) `| f (J k).2 - f (J k).1 | < e%:num.
 
 Local Open Scope ereal_scope.
 
+(* NB: PR in progress *)
+Lemma sumeN (R : realType) I r (P : pred I) (f : I -> \bar R) :
+  (forall i, P i -> f i \is a fin_num) ->
+  (\sum_(i <- r | P i) - f i = - (\sum_(i <- r | P i) f i)).
+Proof.
+move=> h; elim/big_rec2 : _ => //; first by rewrite oppe0.
+by move=> i y1 _ Pi ->; rewrite [in RHS]addeC oppeD ?h// addeC.
+Qed.
+
+Section absolute_continuity.
+Context d (T : measurableType d) (R : realType).
+Implicit Types m : set T -> \bar R.
+
+Definition dominates m1 m2 :=
+  forall A, measurable A -> m2 A = 0 -> m1 A = 0.
+
+Local Notation "m1 `<< m2" := (dominates m1 m2).
+
+Lemma dominates_trans m1 m2 m3 : m1 `<< m2 -> m2 `<< m3 -> m1 `<< m3.
+Proof. by move=> m12 m23 A mA /m23-/(_ mA) /m12; exact. Qed.
+
+End absolute_continuity.
+Notation "m1 `<< m2" := (dominates m1 m2).
+
 Lemma subset_nonnegative_set d (R : realType) (X : measurableType d)
-             (nu : {smeasure set X -> \bar R}) (N M : set X) : (M `<=` N) ->
-              (nu N < 0)%E -> (nu M > 0)%E -> (~ negative_set nu N) -> (~ negative_set nu (N `\` M)).
+  (nu : {smeasure set X -> \bar R}) (N M : set X) : M `<=` N ->
+    nu N < 0 -> nu M > 0 -> ~ negative_set nu N -> ~ negative_set nu (N `\` M).
 Abort.
 
+(* NB: unused *)
 Section positive_set_0.
-Variables (d : _) (X : measurableType d) (R : realType).
+Context d (X : measurableType d) (R : realType).
 Variable nu : {smeasure set X -> \bar R}.
 Hypotheses neg_set_0 : forall N, negative_set nu N -> nu N = 0.
 Variable S : set X.
@@ -247,56 +322,20 @@ have : forall N, negative_set mu N -> mu N = 0.
 by move/(@positive_set_0 _ _ _ mu); exact.
 Qed.
 
-Lemma measurable_lt_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
-   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x < g x].
-Proof.
-move=> mf mg.
-under eq_set do rewrite -sube_gt0.
-rewrite -(setTI [set x | 0 < g x - f x]).
-apply : emeasurable_fun_o_infty => //.
-apply emeasurable_funB => //.
-Qed.
-
-Lemma measurable_le_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
-   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x <= g x].
-Proof.
-move=> mf mg.
-under eq_set do rewrite leNgt.
-rewrite (_ : [set _ | _] = ~` [set x | g x < f x]).
-  apply measurableC.
-  exact : measurable_lt_fun.
-apply/seteqP.
-split; by move=> x /= /negP.
-Qed.
-
-Lemma measurable_eq_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
-   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x = g x].
-Proof.
-move=> mf mg.
-rewrite (_ : [set x | _ = _] = [set x | f x <= g x] `\` [set x | f x < g x]).
-  apply measurableD.
-    exact : measurable_le_fun.
-  exact : measurable_lt_fun.
-apply/seteqP.
-split => x /=.
-  move=> fg ;split ;rewrite fg;by rewrite ?le_refl ?lt_irreflexive.
-move=>[] /=; by rewrite le_eqVlt => /orP[/eqP| ->].
-Qed.
-
 (*
 Lemma measurable_fun_0 d (X : measurableType d) (R : realType) (g : (X -> \bar R)) :
   (fun x : X => \big[maxe/-oo]_(j < 0) g j x) = (fun x : X => \big[maxe/-oo]_(j < 0) g j x)
 *)
 (* auxiliary lemma *)
-Lemma F_0 d (X : measurableType d) (R : realType) (g : (X -> \bar R) ^nat) :
+(*Lemma F_0 d (X : measurableType d) (R : realType) (g : (X -> \bar R) ^nat) :
   (fun x : X => \big[maxe/-oo]_(j < 0) g j x) = (fun x : X => -oo).
 Proof.
 apply funext.
 move=> x.
 by rewrite big_ord0.
-Qed.
+Qed.*)
 
-Lemma F_step d (X : measurableType d) (R : realType) (g : (X -> \bar R) ^nat) :
+(*Lemma F_step d (X : measurableType d) (R : realType) (g : (X -> \bar R) ^nat) :
   forall n, (fun x : X => \big[maxe/-oo]_(j < n.+1) g j x) =
          (fun x : X => maxe (\big[maxe/-oo]_(j < n) g j x) (g n x)).
 Proof.
@@ -304,7 +343,7 @@ move=> n.
 apply funext.
 move=> x.
 by apply : big_ord_recr.
-Qed.
+Qed.*)
 
 (*
 Lemma mkcover_function (T I J : Type) (g : I -> J -> T) (P : T -> Prop ):
@@ -313,19 +352,6 @@ Lemma mkcover_function (T I J : Type) (g : I -> J -> T) (P : T -> Prop ):
       (fun (y : I) => [set x | P (g y x) ]) setT.
 Abort.
 *)
-
-Lemma measurable_fun_bigcup d (X : measurableType d) (R : realType)
-  (n : nat) (E : nat -> set X) (mu : {measure set X -> \bar R})
-    (f : X -> \bar R) : (forall i, measurable (E i) /\ measurable_fun (E i) f) ->
-                          measurable_fun (\bigcup_i E i) f.
-Proof.
-move=> mfE mE /= Y mY.
-rewrite setI_bigcupl.
-apply bigcup_measurable.
-move=> i iltn.
-apply mfE => //.
-by apply mfE.
-Qed.
 
 Lemma integrable_bigcup d (X : measurableType d) (R : realType) (n : nat)
   (E : nat -> set X) (mu : {measure set X -> \bar R}) (f : X -> \bar R) :
@@ -379,85 +405,34 @@ rewrite ge0_integral_bigsetU. *)
 Abort.
 (* --- *)
 
-
-Section emeasurable_fun.
-Local Open Scope ereal_scope.
-Context d (T : measurableType d).
-Implicit Types (D : set T).
-
-(* PR *)
-Lemma emeasurable_fun_bool (D : set T) (f : T -> bool) b :
-  measurable (f @^-1` [set b]) -> measurable_fun D f.
-Proof.
-have FNT : [set false] = [set~ true] by apply/seteqP; split => -[]//=.
-wlog {b}-> : b / b = true.
-case: b => [|h]; first exact.
-by rewrite FNT -preimage_setC => /measurableC; rewrite setCK; exact: h.
-move=> mfT mD /= Y; have := @subsetT _ Y; rewrite setT_bool => YT.
-have [-> _|-> _|-> _ |-> _] := subset_set2 YT.
-      by rewrite preimage0 ?setI0.
-    by apply: measurableI => //; exact: mfT.
-  rewrite -[X in measurable X]setCK; apply: measurableC; rewrite setCI.
-  apply: measurableU; first exact: measurableC.
-by rewrite FNT preimage_setC setCK; exact: mfT.
-by rewrite -setT_bool preimage_setT setIT.
-Qed.
-
-Lemma in_mem_mem_true (D : set T) : in_mem^~ (mem D) @^-1` [set true] = D.
-Proof.
-rewrite/preimage.
-apply/seteqP.
-split => x /=.
-  by move/set_mem.
-by move/mem_set.
-Qed.
-
-Lemma in_mem_mem_false (D : set T) : in_mem^~ (mem D) @^-1` [set false] = ~` D.
-Proof.
-rewrite /preimage.
-apply/seteqP.
-split.
-  move=> x /=.
-  apply: contraFnot.
-  by rewrite inE.
-move=> x /=.
-by apply: memNset.
-Qed.
-
-End emeasurable_fun.
-
 Section RN_approx.
 Context d (X : measurableType d) (R : realType) (mu nu : {measure set X -> \bar R}).
 
 Definition RN_approx := [set g : X -> \bar R | [/\
   forall x, g x >= 0, integrable mu setT g &
-  forall E, E \in measurable -> \int[mu]_(x in E) g x <= nu E] ]%E.
+  forall E, measurable E -> \int[mu]_(x in E) g x <= nu E] ].
 
-(* NB: used in this section only? *)
-Definition RN_approx_neq0 : RN_approx !=set0.
+Let RN_approx_neq0 : RN_approx !=set0.
 Proof.
-exists (cst 0%E); split; first by [].
-- exact: integrable0.
-- by move=> E;rewrite inE => mE; rewrite integral0 measure_ge0.
+exists (cst 0); split => //; first exact: integrable0.
+by move=> E mE; rewrite integral0 measure_ge0.
 Qed.
 
-Definition RN_approx_integral := [set \int[mu]_x g x | g in RN_approx]%E.
+Definition RN_approx_integral := [set \int[mu]_x g x | g in RN_approx].
 
 (* NB: useless? *)
-Definition RN_approx_integral_neq0 : RN_approx_integral !=set0.
+(*Definition RN_approx_integral_neq0 : RN_approx_integral !=set0.
 Proof.
 have [g [g0 g1 g2]] := RN_approx_neq0.
 by exists (\int[mu]_x g x)%E, g.
-Qed.
+Qed.*)
 
-(* NB: used in this section only? *)
-Definition RN_approx_integral_ub (nufinite : (nu setT < +oo)%E) :
+Let RN_approx_integral_ub : finite_measure nu ->
   exists M, forall x, x \in RN_approx_integral -> (x <= M%:E)%E.
 Proof.
-exists (fine (nu setT)) => x.
+move=> nufin; exists (fine (nu setT)) => x.
 rewrite inE => -[g [g0 g1 g2] <-{x}].
-rewrite fineK; last first.
-  by rewrite ge0_fin_numE// measure_ge0.
+rewrite fineK; last by rewrite ge0_fin_numE// measure_ge0.
 by rewrite (le_trans (g2 setT _))// inE.
 Qed.
 
@@ -466,118 +441,95 @@ Definition sup_RN_approx_integral := ereal_sup RN_approx_integral.
 Definition sup_RN_approx_integral_ge0 : 0 <= sup_RN_approx_integral.
 Proof.
 rewrite -(ereal_sup1 0).
-apply (@le_ereal_sup _ [set 0] RN_approx_integral).
+apply: (@le_ereal_sup _ [set 0] RN_approx_integral).
 rewrite sub1set inE.
-exists (fun x => 0%E); last first.
-  exact: integral0.
-split => //.
-  exact : integrable0.
-move=> E.
-by rewrite integral0 inE => mE; rewrite measure_ge0.
+exists (fun=> 0); last exact: integral0.
+split => //; first exact : integrable0.
+by move=> E; rewrite integral0 => mE; rewrite measure_ge0.
 Qed.
 
-Definition sup_RN_approx_integral_lty (nufinite : (nu setT < +oo)%E) :
+Definition sup_RN_approx_integral_lty : finite_measure nu ->
   sup_RN_approx_integral < +oo.
 Proof.
-rewrite /sup_RN_approx_integral.
-move: (RN_approx_integral_ub nufinite).
-move=> [m] IGbound'.
-apply : (@le_lt_trans _ _ m%:E); last by rewrite ltey.
-apply ub_ereal_sup.
-move=> x IGx.
-apply IGbound'.
-by rewrite inE.
+move=> nufin; rewrite /sup_RN_approx_integral.
+have [m hm] := RN_approx_integral_ub nufin.
+rewrite (@le_lt_trans _ _ m%:E)// ?ltey// ub_ereal_sup// => x IGx.
+by apply: hm; rewrite inE.
 Qed.
 
-Definition sup_RN_approx_integral_fin_num (nufinite : (nu setT < +oo)%E) :
+Definition sup_RN_approx_integral_fin_num : finite_measure nu ->
   sup_RN_approx_integral \is a fin_num.
 Proof.
-rewrite ge0_fin_numE//.
-exact: sup_RN_approx_integral_lty.
+move=> nufin.
+rewrite ge0_fin_numE//; first exact: sup_RN_approx_integral_lty.
 exact: sup_RN_approx_integral_ge0.
 Qed.
 
-Lemma RN_approx_sequence_ex (nufinite : (nu setT < +oo)%E) : { g : (X -> \bar R)^nat |
-  forall m, g m \in RN_approx /\
-    \int[mu]_x (g m x) > sup_RN_approx_integral - m.+1%:R^-1%:E }.
+Lemma RN_approx_sequence_ex : finite_measure nu ->
+  { g : (X -> \bar R)^nat &
+    forall m, g m \in RN_approx /\
+      \int[mu]_x (g m x) > sup_RN_approx_integral - m.+1%:R^-1%:E }.
 Proof.
-pose P (m: nat) (g : X -> \bar R) := g \in RN_approx /\
+move=> nufin.
+pose P m (g : X -> \bar R) := g \in RN_approx /\
   sup_RN_approx_integral - (m.+1%:R^-1)%:E < \int[mu]_x g x.
 suff : { g : (X -> \bar R) ^nat & forall m : nat, P m (g m)}.
   by case => g Hg; exists g.
-apply choice => m.
+apply: (@choice _ _ P) => m.
 rewrite /P.
-have /(@ub_ereal_sup_adherent _ RN_approx_integral) : (0 < m.+1%:R^-1 :> R)%R by rewrite invr_gt0.
-move/(_ (sup_RN_approx_integral_fin_num nufinite)) => [_ [h Gh <-]].
+have /(@ub_ereal_sup_adherent _ RN_approx_integral) : (0 < m.+1%:R^-1 :> R)%R.
+  by rewrite invr_gt0.
+move/(_ (sup_RN_approx_integral_fin_num nufin)) => [_ [h Gh <-]].
 by exists h; rewrite inE; split => //; rewrite -/M in q.
 Qed.
 
-Definition RN_approx_sequence (nufinite : (nu setT < +oo)%E) : (X -> \bar R)^nat :=
-  proj1_sig (RN_approx_sequence_ex nufinite).
+Definition RN_approx_sequence (nufin : finite_measure nu) : (X -> \bar R)^nat :=
+  projT1 (RN_approx_sequence_ex nufin).
 
-Lemma RN_approx_sequence_prop (nufinite : (nu setT < +oo)%E) : forall m,
-  RN_approx_sequence nufinite m \in RN_approx /\
-  \int[mu]_x (RN_approx_sequence nufinite m x) > sup_RN_approx_integral - m.+1%:R^-1%:E.
-Proof. exact: (proj2_sig (RN_approx_sequence_ex nufinite)). Qed.
+Lemma RN_approx_sequence_prop (nufin : finite_measure nu) : forall m,
+  RN_approx_sequence nufin m \in RN_approx /\
+    \int[mu]_x (RN_approx_sequence nufin m x) >
+    sup_RN_approx_integral - m.+1%:R^-1%:E.
+Proof. exact: (projT2 (RN_approx_sequence_ex nufin)). Qed.
 
-Lemma RN_approx_sequence_ge0 (nufinite : (nu setT < +oo)%E) x n :
-  0 <= RN_approx_sequence nufinite n x.
+Lemma RN_approx_sequence_ge0 (nufin : finite_measure nu) x n :
+  0 <= RN_approx_sequence nufin n x.
 Proof.
-by have [+ _]:= RN_approx_sequence_prop nufinite n; rewrite inE /= => -[].
+by have [+ _]:= RN_approx_sequence_prop nufin n; rewrite inE /= => -[].
 Qed.
 
-Lemma measurable_RN_approx_sequence (nufinite : (nu setT < +oo)%E) n :
-  measurable_fun setT (RN_approx_sequence nufinite n).
+Lemma measurable_RN_approx_sequence (nufin : finite_measure nu) n :
+  measurable_fun setT (RN_approx_sequence nufin n).
 Proof.
-have := RN_approx_sequence_prop nufinite n.
+have := RN_approx_sequence_prop nufin n.
 by rewrite inE /= => -[[_ []]].
 Qed.
 
-Definition max_RN_approx_sequence (nufinite : (nu setT < +oo)%E) (m : nat) (x : X) :=
-  \big[maxe/-oo]_(j < m.+1) RN_approx_sequence nufinite j x.
+Definition max_RN_approx_sequence (nufin : finite_measure nu) m (x : X) :=
+  \big[maxe/-oo]_(j < m.+1) RN_approx_sequence nufin j x.
 
-Lemma measurable_max_RN_approx_sequence (nufinite : (nu setT < +oo)%E) n :
-  measurable_fun setT (max_RN_approx_sequence nufinite n).
+Lemma measurable_max_RN_approx_sequence (nufin : finite_measure nu) n :
+  measurable_fun setT (max_RN_approx_sequence nufin n).
 Proof.
-induction n.
+elim: n => [|n ih].
   rewrite /max_RN_approx_sequence.
   under eq_fun do rewrite big_ord_recr/=; rewrite -/(measurable_fun _ _).
   under eq_fun do rewrite big_ord0; rewrite -/(measurable_fun _ _).
   under eq_fun do rewrite maxNye; rewrite -/(measurable_fun _ _).
-  have [+ _] := RN_approx_sequence_prop nufinite 0%N.
+  have [+ _] := RN_approx_sequence_prop nufin 0%N.
   rewrite inE /= => -[]// _ _ _.
   exact: measurable_RN_approx_sequence.
-rewrite /max_RN_approx_sequence.
-move=> m.
+rewrite /max_RN_approx_sequence => m.
 under eq_fun do rewrite big_ord_recr.
 by apply : emeasurable_fun_max => //; exact: measurable_RN_approx_sequence.
 Qed.
 
 End RN_approx.
 
-(* TODO: rename? really useful? *)
-Lemma muE0oo d (X : measurableType d) (R : realType)
-  (mu : {measure set X -> \bar R}) (mufinite : (mu setT < +oo)%E)
-  : forall E0 : set X, d.-measurable E0 ->
-  mu E0 < +oo.
-Proof.
-move=> E0 mE0.
-by rewrite (le_lt_trans _ mufinite)// le_measure// inE.
-Qed.
-
-(* TODO: PR? not already there? *)
-Lemma sumeN (R : realType) I r (P : pred I) (f : I -> \bar R) :
-  (forall i, P i -> f i \is a fin_num) ->
-  (\sum_(i <- r | P i) - f i = - (\sum_(i <- r | P i) f i)).
-Proof.
-move=> h; elim/big_rec2 : _ => //; first by rewrite oppe0.
-by move=> i y1 _ Pi ->; rewrite [in RHS]addeC oppeD ?h// addeC.
-Qed.
-
 Section Radon_Nikodym_finite_ge0.
 Variables (d : _) (X : measurableType d) (R : realType).
 Variables (mu nu : {measure set X -> \bar R}).
-Hypotheses (mufinite : (mu setT < +oo)%E) (nufinite : (nu setT < +oo)%E).
+Hypotheses (mufinite : finite_measure mu) (nufinite : finite_measure nu).
 
 (* maybe define G : set R insted of set \bar R
 pose G' := [set g : X -> \bar R |
@@ -621,9 +573,9 @@ Let limF := fun x => lim (F^~ x).
 
 Let mlimF : measurable_fun setT limF.
 Proof.
-rewrite (_ : limF = fun x => elim_sup (F ^~ x)).
+rewrite (_ : limF = fun x => lim_esup (F ^~ x)).
   by apply: measurable_fun_lim_esup => // n; exact: measurable_max_RN_approx_sequence.
-by apply/funext => n; rewrite /limF is_cvg_elim_supE.
+by apply/funext => n; rewrite /limF is_cvg_lim_esupE.
 Qed.
 
 Let limF_ge0 x : 0 <= limF x.
@@ -690,7 +642,8 @@ have j0max k : (k < j0)%N -> g k x < g j0 x.
   have := h k; rewrite -(eqP j'j) -gkj' eqxx andbT (ltn_trans kj' j'm).
   by move=> /(_ erefl); rewrite leqNgt kj'.
 exists j0 => //; split.
-  rewrite /F /max_RN_approx_sequence (bigmax_eq_arg _ ord0)//; last by move=> ? _; rewrite leNye.
+  rewrite /F /max_RN_approx_sequence (bigmax_eq_arg _ ord0)//; last first.
+    by move=> ? _; rewrite leNye.
   by rewrite /j0; case: ex_minnP => //= j' /andP[j'm /eqP -> h].
 by move=> k kj; exact: j0max.
 Qed.
@@ -728,7 +681,7 @@ apply: lee_sum => //= i _.
 have [+ _] := RN_approx_sequence_prop mu nufinite i.
 rewrite inE /G/= => -[_ _].
 apply.
-by rewrite inE; exact: measurableI.
+exact: measurableI.
 Qed.
 
 Let FminG m : F m \in G.
@@ -738,7 +691,7 @@ rewrite inE /G/=; split => //.
   under eq_integral.
     by move=> x _; rewrite gee0_abs; last exact: F_ge0; over.
   by have /le_lt_trans := Fleqnu m measurableT; apply.
-- by move=> E0; rewrite inE; exact: Fleqnu.
+- by move=> E0; exact: Fleqnu.
 Qed.
 
 Let H3 m :  M - (m.+1%:R^-1)%:E < \int[mu]_x g m x /\
@@ -825,21 +778,21 @@ have ? : nu E0 \is a fin_num.
     by apply: le_measure => //; rewrite ?inE.
   by apply: measure_ge0.
 have e_gt0 : (0 < e)%R.
-  rewrite /e divr_gt0//; last by rewrite fine_gt0// muE0oo// andbT.
+  rewrite /e divr_gt0//; last by rewrite fine_gt0// fmuy// andbT.
   by rewrite divr_gt0// subr_gt0// fine_lt.
 exists (PosNum e_gt0); rewrite ge0_integralD//; last 2 first.
   exact: measurable_funS mlimF.
   exact: measurable_fun_cst.
 rewrite integral_cst// -lte_subr_addr//; last first.
   rewrite fin_numM// ?ge0_fin_numE//.
-    by rewrite muE0oo.
+    by rewrite fmuy.
   by apply: measure_ge0.
 rewrite -(@fineK _ (mu E0)); last first.
   rewrite ge0_fin_numE.
-    by rewrite muE0oo.
+    by rewrite fmuy.
   by rewrite measure_ge0.
 rewrite -EFinM -mulrA mulVr ?mulr1; last first.
-  by rewrite unitfE gt_eqF// fine_gt0// muE0_gt0// muE0oo.
+  by rewrite unitfE gt_eqF// fine_gt0// muE0_gt0// fmuy.
 rewrite lte_subr_addl// addeC -lte_subr_addl//; last first.
 rewrite -(@fineK _ (nu E0))//.
 rewrite -[X in _ - X](@fineK _)//.
@@ -1014,8 +967,10 @@ exists limF; split => //.
 move=> E0 /[!inE] mE0.
 apply/eqP; rewrite eq_le limFleqnu//.
 rewrite andbT leNgt; apply/negP => abs.
-pose sigma : {smeasure set X -> \bar R} := [the {smeasure set X -> \bar R} of sigma' mE0 abs].
-have sigmaE : forall F, sigma F = nu F - \int[mu]_(x in F) (limF x + (eps mE0 abs)%:num%:E).
+pose sigma : {smeasure set X -> \bar R} :=
+  [the {smeasure set X -> \bar R} of sigma' mE0 abs].
+have sigmaE : forall F,
+    sigma F = nu F - \int[mu]_(x in F) (limF x + (eps mE0 abs)%:num%:E).
   by [].
 move : (Hahn_decomposition sigma) => [P [N [[mP posP] [mN negN] PNX PN0]]].
 rewrite !inE in (*mE0*) mP mN.
@@ -1045,11 +1000,10 @@ have muE0P0: mu E0P > 0.
   by apply le_measure => //; rewrite inE.
 pose h x := if (x \in E0P) then (limF x + ((eps mE0 abs)%:num)%:E) else (limF x).
 have mh : measurable_fun setT h.
-  apply: measurable_fun_if => //.
+  apply: (@measurable_fun_if _ _ _ _ _ _ _ _ (mem E0P))=> //.
       apply: (@emeasurable_fun_bool _ _ _ _ true).
-      by rewrite in_mem_mem_true.
-    apply: measurable_funTS.
-    apply: emeasurable_funD => //.
+      by rewrite preimage_mem_true.
+    apply: measurable_funTS; apply: emeasurable_funD => //.
     exact: measurable_fun_cst.
   by apply:measurable_funTS.
 have hge0 x: 0 <= h x.
@@ -1131,20 +1085,15 @@ have inthgtM : \int[mu]_(x in setT) h x > M.
   rewrite subee //.
     by apply: mule_gt0.
   by rewrite sup_RN_approx_integral_fin_num.
-have hinG: G h.
-  rewrite /G //=.
-  split => //=; last first.
-    move=> S.
-    rewrite inE.
-    by apply: hnu.
-  split => //.
-  under eq_integral do rewrite gee0_abs //.
-  by apply: (le_lt_trans (hnu setT measurableT)).
-have : (\int[mu]_x h x <= M).
+have Gh : G h.
+  split=> //; split => //.
+  under eq_integral do rewrite gee0_abs//.
+  exact: (le_lt_trans (hnu _ measurableT)).
+have : \int[mu]_x h x <= M.
   rewrite -(ereal_sup1 (\int[mu]_x h x)).
   apply (@le_ereal_sup _ [set \int[mu]_x h x] IG).
   rewrite sub1set inE.
-  exists h => //.
+  by exists h => //.
 rewrite leNgt.
 by rewrite inthgtM.
 Qed.
@@ -1153,7 +1102,7 @@ End Radon_Nikodym_finite_ge0.
 
 Theorem Radon_Nikodym_sigma_finite_ge0 d (X : measurableType d) (R : realType)
     (mu : {measure set X -> \bar R}) (nu : {measure set X -> \bar R})
-    (nufinite : (nu setT < +oo)%E)
+    (nufinite : finite_measure nu)
     (sigma_finite_mu : sigma_finite setT mu) :
   nu `<< mu -> exists f : X -> \bar R,
   integrable mu setT f /\ forall E, E \in measurable -> nu E = integral mu E f.
@@ -1183,14 +1132,11 @@ have TE : \bigcup_i E i = setT.
   by rewrite [RHS]seqDU_bigcup_eq.
 pose mu_ j := mrestr mu (mE j): {measure set X -> \bar R}.
 pose nu_ j := mrestr nu (mE j): {measure set X -> \bar R}.
-have mu_finite : forall n, mu_ n setT < +oo.
-  move=> j.
-  by rewrite /mu_ /= /mrestr setTI.
-have nu_finite : forall n, nu_ n setT < +oo.
-  move=> j.
-  rewrite /nu_ /= /mrestr setTI.
-  apply: (@le_lt_trans _ _ (nu setT)) => //.
-  by apply:le_measure => //; rewrite inE.
+have mu_finite n : finite_measure (mu_ n).
+  by rewrite /finite_measure /mu_/= /mrestr setTI Efin.
+have nu_finite n : finite_measure (nu_ n).
+  rewrite /finite_measure /nu_ /= /mrestr setTI (@le_lt_trans _ _ (nu setT))//.
+  by apply: le_measure => //; rewrite inE.
 move=> nudommu.
 have nu_dommu_ j : nu_ j `<< mu_ j.
   move=> S mS mu_jS0.
@@ -1208,13 +1154,13 @@ have f_ge0 : forall j x, 0 <= f_ j x.
 have mf_ : forall j, measurable_fun setT (f_ j).
   move=> j.
   rewrite /f_.
-  apply: measurable_fun_if => //.
+  apply: (@measurable_fun_if _ _ _ _ _ _ _ _ (mem (E j))) => //.
       apply: (@emeasurable_fun_bool _ _ _ _ true).
-      by rewrite in_mem_mem_true.
-    rewrite in_mem_mem_true.
+      by rewrite preimage_mem_true.
+    rewrite preimage_mem_true.
     apply: (measurable_funS measurableT) => //.
     by apply (int_f_tildeT j).
-  rewrite in_mem_mem_false.
+  rewrite preimage_mem_false.
   apply: (measurable_funS measurableT) => //.
   exact: measurable_fun_cst.
 have int_f_T : forall j, integrable mu setT (f_ j).
@@ -1518,26 +1464,15 @@ Qed.
 Definition nu_p : {measure set X -> \bar R} := measure_of_smeasure _ positive_nu_p'.
 Definition nu_n : {measure set X -> \bar R} := measure_of_smeasure _ positive_nu_n'.
 
-Lemma nu_pfinite : nu_p setT < +oo.
+Lemma nu_pfinite : finite_measure nu_p.
 Proof.
-by rewrite /nu_p/= /smrestr setTI fin_num_ltey// isfinite.
+by rewrite /finite_measure /nu_p/= /smrestr setTI fin_num_ltey// isfinite.
 Qed.
 
-Lemma nu_nfinite : nu_n setT < +oo.
+Lemma nu_nfinite : finite_measure nu_n.
 Proof.
-rewrite /nu_n/= /smscale/= EFinN mulN1e /smrestr setTI fin_num_ltey//.
-by rewrite fin_numN isfinite.
-Qed.
-
-Lemma nu_pfinite : nu_p setT < +oo.
-Proof.
-by rewrite /nu_p/= /smrestr setTI fin_num_ltey// isfinite.
-Qed.
-
-Lemma nu_nfinite : nu_n setT < +oo.
-Proof.
-rewrite /nu_n/= /smscale/= EFinN mulN1e /smrestr setTI fin_num_ltey//.
-by rewrite fin_numN isfinite.
+rewrite /finite_measure /nu_n/= /smscale/= EFinN mulN1e /smrestr setTI.
+by rewrite fin_num_ltey// fin_numN isfinite.
 Qed.
 
 (* Jordan_measure_decomposition のargumentsがnuだけになるようにしたい*)
@@ -1710,8 +1645,8 @@ rewrite inE in mN.
 pose nu_p := nu_p HahnPN.
 pose nu_n := nu_n HahnPN.
 (* nu_p an_d nu_n are finite measures *)
-have nu_pfinite : nu_p setT < +oo by exact: nu_pfinite.
-have nu_nfinite : nu_n setT < +oo by exact: nu_nfinite.
+have nu_pfinite := nu_pfinite HahnPN.
+have nu_nfinite := nu_nfinite HahnPN.
 have nu_pdommu : nu_p `<< mu.
   move=> A mA muA0.
   have := nudommu A mA muA0.
