@@ -794,7 +794,7 @@ Proof.
 by apply: ereal_nondecreasing_is_cvg; exact: nd_F.
 Qed.
 
-Let limF := fun x => lim (F^~ x).
+Let limF := fun x => lim (F ^~ x).
 
 Let mlimF : measurable_fun setT limF.
 Proof.
@@ -808,18 +808,20 @@ Proof.
 by apply: __deprecated__ereal_lim_ge => //; exact: nearW.
 Qed.
 
-Let int_limFE E0 : measurable E0 ->
-    \int[mu]_(x in E0) limF x = lim (fun n : nat => \int[mu]_(x in E0) F n x).
+Let int_limFE A : measurable A ->
+    \int[mu]_(x in A) limF x = lim (fun n => \int[mu]_(x in A) F n x).
 Proof.
-move=> mE0; rewrite monotone_convergence//.
-by move=> n; apply: measurable_funS (measurable_max_RN_approx_sequence mu nufinite n).
+move=> mA; rewrite monotone_convergence// => n.
+by apply: measurable_funS (measurable_max_RN_approx_sequence mu nufinite n).
 Qed.
 
-Let is_cvg_int_F E0 : measurable E0 -> cvg (fun n => \int[mu]_(x in E0) F n x).
+Let is_cvg_int_F A : measurable A -> cvg (fun n => \int[mu]_(x in A) F n x).
 Proof.
-move=> mE0; apply: ereal_nondecreasing_is_cvg => a b ab.
-by apply ge0_le_integral => //; [exact: measurable_funS (measurable_max_RN_approx_sequence mu nufinite a) |
-  exact: measurable_funS (measurable_max_RN_approx_sequence mu nufinite b) | by move=> x _; exact: nd_F].
+move=> mA; apply: ereal_nondecreasing_is_cvg => a b ab.
+apply ge0_le_integral => //.
+- exact: measurable_funS (measurable_max_RN_approx_sequence mu nufinite a).
+- exact: measurable_funS (measurable_max_RN_approx_sequence mu nufinite b).
+- by move=> x _; exact: nd_F.
 Qed.
 
 Let E m j := [set x | F m x = g j x /\ forall k, (k < j)%N -> g j x > g k x].
@@ -883,21 +885,21 @@ rewrite [T in measurable T](_ : _ = \bigcap_(k in `I_j) [set x | g k x < g j x])
 by apply/seteqP; split.
 Qed.
 
-Let Fleqnu m E0 (mE : measurable E0) : \int[mu]_(x in E0) F m x <= nu E0.
+Let Fleqnu m A (mA : measurable A) : \int[mu]_(x in A) F m x <= nu A.
 Proof.
-have -> : \int[mu]_(x in E0) F m x = \sum_(j < m.+1) \int[mu]_(x in (E0 `&` (E m j))) F m x.
-  rewrite -[in LHS](setIT E0) (XE m) big_distrr/=.
-  rewrite (@ge0_integral_bigsetU _ _ _ _ (fun n => E0 `&` E m n))//.
+have -> : \int[mu]_(x in A) F m x = \sum_(j < m.+1) \int[mu]_(x in (A `&` E m j)) F m x.
+  rewrite -[in LHS](setIT A) (XE m) big_distrr/=.
+  rewrite (@ge0_integral_bigsetU _ _ _ _ (fun n => A `&` E m n))//.
   - by move=> n; exact: measurableI.
   - by apply: (@measurable_funS _ _ _ _ setT) => //; exact: measurable_max_RN_approx_sequence.
   apply: trivIset_setIl.
   by apply: (@sub_trivIset _ _ _ setT (fun i => E m i)) => //.
-have -> : \sum_(j < m.+1) (\int[mu]_(x in (E0 `&` (E m j))) F m x) =
-          \sum_(j < m.+1) (\int[mu]_(x in (E0 `&` (E m j))) g j x).
+have -> : \sum_(j < m.+1) (\int[mu]_(x in (A `&` (E m j))) F m x) =
+          \sum_(j < m.+1) (\int[mu]_(x in (A `&` (E m j))) g j x).
   apply eq_bigr => i _; apply eq_integral => x; rewrite inE => -[?] [] Fmgi h.
   by apply/eqP; rewrite eq_le; rewrite Fmgi lexx.
-have <- : \sum_(j < m.+1) (nu (E0 `&` (E m j))) = nu E0.
-  rewrite -(@measure_semi_additive _ _ _ nu (fun i => E0 `&` E m i))//.
+have <- : \sum_(j < m.+1) (nu (A `&` E m j)) = nu A.
+  rewrite -(@measure_semi_additive _ _ _ nu (fun i => A `&` E m i))//.
   - by rewrite -big_distrr/= -XE// setIT.
   - by move=> k; exact: measurableI.
   - exact: trivIset_setIl.
@@ -916,11 +918,11 @@ rewrite inE /G/=; split => //.
   under eq_integral.
     by move=> x _; rewrite gee0_abs; last exact: F_ge0; over.
   by have /le_lt_trans := Fleqnu m measurableT; apply.
-- by move=> E0; exact: Fleqnu.
+- by move=> A; exact: Fleqnu.
 Qed.
 
-Let H3 m :  M - (m.+1%:R^-1)%:E < \int[mu]_x g m x /\
-             \int[mu]_x g m x <= \int[mu]_x F m x <= M.
+Let M_g_F m : M - m.+1%:R^-1%:E < \int[mu]_x g m x /\
+              \int[mu]_x g m x <= \int[mu]_x F m x <= M.
 Proof.
 split; first by have [] := RN_approx_sequence_prop mu nufinite m.
 apply/andP; split.
@@ -939,12 +941,13 @@ rewrite (@le_lt_trans _ _ M)//; last first.
 under eq_integral.
   by move=> x _; rewrite gee0_abs; last exact: limF_ge0; over.
 rewrite int_limFE// __deprecated__ereal_lim_le//; first exact: is_cvg_int_F.
-by apply: nearW => n; have [_ /andP[_ ]] := H3 n.
+by apply: nearW => n; have [_ /andP[_ ]] := M_g_F n.
 Qed.
 
-Let limFleqnu E0 : measurable E0 -> \int[mu]_(x in E0) limF x <= nu E0.
+Let limFleqnu A : measurable A -> \int[mu]_(x in A) limF x <= nu A.
 Proof.
-move=> mE0; rewrite int_limFE// __deprecated__ereal_lim_le //; first exact: is_cvg_int_F.
+move=> mA; rewrite int_limFE// __deprecated__ereal_lim_le //.
+   exact: is_cvg_int_F.
 by apply: nearW => n; exact: Fleqnu.
 Qed.
 
@@ -952,7 +955,7 @@ Let limFXeqM : \int[mu]_x limF x = M.
 Proof.
 apply/eqP; rewrite eq_le; apply/andP; split.
   rewrite int_limFE// __deprecated__ereal_lim_le //; first exact: is_cvg_int_F.
-  by apply: nearW => n; have [_ /andP[_]] := H3 n.
+  by apply: nearW => n; have [_ /andP[_]] := M_g_F n.
 rewrite int_limFE//.
 have Htmp : (fun m => M - (m.+1%:R^-1)%:E) --> M.
   rewrite -[X in _ --> X]sube0.
@@ -972,16 +975,16 @@ have : lim (fun m => M - (m.+1%:R^-1)%:E) <= lim (fun m => \int[mu]_x F m x).
   - by apply/cvg_ex; exists M.
   - exact: is_cvg_int_F.
   - apply: nearW => m.
-    by have [/[swap] /andP[? _] /ltW/le_trans] := H3 m; exact.
+    by have [/[swap] /andP[? _] /ltW/le_trans] := M_g_F m; exact.
 by apply: le_trans; move/cvg_lim : Htmp => ->.
 Qed.
 
-Lemma eps_construction : forall E0 : set X, d.-measurable E0 ->
-  \int[mu]_(x in E0) limF x < nu E0 ->
-  { eps : {posnum R} | \int[mu]_(x in E0) (limF x + eps%:num%:E) < nu E0 }.
+Lemma eps_construction A : d.-measurable A ->
+  \int[mu]_(x in A) limF x < nu A ->
+  { eps : {posnum R} | \int[mu]_(x in A) (limF x + eps%:num%:E) < nu A }.
 Proof.
-move=> E0 mE0 abs.
-have [muE0_eq0|] := eqVneq (mu E0) 0.
+move=> mA abs.
+have [muA0|] := eqVneq (mu A) 0.
   exists (PosNum ltr01).
   under eq_integral.
     move=> x _.
@@ -992,13 +995,13 @@ have [muE0_eq0|] := eqVneq (mu E0) 0.
     by rewrite (le_lt_trans _ abs)// integral_ge0//.
   apply: emeasurable_funD => //.
   exact: measurable_fun_cst.
-rewrite neq_lt ltNge measure_ge0//= => muE0_gt0.
-pose mid := ((fine (nu E0) - fine (\int[mu]_(x in E0) limF x)) / 2)%R.
-pose e := (mid / fine (mu E0))%R.
-have ? : \int[mu]_(x in E0) limF x \is a fin_num.
+rewrite neq_lt ltNge measure_ge0//= => muA_gt0.
+pose mid := ((fine (nu A) - fine (\int[mu]_(x in A) limF x)) / 2)%R.
+pose e := (mid / fine (mu A))%R.
+have ? : \int[mu]_(x in A) limF x \is a fin_num.
   rewrite ge0_fin_numE// ?isfinite// ?(lt_le_trans abs)// ?leey//.
   exact: integral_ge0.
-have ? : nu E0 \is a fin_num.
+have ? : nu A \is a fin_num.
   rewrite ge0_fin_numE//.
     rewrite (le_lt_trans _ nufinite)//.
     by apply: le_measure => //; rewrite ?inE.
@@ -1013,32 +1016,32 @@ rewrite integral_cst// -lte_subr_addr//; last first.
   rewrite fin_numM// ?ge0_fin_numE//.
     by rewrite fmuy.
   by apply: measure_ge0.
-rewrite -(@fineK _ (mu E0)); last first.
+rewrite -(@fineK _ (mu A)); last first.
   rewrite ge0_fin_numE.
     by rewrite fmuy.
   by rewrite measure_ge0.
 rewrite -EFinM -mulrA mulVr ?mulr1; last first.
-  by rewrite unitfE gt_eqF// fine_gt0// muE0_gt0// fmuy.
+  by rewrite unitfE gt_eqF// fine_gt0// muA_gt0// fmuy.
 rewrite lte_subr_addl// addeC -lte_subr_addl//; last first.
-rewrite -(@fineK _ (nu E0))//.
+rewrite -(@fineK _ (nu A))//.
 rewrite -[X in _ - X](@fineK _)//.
 rewrite -EFinB lte_fin /mid ltr_pdivr_mulr// ltr_pmulr// ?ltr1n//.
 by rewrite subr_gt0 fine_lt.
 Qed.
 
-Let eps := fun (E0 : set X) (muE0 : d.-measurable E0)
-  (abs : \int[mu]_(x in E0) limF x < nu E0) => proj1_sig (eps_construction muE0 abs) : {posnum R}.
+Let eps := fun A (muA : d.-measurable A)
+  (abs : \int[mu]_(x in A) limF x < nu A) => proj1_sig (eps_construction muA abs) : {posnum R}.
 
-Let Heps := fun (E0 : set X) (muE0 : d.-measurable E0)
-  (abs : \int[mu]_(x in E0) limF x < nu E0) => proj2_sig (eps_construction muE0 abs).
+Let Heps := fun (A : set X) (muA : d.-measurable A)
+  (abs : \int[mu]_(x in A) limF x < nu A) => proj2_sig (eps_construction muA abs).
 
-Let sigma' (E0 : set X) (muE0 : d.-measurable E0)
-    (abs : \int[mu]_(x in E0) limF x < nu E0) (F : set X) :=
-  nu F - \int[mu]_(x in F) (limF x + (eps muE0 abs)%:num%:E)%E.
+Let sigma' A (muA : d.-measurable A)
+    (abs : \int[mu]_(x in A) limF x < nu A) :=
+  fun F => nu F - \int[mu]_(x in F) (limF x + (eps muA abs)%:num%:E).
 
-Let htmp (E0 : set X) (muE0 : d.-measurable E0)
-    (abs : \int[mu]_(x in E0) limF x < nu E0) : forall U, measurable U ->
-  \int[mu]_(x in U) (limF x + ((eps muE0 abs)%:num)%:E) \is a fin_num.
+Let fin_num_int_limF_eps A (muA : d.-measurable A)
+    (abs : \int[mu]_(x in A) limF x < nu A) : forall U, measurable U ->
+  \int[mu]_(x in U) (limF x + (eps muA abs)%:num%:E) \is a fin_num.
 Proof.
 move=> u mU.
 rewrite ge0_integralD//; last 2 first.
@@ -1053,53 +1056,53 @@ under [in leRHS]eq_integral.
 exact: subset_integral.
 Qed.
 
-Let sigma'_isfinite (E0 : set X) (muE0 : d.-measurable E0)
-    (abs : \int[mu]_(x in E0) limF x < nu E0) :
-  forall U, measurable U -> (sigma' muE0 abs) U \is a fin_num.
+Let sigma'_isfinite A (muA : d.-measurable A)
+    (abs : \int[mu]_(x in A) limF x < nu A) :
+  forall U, measurable U -> sigma' muA abs U \is a fin_num.
 Proof.
 move=> U mU.
 rewrite /sigma' fin_numB ge0_fin_numE// ?measure_ge0 // (le_lt_trans _ nufinite)/=; last first.
   by apply: le_measure => //; rewrite inE.
-exact: htmp.
+exact: fin_num_int_limF_eps.
 Qed.
 
-HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
-    (abs : \int[mu]_(x in E0) limF x < nu E0) :=
-  @isSignedMeasure0.Build _ _ _ (sigma' muE0 abs) (sigma'_isfinite muE0 abs).
+HB.instance Definition _ (A : set X) (muA : d.-measurable A)
+    (abs : \int[mu]_(x in A) limF x < nu A) :=
+  @isSignedMeasure0.Build _ _ _ (sigma' muA abs) (sigma'_isfinite muA abs).
 
-Let sigma'_semi_additive (E0 : set X) (muE0 : d.-measurable E0)
-    (abs : \int[mu]_(x in E0) limF x < nu E0) :
-  semi_additive (sigma' muE0 abs).
+Let sigma'_semi_additive (A : set X) (muA : d.-measurable A)
+    (abs : \int[mu]_(x in A) limF x < nu A) :
+  semi_additive (sigma' muA abs).
 Proof.
 move=> F' n mF' tF' mUF'.
 rewrite /sigma' measure_semi_additive// big_split/= sumeN; last first.
-  by move=> i _; rewrite htmp.
+  by move=> i _; rewrite fin_num_int_limF_eps.
 congr (_ - _).
 rewrite ge0_integral_bigsetU//.
 - rewrite -bigcup_mkord.
-  have : measurable_fun setT (fun x => limF x + ((eps muE0 abs)%:num)%:E).
+  have : measurable_fun setT (fun x => limF x + (eps muA abs)%:num%:E).
     by apply: emeasurable_funD => //; exact/EFin_measurable_fun/measurable_fun_cst.
   exact: measurable_funS.
 - by move=> x h; rewrite adde_ge0.
 - exact: sub_trivIset tF'.
 Qed.
 
-HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
-    (abs : \int[mu]_(x in E0) limF x < nu E0) :=
-  @isAdditiveSignedMeasure.Build _ _ _ (sigma' muE0 abs) (sigma'_semi_additive muE0 abs).
+HB.instance Definition _ (A : set X) (muA : d.-measurable A)
+    (abs : \int[mu]_(x in A) limF x < nu A) :=
+  @isAdditiveSignedMeasure.Build _ _ _ (sigma' muA abs) (sigma'_semi_additive muA abs).
 
-Let sigma'_semi_sigma_additive (E0 : set X) (muE0 : d.-measurable E0)
-   (abs : \int[mu]_(x in E0) limF x < nu E0) :
-  semi_sigma_additive (sigma' muE0 abs).
+Let sigma'_semi_sigma_additive A (muA : d.-measurable A)
+   (abs : \int[mu]_(x in A) limF x < nu A) :
+  semi_sigma_additive (sigma' muA abs).
 Proof.
 move=> F' mF' tF' mUF'.
 rewrite [X in X --> _](_ : _ = (fun n =>
   \sum_(0 <= i < n) nu (F' i) -
   \sum_(0 <= i < n) \int[mu]_(x in F' i)
-    (limF x + (eps muE0 abs)%:num%:E))); last first.
+    (limF x + (eps muA abs)%:num%:E))); last first.
   apply/funext => n.
   rewrite big_split/= sumeN// => i _.
-  by rewrite htmp.
+  by rewrite fin_num_int_limF_eps.
 apply: cvgeB.
 - rewrite adde_defC fin_num_adde_def//.
   rewrite ge0_fin_numE// ?measure_ge0// (le_lt_trans _ nufinite)//.
@@ -1109,18 +1112,18 @@ apply: cvgeB.
 - exact: measure_semi_sigma_additive.
 - rewrite (ge0_integral_bigcup mF' _ _ tF').
   + have /cvg_ex[/= l hl] : cvg (fun x =>
-        \sum_(0 <= i < x) \int[mu]_(x0 in F' i) (limF x0 + (eps muE0 abs)%:num%:E)).
+        \sum_(0 <= i < x) \int[mu]_(y in F' i) (limF y + (eps muA abs)%:num%:E)).
       apply: is_cvg_ereal_nneg_natsum => n _.
       by apply: integral_ge0 => x _; rewrite adde_ge0.
     by rewrite (@cvg_lim _ _ _ _ _ _ l).
   + split.
-      suff: measurable_fun setT (fun x => limF x + (eps muE0 abs)%:num%:E).
+      suff: measurable_fun setT (fun x => limF x + (eps muA abs)%:num%:E).
         exact: measurable_funS.
       apply: emeasurable_funD => //.
       exact/EFin_measurable_fun/measurable_fun_cst.
     apply: (@le_lt_trans _ _
       (\int[mu]_(x in \bigcup_k F' k) `|limF x| +
-       \int[mu]_(x in \bigcup_k F' k)`|(eps muE0 abs)%:num%:E|)).
+       \int[mu]_(x in \bigcup_k F' k)`|(eps muA abs)%:num%:E|)).
       rewrite -(integralD mUF'); last 2 first.
         * apply: integrable_abse.
           split; first exact: measurable_funS mlimF.
@@ -1147,10 +1150,10 @@ apply: cvgeB.
   + by move=> x _; rewrite adde_ge0.
 Qed.
 
-HB.instance Definition _ (E0 : set X) (muE0 : d.-measurable E0)
-    (abs : \int[mu]_(x in E0) limF x < nu E0) :=
-  @isSignedMeasure.Build _ _ _ (sigma' muE0 abs)
-    (@sigma'_semi_sigma_additive _ muE0 abs).
+HB.instance Definition _ (A : set X) (muA : d.-measurable A)
+    (abs : \int[mu]_(x in A) limF x < nu A) :=
+  @isSignedMeasure.Build _ _ _ (sigma' muA abs)
+    (@sigma'_semi_sigma_additive _ muA abs).
 
 Theorem Radon_Nikodym_finite_ge0 :
   nu `<< mu -> exists f : X -> \bar R, [/\
