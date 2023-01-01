@@ -25,6 +25,12 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+Lemma lteNy {R : realDomainType} (x : \bar R) : (x < -oo = false)%E.
+Proof. by move: x => []. Qed.
+
+Lemma ltye {R : realDomainType} (x : \bar R) : (+oo < x = false)%E.
+Proof. by move: x => []. Qed.
+
 (* TODO: move to classical_sets? *)
 Section preimage_bool.
 Context d (T : measurableType d).
@@ -50,6 +56,82 @@ move=> PF; elim/big_rec2 : _ => //; first by rewrite mule0.
 by move=> i y1 y2 Pi <-; rewrite muleDr// adde_defC fin_num_adde_def// PF.
 Qed.
 
+Lemma set_neg_setC T (f : T -> bool) : [set x | ~~ f x] = ~` [set x | f x].
+Proof. by apply/seteqP; split => [x/= /negP//|x/= /negP]. Qed.
+
+Lemma set_eq_leq_lt d (X : porderType d) T (f g : T -> X) :
+  [set x | f x = g x] = [set x | (f x <= g x)%O] `\` [set x | (f x < g x)%O].
+Proof.
+apply/seteqP; split => [x/= ->|x []/=]; first by split => //; rewrite ltxx.
+by rewrite le_eqVlt => /orP[/eqP ->|].
+Qed.
+
+Lemma set_neq_lt d (X : orderType d) T (f g : T -> X) :
+  [set x | f x != g x ] = [set x | (f x > g x)%O] `|` [set x | (f x < g x)%O].
+Proof.
+apply/seteqP; split => [x/=|]; first by rewrite neq_lt => /orP; tauto.
+by move=> x/= /orP; rewrite -neq_lt eq_sym.
+Qed.
+
+Section set_lt.
+Context (R : realType) T (f g : T -> R).
+
+Let E j := [set x | f x - g x >= j.+1%:R^-1].
+
+Lemma set_lt_bigcup :
+  [set x | f x > g x] = \bigcup_j E j.
+Proof.
+apply/seteqP; split => [x/=|x [n _]]; last first.
+  by rewrite /E/= -subr_gt0; apply: lt_le_trans; rewrite invr_gt0.
+rewrite -subr_gt0 => fgx; exists `|floor (f x - g x)^-1%R|%N => //.
+rewrite /E/= -natr1 natr_absz.
+rewrite ger0_norm ?floor_ge0 ?invr_ge0; last exact/ltW.
+rewrite -[leRHS]invrK lef_pinv//.
+- by apply/ltW; rewrite lt_succ_floor.
+- by rewrite posrE// ltr_spaddr// ler0z floor_ge0 invr_ge0 ltW.
+- by rewrite posrE invr_gt0.
+Qed.
+
+End set_lt.
+
+Section eset_lt.
+Context (R : realType) T (f g : T -> \bar R).
+Local Open Scope ereal_scope.
+
+Let E j := [set x | f x - g x >= j.+1%:R^-1%:E].
+
+Lemma eset_lt_bigcup :
+  [set x | f x > g x] = \bigcup_j E j.
+Proof.
+apply/seteqP; split => [x/=|x [n _]]; last first.
+  rewrite /E/= -sube_gt0; apply: lt_le_trans.
+  by rewrite lte_fin invr_gt0.
+move Hgx : (g x) => gx.
+case: gx Hgx => [gx| |].
+  move Hfx : (f x) => fx.
+  case: fx Hfx => [fx| |].
+    move=> Hfx Hgx; rewrite lte_fin -subr_gt0 => fgx.
+    exists `|floor (fx - gx)^-1%R|%N => //.
+    rewrite /E/= -natr1 natr_absz.
+    rewrite ger0_norm ?floor_ge0 ?invr_ge0; last exact/ltW.
+    rewrite Hfx Hgx lee_fin.
+    rewrite -[leRHS]invrK lef_pinv//.
+    - by apply/ltW; rewrite lt_succ_floor.
+    - by rewrite posrE// ltr_spaddr// ler0z floor_ge0 invr_ge0 ltW.
+    - by rewrite posrE invr_gt0.
+  move=> fxoo Hgx _.
+  exists 0%N => //.
+  rewrite /E/=.
+  by rewrite fxoo Hgx// addye// leey.
+  by rewrite lteNy.
+  by rewrite ltye.
+move=> gxoo fxoo.
+exists 0%N => //.
+by rewrite /E/= gxoo addey// ?leey// -ltNye.
+Qed.
+
+End eset_lt.
+
 Section move_to_measure.
 Local Open Scope ereal_scope.
 
@@ -64,19 +146,20 @@ Lemma measurable_le_fun d (X : measurableType d) (R : realType) (f g : X -> \bar
    measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x <= g x].
 Proof.
 move=> mf mg; under eq_set do rewrite leNgt.
-rewrite [X in measurable X](_ : _ = ~` [set x | g x < f x]).
-  by apply measurableC; exact : measurable_lt_fun.
-by apply/seteqP; split => x /= /negP.
+by rewrite set_neg_setC; apply measurableC; exact : measurable_lt_fun.
 Qed.
 
 Lemma measurable_eq_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
    measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x = g x].
 Proof.
-move=> mf mg.
-rewrite [X in measurable X](_ : _ = [set x | f x <= g x] `\` [set x | f x < g x]).
-  by apply measurableD; [exact : measurable_le_fun|exact : measurable_lt_fun].
-apply/seteqP; split => [x/= ->|x []/=]; first by split => //; rewrite ltxx.
-by rewrite le_eqVlt => /orP[/eqP ->|].
+move=> mf mg; rewrite set_eq_leq_lt.
+by apply measurableD; [exact : measurable_le_fun|exact : measurable_lt_fun].
+Qed.
+
+Lemma measurable_neq_fun d (X : measurableType d) (R : realType) (f g : X -> \bar R) :
+   measurable_fun setT f -> measurable_fun setT g -> measurable [set x | f x != g x].
+Proof.
+by move=> mf mg; rewrite set_neq_lt; apply: measurableU; apply: measurable_lt_fun.
 Qed.
 
 Lemma measurable_fun_bigcup d (X : measurableType d) (R : realType)
@@ -108,6 +191,14 @@ Lemma integrable_abse d (T : measurableType d) (R : realType) D
 Proof.
 move=> [mf foo]; split; first exact: measurable_fun_comp.
 by under eq_integral do rewrite abse_id.
+Qed.
+
+Lemma integral1 d (T : measurableType d) (R : realType)
+    (mu : {measure set T -> \bar R}) (f : T -> \bar R) (A : set T) :
+  (forall x, A x -> f x = 0%E) ->
+  (\int[mu]_(x in A) f x = 0)%E.
+Proof.
+by move=> Af0; rewrite (eq_integral (cst 0%E)) ?integral0// => x /[1!inE] /Af0.
 Qed.
 
 (* TODO: rename to abs_continuous *)
@@ -322,7 +413,7 @@ suff [Fs [mF [FS [tF [spos [nuF smalls]]]]]] :
     by apply/esym/cvg_lim => //; exact: smeasure_semi_sigma_additive.
   have lims : (fun n => (s n)%:R : R) --> +oo%R.
     suff : (fun m => (s m)%:R^-1) --> (0 : R)%R.
-      by move/invr_cvg0; apply => // n ; rewrite ltr0n lt0n spos.
+      by move/gtr0_cvgV0; apply; apply: nearW => // n; rewrite ltr0n lt0n spos.
     apply/(@cvg_series_cvg_0 _ [normedModType R of R^o])/nnseries_is_cvg => //.
     rewrite (@le_lt_trans _ _ (nu UF))// ?ltey_eq ?isfinite// nuUF.
     by apply: lee_nneseries => k _; [rewrite lee_fin|exact: nuF].
@@ -331,7 +422,7 @@ suff [Fs [mF [FS [tF [spos [nuF smalls]]]]]] :
     have Gk m : nu G < (s m)%:R^-1%:E.
       by have /smalls : G `<=` S `\` UF by []; exact.
     rewrite -(@fineK _ (nu G)) ?isfinite// lee_fin.
-    apply/ler0_addgt0P => _/posnumP[e].
+    apply/ler_gtP => _/posnumP[e].
     have [m] : exists m, ((s m)%:R^-1 <= e%:num)%R.
       move/__deprecated__cvgPpinfty : lims => /(_ e%:num^-1) [N _] /(_ _ (leqnn N)).
       rewrite -(@invrK _ (s N)%:R) ler_pinv; last 2 first.
@@ -401,7 +492,7 @@ split; first by move=> n; exact: elt_s_F.
 move=> n G mG GFS; rewrite ltNge; apply/negP => knG.
 have limk : (fun m => (s_ (v m))%:R : R) --> +oo%R.
   suff : (fun m => (s_ (v m))%:R^-1) --> (0 : R)%R.
-    move/invr_cvg0; apply => // m.
+    move/gtr0_cvgV0; apply; apply: nearW => // m.
     by rewrite lt_neqAle eq_sym pnatr_eq0 elt_s0/= ler0n.
   apply: (@cvg_series_cvg_0 _ [normedModType R of R^o]); apply: nnseries_is_cvg => //.
   pose UF := \bigcup_m F_ (v m).
@@ -799,7 +890,7 @@ have -> : \int[mu]_(x in E0) F m x = \sum_(j < m.+1) \int[mu]_(x in (E0 `&` (E m
   rewrite (@ge0_integral_bigsetU _ _ _ _ (fun n => E0 `&` E m n))//.
   - by move=> n; exact: measurableI.
   - by apply: (@measurable_funS _ _ _ _ setT) => //; exact: measurable_max_RN_approx_sequence.
-  apply: trivIset_setI.
+  apply: trivIset_setIl.
   by apply: (@sub_trivIset _ _ _ setT (fun i => E m i)) => //.
 have -> : \sum_(j < m.+1) (\int[mu]_(x in (E0 `&` (E m j))) F m x) =
           \sum_(j < m.+1) (\int[mu]_(x in (E0 `&` (E m j))) g j x).
@@ -809,7 +900,7 @@ have <- : \sum_(j < m.+1) (nu (E0 `&` (E m j))) = nu E0.
   rewrite -(@measure_semi_additive _ _ _ nu (fun i => E0 `&` E m i))//.
   - by rewrite -big_distrr/= -XE// setIT.
   - by move=> k; exact: measurableI.
-  - exact: trivIset_setI.
+  - exact: trivIset_setIl.
   - by apply: bigsetU_measurable => /= i _; exact: measurableI.
 apply: lee_sum => //= i _.
 have [+ _] := RN_approx_sequence_prop mu nufinite i.
@@ -870,7 +961,8 @@ have Htmp : (fun m => M - (m.+1%:R^-1)%:E) --> M.
   + exact: cvg_cst.
   + apply/__deprecated__ereal_cvg_real; split; first by apply: nearW.
     rewrite [X in X --> _](_ : _ = (fun x => (x.+1%:R^-1))) //.
-    apply/invr_cvg0 => //.
+    apply/gtr0_cvgV0.
+      by apply: nearW => //.
     apply/cvgrnyP.
     rewrite [X in X @ _](_ : _ = (fun n => n + 1)%N).
       by apply:cvg_addnr.
@@ -1604,3 +1696,73 @@ Theorem FTC2 d (R : realType) (f : R -> R) (a b : R)
 Proof.
 Abort.
 *)
+
+Section integral_ae_eq.
+Context d (T : measurableType d) (R : realType) (mu : {measure set T -> \bar R}).
+
+Let integral_measure_lt (g f : T -> \bar R) :
+  mu.-integrable setT f -> mu.-integrable setT g ->
+  (forall E, measurable E -> \int[mu]_(x in E) f x = \int[mu]_(x in E) g x) ->
+  mu [set x | g x < f x] = 0.
+Proof.
+move=> mf mg fg.
+pose E j := [set x | f x - g x >= j.+1%:R^-1%:E].
+have mE j : measurable (E j).
+  rewrite /E -[X in measurable X]setTI.
+  apply: emeasurable_fun_c_infty => //.
+  apply: emeasurable_funD => //; first by case: mf.
+  by apply: emeasurable_funN => //; case: mg.
+have muE j : mu (E j) = 0.
+  apply/eqP; rewrite eq_le measure_ge0// andbT.
+  have fg0 : \int[mu]_(x in E j) (f \- g) x = 0.
+    rewrite integralB//; last 2 first.
+      exact: integrableS mf.
+      exact: integrableS mg.
+    rewrite fg// subee// fin_num_abs (le_lt_trans (le_abse_integral _ _ _))//.
+      exact: measurable_funS mg.1.
+    case: mg => mg; apply: le_lt_trans.
+    by apply: subset_integral => //; exact/measurable_fun_comp.
+  have : mu (E j) <= j.+1%:R%:E * \int[mu]_(x in E j) (f \- g) x.
+    apply: (@le_trans _ _ ((j.+1%:R)%:E * \int[mu]_(x in E j) j.+1%:R^-1%:E)); last first.
+      rewrite lee_pmul//; first exact: integral_ge0.
+      apply: ge0_le_integral => //.
+        exact: measurable_fun_cst.
+        by move=> x; rewrite /E/=; apply: le_trans.
+        by apply: emeasurable_funB; [case: mf => + _|case: mg => + _];
+          exact: measurable_funS.
+    by rewrite integral_cst// muleA -EFinM divrr ?unitfE// mul1e.
+  by rewrite fg0 mule0.
+have nd_E : {homo E : n0 m / (n0 <= m)%N >-> (n0 <= m)%O}.
+  move=> i j ij; apply/subsetPset => x; rewrite /E/=; apply: le_trans.
+  by rewrite lee_fin lef_pinv// ?posrE// ler_nat.
+rewrite eset_lt_bigcup.
+suff: mu (\bigcup_j E j) = 0 by [].
+have /cvg_lim h1 : mu \o E --> 0.
+  by apply: cvg_near_cst; apply: nearW.
+have := @nondecreasing_cvg_mu _ _ _ mu E mE (bigcupT_measurable E mE) nd_E.
+move/cvg_lim => h2.
+by rewrite -h2// h1.
+Qed.
+
+Lemma integral_ae_eq (g f : T -> \bar R) :
+  mu.-integrable setT f -> mu.-integrable setT g ->
+  (forall E, measurable E -> \int[mu]_(x in E) f x = \int[mu]_(x in E) g x) ->
+  ae_eq mu setT f g.
+Proof.
+move=> mf mg fg.
+have mugf : mu [set x | g x < f x] = 0.
+  by apply: integral_measure_lt.
+have mufg : mu [set x | f x < g x] = 0.
+  by apply: integral_measure_lt => // E mE; rewrite fg.
+have h : ~` [set x | [set: T] x -> f x = g x] = [set x | f x != g x].
+  by apply/seteqP; split => [x/= ?|x/= /eqP]; [apply/eqP; tauto|tauto].
+apply/negligibleP.
+  by rewrite h; apply: measurable_neq_fun; [case: mf|case: mg].
+rewrite h; rewrite set_neq_lt measureU//; last 3 first.
+  by apply: measurable_lt_fun; [case: mg|case: mf].
+  by apply: measurable_lt_fun; [case: mf|case: mg].
+  by apply/seteqP; split => x//=[/lt_trans] => /[apply]; rewrite ltxx.
+by rewrite [X in X + _]mugf add0e [LHS]mufg.
+Qed.
+
+End integral_ae_eq.
