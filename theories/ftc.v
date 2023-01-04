@@ -28,9 +28,10 @@ Local Open Scope ring_scope.
 Notation right_continuous f :=
   (forall x, f%function @ at_right x --> f%function x).
 
+(*
 Lemma right_continuousW (R : numFieldType) (f : R -> R) :
   continuous f -> right_continuous f.
-Admitted.
+Admitted.*)
 
 HB.mixin Record isCumulative (R : numFieldType) (f : R -> R) := {
   cumulative_is_nondecreasing : {homo f : x y / x <= y} ;
@@ -43,7 +44,7 @@ HB.structure Definition Cumulative (R : numFieldType) :=
 Arguments cumulative_is_nondecreasing {R} _.
 Arguments cumulative_is_right_continuous {R} _.
 
-Lemma nondecreasing_right_continuousP (R : numFieldType) (a : R) (e : R)
+(*Lemma nondecreasing_right_continuousP (R : numFieldType) (a : R) (e : R)
     (f : cumulative R) :
   e > 0 -> exists d : {posnum R}, f (a + d%:num) <= f a + e.
 Admitted.
@@ -65,14 +66,15 @@ Lemma le_inf (R : realType) (S1 S2 : set R) :
   -%R @` S2 `<=` down (-%R @` S1) -> nonempty S2 -> has_inf S1
     -> (inf S1 <= inf S2)%R.
 Admitted.
+*)
 
 Definition EFinf {R : numDomainType} (f : R -> R) : \bar R -> \bar R :=
   fun x => if x is r%:E then (f r)%:E else x.
 
-Lemma nondecreasing_EFinf (R : realDomainType) (f : R -> R) :
+(*Lemma nondecreasing_EFinf (R : realDomainType) (f : R -> R) :
   {homo f : x y / (x <= y)%R} -> {homo EFinf f : x y / (x <= y)%E}.
 Admitted.
-
+*)
 Section hlength.
 Local Open Scope ereal_scope.
 Variables (R : realType) (f : R -> R).
@@ -82,7 +84,8 @@ Implicit Types i j : interval R.
 Definition itvs : Type := R.
 
 Definition hlength (A : set itvs) : \bar R := let i := Rhull A in g i.2 - g i.1.
-Lemma hlength0 : hlength (set0 : set R) = 0.
+
+(*Lemma hlength0 : hlength (set0 : set R) = 0.
 Admitted.
 
 Lemma hlength_singleton (r : R) : hlength `[r, r] = 0.
@@ -135,10 +138,10 @@ Admitted.
 Lemma le_hlength (ndf : {homo f : x y / (x <= y)%R}) :
   {homo hlength : A B / A `<=` B >-> A <= B}.
 Admitted.
-
+*)
 End hlength.
 Arguments hlength {R}.
-#[global] Hint Extern 0 (0%:E <= hlength _) => solve[apply: hlength_ge0] : core.
+(*#[global] Hint Extern 0 (0%:E <= hlength _) => solve[apply: hlength_ge0] : core.
 
 Section itv_semiRingOfSets.
 Variable R : realType.
@@ -227,6 +230,8 @@ Example lebesgue_measure d (R : realType)
 
 (* /rnd Stieltjes *)
 
+*)
+
 (* reference:
    A Course in Functional Analysis and Measure Theory
    7.2
@@ -235,8 +240,7 @@ Example lebesgue_measure d (R : realType)
 Section newton_leibniz.
 Local Open Scope ereal_scope.
 Context (R : realType).
-Let gitvs := [the measurableType _ of salgebraType (@ocitv R)].
-Variable (mu : {measure set gitvs -> \bar R}).
+Let mu := @lebesgue_measure R.
 Implicit Types f : R -> R.
 
 Let F f (e : R ^nat) n t := ((f (t + e n) - f t) / e n)%R.
@@ -302,8 +306,7 @@ End newton_leibniz.
 Section primitive_function.
 Local Open Scope ereal_scope.
 Context (R : realType).
-Let gitvs := [the measurableType _ of salgebraType (@ocitv R)].
-Variable (mu : {measure set gitvs -> \bar R}).
+Let mu := [the measure _ _ of @lebesgue_measure R].
 
 Definition primitive (f : R -> R) a x :=
   \int[mu]_(t in `[a, x]) (f t)%:E.
@@ -316,15 +319,15 @@ Admitted.
 
 Lemma lem7221 (f : R -> R) (a b : R) :
   (* primitive differentiable almost everywhere? *)
-  mu.-integrable `[a, b] (EFin \o (derivative mu (fine \o primitive f a))) /\
-  \int[mu]_(t in `[a, b]) `|(derivative mu (fine \o primitive f a) t)%:E| <=
+  mu.-integrable `[a, b] (EFin \o (derivative (fine \o primitive f a))) /\
+  \int[mu]_(t in `[a, b]) `|(derivative (fine \o primitive f a) t)%:E| <=
   \int[mu]_(t in `[a, b]) `|f t|%:E.
 Proof.
 Admitted.
 
 Theorem them7222 (f : R -> R) (a b : R) :
   mu.-integrable `[a, b] (EFin \o f) ->
-  {ae mu, forall x, derivative mu (fine \o primitive f a) x = f x}.
+  {ae mu, forall x, derivative (fine \o primitive f a) x = f x}.
 Proof.
 Admitted.
 
@@ -366,12 +369,12 @@ Fail Lemma right_continuous_variationB a b f :
 End variation.
 
 (* maybe rewrite I : R * R to I : interval R *)
-Definition abs_continuous (R : realType) (f : R -> R) (I : R * R) :=
+Definition abs_continuous (R : realType) (f : R -> R) a b :=
   forall e : {posnum R}, exists d : {posnum R},
     forall J : nat -> R * R, forall n : nat,
       \sum_(k < n)((J k).2 - (J k).1) < d%:num ->
         trivIset setT (fun n => `[(J n).1, (J n).2]%classic) ->
-          (forall n, I.1 <= (J n).1 /\ (J n).2 <= I.2) ->
+          (forall n, a <= (J n).1 /\ (J n).2 <= b) ->
             \sum_(k < n) `| f (J k).2 - f (J k).1 | < e%:num.
 
 Section abs_cont_properties.
@@ -389,31 +392,47 @@ split.
   move=> nu_mu e e0.
 Admitted.
 
-(* Need lebesgue_stieltjes measure*)
-Lemma abs_continuous_fun_measure
-    (mu : {measure set gitvs -> \bar R}) (*for lebesgue measure *)
-    (f : R -> R) a b :
-  abs_continuous f (a, b) ->
-  smrestr (hlength f) (measurable_itv `[a, b]) `<<
-  smrestr mu (measurable_itv `[a, b]).
+End abs_cont_properties.
+
+Definition lebesgue_stieltjes_measure (R : realType) (f : cumulative R) :
+  {measure set [the measurableType _ of salgebraType (@ocitv R)] -> \bar R}.
+Admitted.
+
+Lemma abs_cont_equiv (R : realType) (f : cumulative R) a b :
+  abs_continuous f a b
+  <->
+  mrestr (lebesgue_stieltjes_measure f) (measurable_itv `[a, b]) `<<
+  mrestr (@lebesgue_measure R) (measurable_itv `[a, b]).
 Proof.
 Admitted.
 
-End abs_cont_properties.
+(*
+
+by Radon Nikodym:
+
+exists f, Stieltjes_F[a, b] = \int[Lebesgue]_(x in [a,b]) f x = F b - F a
+
+*)
 
 Section ftc.
 
-Theorem FTC2 (d : measure_display) (R : realType) (f : R -> R) (a b : R)
-    (f_abscont : abs_continuous f (a, b) ) :
-  let lambda := @lebesgue_measure (ocitv_display R) R in
+Theorem FTC2_direct (R : realType) (f : R -> R) (a b : R)
+    (f_abscont : abs_continuous f a b) :
+  let lambda := @lebesgue_measure R in
   exists f' : R -> \bar R, [/\
     lambda.-integrable `[a, b] f',
      {ae lambda, forall x, x \in `[a, b] -> f' x \is a fin_num} &
      forall x, x \in `[a, b] ->
       (f x - f a)%:E = (\int[lambda]_(x in `[a, x]) f' x)%E].
 Proof.
-Fail pose Lambda_f := lebesgue_stieltjes_measure d f.
-Fail have f' := Radon_Nikodym Lambda_f.
 Abort.
 
-End ftc.
+Theorem FTC2_converse (R : realType) (f : R -> R) (a b : R) :
+  let lambda := @lebesgue_measure R in
+  lambda.-integrable `[a, b] (EFin \o f) ->
+  exists F,
+    EFin \o F = primitive F a /\
+    abs_continuous F a b /\
+    {ae lambda, forall x, derivative F x = f x}.
+Proof.
+Abort.
