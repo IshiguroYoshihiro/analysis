@@ -343,19 +343,19 @@ Section variation.
 Variable R : realType.
 
 Definition variation (f : R -> R) (a b : R) :=
-  sup [set x : R | exists (n : nat) (p : R ^nat),
+  ereal_sup [set x : \bar R | exists (n : nat) (p : R ^nat),
      p 0%nat = a /\ p n = b /\ (forall k, p k < p k.+1)
-        /\ x = \sum_(i < n) `| f (p i) - f (p i.+1) |].
+        /\ x = (\sum_(i < n) `| f (p i) - f (p i.+1) |)%:E].
 
 (* bouded variation*)
-Definition variation_lty f a b := ((variation f a b)%:E < +oo)%E.
+Definition variation_lty f a b := ((variation f a b) < +oo)%O.
 
 Lemma variation_nondecreasing a b f : variation_lty f a b ->
-  {homo variation f a : x y / x <= y}.
+  {homo variation f a : x y / (x <= y)%O}.
 Admitted.
 
 Lemma variationB_nondecreasing a b f : variation_lty f a b ->
-  {homo variation f a \- f : x y / x <= y}.
+  {homo (fun x => (variation f a x - EFin(f x))%E) : x y / (x <= y)%O}.
 Admitted.
 
 Fail Lemma right_continuous_variation a b (f : R -> R) :
@@ -390,6 +390,32 @@ Proof.
 move=> /=.
 split.
   move=> nu_mu e e0.
+Admitted.
+
+Lemma abs_cont_bounded_variation
+  (f : R -> R) (a b : R) :
+    abs_continuous f a b -> variation_lty f a b.
+Proof.
+move=> absf.
+move: (absf (PosNum lte01)) => /= [] [d1 /= d1ge0]  H.
+rewrite /variation_lty.
+pose n :=  (ceil ((b - a) / d1)).
+(*
+pose P k : (R * R) := (a + (b - a) / n%R * k%R,
+                      a + (b - a) / n%R * k.+1%R).
+
+apply:S(le_lt_trans ((variation f a b)%:E < n)).
+*)
+
+(* for all m partition Q,
+ * consider about the common partition R := P n \/ Q.
+ * then
+      \sum_(i < m) `| f (Q i) - f (Q i.+1) |
+   <= \sum_(i < n+m) `| f (R i) - f (R i.+1) |
+   <= \sum_(i < n) \sum_(k < n+m | P i < R k <= P i.+1) `| f (R i) - f ( R i.+1)|
+   < \sum_(i < n) 1 (by abs continuity)
+   = n
+ *)
 Admitted.
 
 End abs_cont_properties.
