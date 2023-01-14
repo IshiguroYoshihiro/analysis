@@ -2407,8 +2407,9 @@ apply: (@le_trans _ _
   rewrite [leRHS](_ : _ = \sum_(i <oo) \sum_(X <- fset_set (decomp D) | X \in fset_set (decomp D)) mu (((f^-1)%function i).2 `&` X)); last first.
     under eq_eseries.
       move=> i _.
-      by rewrite big_seq.
-      done.
+      rewrite big_seq.
+      over.
+    done.
   rewrite nneseries_sum//; last first.
     move=> /= i j; rewrite in_fset_set//; last exact: decomp_finite_set.
     move=> iD; rewrite measure_ge0 => //.
