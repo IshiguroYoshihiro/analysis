@@ -40,44 +40,23 @@ Definition AC (a b : R) (f : R -> R) := forall e : {posnum R},
 
 Open Scope ring_scope.
 
-Lemma EVT_maxabs (f : R -> R) (a b : R) : (* TODO : Filter not infered *)
-  a <= b -> {within `[a, b], continuous f} -> exists2 c, c \in `[a, b]%R &
-  forall t, t \in `[a, b]%R -> `|f t| <= `|f c|.
+Lemma AC_set0 (a b:R) (f : R -> R) : b < a -> AC a b f.
 Proof.
-move=> leab fcont; set imf := (fun x=> `|f x|) @` `[a, b].
-have imf_sup : has_sup imf.
-  split; first exists (`|f a|).
-   apply/imageP; rewrite set_interval.set_itvE /=; apply/andP; by split.
-  have [M [Mreal imfltM]] : bounded_set ((f:R^o->R^o) @` `[a, b]).
-    by apply/compact_bounded/continuous_compact => //; exact: segment_compact.
-  exists (M + 1) => y.
-  admit. (* move=> /imfltM yleM.*)
-(*   by rewrite (le_trans _ (yleM _ _)) ?ler_norm ?ltr_addl. *)
-(* have [|imf_ltsup] := pselect (exists2 c, c \in `[a, b]%R & f c = sup imf). *)
-(*   move=> [c cab fceqsup]; exists c => // t tab; rewrite fceqsup. *)
-(*   apply: (le_trans _ (ler_norm (sup imf))). *)
-(*   apply/sup_upper_bound => //. ; exact/imageP. *)
-(* have {}imf_ltsup t : t \in `[a, b]%R -> f t < sup imf. *)
-(*   move=> tab; case: (ltrP (f t) (sup imf)) => // supleft. *)
-(*   rewrite falseE; apply: imf_ltsup; exists t => //; apply/eqP. *)
-(*   by rewrite eq_le supleft andbT sup_upper_bound//; exact/imageP. *)
-(* pose g t : R := (sup imf - f t)^-1. *)
-(* have invf_continuous : {within `[a, b], continuous g}. *)
-(*   rewrite continuous_subspace_in => t tab; apply: cvgV => //=. *)
-(*     by rewrite subr_eq0 gt_eqF // imf_ltsup //; rewrite inE in tab. *)
-(*   (*apply cvgD;[exact: cst_continuous | apply: cvgN; exact: (fcont t)].*) *)
-(*   admit. *)
-(* have /ex_strict_bound_gt0 [k k_gt0 /= imVfltk] : bounded_set ((g:R^o->R^o) @` `[a, b]). *)
-(*   apply/compact_bounded/continuous_compact; last exact: segment_compact. *)
-(*   exact: invf_continuous. *)
-(* have [_ [t tab <-]] : exists2 y, imf y & sup imf - k^-1 < y. *)
-(*   by apply: sup_adherent => //; rewrite invr_gt0. *)
-(* rewrite ltr_subl_addr -ltr_subl_addl. *)
-(* suff : sup imf - f t > k^-1 by move=> /ltW; rewrite leNgt => /negbTE ->. *)
-(* rewrite -[ltRHS]invrK ltf_pinv// ?qualifE ?invr_gt0 ?subr_gt0 ?imf_ltsup//. *)
-(* by rewrite (le_lt_trans (ler_norm _) _) ?imVfltk//; exact: imageP. *)
-(* Admitted. *)
-Abort.
+move=> ba e.
+rewrite set_itvE.
+exists (PosNum ltr01).
+move=> n ab.
+(* a <= z <= b をfalseにするなどしてset0に書き換えたい *)
+Admitted.
+
+Lemma AC_set1 (a : R) (f : R -> R) : AC a a f.
+Proof.
+move=> e.
+rewrite set_itvE.
+exists (PosNum ltr01).
+move=> n ab [H1 [H2]] /= .
+(* ab.1=a, ab.2=aを示したい *)
+Admitted.
 
 Lemma C1_is_lipschitz (a b : R) (f : R^o -> R^o) :
   C1 a b f -> [lipschitz f x | x in `[a, b]].
@@ -118,68 +97,34 @@ rewrite distrC {}mvt -derive1E normrM (distrC y) ler_pmul//.
 exact/dfmax/xyab/subset_itv_oo_cc.
 Qed.
 
-Lemma Lipschitz_is_AC (a b : R) (f : R^o -> R^o) :
+Lemma lipschitz_is_AC (a b : R) (f : R^o -> R^o) :
   [lipschitz f x | x in `[a, b]] -> AC a b f.
 Proof.
-
-(* move=> [df cdf] e. *)
-(* have [f0|nf0] := eqVneq f (cst 0). *)
-(*   exists 1%:pos => n ab [] absub /= [] ab0 ab1. *)
-(*   rewrite f0 /= subr0 (_:maxr 0 0 = 0); last first. *)
-(*     by apply: max_idPr. *)
-(*   rewrite big1 //. *)
-(* (* forall n and ab, *)
-(*  * \sum_(k < n) maxr 0 (f (ab k).2 - f (ab k).1) *)
-(*  *    <= M * \sum_(k < n) maxr 0 ((ab k).2 - (ab k).1) *)
-(*  *    <  M * d *)
-(*  *    =  e *)
-(*  *) *)
-(* pose M := sup [set x : R| exists y, y \in `[a, b]%classic /\ x = *)
-(*      `|(f : R^o -> R^o)^`() y|]. *)
-(* have M0 : 0 < M. *)
-(*   admit. *)
-(* pose d := e%:num / M. *)
-(* have d0 : 0 < d. *)
-(*   apply: divr_gt0 => //. *)
-(* exists (PosNum d0). *)
-(* move=> n ab [abH [trivab sum_ltd]]. *)
-(* have : forall k, maxr 0 (f (ab k).2 - f (ab k).1) <= M * maxr 0 ((ab k).2 - (ab k).1). *)
-(*   move=> k. *)
-(*   have : ((ab k).1 >= (ab k).2) \/ ((ab k).1 < (ab k).2). *)
-(*     admit. *)
-(*   case; move=> abgt12. *)
-(*     rewrite (_: maxr 0 (f (ab k).2 - f (ab k).1) = 0). *)
-(*     admit. *)
-(*   admit. *)
-(*   have max_r : maxr 0 (f (ab k).2 - f (ab k).1) = (f (ab k).2 - f (ab k).1). *)
-(*   admit. *)
-(*   rewrite max_r. *)
-(*   have is_derive_f : (forall x : R^o, x \in `](ab k).1, (ab k).2[ -> *)
-(*                        is_derive x 1 (f : R^o -> R^o) ((f : R^o -> R^o)^`() x)). *)
-(*     admit. *)
-(*   have cf : {within `[(ab k).1, (ab k).2], continuous f}. *)
-(*     admit. *)
-(*   pose m:=(MVT abgt12 is_derive_f cf). *)
-(*   move: m=> [] c cab cMV. *)
-(*   rewrite cMV. *)
-(*   (*rewrite -(mulr0 ((f:R^o->R^o)^`() c)). maxr_pmulr?*) *)
-(*   have dfc0 : 0 < ((f:R^o->R^o)^`() c). *)
-(*     admit. *)
-(*   rewrite (_:(f:R^o->R^o)^`() c * ((ab k).2 - (ab k).1) = *)
-(*                (f:R^o->R^o)^`() c * ((ab k).2 - (ab k).1));last first. *)
-(*     admit. *)
-(*   have cM : (f:R^o->R^o)^`() c <= M. *)
-(*   admit. *)
-(*   have abgt0: 0 < (ab k).2 - (ab k).1. *)
-(*     admit. *)
-(*   have cM_le : ((f:R^o->R^o)^`() c * ((ab k).2 - (ab k).1) <= *)
-(*       M * ((ab k).2 - (ab k).1)). *)
-(*     by rewrite (ler_pmul2r abgt0). *)
-(*   apply (le_trans cM_le). *)
-(*   rewrite (_:maxr 0 ((ab k).2 - (ab k).1) = (ab k).2 - (ab k).1);last first. *)
-(*     admit. *)
-(*   done. *)
-
+move=> [L [L_real lipf]] e.
+have [|agtb] := leP b a.
+  rewrite le_eqVlt => /predU1P [-> |ba].
+    exact: AC_set1.
+  exact: AC_set0.
+have L1gt0 : 0 < L + 1.
+  admit.
+pose d := (e%:num / (L + 1)).
+have d0 : 0 < d.
+  apply: mulr_gt0 => //.
+  by rewrite invr_gt0.
+exists (PosNum d0) => /=.
+move=> n ab [abH [trivab sum_ltd]].
+apply: (@le_lt_trans _ _ (\sum_(k < n) `|f (ab k).1 - f (ab k).2|)).
+  admit.
+apply: (@le_lt_trans _ _ (\sum_(k < n) (L + 1) * `|(ab k).1 - (ab k).2|)).
+  admit.
+rewrite (_ : \sum_(k < n) (L + 1) * `|(ab k).1 - (ab k).2| = (L + 1) * \sum_(k < n) `|(ab k).1 - (ab k).2|);last first.
+  admit.
+apply (@lt_le_trans _ _ ((L + 1) * d)).
+  admit.
+rewrite /d.
+rewrite mulrCA mulrA.
+rewrite mulrK => //.
+admit.
 Admitted.
 
 Definition BV (a b : R) (f : R -> R) :=
@@ -641,8 +586,6 @@ Check Fubini.
 Section change2polar.
 
 End
-
-Lemma integral_ : \int[dx]_(x in `[0, +oo]) (fun t => 1 / (2 * (1 + t ^+ 2)) x = .
 
 Lemma gauss_integral (mu : `{measure R -> \bar R}) : \int[dx]_x Gaussian x = Num.sqrt pi.
 Proof.
