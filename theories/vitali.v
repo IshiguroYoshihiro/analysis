@@ -30,7 +30,6 @@ Variable R : realType.
 Definition C1 (a b : R) (f : R^o -> R^o) :=
   derivable_oo_continuous_bnd f a b /\
   {within `[a, b], continuous f^`()}.
-
 Definition AC (a b : R) (f : R -> R) := forall e : {posnum R},
   exists d : {posnum R}, forall n (ab : 'I_n -> R * R),
     (forall i, `[(ab i).1, (ab i).2]%classic `<=` `[a, b]%classic) /\
@@ -39,6 +38,144 @@ Definition AC (a b : R) (f : R -> R) := forall e : {posnum R},
     \sum_(k < n) maxr 0 (f (ab k).2  - f (ab k).1) < e%:num.
 
 Open Scope ring_scope.
+
+Lemma derivable_indic (a b : R) :forall (x :R^o), x \in `]a, b[ -> derivable \1_`[a, b] x 1.
+Proof.
+move=> x.
+rewrite in_itv /=.
+move/andP => [ax xb].
+have xab : (x \in `[a, b]%classic) = true.
+  rewrite (_:(x \in_ ) = true) //= ; last first.
+  apply: mem_set => /=.
+  rewrite in_itv /=.
+  by apply/andP; split; [move/ltW in ax|move/ltW in xb].
+apply/cvg_ex.
+exists 0.
+apply/cvgr0Pnorm_lt.
+move=> e e0.
+near=> t.
+rewrite compE !indicE.
+rewrite xab.
+have [|] := boolP (_ \in _).
+  move=> _.
+  by rewrite subrr scaler0 normr0.
+move=> /negP txab.
+exfalso.
+apply: txab.
+apply: mem_set => /=.
+rewrite in_itv /=.
+apply /andP; split.
+  near: t.
+  move=> /=.
+  exists (x - a).
+    by rewrite subr_gt0.
+  move=> z /=.
+  rewrite sub0r.
+  move/ltr_normlW.
+  rewrite ltr_oppl opprB.
+  move=> axz _.
+  rewrite -lter_sub_addr.
+  rewrite ltW //.
+  rewrite (lt_le_trans axz) //.
+  by rewrite -[leLHS]mulr1.
+near:t.
+move=> /=.
+exists (b - x).
+  by rewrite subr_gt0.
+move=> z /=.
+rewrite sub0r normrN.
+move/ltr_normlW => zbx _.
+rewrite -lter_sub_addr.
+rewrite ltW //.
+apply: (le_lt_trans _ zbx).
+by rewrite -[leRHS]mulr1.
+Unshelve. by end_near. Qed.
+
+Lemma derivable_indic_cc (a b : R) :forall (x :R^o), x \in `[a, b] -> derivable \1_`[a, b] x 1.
+Proof.
+move=> x.
+rewrite in_itv /=.
+move/andP => [ax xb].
+have xab : (x \in `[a, b]%classic) = true.
+  rewrite (_:(x \in_ ) = true) //= ; last first.
+  apply: mem_set => /=.
+  rewrite in_itv /=.
+  by apply/andP; split.
+apply/cvg_ex.
+exists 0.
+apply/cvgr0Pnorm_le.
+move=> e e0.
+near=> t.
+rewrite compE !indicE.
+rewrite xab.
+have [|] := boolP (_ \in _).
+  move=> _.
+  by rewrite subrr scaler0 normr0 ltW.
+move=> /negP txab.
+exfalso.
+apply: txab.
+apply: mem_set => /=.
+rewrite in_itv /=.
+apply /andP; split.
+  near: t.
+  move=> /=.
+  exists (x - a).
+    rewrite subr_gt0.
+    admit.
+  move=> z /=.
+  rewrite sub0r.
+  move/ltr_normlW.
+  rewrite ltr_oppl opprB.
+  move=> axz _.
+  rewrite -lter_sub_addr.
+  rewrite ltW //.
+  rewrite (lt_le_trans axz) //.
+  by rewrite -[leLHS]mulr1.
+near:t.
+move=> /=.
+exists (b - x).
+  rewrite subr_gt0.
+  admit.
+move=> z /=.
+rewrite sub0r normrN.
+move/ltr_normlW => zbx _.
+rewrite -lter_sub_addr.
+rewrite ltW //.
+apply: (le_lt_trans _ zbx).
+by rewrite -[leRHS]mulr1.
+Unshelve. by end_near. Abort.
+
+Lemma derive1_indic (a b : R) : (\1_`[a, b])^`() = cst 0.
+Proof.
+apply/funext => x.
+Abort.
+
+Lemma indic_is_C1 (a b : R) : C1 a b \1_`[a, b].
+Proof.
+split.
+  split.
+      move=> x xab.
+      by apply: derivable_indic.
+    red.
+    move=> /= U.
+    rewrite /indic.
+    
+    admit.
+  admit.
+rewrite /cvg_to.
+move=> x.
+move=> /=.
+move=> A.
+rewrite /nbhs /=.
+rewrite /nbhs_ball_.
+case => /=.
+move=> e e0.
+move=> eA.
+rewrite /nbhs /=.
+red.
+case: ifPn.
+  move=> xab.
+Admitted.
 
 Lemma AC_set0 (a b:R) (f : R -> R) : b < a -> AC a b f.
 Proof.
@@ -106,6 +243,7 @@ have [|agtb] := leP b a.
     exact: AC_set1.
   exact: AC_set0.
 have L1gt0 : 0 < L + 1.
+  apply:addr_gt0 => //.
   admit.
 pose d := (e%:num / (L + 1)).
 have d0 : 0 < d.
@@ -124,7 +262,7 @@ apply (@lt_le_trans _ _ ((L + 1) * d)).
 rewrite /d.
 rewrite mulrCA mulrA.
 rewrite mulrK => //.
-admit.
+by apply: unitf_gt0.
 Admitted.
 
 Definition BV (a b : R) (f : R -> R) :=
@@ -307,6 +445,7 @@ rewrite /=.
 transitivity (fine (lsf (`[a, t]%classic))).
   admit. (* lebesgue-stieltjes definition *)
 transitivity (fine (\int[[the measure _ _ of @lebesgue_measure R]]_(s in `[a, t]) h s)).
+apply 
   admit. (* by RN *)
 (* see ge0_ae_eq_integral or a related lemma *)
 admit.
