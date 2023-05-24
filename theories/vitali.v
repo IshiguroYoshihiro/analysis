@@ -145,9 +145,15 @@ apply: (le_lt_trans _ zbx).
 by rewrite -[leRHS]mulr1.
 Unshelve. by end_near. Abort.
 
-Lemma derive1_indic (a b : R) : (\1_`[a, b])^`() = cst 0.
+Lemma is_derive_indic (a b x : R):
+x \in `]a, b[ -> is_derive x 1 (\1_`[a, b]) (cst 0 x).
 Proof.
-apply/funext => x.
+move=> xab.
+split.
+  exact: derivable_indic.
+Abort.
+
+Lemma derive1_indic (a b : R): (\1_`[a, b])^`() = cst 0.
 Abort.
 
 Lemma indic_is_C1 (a b : R) : C1 a b \1_`[a, b].
@@ -421,15 +427,22 @@ Variables a b : R.
 Variable f : R^o -> R^o. (* non decreasing *)
 Hypothesis f_AC : AC a b f.
 Variable lsf : {measure set [the measurableType (R.-ocitv.-measurable).-sigma of salgebraType (R.-ocitv.-measurable)] -> \bar R}. (* lebesgue stietljes measure of f *)
+Hypothesis lsf_itv : forall(i1 i2 : R) (b1 b2 : bool),
+  lsf [set` (Interval (BSide b1 i1) (BSide b2 i2))] = (i2 - i1)%:E.
 
 Theorem FTC t : t \in `[a, b] ->
   f t - f a = \int[[the measure _ _ of @lebesgue_measure R]]_(s in `[a, t] ) f^`() s.
 Proof.
 move=> tab.
-have [h hh] : exists h, forall A, measurable A ->
-    [the measure _ _ of @lebesgue_measure R].-integrable setT h /\
-    lsf A = (\int[[the measure _ _ of @lebesgue_measure R]]_s (h s))%E.
   (* TODO: requires lsf `<< [the measure _ _ of @lebesgue_measure R] *)
+have lsf_AC A : [the measure _ _ of @lebesgue_measure R] A = 0%E -> lsf A = 0%E.
+  admit.
+have [h [hh inth]]: exists h,
+    [the measure _ _ of @lebesgue_measure R].-integrable setT h /\
+  forall A, measurable A ->
+    lsf A = (\int[[the measure _ _ of @lebesgue_measure R]]_(s in A) (h s))%E.
+  (* get h by RN *)
+  move => /=.
   admit.
 pose h_ n x := if x == b then 0 else
   \sum_(i < (2 ^ n).+1) (fine (lsf (Partition a b n i)) /
@@ -445,9 +458,12 @@ rewrite /=.
 transitivity (fine (lsf (`[a, t]%classic))).
   admit. (* lebesgue-stieltjes definition *)
 transitivity (fine (\int[[the measure _ _ of @lebesgue_measure R]]_(s in `[a, t]) h s)).
-apply 
-  admit. (* by RN *)
+  congr fine => /=.
+  rewrite inth //.
+  by apply: measurable_itv.
 (* see ge0_ae_eq_integral or a related lemma *)
+rewrite (_: f t - f a = lsf `]t, a]).
+
 admit.
 Abort.
 
