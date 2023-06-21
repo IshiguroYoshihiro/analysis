@@ -271,7 +271,52 @@ rewrite mulrK => //.
 by apply: unitf_gt0.
 Admitted.
 
+(* leb_fund_thm Beginning of 1.2 *)
+Definition variation [a b : R] [n : nat] [abp : nat -> R * R] (f : R -> R)
+(ispartabp :
+partition `I_n (fun i => `[(abp i).1, (abp i).2]%classic) `[a, b]%classic)
+: \bar R :=
+  \sum_(i < n.+1) `|(f (abp i).2)%:E - (f (abp i).1)%:E|.
+
+Lemma variation_ge0 a b n abp f ispartabp :
+  (0 <= (@variation a b n abp f ispartabp))%E.
+Proof.
+apply sume_ge0 => ? _.
+exact: abse_ge0.
+Qed.
+
+(* leb_fund_thm Definition 2 *)
 Definition BV (a b : R) (f : R -> R) :=
+  forall n abp (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, b]%classic),
+   (variation f ispartab < +oo)%E.
+
+Lemma BV_cst (a b x : R) : BV a b (cst x).
+Proof.
+move=> n ab ispartab.
+apply:lte_sum_pinfty => /=.
+by rewrite subrr normr0.
+Qed.
+
+Definition total_variation (a b : R) (f : R -> R) :=
+ereal_sup [set x : \bar R |
+exists n abp,
+forall (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, b]%classic),
+   x = variation f ispartab].
+
+Lemma BVP (a b : R) (f : R -> R) :
+BV a b f <-> (total_variation a b f < +oo)%E.
+Proof.
+
+
+(* leb_fund_thm 1.5 p.5*)
+Lemma AC_is_BV (a b : R) (f : R -> R) :
+  AC a b f -> BV a b f.
+Proof.
+move=> ACf n abp ispart.
+have := (ACf (PosNum ltr01)).
+
+(* leb_fund_thm Lemma 1 *)
+Definition _BV (a b : R) (f : R -> R) :=
   exists g h : R -> R,
     {in `[a, b], {homo g : x y / x <= y}} /\
     {in `[a, b], {homo h : x y / x <= y}} /\
