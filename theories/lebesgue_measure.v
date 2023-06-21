@@ -12,18 +12,14 @@ Require Import lebesgue_stieltjes_measure.
 (*                            Lebesgue Measure                                *)
 (*                                                                            *)
 (* This file contains a formalization of the Lebesgue measure using the       *)
-(* Caratheodory's theorem available in measure.v and further develops the     *)
-(* theory of measurable functions.                                            *)
+(* Measure Extension theorem from measure.v and further develops the theory   *)
+(* of measurable functions.                                                   *)
 (*                                                                            *)
 (* Main reference:                                                            *)
 (* - Daniel Li, Intégration et applications, 2016                             *)
 (* - Achim Klenke, Probability Theory 2nd edition, 2014                       *)
 (*                                                                            *)
-(*             hlength A == length of the hull of the set of real numbers A   *)
-(*                 ocitv == set of open-closed intervals ]x, y] where         *)
-(*                            x and y are real numbers                        *)
 (*      lebesgue_measure == the Lebesgue measure                              *)
-(*                                                                            *)
 (*              ps_infty == inductive definition of the powerset              *)
 (*                          {0, {-oo}, {+oo}, {-oo,+oo}}                      *)
 (*         emeasurable G == sigma-algebra over \bar R built out of the        *)
@@ -50,9 +46,10 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
-(* direct construction of the Lebesgue measure *)
+(* This module contains a direct construction of the Lebesgue measure this is
+   kept here for archival purpose. The Lebesgue measure is actually defined as
+   an instance of the Lebesgue-Stieltjes measure. *)
 Module LebesgueMeasure.
-
 Section hlength.
 Context {R : realType}.
 Local Open Scope ereal_scope.
