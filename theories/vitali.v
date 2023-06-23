@@ -297,16 +297,17 @@ apply:lte_sum_pinfty => /=.
 by rewrite subrr normr0.
 Qed.
 
-Definition total_variation (a b : R) (f : R -> R) :=
+Definition total_variation (a b : R) (f : R -> R) : R -> R :=
+(fun t =>
 ereal_sup [set x : \bar R |
 exists n abp,
-forall (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, b]%classic),
-   x = variation f ispartab].
+forall (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, t]%classic),
+   x = variation f ispartab]).
 
 Lemma BVP (a b : R) (f : R -> R) :
-BV a b f <-> (total_variation a b f < +oo)%E.
+BV a b f <-> (forall x, total_variation a b f x < +oo)%E.
 Proof.
-
+Admitted.
 
 (* leb_fund_thm 1.5 p.5*)
 Lemma AC_is_BV (a b : R) (f : R -> R) :
@@ -314,14 +315,18 @@ Lemma AC_is_BV (a b : R) (f : R -> R) :
 Proof.
 move=> ACf n abp ispart.
 have := (ACf (PosNum ltr01)).
+Admitted.
 
 (* leb_fund_thm Lemma 1 *)
-Definition _BV (a b : R) (f : R -> R) :=
+Lemma BV_decomp (a b : R) (f : R -> R) :
+  BV a b f ->
   exists g h : R -> R,
     {in `[a, b], {homo g : x y / x <= y}} /\
     {in `[a, b], {homo h : x y / x <= y}} /\
     {in `[a, b], f =1 g \- h}.
-
+Proof.
+move=> BVf.
+exists (total_variation a b f).
 End AC_BV.
 
 Section vitali.
@@ -466,6 +471,29 @@ Admitted.
 
 End Partition.
 
+Section ftc_vitali.
+Context {R: realType}.
+Variables a b : R.
+Variable f : R^o -> R^o.
+Hypothesis f_AC : AC a b f.
+Variable lsf : {measure set [the measurableType (R.-ocitv.-measurable).-sigma of salgebraType (R.-ocitv.-measurable)] -> \bar R}. (* lebesgue stietljes measure of f *)
+Hypothesis lsf_itv : forall(i1 i2 : R) (b1 b2 : bool),
+  lsf [set` (Interval (BSide b1 i1) (BSide b2 i2))] = (i2 - i1)%:E.
+
+Let ext_f x : R :=
+if x <= a then (f a)
+  else if b <= x then f b
+    else f x.
+
+Let F : R^o -> R^o := fun x => \int[[the measure _ _ of @lebesgue_measure R]]_(t in `[a, x]) ext_f t.
+
+Let DF_ (n : nat) (x : R) := n%:R * (F (x + 1/(n%:R)) - F x).
+
+Let DF x := lim F^~ x
+
+
+End ftc_vitali.
+
 Section ftc_RN.
 Context {R : realType}.
 Variables a b : R.
@@ -487,7 +515,6 @@ have [h [hh inth]]: exists h,
   forall A, measurable A ->
     lsf A = (\int[[the measure _ _ of @lebesgue_measure R]]_(s in A) (h s))%E.
   (* get h by RN *)
-  move => /=.
   admit.
 pose h_ n x := if x == b then 0 else
   \sum_(i < (2 ^ n).+1) (fine (lsf (Partition a b n i)) /
