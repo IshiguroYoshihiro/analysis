@@ -288,19 +288,18 @@ apply:lte_sum_pinfty => /=.
 by rewrite subrr normr0.
 Qed.
 
-Lemma variation_Efin (a b : R) (n : nat) (abp : nat -> R * R) (f : R -> R) (ispartabp :
-partition `I_n (fun i => `[(abp i).1, (abp i).2]%classic) `[a, b]%classic) :
-BV a b f -> variation f ispartabp = (\sum_(i < n.+1) `|f (abp i).2 - f (abp i).1|)%:E.
-Proof.
-move=> BVf.
-rewrite /variation//.
-rewrite .
-Definition total_variation (a b : R) (f : R -> R) : R -> \bar R :=
-(fun t =>
+(* memo sumEFin : (\sum)%E=(\sum)%:E *)
+
+Definition total_variation (b a : R) (f : R -> R) : \bar R :=
 ereal_sup [set x : \bar R |
 exists n abp,
-forall (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, t]%classic),
-   x = variation f ispartab]).
+forall (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, b]%classic),
+   x = variation f ispartab].
+
+Definition total_variationD (c b a: R) (f : R -> R) :
+total_variation c a f = (total_variation c b f + total_variation b a f)%E.
+Proof.
+Admitted.
 
 Lemma BVP (a b : R) (f : R -> R) :
 BV a b f <-> (forall x, total_variation a b f x < +oo)%E.
@@ -313,6 +312,7 @@ Lemma AC_is_BV (a b : R) (f : R -> R) :
 Proof.
 move=> ACf n abp ispart.
 have := (ACf (PosNum ltr01)).
+move=> {ACf} [] d ACf.
 Admitted.
 
 (* leb_fund_thm Lemma 1 *)
