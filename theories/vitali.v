@@ -154,7 +154,7 @@ split.
 Abort.
 
 Lemma derive1_indic (a b : R): (\1_`[a, b])^`() = cst 0.
-Abort.
+Admitted.
 
 Lemma indic_is_C1 (a b : R) : C1 a b \1_`[a, b].
 Proof.
@@ -165,23 +165,13 @@ split.
     red.
     move=> /= U.
     rewrite /indic.
-    
     admit.
   admit.
-rewrite /cvg_to.
-move=> x.
-move=> /=.
-move=> A.
-rewrite /nbhs /=.
-rewrite /nbhs_ball_.
-case => /=.
-move=> e e0.
-move=> eA.
-rewrite /nbhs /=.
-red.
-case: ifPn.
-  move=> xab.
-Admitted.
+rewrite derive1_indic. (* use admitted lemma *)
+apply: continuous_subspaceT.
+exact: cst_continuous.
+Abort.
+
 
 Lemma AC_set0 (a b:R) (f : R -> R) : b < a -> AC a b f.
 Proof.
@@ -285,6 +275,7 @@ apply sume_ge0 => ? _.
 exact: abse_ge0.
 Qed.
 
+
 (* leb_fund_thm Definition 2 *)
 Definition BV (a b : R) (f : R -> R) :=
   forall n abp (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, b]%classic),
@@ -297,7 +288,14 @@ apply:lte_sum_pinfty => /=.
 by rewrite subrr normr0.
 Qed.
 
-Definition total_variation (a b : R) (f : R -> R) : R -> R :=
+Lemma variation_Efin (a b : R) (n : nat) (abp : nat -> R * R) (f : R -> R) (ispartabp :
+partition `I_n (fun i => `[(abp i).1, (abp i).2]%classic) `[a, b]%classic) :
+BV a b f -> variation f ispartabp = (\sum_(i < n.+1) `|f (abp i).2 - f (abp i).1|)%:E.
+Proof.
+move=> BVf.
+rewrite /variation//.
+rewrite .
+Definition total_variation (a b : R) (f : R -> R) : R -> \bar R :=
 (fun t =>
 ereal_sup [set x : \bar R |
 exists n abp,
@@ -326,7 +324,12 @@ Lemma BV_decomp (a b : R) (f : R -> R) :
     {in `[a, b], f =1 g \- h}.
 Proof.
 move=> BVf.
-exists (total_variation a b f).
+have g := fun (t : R) =>
+(sup [set x : R |
+exists n abp,
+forall (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, t]%classic),
+   x = variation f ispartab])%E.
+
 End AC_BV.
 
 Section vitali.
