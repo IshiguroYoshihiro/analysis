@@ -261,6 +261,20 @@ rewrite mulrK => //.
 by apply: unitf_gt0.
 Admitted.
 
+(* gee0P ? *)
+Lemma ispreal (x : \bar R) : (0 <= x < +oo)%E -> exists (y : R), x = y%:E.
+Proof.
+case: x.
+    move => r _.
+    by exists r.
+  by case/andP.
+by case/andP.
+Qed.
+
+Definition asReal (x : \bar R) (p : (0 <= x < +oo)%E): R := proj1_sig (cid (@ispreal x p)).
+
+Arguments asReal x {p}.
+
 (* leb_fund_thm Beginning of 1.2 *)
 Definition variation [a b : R] [n : nat] [abp : nat -> R * R] (f : R -> R)
 (ispartabp :
@@ -268,13 +282,13 @@ partition `I_n (fun i => `[(abp i).1, (abp i).2]%classic) `[a, b]%classic)
 : \bar R :=
   \sum_(i < n.+1) `|(f (abp i).2)%:E - (f (abp i).1)%:E|.
 
+
 Lemma variation_ge0 a b n abp f ispartabp :
   (0 <= (@variation a b n abp f ispartabp))%E.
 Proof.
 apply sume_ge0 => ? _.
 exact: abse_ge0.
 Qed.
-
 
 (* leb_fund_thm Definition 2 *)
 Definition BV (a b : R) (f : R -> R) :=
@@ -289,12 +303,18 @@ by rewrite subrr normr0.
 Qed.
 
 (* memo sumEFin : (\sum)%E=(\sum)%:E *)
-
 Definition total_variation (b a : R) (f : R -> R) : \bar R :=
 ereal_sup [set x : \bar R |
 exists n abp,
 forall (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, b]%classic),
    x = variation f ispartab].
+
+Lemma Tge0_lty (b a : R) (f : R -> R) : BV b a f -> forall x, (0 <= total_variation x a f < +oo)%E.
+Proof.
+Admitted.
+
+Definition total_variation_Rfun (b a : R) (f : R -> R) (bvf : BV b a f) : R -> R :=
+fun x => @asReal (total_variation x a f) (Tge0_lty bvf x).
 
 Definition total_variationD (c b a: R) (f : R -> R) :
 total_variation c a f = (total_variation c b f + total_variation b a f)%E.
@@ -302,7 +322,7 @@ Proof.
 Admitted.
 
 Lemma BVP (a b : R) (f : R -> R) :
-BV a b f <-> (forall x, total_variation a b f x < +oo)%E.
+BV b a f <-> (forall x, total_variation x a f < +oo)%E.
 Proof.
 Admitted.
 
@@ -324,11 +344,10 @@ Lemma BV_decomp (a b : R) (f : R -> R) :
     {in `[a, b], f =1 g \- h}.
 Proof.
 move=> BVf.
-have g := fun (t : R) =>
-(sup [set x : R |
-exists n abp,
-forall (ispartab : partition `I_n (fun i=> `[(abp i).1, (abp i).2]%classic) `[a, t]%classic),
-   x = variation f ispartab])%E.
+have T := (total_variation_Rfun BVf).
+exists T.
+exists (T \- f).
+Admitted.
 
 End AC_BV.
 
