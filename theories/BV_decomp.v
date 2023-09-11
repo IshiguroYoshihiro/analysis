@@ -172,20 +172,11 @@ move: ax; rewrite le_eqVlt; move/orP => [/eqP -> | ax].
   admit.
 Admitted.
 
-Lemma BV_inr a b f (bvf : BV a b f) (x : R) : a < x <= b -> BV a x f.
+Lemma BV_inr a b f (bvf : BV a b f) (x : R) : a < x -> x <= b -> BV a x f.
 Proof.
-move=> axb.
+move=> ax xb.
 apply: (@BV_in _ _ _ bvf a x) => //.
-Qed.
-
-Definition total_variationD (a b c: R) (f : R -> R) :
-total_variation a c f = (total_variation b c f + total_variation a b f)%E.
-Proof.
-Admitted.
-
-Lemma BVP (a b : R) (f : R -> R) :
-BV a b f <-> (forall x, total_variation a x f < +oo)%E.
-Proof.
+by rewrite ax xb.
 Admitted.
 
 Lemma AC_is_BV (a : R) (d : {posnum R}) (f : R -> R) :
@@ -198,11 +189,59 @@ if x < a then 0
   else if x <= b then fine (total_variation a x f)
        else fine (total_variation a b f).
 
-Lemma total_variation_is_nondecreasing (a b : R) (f : R -> R) (bvf : BV a b f) :
- {in `[a, b] &, {homo
+Section total_variation_properties.
+
+Variables (a b c: R) (f g: R -> R).
+Let T := total_variation_fun a b f.
+
+Lemma total_variationD :
+total_variation a c f = (total_variation b c f + total_variation a b f)%E.
+Proof.
+Admitted.
+
+Lemma total_variation_fun_ge0 : {in `[a, b], forall x, 0 <= T x}.
+Proof.
+move=> x.
+rewrite in_itv /=.
+move/andP => [].
+  rewrite le_eqVlt.
+  move/orP => [/eqP <- _|ax xb];rewrite /T /total_variation_fun.
+  rewrite ifF //.
+  case: ifP.
+    move=> _.
+    by rewrite total_variation_nil.
+  move/negbT.
+  rewrite -ltNge.
+  move/ltW => ba.
+  by rewrite total_variation_nil.
+case: ifP => // _.
+case: ifP => // _.
+  apply: fine_ge0.
+  by apply: total_variation_ge0.
+have ab: a < b.
+  by apply: (lt_le_trans ax).
+apply: fine_ge0.
+by apply: total_variation_ge0.
+Qed.
+
+Lemma BVP :
+BV a b f <-> (forall x, total_variation a x f < +oo)%E.
+Proof.
+Admitted.
+
+Lemma total_variation_is_nondecreasing : BV a b f ->
+ {in `[a, b], {homo
   (total_variation_fun a b f) : x y / x <= y}}.
 Proof.
 Admitted.
+
+Lemma total_variation_fun_diff_dominates :
+  forall x y,
+    f x - f y <= total_variation_fun a b f x - total_variation_fun a b f y.
+Proof.
+Admitted.
+
+End total_variation_properties.
 
 (* TODO *)
 Variable right_continuous : forall R : Type, (R -> R) -> Prop.
@@ -223,15 +262,25 @@ Hypothesis (bvf : BV a b f).
 
 Let T := (total_variation_fun a b f).
 
+Let Tf_nondec : {in `[a, b], {homo (T - f) : x y / x <= y}}.
+Proof.
+Admitted.
+
 Lemma BV_decomp :
   exists g h : R -> R,
-    {in `[a, b], {homo g : x y / x <= y}} /\
-    {in `[a, b], {homo h : x y / x <= y}} /\
-    {in `[a, b], f =1 g \- h}.
+    [/\ {in `[a, b], {homo g : x y / x <= y}},
+    {in `[a, b], {homo h : x y / x <= y}} &
+    {in `[a, b], f =1 g \- h}].
 Proof.
 exists T.
 exists (T \- f).
 split.
+    rewrite /T.
+    move=> x xab y xy.
+    apply: total_variation_is_nondecreasing => //.
+  exact: Tf_nondec.
+move=> x _ /=.
+by rewrite opprB addrCA subrr addr0.
 Admitted.
 
 End BV_decomp.
