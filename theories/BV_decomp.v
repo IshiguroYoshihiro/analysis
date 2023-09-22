@@ -61,12 +61,12 @@ End AC.
 Record isPartition (R : realType) (a b : R) (l : list R) :=
 { head_a : forall x, head x l = a;
   last_b : forall x, last x l = b;
-  ltr_path : pairwise ltr l
+  ler_path : pairwise ler l
 }.
 
 Definition Partition (R : realType) (a b : R) := {l of isPartition a b l}.
 
-Section parititon_propertities.
+Section partition_properties.
 
 Variable R : realType.
 Variables (a b c : R).
@@ -78,21 +78,27 @@ move: lab lbc.
 rewrite /Partition.
 move=> [] l [] [] lha llb pltrl _.
 move=> [] s [] [] shb slb pltrs T.
-have t := (l ++ s).
-have tha : forall x, head x t = a.
+have t := l ++ s.
+exists t.
+split => //; split.
+    admit.
   admit.
-have tlc : forall x, last x t = c.
-  admit.
-have pltrt : pairwise ltr t.
-  admit.
-refine (tha _).
+admit.
 Admitted.
 
-Definition cat_Partition (l : Partition a b) 
+Definition cat_Partition (lab : Partition a b) (x : R) (axb : a <= x <= b) :
+  Partition a x * Partition x b.
+Proof.
+Admitted.
 
-End paritition_propertities.
+End partition_properties.
 
-Definition variation (f : R -> R) (s : Partition a b f) :=
+Section variation.
+
+Variable R : realType.
+Variables (a b c : R).
+
+Definition variation (f : R -> R) (s : Partition a b) :=
 \sum_(i <- s) `| f (next s i) - f i|.
 
 Definition variation a b (f : R -> R) s :=
