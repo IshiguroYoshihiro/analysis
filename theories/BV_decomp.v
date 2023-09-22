@@ -18,7 +18,9 @@ Import numFieldNormedType.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
-Variable R : realType.
+Section AC.
+
+Variable (R : realType).
 
 Local Definition cball (xr : R * {posnum R}) := @closed_ball_ R R normr xr.1 xr.2%:num.
 (*(B : R * {posnum R}) := [set y | `|B.1 - y| <= B.2%:num].*)
@@ -53,7 +55,45 @@ apply: (@le_lt_trans _ _ (\sum_(k in I) 2 * (`|L| + 1) * (B k).2%:num)).
 by rewrite -mulr_sumr -ltr_pdivlMl.
 Qed.
 
+End AC.
+
 (* Definition is_part_citv (a b : R) (s : seq R) := path ltr a (s ++ [:: b]). *)
+Record isPartition (R : realType) (a b : R) (l : list R) :=
+{ head_a : forall x, head x l = a;
+  last_b : forall x, last x l = b;
+  ltr_path : pairwise ltr l
+}.
+
+Definition Partition (R : realType) (a b : R) := {l of isPartition a b l}.
+
+Section parititon_propertities.
+
+Variable R : realType.
+Variables (a b c : R).
+
+Definition concat_Partition (lab : Partition a b) (lbc : Partition b c) 
+: Partition a c.
+Proof.
+move: lab lbc.
+rewrite /Partition.
+move=> [] l [] [] lha llb pltrl _.
+move=> [] s [] [] shb slb pltrs T.
+have t := (l ++ s).
+have tha : forall x, head x t = a.
+  admit.
+have tlc : forall x, last x t = c.
+  admit.
+have pltrt : pairwise ltr t.
+  admit.
+refine (tha _).
+Admitted.
+
+Definition cat_Partition (l : Partition a b) 
+
+End paritition_propertities.
+
+Definition variation (f : R -> R) (s : Partition a b f) :=
+\sum_(i <- s) `| f (next s i) - f i|.
 
 Definition variation a b (f : R -> R) s :=
 \sum_(i <- a :: s) `|f (next (a :: s ++ [:: b]) i) - f i|.
@@ -81,6 +121,10 @@ Lemma path_trans (T : eqType) (e : rel T) (trans_e : transitive e)
 forall i : T, i \in s -> e x i.
 Proof.
 move=> xx' x's.
+apply/allP.
+
+
+
 elim: s x's => // b l IH /= /andP [xb bl] i.
 rewrite in_cons => /orP [/eqP ->|] //.
   by apply (trans_e _ _ _ xx').
