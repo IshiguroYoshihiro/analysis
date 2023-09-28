@@ -64,6 +64,7 @@ Record isPartition (R : realType) (a b : R) (l : list R) :=
   ler_path : pairwise ler l
 }.
 
+(* can't define HB.structures? *)
 Definition Partition (R : realType) (a b : R) := {l of isPartition a b l}.
 
 Section partition_properties.
@@ -86,12 +87,41 @@ split => //; split.
 admit.
 Admitted.
 
-Definition cat_Partition (lab : Partition a b) (x : R) (axb : a <= x <= b) :
+Definition cut_Partition (lab : Partition a b) (x : R) (axb : a <= x <= b) :
   Partition a x * Partition x b.
 Proof.
+move: lab => [] l [] [] h_la l_lb pler_l _.
+pose lx := [seq y <- l | y <= x] ++ [:: x] : seq R.
+pose xl := x :: [seq z <- l | x <= z] : seq R.
+have h_lxa : forall t : R, head t lx = a.
+  admit.
+have l_lxl : forall t : R, last t lx = x. 
+  admit.
+have pler_lx : pairwise ler lx.
+  admit.
+have h_xlx : forall t : R, head t xl = x.
+  admit.
+have l_xlb : forall t : R, last t xl = b.
+  admit.
+have pler_xl : pairwise ler xl.
+  admit.
+split.
+  by exists lx; split.
+by exists xl; split.
 Admitted.
 
 End partition_properties.
+
+Definition Partition_lbound (R : realType) (a b : R) (l : Partition a b) := b.
+Definition Partition_ubound (R : realType) (a b : R) (l : Partition a b) := a.
+Definition Partition_islist (R : realType) (a b : R) (l : Partition a b)
+  := list R.
+Proof.
+move: l.
+move=> [] => l _.
+exact: l.
+Defined.
+
 
 Section variation.
 
@@ -99,7 +129,7 @@ Variable R : realType.
 Variables (a b c : R).
 
 Definition variation (f : R -> R) (s : Partition a b) :=
-\sum_(i <- s) `| f (next s i) - f i|.
+\sum_(i <- (Partition_is_list s)) `| f (next (Partition_is_list s) i) - f i|.
 
 Definition variation a b (f : R -> R) s :=
 \sum_(i <- a :: s) `|f (next (a :: s ++ [:: b]) i) - f i|.
