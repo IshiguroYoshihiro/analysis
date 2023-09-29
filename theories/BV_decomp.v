@@ -65,37 +65,41 @@ Record isPartition (R : realType) (a b : R) (l : list R) :=
 }.
 
 (* can't define HB.structures? *)
-Definition Partition (R : realType) (a b : R) := {l of isPartition a b l}.
+Unset Printing Notations.
+Definition Partition (R : realType) (a b : R) := {l | isPartition a b l}.
+(* Defining as { l of isPartition a b l} is sigT with unneccesary True, why? *)
 
 Section partition_properties.
 
 Variable R : realType.
 Variables (a b c : R).
 
+Definition Partition_lbound (l : Partition a b) := b.
+Definition Partition_ubound (l : Partition a b) := a.
+
 Definition concat_Partition (lab : Partition a b) (lbc : Partition b c) 
 : Partition a c.
 Proof.
 move: lab lbc.
-rewrite /Partition.
-move=> [] l [] [] lha llb pltrl _.
-move=> [] s [] [] shb slb pltrs T.
+move=> [l [lha llb pltrl]].
+move=> [s [shb slb pltrs]].
 have t := l ++ s.
 exists t.
-split => //; split.
+split => //.
     admit.
   admit.
 admit.
 Admitted.
 
-Definition cut_Partition (lab : Partition a b) (x : R) (axb : a <= x <= b) :
-  Partition a x * Partition x b.
+Definition cut_Partition (lab : Partition a b) (x : R) :
+  (Partition a x) * (Partition x b).
 Proof.
-move: lab => [] l [] [] h_la l_lb pler_l _.
+move: lab => [] l [] h_la l_lb pler_l.
 pose lx := [seq y <- l | y <= x] ++ [:: x] : seq R.
 pose xl := x :: [seq z <- l | x <= z] : seq R.
 have h_lxa : forall t : R, head t lx = a.
   admit.
-have l_lxl : forall t : R, last t lx = x. 
+have l_lxl : forall t : R, last t lx = x.
   admit.
 have pler_lx : pairwise ler lx.
   admit.
@@ -110,17 +114,20 @@ split.
 by exists xl; split.
 Admitted.
 
+Definition cutr_Partition (lab : Partition a b) (x : R) : Partition a x :=
+  let (l, _) := cut_Partition lab x in l.
+
+Definition cutl_Partition (lab : Partition a b) (x : R) : Partition x b :=
+  let (_, r) := cut_Partition lab x in r.
+
+Definition list_of_Partition (l : Partition a b)
+  : list R := proj1_sig l.
+
+
 End partition_properties.
 
-Definition Partition_lbound (R : realType) (a b : R) (l : Partition a b) := b.
-Definition Partition_ubound (R : realType) (a b : R) (l : Partition a b) := a.
-Definition Partition_islist (R : realType) (a b : R) (l : Partition a b)
-  := list R.
-Proof.
-move: l.
-move=> [] => l _.
-exact: l.
-Defined.
+
+Notation "x :: s" := (concat_Partition x s).
 
 
 Section variation.
@@ -131,14 +138,11 @@ Variables (a b c : R).
 Definition variation (f : R -> R) (s : Partition a b) :=
 \sum_(i <- (Partition_is_list s)) `| f (next (Partition_is_list s) i) - f i|.
 
-Definition variation a b (f : R -> R) s :=
-\sum_(i <- a :: s) `|f (next (a :: s ++ [:: b]) i) - f i|.
+Lemma variation_ge0 f (s : Partition a b) :
+ 0 <= variation f s. Proof. exact: sumr_ge0. Qed.
 
-Lemma variation_ge0 (a b : R) f (s : seq R) :
- 0 <= variation a b f s. Proof. exact: sumr_ge0. Qed.
-
-Lemma variation0 (a b : R) f : variation a b f [:: ] = `|f b - f a|.
-Proof. by rewrite /variation big_seq1 /= ifT. Qed.
+Lemma variation_ge f s : `|f b - f a| <= variation f s.
+Proof. rewrite /variation big_seq1 /= ifT. Qed.
 
 Lemma variation_cons a b f h rs :
   variation a b f (h :: rs) = `|f h - f a| + variation h b f rs.
