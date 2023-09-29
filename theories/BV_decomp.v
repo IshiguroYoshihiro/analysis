@@ -1,5 +1,5 @@
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
+From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap .
 From mathcomp.classical Require Import mathcomp_extra boolp classical_sets.
 From mathcomp.classical Require Import functions cardinality fsbigop.
 From mathcomp.classical Require Import set_interval.
@@ -65,7 +65,6 @@ Record isPartition (R : realType) (a b : R) (l : list R) :=
 }.
 
 (* can't define HB.structures? *)
-Unset Printing Notations.
 Definition Partition (R : realType) (a b : R) := {l | isPartition a b l}.
 (* Defining as { l of isPartition a b l} is sigT with unneccesary True, why? *)
 
@@ -76,9 +75,28 @@ Variables (a b c : R).
 
 Definition Partition_lbound (l : Partition a b) := b.
 Definition Partition_ubound (l : Partition a b) := a.
+Definition list_of_Partition (l : Partition a b)
+  : list R := proj1_sig l.
 
-Definition concat_Partition (lab : Partition a b) (lbc : Partition b c) 
-: Partition a c.
+Lemma head_cons (T : eqType) (x : T) (l : list T) :
+  forall t, head t (x :: l) = x.
+Proof.
+by elim l.
+Qed.
+
+Definition cons_Partition (x : R) (lab : Partition a b) :
+ (all (ler x) (list_of_Partition lab)) -> Partition x b.
+Proof.
+move : lab => [l [hla llb pler]] /= allle.
+exists (x :: l).
+split.
+    by elim l.
+  move=> ? /=.
+  exact: llb.
+
+
+Definition concat_Partition (lab : Partition a b) (lbc : Partition b c)
+  : Partition a c.
 Proof.
 move: lab lbc.
 move=> [l [lha llb pltrl]].
@@ -120,14 +138,10 @@ Definition cutr_Partition (lab : Partition a b) (x : R) : Partition a x :=
 Definition cutl_Partition (lab : Partition a b) (x : R) : Partition x b :=
   let (_, r) := cut_Partition lab x in r.
 
-Definition list_of_Partition (l : Partition a b)
-  : list R := proj1_sig l.
-
-
 End partition_properties.
 
 
-Notation "x :: s" := (concat_Partition x s).
+Notation "x :: s" := (cons_Partition x s).
 
 
 Section variation.
