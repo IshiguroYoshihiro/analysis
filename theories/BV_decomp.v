@@ -1,5 +1,5 @@
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap .
+From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
 From mathcomp.classical Require Import mathcomp_extra boolp classical_sets.
 From mathcomp.classical Require Import functions cardinality fsbigop.
 From mathcomp.classical Require Import set_interval.
@@ -65,8 +65,18 @@ Record isPartition (R : realType) (a b : R) (l : list R) :=
 }.
 
 (* can't define HB.structures? *)
-Definition Partition (R : realType) (a b : R) := {l | isPartition a b l}.
+Definition Partition (R : realType) (a b : R) := {l : seq R| isPartition a b l}.
 (* Defining as { l of isPartition a b l} is sigT with unneccesary True, why? *)
+
+Lemma cat_head (T : eqType) (l s : list T) (x : T) :
+  head x (l ++ s) = head x l.
+Proof.
+Admitted.
+
+Lemma cat_last (T : eqType) (l s : list T) (x : T) :
+  last x (l ++ s) = last x s.
+Proof.
+Admitted.
 
 Section partition_properties.
 
@@ -78,12 +88,6 @@ Definition Partition_ubound (l : Partition a b) := a.
 Definition list_of_Partition (l : Partition a b)
   : list R := proj1_sig l.
 
-Lemma head_cons (T : eqType) (x : T) (l : list T) :
-  forall t, head t (x :: l) = x.
-Proof.
-by elim l.
-Qed.
-
 Definition cons_Partition (x : R) (lab : Partition a b) :
  (all (ler x) (list_of_Partition lab)) -> Partition x b.
 Proof.
@@ -93,18 +97,34 @@ split.
     by elim l.
   move=> ? /=.
   exact: llb.
-
+rewrite pairwise_cons.
+by rewrite pler allle.
+Qed.
 
 Definition concat_Partition (lab : Partition a b) (lbc : Partition b c)
   : Partition a c.
 Proof.
 move: lab lbc.
-move=> [l [lha llb pltrl]].
-move=> [s [shb slb pltrs]].
-have t := l ++ s.
+move=> [l [lha llb plel]].
+move=> [s [shb slb ples]].
+pose t := l ++ s.
 exists t.
-split => //.
+split => // [x|x|].
+    by rewrite cat_head.
+  by rewrite cat_last.
+rewrite pairwise_cat.
+rewrite plel ples !andbT.
+rewrite /allrel.
+apply/allP => x xl /=.
+apply/allP => y ys.
+apply (@le_trans _ _ b).
+  move: plel.
+  rewrite (_:l = rcons (take (size l).-1 l) (last x l)); last first.
     admit.
+  rewrite pairwise_rcons.
+  rewrite llb.
+  move/andP => [/allP H _].
+  apply H.
   admit.
 admit.
 Admitted.
@@ -140,26 +160,62 @@ Definition cutl_Partition (lab : Partition a b) (x : R) : Partition x b :=
 
 End partition_properties.
 
+Lemma cat_list_Partition (R : realType) (a b c : R) (lab : Partition a b) (lbc : Partition b c) :
+  list_of_Partition (concat_Partition lab lbc) = (list_of_Partition lab) ++ (list_of_Partition lbc).
+Proof.
+move: lab lbc.
+move=> [lab plab] [lbc q] /=.
+rewrite /list_of_Partition /sval /concat_Partition.
+
+
+Definition refinement_Partition {R : realType} {a b : R} : rel (Partition a b)
+  := fun (p q : Partition a b) =>
+       subseq (list_of_Partition p) (list_of_Partition q).
+
+
 
 Notation "x :: s" := (cons_Partition x s).
-
+Notation "s ++ t" := (concat_Partition s t).
+Notation "p `<=` q" := (refinement_Partition p q).
 
 Section variation.
 
 Variable R : realType.
-Variables (a b c : R).
 
-Definition variation (f : R -> R) (s : Partition a b) :=
-\sum_(i <- (Partition_is_list s)) `| f (next (Partition_is_list s) i) - f i|.
+(* TODO: better definition *)
+Definition variation (a b : R) (f : R -> R) (s : Partition a b) :=
+\sum_(i <- (take (size (list_of_Partition s)).-1 (list_of_Partition s)))
+   `| f (next (list_of_Partition s) i) - f i|.
 
-Lemma variation_ge0 f (s : Partition a b) :
+Lemma variation_ge0 (a b : R) f (s : Partition a b) :
  0 <= variation f s. Proof. exact: sumr_ge0. Qed.
 
-Lemma variation_ge f s : `|f b - f a| <= variation f s.
-Proof. rewrite /variation big_seq1 /= ifT. Qed.
+Lemma variation_mono (a b : R) f (t s : Partition a b) :
+ t `<=` s -> variation f s <= variation f t.
+Proof.
+Admitted.
 
-Lemma variation_cons a b f h rs :
-  variation a b f (h :: rs) = `|f h - f a| + variation h b f rs.
+Lemma variation_ge (a b : R) f (s : Partition a b)
+   : `|f b - f a| <= variation f s.
+Proof.
+move: s => [] s [] shead_a slast_b sler_path.
+pose ab := [:: a; b].
+have isp_ab: isPartition a b ab.
+  split => /= [_|_|] //.
+  rewrite !andbT.
+  move : (sler_path).
+  admit.
+pose abp := ((exist [eta isPartition a b] ab isp_ab) : Partition a b).
+rewrite (_:`|f b - f a| = variation f abp) ; last first.
+  rewrite /variation /= /ab.
+  by rewrite big_seq1 ifT.
+rewrite /variation big_seq1 /= ifT //.
+admit.
+Admitted.
+
+(*
+Lemma variation_cons f h rs :
+  variation f (h :: rs) = `|f h - f a| + variation h b f rs.
 Proof.
 rewrite /variation.
 rewrite big_cons /=.
@@ -169,28 +225,19 @@ rewrite !big_seq.
 apply: eq_bigr => i.
 (* unprovable? *)
 Abort.
-
-Lemma path_trans (T : eqType) (e : rel T) (trans_e : transitive e)
-(x x' : T) (s : seq T) :  e x x' -> path e x' s ->
-forall i : T, i \in s -> e x i.
-Proof.
-move=> xx' x's.
-apply/allP.
-
-
-
-elim: s x's => // b l IH /= /andP [xb bl] i.
-rewrite in_cons => /orP [/eqP ->|] //.
-  by apply (trans_e _ _ _ xx').
-by apply IH, (path_le trans_e xb).
-Qed.
+*)
 
 (* a s0 s1 ... sn c t0 t1 ... tm b -> a s0 ... sn c + c t0 ... tm b *)
-Lemma variation_cat a b f s (c : R) :c \in s ->
-  variation a b f s =
-   variation a c f (take (index c s) s)
-     + variation c b f (drop (index c s).+1 s).
+Lemma variation_cat (a b c : R) f (s : Partition a b) (t : Partition b c) :
+   variation f (s ++ t) =
+   variation f s + variation f t.
+
 Proof.
+move: s t.
+move=> [s ps] [t pt].
+rewrite /variation //=.
+rewrite -{1}(cat_take_drop 
+
 Abort.
 
 (* memo sumEFin : (\sum)%E=(\sum)%:E *)
