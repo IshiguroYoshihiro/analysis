@@ -65,8 +65,7 @@ Record isPartition (R : realType) (a b : R) (l : list R) :=
 }.
 
 (* can't define HB.structures? *)
-Definition Partition (R : realType) (a b : R) := {l : seq R| isPartition a b l}.
-(* Defining as { l of isPartition a b l} is sigT with unneccesary True, why? *)
+Definition Partition (R : realType) (a b : R) := {l | isPartition a b l}.
 
 Lemma cat_head (T : eqType) (l s : list T) (x : T) :
   head x (l ++ s) = head x l.
@@ -165,14 +164,11 @@ Lemma cat_list_Partition (R : realType) (a b c : R) (lab : Partition a b) (lbc :
 Proof.
 move: lab lbc.
 move=> [lab plab] [lbc q] /=.
-rewrite /list_of_Partition /sval /concat_Partition.
-
+Admitted.
 
 Definition refinement_Partition {R : realType} {a b : R} : rel (Partition a b)
   := fun (p q : Partition a b) =>
        subseq (list_of_Partition p) (list_of_Partition q).
-
-
 
 Notation "x :: s" := (cons_Partition x s).
 Notation "s ++ t" := (concat_Partition s t).
@@ -235,18 +231,16 @@ Lemma variation_cat (a b c : R) f (s : Partition a b) (t : Partition b c) :
 Proof.
 move: s t.
 move=> [s ps] [t pt].
-rewrite /variation //=.
-rewrite -{1}(cat_take_drop 
-
-Abort.
+Admitted.
 
 (* memo sumEFin : (\sum)%E=(\sum)%:E *)
 Definition total_variation (a b : R) (f : R -> R) : \bar R :=
-ereal_sup [set (variation a b f s)%:E | s in [set s | path ltr a (s ++ [:: b])]].
+ereal_sup [set x : \bar R | exists s : Partition a b, x = (variation f s)%:E].
 
 Lemma total_variation_nil a b f:
   b <= a -> total_variation a b f = -oo%E.
 Proof.
+rewrite le_eqVlt.
 move=> ba.
 rewrite /total_variation.
 apply /eqP.
