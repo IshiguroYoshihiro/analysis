@@ -1546,3 +1546,111 @@ Qed.
 
 End radon_nikodym.
 Notation "'d nu '/d mu" := (Radon_Nikodym mu nu) : charge_scope.
+
+(* Section measure_sum. *)
+(* Local Open Scope ereal_scope. *)
+(* Context d (T : measurableType d) (R : realType). *)
+(* Variables (m : {finite_measure set T -> \bar R}^nat) (n : nat). *)
+
+(* Definition msum (A : set T) : \bar R := \sum_(k < n) m k A. *)
+
+(* Let msum0 : msum set0 = 0. Proof. by rewrite /msum big1. Qed. *)
+
+(* Let msum_ge0 B : 0 <= msum B. Proof. *)
+(* rewrite /msum. *)
+(* by apply: sume_ge0. *)
+(* Qed. *)
+
+(* Let msum_finite : fin_num_fun msum. *)
+(* Proof. *)
+(* rewrite /msum. *)
+(* move=> B mB. *)
+(* apply/sum_fin_numP =>  /= i _ _. *)
+(* exact: fin_num_measure. *)
+(* Qed. *)
+
+(* Let msum_sigma_additive : semi_sigma_additive msum. *)
+(* Proof. *)
+(* move=> F mF tF mUF; rewrite [X in _ --> X](_ : _ = *)
+(*     lim (fun n => \sum_(0 <= i < n) msum (F i))). *)
+(*   by apply: is_cvg_ereal_nneg_natsum => k _; exact: sume_ge0. *)
+(* rewrite nneseries_sum//; apply: eq_bigr => /= i _. *)
+(* exact: measure_semi_bigcup. *)
+(* Qed. *)
+
+(* HB.instance Definition _ := isMeasure.Build _ _ _ msum *)
+(*   msum0 msum_ge0 msum_sigma_additive. *)
+
+(* End measure_sum. *)
+
+Section charge_sum.
+Local Open Scope ereal_scope.
+Context d (T : measurableType d) (R : realType).
+Variables (m :{charge set T -> \bar R}^nat) (n : nat).
+
+Definition csum (A : set T) : \bar R := \sum_(k < n) m k A.
+
+Let csum0 : csum set0 = 0.
+Proof.
+rewrite /csum big1 // => i _.
+by rewrite charge0.
+Qed.
+
+
+Let csum_finite B :(measurable B) -> csum B \is a fin_num.
+Proof.
+move=> mB.
+rewrite /csum; apply/sum_fin_numP => /= i _ _.
+exact: fin_num_measure.
+Qed.
+
+Let csum_sigma_additive : semi_sigma_additive csum.
+Proof.
+(* move=> F mF tF mUF. *)
+(* pose Hahn i := Hahn_decomposition (m i). *)
+(* pose hahn i := proj2_sig (cid (proj2_sig (cid (Hahn i)))). *)
+(* have jordan i := (jordan_decomp (hahn i)). *)
+(* rewrite /csum/=. *)
+(* red. *)
+(* under [X in (_ `<=` [filter of X])]eq_bigr => i _. *)
+(*   rewrite (jordan_decomp (hahn i)); last by apply: bigcupT_measurable. *)
+(*   over. *)
+(* under eq_bigr => i _. *)
+(*   rewrite (jordan_decomp (hahn i)); last by apply: bigcupT_measurable. *)
+(*   over. *)
+
+
+(* rewrite [X in _ --> X](_ : _ = *)
+(*     lim (fun n => \sum_(0 <= i < n) (jordan_pos csum) (F i))). *)
+(*   apply: is_cvg_ereal_nneg_natsum => k _. exact: sume_ge0. *)
+(* rewrite nneseries_sum//; apply: eq_bigr => /= i _. *)
+(* exact: measure_semi_bigcup. *)
+Admitted.
+
+HB.instance Definition _ := isCharge.Build _ _ _ csum
+  csum0 csum_finite csum_sigma_additive.
+
+End charge_sum.
+Arguments csum {d T R}.
+
+Section charge_add.
+Local Open Scope ereal_scope.
+Context d (T : measurableType d) (R : realType).
+Variables (m1 m2 : {charge set T -> \bar R}).
+
+Definition charge_add := csum (fun n => if n is 0%N then m1 else m2) 2.
+
+Lemma charge_addE A : charge_add A = m1 A + m2 A.
+Proof. by rewrite /charge_add/= /csum 2!big_ord_recl/= big_ord0 adde0. Qed.
+
+End charge_add.
+
+Section RN_deriv_properties.
+
+Lemma RN_derivD d (T : measurableType d) (R : realType)
+  (mu : {sigma_finite_measure set T -> \bar R})
+  (nu0 nu1 : {charge set T -> \bar R})
+  (dom0 : nu0 `<< mu) (dom1 : nu1 `<< mu) :
+  'd (nu0 + nu1) '/d mu = 'd nu0 '/d mu + 'd nu1 '/d mu.
+
+End RN_deriv_properties.
