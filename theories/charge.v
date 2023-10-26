@@ -1667,6 +1667,55 @@ Proof. by rewrite /charge_add/= /csum 2!big_ord_recl/= big_ord0 adde0. Qed.
 
 End charge_add.
 
+Section pushforward_sigma_finite_measure.
+Local Open Scope ereal_scope.
+Context d d' (T1 : measurableType d) (T2 : measurableType d') (f : T1 -> T2).
+Variables (R : realType) (m : {sigma_finite_measure set T1 -> \bar R}).
+
+Hypothesis mf : measurable_fun setT f.
+
+Let pushforward_sigma_finite : sigma_finite setT (pushforward m mf).
+Proof.
+Admitted.
+
+HB.instance Definition _ := Measure_isSigmaFinite.Build _ _ _
+  (pushforward m mf) pushforward_sigma_finite.
+
+End pushforward_sigma_finite_measure.
+
+Section pushforward_charge.
+Local Open Scope ereal_scope.
+Context d d' (T1 : measurableType d) (T2 : measurableType d') (f : T1 -> T2).
+Variables (R : realFieldType) (nu : {charge set T1 -> \bar R}).
+
+Definition cpushforward (mf : measurable_fun setT f) A := nu (f @^-1` A).
+
+Hypothesis mf : measurable_fun setT f.
+
+Let cpushforward0 : cpushforward mf set0 = 0.
+Proof. by rewrite /cpushforward preimage_set0 charge0. Qed.
+
+Let cpushforward_finite A : measurable A -> cpushforward mf A \is a fin_num.
+Proof.
+move=> mA; apply: fin_num_measure.
+by rewrite -[X in measurable X]setTI; apply: mf.
+Qed.
+
+Let cpushforward_sigma_additive : semi_sigma_additive (cpushforward mf).
+Proof.
+move=> F mF tF mUF; rewrite /cpushforward preimage_bigcup.
+apply: charge_semi_sigma_additive.
+- by move=> n; rewrite -[X in measurable X]setTI; exact: mf.
+- apply/trivIsetP => /= i j _ _ ij; rewrite -preimage_setI.
+  by move/trivIsetP : tF => /(_ _ _ _ _ ij) ->//; rewrite preimage_set0.
+- by rewrite -preimage_bigcup -[X in measurable X]setTI; exact: mf.
+Qed.
+
+HB.instance Definition _ := isCharge.Build _ _ _
+  (cpushforward mf) cpushforward0 cpushforward_finite cpushforward_sigma_additive.
+
+End pushforward_charge.
+
 Section RN_deriv_properties.
 
 Lemma RN_derivD d (T : measurableType d) (R : realType)
@@ -1675,8 +1724,6 @@ Lemma RN_derivD d (T : measurableType d) (R : realType)
   (dom0 : nu0 `<< mu) (dom1 : nu1 `<< mu) :
   'd (charge_add nu0 nu1) '/d mu = 'd nu0 '/d mu \+ 'd nu1 '/d mu.
 Proof.
-rewrite /=.
-rewrite /Radon_Nikodym.
 Admitted.
 
 Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
@@ -1688,6 +1735,31 @@ Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
 Proof.
 Admitted.
 
-Lemma RN_deriv_pushforward 
+Lemma ac_pushforward d d'
+  (T : measurableType d) (T' : measurableType d')
+  (R : realType)
+  (mu : {sigma_finite_measure set T -> \bar R})
+  (nu : {charge set T -> \bar R})
+  (dom : nu `<< mu)
+  (f : T -> T') (mf : measurable_fun setT f) :
+     cpushforward nu mf `<< pushforward mu mf.
+Proof.
+move=> A mA.
+apply: dom.
+rewrite -[X in measurable X]setTI.
+by apply: mf.
+Qed.
+
+Lemma RN_deriv_pushforward d d'
+  (T : measurableType d) (T' : measurableType d')
+  (R : realType)
+  (mu : {sigma_finite_measure set T -> \bar R})
+  (nu : {charge set T -> \bar R})
+  (dom : nu `<< mu)
+  (f : T -> T') (mf : measurable_fun setT f) :
+    forall x, 'd (cpushforward nu mf) '/d (pushforward mu mf) (f x)
+           = 'd nu '/d mu x.
+Proof.
+Admitted.
 
 End RN_deriv_properties.
