@@ -1651,6 +1651,17 @@ Lemma RN_derivD d (T : measurableType d) (R : realType)
   (mu : {sigma_finite_measure set T -> \bar R})
   (nu0 nu1 : {charge set T -> \bar R})
   (dom0 : nu0 `<< mu) (dom1 : nu1 `<< mu) :
-  'd (nu0 + nu1) '/d mu = 'd nu0 '/d mu + 'd nu1 '/d mu.
+  'd (charge_add nu0 nu1) '/d mu = 'd nu0 '/d mu \+ 'd nu1 '/d mu.
+Proof.
+Admitted.
+
+Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
+  (mu : {sigma_finite_measure set T -> \bar R})
+  (nu : {charge set T -> \bar R})
+  (dom : nu `<< mu)
+  (c : R) :
+  'd (cscale c nu) '/d mu = (fun x => c%:E * 'd nu '/d mu x).
+Proof.
+Admitted.
 
 End RN_deriv_properties.
