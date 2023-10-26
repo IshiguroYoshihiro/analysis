@@ -1547,42 +1547,6 @@ Qed.
 End radon_nikodym.
 Notation "'d nu '/d mu" := (Radon_Nikodym mu nu) : charge_scope.
 
-(* Section measure_sum. *)
-(* Local Open Scope ereal_scope. *)
-(* Context d (T : measurableType d) (R : realType). *)
-(* Variables (m : {finite_measure set T -> \bar R}^nat) (n : nat). *)
-
-(* Definition msum (A : set T) : \bar R := \sum_(k < n) m k A. *)
-
-(* Let msum0 : msum set0 = 0. Proof. by rewrite /msum big1. Qed. *)
-
-(* Let msum_ge0 B : 0 <= msum B. Proof. *)
-(* rewrite /msum. *)
-(* by apply: sume_ge0. *)
-(* Qed. *)
-
-(* Let msum_finite : fin_num_fun msum. *)
-(* Proof. *)
-(* rewrite /msum. *)
-(* move=> B mB. *)
-(* apply/sum_fin_numP =>  /= i _ _. *)
-(* exact: fin_num_measure. *)
-(* Qed. *)
-
-(* Let msum_sigma_additive : semi_sigma_additive msum. *)
-(* Proof. *)
-(* move=> F mF tF mUF; rewrite [X in _ --> X](_ : _ = *)
-(*     lim (fun n => \sum_(0 <= i < n) msum (F i))). *)
-(*   by apply: is_cvg_ereal_nneg_natsum => k _; exact: sume_ge0. *)
-(* rewrite nneseries_sum//; apply: eq_bigr => /= i _. *)
-(* exact: measure_semi_bigcup. *)
-(* Qed. *)
-
-(* HB.instance Definition _ := isMeasure.Build _ _ _ msum *)
-(*   msum0 msum_ge0 msum_sigma_additive. *)
-
-(* End measure_sum. *)
-
 Section charge_lemmas.
 Context d (R : realFieldType) (T : semiRingOfSetsType d).
 
@@ -1626,27 +1590,82 @@ rewrite nneseries_sum//; apply: eq_bigr => /= i _.
 exact: charge_semi_bigcup.
 Qed.
 
+Let Hahn i := Hahn_decomposition (m i).
+Let P i : set T := proj1_sig (cid (Hahn i)).
+Let N i : set T := proj1_sig (cid (proj2_sig (cid (Hahn i)))).
+
+Let hahn i : hahn_decomposition (m i) (P i) (N i)
+  := proj2_sig (cid (proj2_sig (cid (Hahn i)))).
+Let Pos i : positive_set (m i) (P i)
+  := and4_ind (fun p=> fun=>fun=>fun=> p) (hahn i).
+Let Neg i : negative_set (m i) (N i)
+  := and4_ind (fun=> fun p=> fun=>fun=> p) (hahn i).
+
+Let jordan i := (jordan_decomp (hahn i)).
+
+Let csum_pos A := \sum_(k < n) (jordan_pos (hahn k) A).
+Let csum_neg A := \sum_(k < n) (jordan_neg (hahn k) A).
+
+Let csum_pos0 : csum_pos set0 = 0.
+Proof.
+Admitted.
+
+Let csum_pos_finite B : measurable B -> csum_pos B \is a fin_num.
+Proof.
+Admitted.
+
+Let csum_pos_sigma_additive : semi_sigma_additive csum_pos.
+Proof.
+Admitted.
+
+Let csum_neg0 : csum_neg set0 = 0.
+Proof.
+Admitted.
+
+Let csum_neg_finite B : measurable B -> csum_neg B \is a fin_num.
+Proof.
+Admitted.
+
+Let csum_neg_sigma_additive : semi_sigma_additive csum_neg.
+Proof.
+Admitted.
+
+HB.instance Definition _ := isCharge.Build _ _ _ csum_pos
+  csum_pos0 csum_pos_finite csum_pos_sigma_additive.
+
+HB.instance Definition _ := isCharge.Build _ _ _ csum_neg
+  csum_neg0 csum_neg_finite csum_neg_sigma_additive.
+
+Let csum_pos_nneg B : 0 <= csum_pos B.
+Proof.
+Admitted.
+
+Let csum_neg_nneg B : 0 <= csum_neg B.
+Proof.
+Admitted.
+
+Let csum_jordan_decomp A : measurable A ->
+  csum A = csum_pos A - csum_neg A.
+Proof.
+Admitted.
+
 Let csum_sigma_additive : semi_sigma_additive csum.
 Proof.
-(* move=> F mF tF mUF. *)
-(* pose Hahn i := Hahn_decomposition (m i). *)
-(* pose hahn i := proj2_sig (cid (proj2_sig (cid (Hahn i)))). *)
-(* have jordan i := (jordan_decomp (hahn i)). *)
-(* rewrite /csum/=. *)
-(* red. *)
-(* under [X in (_ `<=` [filter of X])]eq_bigr => i _. *)
-(*   rewrite (jordan_decomp (hahn i)); last by apply: bigcupT_measurable. *)
-(*   over. *)
-(* under eq_bigr => i _. *)
-(*   rewrite (jordan_decomp (hahn i)); last by apply: bigcupT_measurable. *)
-(*   over. *)
-
-
-(* rewrite [X in _ --> X](_ : _ = *)
-(*     lim (fun n => \sum_(0 <= i < n) (jordan_pos csum) (F i))). *)
-(*   apply: is_cvg_ereal_nneg_natsum => k _. exact: sume_ge0. *)
-(* rewrite nneseries_sum//; apply: eq_bigr => /= i _. *)
-(* exact: measure_semi_bigcup. *)
+move=> F mF tF mUF.
+rewrite csum_jordan_decomp => //.
+under eq_fun => k.
+  under eq_bigr => i _.
+    rewrite csum_jordan_decomp => //.
+    over.
+  rewrite (_: \sum_(0 <= i < k)
+                (fun i0 => csum_pos (F i0) - csum_neg (F i0)) i
+     = \sum_(0 <= i < k) (csum_pos (F i))
+        - \sum_(0 <= i < k) (csum_neg (F i)));last first.
+    admit.
+  over.
+rewrite /=.
+(* ? *)
+apply cvgeD.
 Admitted.
 
 HB.instance Definition _ := isCharge.Build _ _ _ csum
@@ -1722,8 +1741,20 @@ Lemma RN_derivD d (T : measurableType d) (R : realType)
   (mu : {sigma_finite_measure set T -> \bar R})
   (nu0 nu1 : {charge set T -> \bar R})
   (dom0 : nu0 `<< mu) (dom1 : nu1 `<< mu) :
-  'd (charge_add nu0 nu1) '/d mu = 'd nu0 '/d mu \+ 'd nu1 '/d mu.
+   ae_eq mu setT ('d (charge_add nu0 nu1) '/d mu) ('d nu0 '/d mu \+ 'd nu1 '/d mu).
 Proof.
+apply: integral_ae_eq => //.
+    apply:Radon_Nikodym_integrable.
+    admit.
+  apply: integrableD => //;by apply: Radon_Nikodym_integrable.
+move=> E mE.
+rewrite integralD => //; last 2 first.
+    admit.
+  admit.
+rewrite -Radon_Nikodym_integral //; last first.
+  admit.
+rewrite -Radon_Nikodym_integral //.
+rewrite -Radon_Nikodym_integral //.
 Admitted.
 
 Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
@@ -1733,6 +1764,7 @@ Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
   (c : R) :
   'd (cscale c nu) '/d mu = (fun x => c%:E * 'd nu '/d mu x).
 Proof.
+
 Admitted.
 
 Lemma ac_pushforward d d'
@@ -1757,8 +1789,8 @@ Lemma RN_deriv_pushforward d d'
   (nu : {charge set T -> \bar R})
   (dom : nu `<< mu)
   (f : T -> T') (mf : measurable_fun setT f) :
-    forall x, 'd (cpushforward nu mf) '/d (pushforward mu mf) (f x)
-           = 'd nu '/d mu x.
+    {ae mu, forall x, 'd (cpushforward nu mf) '/d (pushforward mu mf) (f x)
+           = 'd nu '/d mu x}.
 Proof.
 Admitted.
 
