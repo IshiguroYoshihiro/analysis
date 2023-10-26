@@ -1583,6 +1583,18 @@ Notation "'d nu '/d mu" := (Radon_Nikodym mu nu) : charge_scope.
 
 (* End measure_sum. *)
 
+Section charge_lemmas.
+Context d (R : realFieldType) (T : semiRingOfSetsType d).
+
+Variable mu : {charge set T -> \bar R}.
+
+Lemma charge_semi_bigcup A : (forall i : nat, measurable (A i)) ->
+    trivIset setT A -> measurable (\bigcup_n A n) ->
+  mu (\bigcup_n A n) = \sum_(i <oo) mu (A i).
+Proof. by move=> Am Atriv /charge_semi_sigma_additive/cvg_lim<-//. Qed.
+
+End charge_lemmas.
+
 Section charge_sum.
 Local Open Scope ereal_scope.
 Context d (T : measurableType d) (R : realType).
@@ -1596,12 +1608,22 @@ rewrite /csum big1 // => i _.
 by rewrite charge0.
 Qed.
 
-
 Let csum_finite B :(measurable B) -> csum B \is a fin_num.
 Proof.
 move=> mB.
 rewrite /csum; apply/sum_fin_numP => /= i _ _.
 exact: fin_num_measure.
+Qed.
+
+Let csum_sigma_additive_nneg :
+  (forall i B, 0 <= m i B) -> semi_sigma_additive csum.
+Proof.
+move=> nneg F mF tF mUF.
+rewrite [X in _ --> X](_ : _ =
+    lim (fun n => \sum_(0 <= i < n) csum (F i))).
+  apply: is_cvg_ereal_nneg_natsum => k _. exact: sume_ge0.
+rewrite nneseries_sum//; apply: eq_bigr => /= i _.
+exact: charge_semi_bigcup.
 Qed.
 
 Let csum_sigma_additive : semi_sigma_additive csum.
@@ -1653,6 +1675,8 @@ Lemma RN_derivD d (T : measurableType d) (R : realType)
   (dom0 : nu0 `<< mu) (dom1 : nu1 `<< mu) :
   'd (charge_add nu0 nu1) '/d mu = 'd nu0 '/d mu \+ 'd nu1 '/d mu.
 Proof.
+rewrite /=.
+rewrite /Radon_Nikodym.
 Admitted.
 
 Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
@@ -1663,5 +1687,7 @@ Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
   'd (cscale c nu) '/d mu = (fun x => c%:E * 'd nu '/d mu x).
 Proof.
 Admitted.
+
+Lemma RN_deriv_pushforward 
 
 End RN_deriv_properties.
