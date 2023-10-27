@@ -1630,6 +1630,7 @@ Let csum_neg_sigma_additive : semi_sigma_additive csum_neg.
 Proof.
 Admitted.
 
+
 HB.instance Definition _ := isCharge.Build _ _ _ csum_pos
   csum_pos0 csum_pos_finite csum_pos_sigma_additive.
 
@@ -1644,8 +1645,28 @@ Let csum_neg_nneg B : 0 <= csum_neg B.
 Proof.
 Admitted.
 
+Definition sum_pos := measure_of_charge _ csum_pos_nneg.
+
+HB.instance Definition _ := Measure.on sum_pos.
+
+Let finite_csum_pos : fin_num_fun csum_pos.
+Proof. by move=> U mU; rewrite fin_num_measure. Qed.
+
+HB.instance Definition _ := @Measure_isFinite.Build _ _ _
+  sum_pos finite_csum_pos.
+
+Definition sum_neg := measure_of_charge _ csum_neg_nneg.
+
+HB.instance Definition _ := Measure.on sum_neg.
+
+Let finite_csum_neg : fin_num_fun csum_neg.
+Proof. by move=> U mU; rewrite fin_num_measure. Qed.
+
+HB.instance Definition _ := @Measure_isFinite.Build _ _ _
+  sum_neg finite_csum_neg.
+
 Let csum_jordan_decomp A : measurable A ->
-  csum A = csum_pos A - csum_neg A.
+  csum A = sum_pos A - sum_neg A.
 Proof.
 Admitted.
 
@@ -1658,14 +1679,12 @@ under eq_fun => k.
     rewrite csum_jordan_decomp => //.
     over.
   rewrite (_: \sum_(0 <= i < k)
-                (fun i0 => csum_pos (F i0) - csum_neg (F i0)) i
-     = \sum_(0 <= i < k) (csum_pos (F i))
-        - \sum_(0 <= i < k) (csum_neg (F i)));last first.
+                (fun i0 => sum_pos (F i0) - sum_neg (F i0)) i
+     = \sum_(0 <= i < k) (sum_pos (F i))
+        - \sum_(0 <= i < k) (sum_neg (F i)));last first.
     admit.
   over.
-rewrite /=.
 (* ? *)
-apply cvgeD.
 Admitted.
 
 HB.instance Definition _ := isCharge.Build _ _ _ csum
@@ -1762,9 +1781,19 @@ Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
   (nu : {charge set T -> \bar R})
   (dom : nu `<< mu)
   (c : R) :
-  'd (cscale c nu) '/d mu = (fun x => c%:E * 'd nu '/d mu x).
+  ae_eq mu setT ('d (cscale c nu) '/d mu) (fun x => c%:E * 'd nu '/d mu x).
 Proof.
-
+apply: integral_ae_eq => //.
+    apply: Radon_Nikodym_integrable.
+    admit.
+  apply: integrableZl => //.
+  by apply: Radon_Nikodym_integrable.
+move=> E mE.
+rewrite integralZl => //; last first.
+  admit.
+rewrite -Radon_Nikodym_integral => //; last first.
+  admit.
+rewrite -Radon_Nikodym_integral => //.
 Admitted.
 
 Lemma ac_pushforward d d'
