@@ -1776,6 +1776,19 @@ rewrite -Radon_Nikodym_integral //.
 rewrite -Radon_Nikodym_integral //.
 Admitted.
 
+Lemma cscale_dominates d (T : measurableType d) (R : realType)
+  (mu : {sigma_finite_measure set T -> \bar R})
+  (nu : {charge set T -> \bar R})
+  (c : R)
+  (dom : nu `<< mu)
+  : cscale c nu `<< mu.
+Proof.
+move => E.
+move/dom/[apply].
+rewrite/cscale=> ->.
+by rewrite mule0.
+Qed.
+
 Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
   (mu : {sigma_finite_measure set T -> \bar R})
   (nu : {charge set T -> \bar R})
@@ -1785,16 +1798,17 @@ Lemma RN_deriv_scale d (T : measurableType d) (R : realType)
 Proof.
 apply: integral_ae_eq => //.
     apply: Radon_Nikodym_integrable.
-    admit.
+    by apply: cscale_dominates.
   apply: integrableZl => //.
   by apply: Radon_Nikodym_integrable.
 move=> E mE.
 rewrite integralZl => //; last first.
-  admit.
+  apply: (integrableS measurableT) => //.
+  by apply: Radon_Nikodym_integrable.
 rewrite -Radon_Nikodym_integral => //; last first.
-  admit.
+  by apply: cscale_dominates.
 rewrite -Radon_Nikodym_integral => //.
-Admitted.
+Qed.
 
 Lemma ac_pushforward d d'
   (T : measurableType d) (T' : measurableType d')
