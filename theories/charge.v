@@ -1876,6 +1876,7 @@ Lemma RN_deriv_chain_finite d (T : measurableType d) (R : realType)
        ('d [the {charge set T -> \bar R} of charge_of_finite_measure nu] '/d mu \*
         'd [the {charge set T -> \bar R} of charge_of_finite_measure mu] '/d lambda).
 Proof.
+have dom_nm : nu `<< lambda := (measure_dominates_trans dom_nk dom_km).
 pose dnudlambda := ('d [the {charge set T -> \bar R} of charge_of_finite_measure
                                           nu] '/d lambda).
 fold dnudlambda.
@@ -1893,12 +1894,26 @@ have f_ge0 : forall x, 0 <= f x.
   rewrite /f => x.
   case: ifP.
     by move=> _.
-  
+  move/negbT.
+  by rewrite -leNgt.
 have mf : measurable_fun setT f.
-  admit.
+  rewrite /f.
+  apply: measurable_fun_ifT.
+      apply:(measurable_fun_bool false).
+      rewrite preimage_false.
+      apply: measurableC.
+      under eq_set => x.
+        under eq_fun => t.
+          rewrite (_:0 = (cst 0%:E) t) => //.
+          over.
+        over.
+      rewrite -(setTI ([set x| _])).
+      apply: emeasurable_fun_lt => //.
+      by apply: RN_deriv_measurable.
+    exact: measurable_cst.
+  exact: RN_deriv_measurable.
 apply: (ae_eq_trans ae_eq_f).
 have [f' [f'_nd /= f'_f]] := approximation measurableT mf (fun x _ => f_ge0 x).
-have dom_nm : nu `<< lambda := (measure_dominates_trans dom_nk dom_km).
 apply: integral_ae_eq => //.
     apply/integrableP; split => //.
     rewrite (_: \int[lambda]_x `|f x| = \int[lambda]_x f x); last first.
