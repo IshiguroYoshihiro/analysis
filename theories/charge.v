@@ -1547,6 +1547,30 @@ Qed.
 End radon_nikodym.
 Notation "'d nu '/d mu" := (Radon_Nikodym mu nu) : charge_scope.
 
+Definition charge_of_finite_measure d (T : measurableType d) (R : realType)
+  (mu : {finite_measure set T -> \bar R}) : set T -> \bar R := mu.
+
+
+Section charge_of_finite_measure.
+Context d (T : measurableType d) (R : realType).
+Variables (mu : {finite_measure set T -> \bar R}).
+
+Local Notation nu := (charge_of_finite_measure mu).
+
+Let nu0 : nu set0 = 0. Proof. exact: measure0. Qed.
+
+Let nu_finite S : measurable S -> nu S \is a fin_num.
+Proof. by apply: fin_num_measure. Qed.
+
+Let nu_sigma_additive : semi_sigma_additive nu.
+Proof. exact: measure_semi_sigma_additive. Qed.
+
+HB.instance Definition _ := isCharge.Build _ T R (charge_of_finite_measure mu)
+  nu0 nu_finite nu_sigma_additive.
+
+End charge_of_finite_measure.
+Arguments measure_of_charge {d T R}.
+
 Section charge_lemmas.
 Context d (R : realFieldType) (T : semiRingOfSetsType d).
 
@@ -1589,7 +1613,7 @@ rewrite [X in _ --> X](_ : _ =
 rewrite nneseries_sum//; apply: eq_bigr => /= i _.
 exact: charge_semi_bigcup.
 Qed.
-
+(* TODO: move to jordan_decomp_properties, jordan_decompD*)
 Let Hahn i := Hahn_decomposition (m i).
 Let P i : set T := proj1_sig (cid (Hahn i)).
 Let N i : set T := proj1_sig (cid (proj2_sig (cid (Hahn i)))).
@@ -1674,17 +1698,23 @@ Let csum_sigma_additive : semi_sigma_additive csum.
 Proof.
 move=> F mF tF mUF.
 rewrite csum_jordan_decomp => //.
-under eq_fun => k.
-  under eq_bigr => i _.
-    rewrite csum_jordan_decomp => //.
+rewrite (_:(fun n0 : nat => \sum_(0 <= i < n0) csum (F i)) =
+           (fun n0 : nat => \sum_(0 <= i < n0) (sum_pos (F i))
+              - \sum_(0 <= i < n0) (sum_neg (F i)))); last first.
+  under eq_fun => n0.
+    under eq_bigr => i _.
+      rewrite csum_jordan_decomp => //.
     over.
-  rewrite (_: \sum_(0 <= i < k)
+  rewrite (_: \sum_(0 <= i < n0)
                 (fun i0 => sum_pos (F i0) - sum_neg (F i0)) i
-     = \sum_(0 <= i < k) (sum_pos (F i))
-        - \sum_(0 <= i < k) (sum_neg (F i)));last first.
-    admit.
+     = \sum_(0 <= i < n0) (sum_pos (F i))
+        - \sum_(0 <= i < n0) (sum_neg (F i)));last first.
+  admit.
   over.
-(* ? *)
+  done.
+apply: cvgeB.
+    admit.
+  admit.
 Admitted.
 
 HB.instance Definition _ := isCharge.Build _ _ _ csum
@@ -1754,6 +1784,14 @@ HB.instance Definition _ := isCharge.Build _ _ _
 
 End pushforward_charge.
 
+HB.builders Context d (T : measurableType d) (R : realType)
+  mu of Measure_isFinite d T R mu.
+
+HB.instance Definition _ := isCharge.Build _ _ _
+  mu (measure0 mu) fin_num_measure measure_semi_sigma_additive.
+
+HB.end.
+
 Section RN_deriv_properties.
 
 Lemma RN_derivD d (T : measurableType d) (R : realType)
@@ -1810,6 +1848,84 @@ rewrite -Radon_Nikodym_integral => //; last first.
 rewrite -Radon_Nikodym_integral => //.
 Qed.
 
+Lemma RN_deriv_measurable d (T : measurableType d) (R : realType)
+  (mu : {sigma_finite_measure set T -> \bar R})
+  (nu : {charge set T -> \bar R})
+  (dom : nu `<< mu) :
+  measurable_fun setT ('d nu '/d mu).
+Proof.
+apply: (@measurable_int _ _ _ mu).
+exact: Radon_Nikodym_integrable.
+Qed.
+
+Lemma RN_deriv_ge0 d (T : measurableType d) (R : realType)
+  (mu : {sigma_finite_measure set T -> \bar R})
+  (nu : {charge set T -> \bar R})
+  (dom : nu `<< mu) :
+(forall E, 0 <= nu E) -> forall x, 0 <= 'd nu '/d mu x.
+Proof.
+Admitted.
+
+Lemma RN_deriv_chain_finite d (T : measurableType d) (R : realType)
+  (mu : {finite_measure set T -> \bar R})
+  (lambda : {finite_measure set T -> \bar R})
+  (nu : {finite_measure set T -> \bar R})
+  (dom_nk : nu `<< mu)
+  (dom_km : mu `<< lambda) :
+     ae_eq lambda setT ('d [the {charge set T -> \bar R} of charge_of_finite_measure nu] '/d lambda)
+       ('d [the {charge set T -> \bar R} of charge_of_finite_measure nu] '/d mu \*
+        'd [the {charge set T -> \bar R} of charge_of_finite_measure mu] '/d lambda).
+Proof.
+pose dnudlambda := ('d [the {charge set T -> \bar R} of charge_of_finite_measure
+                                          nu] '/d lambda).
+fold dnudlambda.
+pose g := ('d [the {charge set T -> \bar R} of charge_of_finite_measure mu] '/d lambda).
+fold g.
+have g_ge0 : forall x, 0 <= g x.
+  rewrite /g.
+  by apply: RN_deriv_ge0.
+pose nufin := [the {charge set T -> \bar R} of charge_of_finite_measure nu].
+fold nufin.
+pose f x := if dnudlambda x < 0 then 0 else dnudlambda x.
+have ae_eq_f: ae_eq lambda setT dnudlambda f.
+  admit.
+have f_ge0 : forall x, 0 <= f x.
+  rewrite /f => x.
+  case: ifP.
+    by move=> _.
+  
+have mf : measurable_fun setT f.
+  admit.
+apply: (ae_eq_trans ae_eq_f).
+have [f' [f'_nd /= f'_f]] := approximation measurableT mf (fun x _ => f_ge0 x).
+have dom_nm : nu `<< lambda := (measure_dominates_trans dom_nk dom_km).
+apply: integral_ae_eq => //.
+    apply/integrableP; split => //.
+    rewrite (_: \int[lambda]_x `|f x| = \int[lambda]_x f x); last first.
+      admit.
+    rewrite (ae_eq_integral dnudlambda f) // /dnudlambda.
+        rewrite -Radon_Nikodym_integral => //=.
+        apply: fin_num_fun_lty.
+        exact: fin_num_measure.
+      by apply: RN_deriv_measurable.
+    exact: ae_eq_sym.
+  admit.
+move=> E mE.
+apply: (emeasurable_fun_cvg (f f')) => //.
+Admitted.
+
+Lemma RN_deriv_chain d (T : measurableType d) (R : realType)
+  (m : {sigma_finite_measure set T -> \bar R})
+  (k : {finite_measure set T -> \bar R})
+  (n : {charge set T -> \bar R})
+  (dom_nk : n `<< k)
+  (dom_km : k `<< m) :
+     ae_eq m setT ('d n '/d m)
+       ('d n '/d k \*
+        'd [the {charge set T -> \bar R} of charge_of_finite_measure k] '/d m).
+Proof.
+Admitted.
+
 Lemma ac_pushforward d d'
   (T : measurableType d) (T' : measurableType d')
   (R : realType)
@@ -1832,9 +1948,13 @@ Lemma RN_deriv_pushforward d d'
   (nu : {charge set T -> \bar R})
   (dom : nu `<< mu)
   (f : T -> T') (mf : measurable_fun setT f) :
-    {ae mu, forall x, 'd (cpushforward nu mf) '/d (pushforward mu mf) (f x)
-           = 'd nu '/d mu x}.
+    ae_eq mu setT ('d (cpushforward nu mf) '/d (pushforward mu mf) \o f)
+           ('d nu '/d mu).
 Proof.
+apply: integral_ae_eq => //.
+    admit.
+  admit.
+move=> E mE /=.
 Admitted.
 
 End RN_deriv_properties.
