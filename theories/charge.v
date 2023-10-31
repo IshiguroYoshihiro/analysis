@@ -1858,37 +1858,81 @@ apply: (@measurable_int _ _ _ mu).
 exact: Radon_Nikodym_integrable.
 Qed.
 
-Lemma RN_deriv_ge0 d (T : measurableType d) (R : realType)
+Lemma integrableM_nneg d (T : measurableType d) (R : realType)
+  (mu : {measure set T -> \bar R})
+  (f g : T -> \bar R) :
+(forall x, 0 <= f x) -> (forall x, 0 <= g x) ->
+mu.-integrable setT f -> mu.-integrable setT g -> mu.-integrable setT (f \* g).
+Proof.
+move=> f0 g0 /integrableP [mf foo] /integrableP [mg goo].
+apply/integrableP; split.
+  by apply: emeasurable_funM.
+under eq_integral do rewrite abseM.
+(* use Approximation & monotone_convergence *)
+Admitted.
+
+Lemma measure_dominates_ae_eq d (T : measurableType d) (R : realType)
+  (mu : {measure set T -> \bar R})
+  (nu : {measure set T -> \bar R})
+  (dom : nu `<< mu)
+  (f g : T -> \bar R) :
+    ae_eq mu setT f g -> ae_eq nu setT f g.
+Proof.
+move=> [] E [] mE E0 cfgE.
+exists E; split => //.
+by apply: dom.
+Qed.
+
+Lemma RN_deriv_ae_ge0 d (T : measurableType d) (R : realType)
   (mu : {sigma_finite_measure set T -> \bar R})
   (nu : {charge set T -> \bar R})
   (dom : nu `<< mu) :
-(forall E, 0 <= nu E) -> forall x, 0 <= 'd nu '/d mu x.
+(forall E, 0 <= nu E) -> {ae mu, forall x, 0 <= 'd nu '/d mu x}.
 Proof.
+move=> nu0.
+exists [set x | 'd nu '/d mu x < 0]; split.
+    admit.
+  admit.
+move=> x /=.
+move/negP.
+by rewrite -ltNge.
 Admitted.
 
 Lemma RN_deriv_chain_finite d (T : measurableType d) (R : realType)
   (mu : {finite_measure set T -> \bar R})
   (lambda : {finite_measure set T -> \bar R})
   (nu : {finite_measure set T -> \bar R})
-  (dom_nk : nu `<< mu)
-  (dom_km : mu `<< lambda) :
+  (dom_nm : nu `<< mu)
+  (dom_ml : mu `<< lambda) :
      ae_eq lambda setT ('d [the {charge set T -> \bar R} of charge_of_finite_measure nu] '/d lambda)
        ('d [the {charge set T -> \bar R} of charge_of_finite_measure nu] '/d mu \*
         'd [the {charge set T -> \bar R} of charge_of_finite_measure mu] '/d lambda).
 Proof.
-have dom_nm : nu `<< lambda := (measure_dominates_trans dom_nk dom_km).
-pose dnudlambda := ('d [the {charge set T -> \bar R} of charge_of_finite_measure
-                                          nu] '/d lambda).
-fold dnudlambda.
-pose g := ('d [the {charge set T -> \bar R} of charge_of_finite_measure mu] '/d lambda).
-fold g.
+have dom_nl : nu `<< lambda := (measure_dominates_trans dom_nm dom_ml).
+pose dndl := ('d [the {charge set T -> \bar R}
+of charge_of_finite_measure nu] '/d lambda).
+fold dndl.
+pose dmdl := ('d [the {charge set T -> \bar R} of charge_of_finite_measure mu]
+                   '/d lambda).
+fold dmdl.
+pose g x := if (dmdl x) < 0 then 0 else dmdl x.
+have ae_eq_g : ae_eq lambda setT dmdl g.
+  admit.
 have g_ge0 : forall x, 0 <= g x.
-  rewrite /g.
-  by apply: RN_deriv_ge0.
-pose nufin := [the {charge set T -> \bar R} of charge_of_finite_measure nu].
-fold nufin.
-pose f x := if dnudlambda x < 0 then 0 else dnudlambda x.
-have ae_eq_f: ae_eq lambda setT dnudlambda f.
+  rewrite /g => x.
+  case: ifP.
+    done.
+  move/negbT.
+  by rewrite -leNgt.
+pose dndm := 'd [the {charge set T -> \bar R} of charge_of_finite_measure nu]
+  '/d mu.
+fold dndm.
+pose h x := if dndm x < 0 then 0 else dndm x.
+have ae_eq_h : ae_eq lambda setT dndm h.
+  (* cannot provable *)
+  admit.
+pose f x := if dndl x < 0 then 0 else dndl x.
+have ae_eq_f: ae_eq lambda setT dndl f.
   admit.
 have f_ge0 : forall x, 0 <= f x.
   rewrite /f => x.
@@ -1913,11 +1957,20 @@ have mf : measurable_fun setT f.
     exact: measurable_cst.
   exact: RN_deriv_measurable.
 apply: (ae_eq_trans ae_eq_f).
+apply: ae_eq_sym.
+have tmp := (ae_eq_mul2l dndm ae_eq_g).
+apply: (ae_eq_trans tmp).
+move: tmp => _. (* ? *)
+(* here use ae_eq_h *)
+have tmp := (ae_eq_mul2r g ae_eq_h).
+apply: (ae_eq_trans tmp).
+(* --- *)
 have [f' [f'_nd /= f'_f]] := approximation measurableT mf (fun x _ => f_ge0 x).
 apply: integral_ae_eq => //.
+    apply: integrableM_nneg.
+          
     apply/integrableP; split => //.
-    rewrite (_: \int[lambda]_x `|f x| = \int[lambda]_x f x); last first.
-      admit.
+    under eq_integral do rewrite gee0_abs => //.
     rewrite (ae_eq_integral dnudlambda f) // /dnudlambda.
         rewrite -Radon_Nikodym_integral => //=.
         apply: fin_num_fun_lty.
