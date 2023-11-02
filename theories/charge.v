@@ -1571,6 +1571,36 @@ move=> numu; rewrite /Radon_Nikodym; case: pselect => // {}numu.
 by case: cid2.
 Qed.
 
+Theorem Radon_Nikodym_Finite_ge0
+    (mu : {sigma_finite_measure set T -> \bar R})
+    (nu : {finite_measure set T -> \bar R}) :
+    nu `<< mu ->
+    forall x, 0 <= (Radon_Nikodym_SigmaFinite mu nu) x.
+Proof.
+move=> numu; rewrite /Radon_Nikodym_SigmaFinite; case: pselect => // {}numu.
+by case: cid => x [].
+Qed.
+
+Theorem Radon_Nikodym_Finite_integrable
+    (mu : {sigma_finite_measure set T -> \bar R})
+    (nu : {finite_measure set T -> \bar R}) :
+    nu `<< mu ->
+  mu.-integrable [set: T] (Radon_Nikodym_SigmaFinite mu nu).
+Proof.
+move=> numu; rewrite /Radon_Nikodym_SigmaFinite; case: pselect => // {}numu.
+by case: cid => x [].
+Qed.
+
+Theorem Radon_Nikodym_Finite_integral
+    (mu : {sigma_finite_measure set T -> \bar R})
+    (nu : {finite_measure set T -> \bar R}) :
+    nu `<< mu -> forall A, measurable A ->
+ nu A = \int[mu]_(x in A) (Radon_Nikodym_SigmaFinite mu nu) x.
+Proof.
+move=> numu; rewrite /Radon_Nikodym_SigmaFinite; case: pselect => // {}numu.
+by case: cid => x [].
+Qed.
+
 End radon_nikodym.
 Notation "'d nu '/d mu" := (Radon_Nikodym mu nu) : charge_scope.
 
@@ -1631,6 +1661,18 @@ Proof. by move=> Am Atriv /charge_semi_sigma_additive/cvg_lim<-//. Qed.
 
 End charge_lemmas.
 
+Lemma measure_dominates_ae_eq d (T : measurableType d) (R : realType)
+  (mu : {measure set T -> \bar R})
+  (nu : {measure set T -> \bar R})
+  (dom : nu `<< mu)
+  (f g : T -> \bar R) :
+    ae_eq mu setT f g -> ae_eq nu setT f g.
+Proof.
+move=> [] E [] mE E0 cfgE.
+exists E; split => //.
+by apply: dom.
+Qed.
+
 Section chain_rule.
 Context d (T : measurableType d) (R : realType).
 Variables (nu : {finite_measure set T -> \bar R})
@@ -1647,25 +1689,28 @@ set f := 'd (charge_of_finite_measure nu) '/d mu.
 set g := 'd (charge_of_finite_measure mu) '/d la.
 set f' := Radon_Nikodym_SigmaFinite mu nu.
 have mf' : measurable_fun setT f'.
-  rewrite /f'/Radon_Nikodym_SigmaFinite.
-  case: pselect => // {}numu.
-  case: cid => /= {}f' [_ + _].
-  exact: measurable_int.
+  apply: measurable_int.
+  exact: Radon_Nikodym_Finite_integrable.
 have f0 t : 0 <= f' t.
-  rewrite /f'/Radon_Nikodym_SigmaFinite.
-  case: pselect => // {}numu.
-  by case: cid => /= => {f' mf'}f' [+ _ _].
+  exact: Radon_Nikodym_Finite_ge0.
 have [h [ndh hf']] := approximation measurableT mf' (fun x _ => f0 x).
 apply: integral_ae_eq => //.
 - apply: Radon_Nikodym_integrable.
   exact: measure_dominates_trans mula.
 - admit.
 - move=> E mE.
+  have mindic_hn : forall n, forall n0 : R, measurable_fun E
+    (fun x : T => (n0 * \1_(h n @^-1` [set n0]) x)%:E).
+    move=> n c.
+    apply: (measurable_comp measurableT) => //.
+    apply: measurable_funM.
+      exact: measurable_cst.
+    exact: measurable_indic.
   have H1 : \int[mu]_(x in E) f' x = lim (\int[mu]_(x in E) (EFin \o h n) x @[n --> \oo]).
     admit.
   have H2 : \int[la]_(x in E) (f' \* g) x = lim (\int[la]_(x in E) ((EFin \o h n) \* g) x @[n --> \oo]).
     admit.
-  (* TODO: lemma *)
+  (* TODO: lemma change_of_variables *)
   have H3 : \int[mu]_(x in E) f' x = \int[la]_(x in E) (f' \* g) x.
     have H4 F : measurable F ->
         \int[mu]_(x in E) (EFin \o \1_F) x = \int[la]_(x in E) ((EFin \o \1_F) x * g x).
@@ -1682,39 +1727,55 @@ apply: integral_ae_eq => //.
     rewrite H1 H2.
     suff suf : forall n, \int[mu]_(x in E) (EFin \o h n) x =
                          \int[la]_(x in E) ((EFin \o h n) x * g x).
-    under eq_fun.
-      by move=> n; rewrite suf; over.
-    done.
+      under eq_fun.
+        by move=> n; rewrite suf; over.
+      done.
     move=> n.
     have hEn := fimfunE (h n).
     transitivity (\int[mu]_(x in E) (\sum_(y \in range (h n)) (y * \1_(h n @^-1` [set y]) x)%:E)).
       by apply: eq_integral => t tE; rewrite /= hEn -fsumEFin.
+    rewrite ge0_integral_fsum//; last first.
+      move=> m y Ey.
+      exact: nnfun_muleindic_ge0.
+      transitivity (\int[la]_(x in E) (\sum_(y \in range (h n)) ((y * \1_(h n @^-1` [set y]) x)%:E * g x))); last first.
+    under eq_integral => x xE.
+      rewrite -ge0_mule_fsuml; last first.
+        move=> y.
+        by apply: nnfun_muleindic_ge0.
+      rewrite fsumEFin // -(hEn x).
+      over.
+      done.
     rewrite ge0_integral_fsum//; last 2 first.
-      admit.
-      admit.
-    transitivity (\int[la]_(x in E) (\sum_(y \in range (h n)) ((y * \1_(h n @^-1` [set y]) x)%:E * g x))); last first.
-      admit.
-    rewrite ge0_integral_fsum//; last 2 first.
-      admit.
-      admit.
+        move=> y.
+        apply: emeasurable_funM.
+          exact: mindic_hn.
+        apply: (@measurable_int _ _ _ la).
+        apply: (integrableS measurableT) => //.
+        exact: Radon_Nikodym_integrable.
+      move=> m y Ey.
+      apply: mule_ge0.
+        exact: nnfun_muleindic_ge0.
+      (* Radon_Nikodym_SigmaFinite_ge0 *)admit.
     apply: eq_fsbigr => r rhn.
     under eq_integral do rewrite EFinM.
-    rewrite integralZl//; last admit.
+    rewrite integralZl_indic_nnsfun => //.
     under [RHS]eq_integral do rewrite EFinM -muleA.
     rewrite integralZl//; last admit.
     congr (_ * _).
     by rewrite H4.
   transitivity (\int[la]_(x in E) (f' x * g x)); last first.
     apply: ae_eq_integral => //.
-    admit.
-    admit.
+        apply measurable_funTS.
+        apply: (emeasurable_funM); apply: measurable_int.
+          exact: Radon_Nikodym_Finite_integrable.
+        exact: Radon_Nikodym_integrable.
+      apply measurable_funTS.
+      by apply: (emeasurable_funM); apply: measurable_int; apply: Radon_Nikodym_integrable.
     admit.
   rewrite -H3.
   rewrite -Radon_Nikodym_integral//=.
-  rewrite /f'/Radon_Nikodym_SigmaFinite.
-  case: pselect => {}numu //.
-  by case: cid => /= {}f [_ _] <-.
-by apply: measure_dominates_trans mula.
+  rewrite -Radon_Nikodym_Finite_integral => //.
+  by apply: measure_dominates_trans mula.
 Admitted.
 
 xxx
@@ -2036,18 +2097,6 @@ apply/integrableP; split.
 under eq_integral do rewrite abseM.
 (* use Approximation & monotone_convergence *)
 Admitted.
-
-Lemma measure_dominates_ae_eq d (T : measurableType d) (R : realType)
-  (mu : {measure set T -> \bar R})
-  (nu : {measure set T -> \bar R})
-  (dom : nu `<< mu)
-  (f g : T -> \bar R) :
-    ae_eq mu setT f g -> ae_eq nu setT f g.
-Proof.
-move=> [] E [] mE E0 cfgE.
-exists E; split => //.
-by apply: dom.
-Qed.
 
 Lemma RN_deriv_ae_ge0 d (T : measurableType d) (R : realType)
   (mu : {sigma_finite_measure set T -> \bar R})
