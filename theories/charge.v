@@ -1599,12 +1599,25 @@ Arguments measure_of_charge {d T R}.
 
 Lemma Radon_Nikodym_Sigma_FiniteE d (T : measurableType d) (R : realType)
     (mu : {sigma_finite_measure set T -> \bar R})
-    (nu : {finite_measure set T -> \bar R}) :
+    (nu : {finite_measure set T -> \bar R})
+    (numu : nu `<< mu):
  ae_eq mu setT (Radon_Nikodym_SigmaFinite mu nu)
                (Radon_Nikodym mu (charge_of_finite_measure nu)).
 Proof.
 apply: integral_ae_eq => //.
-Admitted.
+    rewrite /Radon_Nikodym_SigmaFinite.
+    case: pselect => // {} numu.
+    case: cid => //=.
+    by move=> ? [_ ? _].
+  exact: Radon_Nikodym_integrable.
+move=> E mE.
+rewrite -Radon_Nikodym_integral //=.
+rewrite /charge_of_finite_measure.
+rewrite /Radon_Nikodym_SigmaFinite.
+case: pselect => // {}numu.
+case: cid => /=.
+by move=> ? [_ _] ->.
+Qed.
 
 Section charge_lemmas.
 Context d (R : realFieldType) (T : semiRingOfSetsType d).
