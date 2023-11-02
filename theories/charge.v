@@ -1571,7 +1571,7 @@ move=> numu; rewrite /Radon_Nikodym; case: pselect => // {}numu.
 by case: cid2.
 Qed.
 
-Theorem Radon_Nikodym_Finite_ge0
+Theorem Radon_Nikodym_SigmaFinite_ge0
     (mu : {sigma_finite_measure set T -> \bar R})
     (nu : {finite_measure set T -> \bar R}) :
     nu `<< mu ->
@@ -1581,7 +1581,7 @@ move=> numu; rewrite /Radon_Nikodym_SigmaFinite; case: pselect => // {}numu.
 by case: cid => x [].
 Qed.
 
-Theorem Radon_Nikodym_Finite_integrable
+Theorem Radon_Nikodym_SigmaFinite_integrable
     (mu : {sigma_finite_measure set T -> \bar R})
     (nu : {finite_measure set T -> \bar R}) :
     nu `<< mu ->
@@ -1591,7 +1591,7 @@ move=> numu; rewrite /Radon_Nikodym_SigmaFinite; case: pselect => // {}numu.
 by case: cid => x [].
 Qed.
 
-Theorem Radon_Nikodym_Finite_integral
+Theorem Radon_Nikodym_SigmaFinite_integral
     (mu : {sigma_finite_measure set T -> \bar R})
     (nu : {finite_measure set T -> \bar R}) :
     nu `<< mu -> forall A, measurable A ->
@@ -1679,7 +1679,9 @@ Variables (nu : {finite_measure set T -> \bar R})
           (la : {finite_measure set T -> \bar R})
           (mu : {finite_measure set T -> \bar R}).
 
-Lemma Radon_Nikodym_chain_rule :
+Local Notation "'d nu '/d mu" := (Radon_Nikodym_SigmaFinite mu nu).
+
+Lemma Radon_Nikodym_SigmaFinite_chain_rule :
   nu `<< mu -> mu `<< la ->
   ae_eq la setT ('d (charge_of_finite_measure nu) '/d la)
                 ('d (charge_of_finite_measure nu) '/d mu \* 'd (charge_of_finite_measure mu) '/d la).
@@ -1687,15 +1689,14 @@ Proof.
 move=> numu mula.
 set f := 'd (charge_of_finite_measure nu) '/d mu.
 set g := 'd (charge_of_finite_measure mu) '/d la.
-set f' := Radon_Nikodym_SigmaFinite mu nu.
-have mf' : measurable_fun setT f'.
+have mf : measurable_fun setT f.
   apply: measurable_int.
-  exact: Radon_Nikodym_Finite_integrable.
-have f0 t : 0 <= f' t.
-  exact: Radon_Nikodym_Finite_ge0.
-have [h [ndh hf']] := approximation measurableT mf' (fun x _ => f0 x).
+  exact: Radon_Nikodym_SigmaFinite_integrable.
+have f0 t : 0 <= f t.
+  exact: Radon_Nikodym_SigmaFinite_ge0.
+have [h [ndh hf]] := approximation measurableT mf (fun x _ => f0 x).
 apply: integral_ae_eq => //.
-- apply: Radon_Nikodym_integrable.
+- apply: Radon_Nikodym_SigmaFinite_integrable.
   exact: measure_dominates_trans mula.
 - admit.
 - move=> E mE.
@@ -1706,12 +1707,32 @@ apply: integral_ae_eq => //.
     apply: measurable_funM.
       exact: measurable_cst.
     exact: measurable_indic.
-  have H1 : \int[mu]_(x in E) f' x = lim (\int[mu]_(x in E) (EFin \o h n) x @[n --> \oo]).
-    admit.
-  have H2 : \int[la]_(x in E) (f' \* g) x = lim (\int[la]_(x in E) ((EFin \o h n) \* g) x @[n --> \oo]).
-    admit.
-  (* TODO: lemma change_of_variables *)
-  have H3 : \int[mu]_(x in E) f' x = \int[la]_(x in E) (f' \* g) x.
+  have H1 : \int[mu]_(x in E) f x = lim (\int[mu]_(x in E) (EFin \o h n) x @[n --> \oo]).
+    have Hf' x : f x = lim ((EFin \o h n) x @[n --> \oo]).
+      by apply/esym/cvg_lim => //; exact: hf.
+    under eq_integral do rewrite Hf'; apply: monotone_convergence => //.
+    - move=> n; apply/EFin_measurable_fun.
+      by apply: (measurable_funS measurableT) => //; exact/measurable_funP.
+    - by move=> n x Ex //=; rewrite lee_fin.
+    - by move=> x Ex a b /ndh /=; rewrite lee_fin => /lefP.
+  have H2 : \int[la]_(x in E) (f \* g) x =
+      lim (\int[la]_(x in E) ((EFin \o h n) \* g) x @[n --> \oo]).
+    have Hf'g x : f x * g x = lim (((EFin \o h n) \* g) x @[n --> \oo]).
+      apply/esym/cvg_lim => //; apply: cvgeMr => //.
+      admit.
+      exact: hf.
+    under eq_integral do rewrite Hf'g; apply: monotone_convergence => [//| | |].
+    - move=> n; apply/emeasurable_funM.
+        apply/EFin_measurable_fun.
+        by apply: (measurable_funS measurableT) => //; exact/measurable_funP.
+      apply: (@measurable_funS _ _ _ _ setT) => //.
+      apply: measurable_int.
+      exact: Radon_Nikodym_SigmaFinite_integrable.
+    - move=> n x Ex //=; rewrite mule_ge0 ?lee_fin//=.
+      exact: Radon_Nikodym_SigmaFinite_ge0.
+    - move=> x Ex a b /ndh /= /lefP hahb; rewrite lee_wpmul2r ?lee_fin//.
+      exact: Radon_Nikodym_SigmaFinite_ge0.
+  have H3 : \int[mu]_(x in E) f x = \int[la]_(x in E) (f \* g) x.
     have H4 F : measurable F ->
         \int[mu]_(x in E) (EFin \o \1_F) x = \int[la]_(x in E) ((EFin \o \1_F) x * g x).
       move=> mF.
@@ -1720,7 +1741,7 @@ apply: integral_ae_eq => //.
         by move=> x xE; rewrite -[_%:E]mul1e -/(idfun 1); over.
       rewrite -(integral_setI_indic _ _)//.
       transitivity (\int[la]_(x in E `&` F) g x).
-        rewrite -Radon_Nikodym_integral//=; last exact: measurableI.
+        rewrite -Radon_Nikodym_SigmaFinite_integral//=; last exact: measurableI.
         by rewrite integral_cst ?mul1e//; exact: measurableI.
       rewrite integral_setI_indic//.
       by under eq_integral do rewrite muleC.
@@ -1751,30 +1772,22 @@ apply: integral_ae_eq => //.
           exact: mindic_hn.
         apply: (@measurable_int _ _ _ la).
         apply: (integrableS measurableT) => //.
-        exact: Radon_Nikodym_integrable.
+        exact: Radon_Nikodym_SigmaFinite_integrable.
       move=> m y Ey.
       apply: mule_ge0.
         exact: nnfun_muleindic_ge0.
-      (* Radon_Nikodym_SigmaFinite_ge0 *)admit.
+      exact: Radon_Nikodym_SigmaFinite_ge0.
     apply: eq_fsbigr => r rhn.
     under eq_integral do rewrite EFinM.
     rewrite integralZl_indic_nnsfun => //.
     under [RHS]eq_integral do rewrite EFinM -muleA.
-    rewrite integralZl//; last admit.
+    rewrite integralZl//; last first.
+      admit.
     congr (_ * _).
     by rewrite H4.
-  transitivity (\int[la]_(x in E) (f' x * g x)); last first.
-    apply: ae_eq_integral => //.
-        apply measurable_funTS.
-        apply: (emeasurable_funM); apply: measurable_int.
-          exact: Radon_Nikodym_Finite_integrable.
-        exact: Radon_Nikodym_integrable.
-      apply measurable_funTS.
-      by apply: (emeasurable_funM); apply: measurable_int; apply: Radon_Nikodym_integrable.
-    admit.
   rewrite -H3.
-  rewrite -Radon_Nikodym_integral//=.
-  rewrite -Radon_Nikodym_Finite_integral => //.
+  rewrite -Radon_Nikodym_SigmaFinite_integral//=.
+  rewrite -Radon_Nikodym_SigmaFinite_integral => //.
   by apply: measure_dominates_trans mula.
 Admitted.
 
