@@ -1647,11 +1647,14 @@ set f := 'd (charge_of_finite_measure nu) '/d mu.
 set g := 'd (charge_of_finite_measure mu) '/d la.
 set f' := Radon_Nikodym_SigmaFinite mu nu.
 have mf' : measurable_fun setT f'.
-  (*have {}numu : charge_of_finite_measure nu `<< mu.
-    by move=> A mA A0; rewrite /charge_of_finite_measure numu.
-  by have /integrableP[] := Radon_Nikodym_integrable numu.*) admit.
+  rewrite /f'/Radon_Nikodym_SigmaFinite.
+  case: pselect => // {}numu.
+  case: cid => /= {}f' [_ + _].
+  exact: measurable_int.
 have f0 t : 0 <= f' t.
-  admit.
+  rewrite /f'/Radon_Nikodym_SigmaFinite.
+  case: pselect => // {}numu.
+  by case: cid => /= => {f' mf'}f' [+ _ _].
 have [h [ndh hf']] := approximation measurableT mf' (fun x _ => f0 x).
 apply: integral_ae_eq => //.
 - apply: Radon_Nikodym_integrable.
@@ -1708,9 +1711,10 @@ apply: integral_ae_eq => //.
     admit.
   rewrite -H3.
   rewrite -Radon_Nikodym_integral//=.
-    (*by rewrite -Radon_Nikodym_SigmaFinite_integral.*)
-     admit.
-  admit.
+  rewrite /f'/Radon_Nikodym_SigmaFinite.
+  case: pselect => {}numu //.
+  by case: cid => /= {}f [_ _] <-.
+by apply: measure_dominates_trans mula.
 Admitted.
 
 xxx
