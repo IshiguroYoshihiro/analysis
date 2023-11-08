@@ -1720,17 +1720,13 @@ exists (fun n => g @^-1` (F n)).
 move=> n; split.
 rewrite -[X in measurable X]setTI.
 apply: mg => //.
-
 rewrite /pushforward -comp_preimage.
-have x : T1.
-  admit.
-have := cancelfg x.
-  rewrite (_:g (f x) = (g \o f) x) //.
-  rewrite (_: x = (fun x => x) x).
-  move: x.
-  
-rewrite cancelgf.
-Admitted.
+rewrite (_:(g \o f) = id); last first.
+  apply: funext.
+  exact: cancelfg.
+rewrite preimage_id.
+exact: mFfin.
+Qed.
 
 HB.instance Definition _ := Measure_isSigmaFinite.Build _ _ _
   (pushforward m mf) pushforward_sigma_finite.
