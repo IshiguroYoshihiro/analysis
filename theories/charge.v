@@ -1701,14 +1701,15 @@ Variables (R : realType) (m : {sigma_finite_measure set T1 -> \bar R}).
 Variable (g : T2 -> T1).
 
 Hypothesis mf : measurable_fun setT f.
+Hypothesis mg : measurable_fun setT g.
 Hypothesis cancelfg : cancel f g.
 
 Let pushforward_sigma_finite : sigma_finite setT (pushforward m mf).
 Proof.
 rewrite/sigma_finite.
 have := sigma_finiteT m.
-move/sigma_finiteP => [F TUF [Fnd mF]].
-exists (fun n => f @` (F n)).
+move/sigma_finiteP => [F TUF [Fnd /all_and2[mF mFfin]]].
+exists (fun n => g @^-1` (F n)).
   apply/seteqP.
   split => //.
   move=> y _.
@@ -1716,9 +1717,19 @@ exists (fun n => f @` (F n)).
   move/seteqP => [+ _].
   move/(_ (g y) I) => [j _ Fjgy].
   exists j => //=.
-  exists (g y) => //.
-  have := cancelfg (g y).
-  move/can_inj : cancelfg.
+move=> n; split.
+rewrite -[X in measurable X]setTI.
+apply: mg => //.
+
+rewrite /pushforward -comp_preimage.
+have x : T1.
+  admit.
+have := cancelfg x.
+  rewrite (_:g (f x) = (g \o f) x) //.
+  rewrite (_: x = (fun x => x) x).
+  move: x.
+  
+rewrite cancelgf.
 Admitted.
 
 HB.instance Definition _ := Measure_isSigmaFinite.Build _ _ _
