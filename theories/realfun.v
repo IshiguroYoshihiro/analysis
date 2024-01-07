@@ -1681,6 +1681,71 @@ Qed.
 
 End interval_partition.
 
+Section interval_partition_order.
+Context (R: realType).
+Implicit Type (a b : R).
+
+Record itvPartition : Type := {
+itvL : R;
+itvR : R;
+partitions : seq R;
+isitvPartition : itv_partition itvL itvR partitions
+}.
+
+(* already in list? *)
+Fixpoint list_subset (s t : list R) :=
+match s with
+| [::] => true
+| x :: rs => (x \in t) && list_subset rs t
+end.
+
+Lemma nil_list_subset s : list_subset [::] s.
+Proof. by []. Qed.
+
+Lemma list_subset_nil s : list_subset s [::] = (s == [::]).
+Proof. by elim: s. Qed.
+
+Lemma list_subset_cons s t a :
+  list_subset s t -> list_subset s (a :: t).
+Proof.
+elim: s a => // a l IH b.
+move/andP => [Hat Hlt] /=.
+rewrite inE Hat orbT andTb.
+by apply: IH.
+Qed.
+
+Lemma list_subsetxx s : list_subset s s.
+Proof.
+elim s => // a l h.
+rewrite /= inE eqxx orTb andTb.
+by apply: list_subset_cons.
+Qed.
+
+Lemma list_subset_trans s2 s1 s3 :
+list_subset s1 s2 -> list_subset s2 s3 ->
+list_subset s1 s3.
+Proof.
+move=> h1.
+elim: s2 h1.
+- rewrite list_subset_nil.
+  by move/eqP => ->.
+- move=> a l IH.
+  move=> 
+
+Definition itvPartition_subset (s t : itvPartition) :=
+(itvL s == itvL t) &&
+list_subset (partitions s) (partitions t).
+
+Notation "s '`<=`' t" :=
+   (itvPartition_subset s t) (at level 70).
+
+Lemma itvPartition_subsetxx a b (s : itvPartition) : s `<=` s .
+Proof.
+apply/andP; split => //.
+
+
+End interval_partition_order.
+
 Section variation.
 Context {R : realType}.
 Implicit Types (a b : R) (f g : R -> R).
@@ -1855,6 +1920,15 @@ move=> abs; rewrite [in RHS]variation_opp_rev ?opprK//.
 suff: (f \o -%R) \o -%R = f by move=> ->.
 by apply/funext=> ? /=; rewrite opprK.
 Qed.
+
+Lemma variation_monotone a b f (s t : itvPartition) :
+  itvL s = a -> itvR s = b -> itvL t = a -> itvR t = b ->
+  s `<=` t ->
+  variation a b f t <= variation a b f s.
+Proof.
+Admitted.
+
+xxx
 
 End variation.
 
