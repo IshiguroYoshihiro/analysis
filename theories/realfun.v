@@ -1679,72 +1679,29 @@ case: s sa alb => [_ <-//|h t] /= /andP[ah ht] <-{b}.
 by rewrite rev_cons last_rcons.
 Qed.
 
+Lemma itv_partition_merge a b (s t : seq R) :
+  itv_partition a b s -> itv_partition a b t ->
+  itv_partition a b (undup (merge <%R s t)).
+Proof.
+move=> [ps lsb] [pt ltb].
+split.
+- rewrite lt_path_sortedE.
+  apply/andP; split.
+  + apply/allP => x.
+    rewrite mem_undup mem_merge mem_cat => /orP; case.
+    * exact: (allP (lt_path_min ps)).
+    * exact: (allP (lt_path_min pt)).
+  + apply: undup_sorted; first exact: lt_trans.
+    apply: merge_sorted.
+    * rewrite /total.
+      (* exact: lt_total *)
+      admit.
+    * by apply: (path_sorted ps).
+    * by apply: (path_sorted pt).
+- admit.
+Admitted.
+
 End interval_partition.
-
-Section interval_partition_order.
-Context (R: realType).
-Implicit Type (a b : R).
-
-Record itvPartition : Type := {
-itvL : R;
-itvR : R;
-partitions : seq R;
-isitvPartition : itv_partition itvL itvR partitions
-}.
-
-(* already in list? *)
-Fixpoint list_subset (s t : list R) :=
-match s with
-| [::] => true
-| x :: rs => (x \in t) && list_subset rs t
-end.
-
-Lemma nil_list_subset s : list_subset [::] s.
-Proof. by []. Qed.
-
-Lemma list_subset_nil s : list_subset s [::] = (s == [::]).
-Proof. by elim: s. Qed.
-
-Lemma list_subset_cons s t a :
-  list_subset s t -> list_subset s (a :: t).
-Proof.
-elim: s a => // a l IH b.
-move/andP => [Hat Hlt] /=.
-rewrite inE Hat orbT andTb.
-by apply: IH.
-Qed.
-
-Lemma list_subsetxx s : list_subset s s.
-Proof.
-elim s => // a l h.
-rewrite /= inE eqxx orTb andTb.
-by apply: list_subset_cons.
-Qed.
-
-Lemma list_subset_trans s2 s1 s3 :
-list_subset s1 s2 -> list_subset s2 s3 ->
-list_subset s1 s3.
-Proof.
-move=> h1.
-elim: s2 h1.
-- rewrite list_subset_nil.
-  by move/eqP => ->.
-- move=> a l IH.
-  move=> 
-
-Definition itvPartition_subset (s t : itvPartition) :=
-(itvL s == itvL t) &&
-list_subset (partitions s) (partitions t).
-
-Notation "s '`<=`' t" :=
-   (itvPartition_subset s t) (at level 70).
-
-Lemma itvPartition_subsetxx a b (s : itvPartition) : s `<=` s .
-Proof.
-apply/andP; split => //.
-
-
-End interval_partition_order.
 
 Section variation.
 Context {R : realType}.
@@ -1921,11 +1878,84 @@ suff: (f \o -%R) \o -%R = f by move=> ->.
 by apply/funext=> ? /=; rewrite opprK.
 Qed.
 
-Lemma variation_monotone a b f (s t : itvPartition) :
-  itvL s = a -> itvR s = b -> itvL t = a -> itvR t = b ->
-  s `<=` t ->
-  variation a b f t <= variation a b f s.
+
+
+Lemma variation_monotone a b f (s t : list R) :
+  itv_partition a b s -> itv_partition a b t ->
+  subseq s t ->
+  variation a b f s <= variation a b f t.
 Proof.
+move=> [ps lsb] [pt ltb] /subseqP [m sizemt smt].
+rewrite [leRHS]variationE //.
+rewrite (_: \sum_(i <- zip t (a :: t)) _ =
+  \sum_(j <- a :: s) \sum_(i <- zip t (a :: t) | j < i.1 <= next j s) _).
+rewrite (partition_big
+       (fun i => (nth _ (a :: s) n) < i.1 <= (nth _ (a :: s) n.+1))
+        (fun x => x))
+        ); last first.
+  move=> i _.
+  rewrite !inE /=.
+  rewrite eqb_id eqbF_neg.
+  exact: orbN.
+rewrite -big_uniq; last by [].
+rewrite big_cons.
+rewrite big_mkcondr -big_seq -big_mkcondr.
+rewrite big_andbC -big_filter_cond.
+rewrite variationE //.
+rewrite ler_paddr //.
+  admit.
+move: (sbst).
+move/subseqP =>[m sizemt smt].
+
+have: [seq i <- zip t (a :: t) | (i \in zip s (a :: s))]
+  = zip s (a :: s).
+  (* move/subseq_uniqP : sbst. *)
+  apply/esym.
+  apply/subseq_uniqP; first admit.
+  apply/subseqP.
+  exists m.
+  rewrite size1_zip => //=.
+  rewrite smt.
+  clear -sizemt.
+  elim: m sizemt => //.
+  case => m2; elim: t => // t1 t2.
+
+  move: m t sizemt a.
+  apply: seq_ind2 => //.
+  case => t1 m2 t2 sizemt IH a.
+  - transitivity ((t1, a) :: (zip (mask m2 t2) (t1 :: mask m2 t2))).
+      done.
+    by rewrite IH.
+  - transitivity (zip (mask m2 t2) (a :: mask m2 t2)).
+      done.
+    rewrite IH.
+    rewrite /=.
+
+  clear -sizemt.
+  move: sizemt.
+  move hn: (size t) => n.
+  move: hn.
+  elim: n t m a.
+  - by move=> [] // [].
+  - move=> n IH.
+    case=> [] // t1 t2.
+    case=> [] // m1 m2 a.
+    move=> sizet sizem.
+    case: m1 sizem => sizem.
+    + transitivity ((t1, a) :: (zip (mask m2 t2) (t1 :: mask m2 t2))).
+        done.
+      rewrite IH //.
+      * by case: sizet.
+      * by case: sizem.
+    + transitivity (zip (mask m2 t2) (a :: mask m2 t2)).
+        done.
+      rewrite IH.
+      rewrite /=.
+  have: subseq (zip t (a :: t)) (zip
+
+rewrite big_filter.
+
+rewrite big_mask.
 Admitted.
 
 xxx
