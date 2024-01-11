@@ -1878,84 +1878,60 @@ suff: (f \o -%R) \o -%R = f by move=> ->.
 by apply/funext=> ? /=; rewrite opprK.
 Qed.
 
+Lemma itv_partition_filter a b c d f s : a <= c < d -> d <= b ->
+  itv_partition a b s ->
+  itv_partition c d [seq x <- s | c < x <= d].
+Proof.
+rewrite !le_eqVlt.
+move/andP => [].
+move/orP; case => [/eqP <- cd|ac cd]; move/orP; case => [/eqP -> |db] abs.
+- admit.
+- admit.
+- admit.
+- rewrite (_: [seq x <- s | c < x & x <= d] =
+              itv_partitionR (itv_partitionL s d) c); last first.
+    admit.
+  apply: (itv_partitionRP ac) => //.
+  apply: (itv_partitionLP _ db) => //.
+  by apply: lt_trans cd.
+Admitted.
 
+Lemma variation_ge1 a b f s :
+  a < b ->
+  itv_partition a b s ->
+  variation a b f [:: b] <= variation a b f s.
+Proof.
+Admitted.
 
 Lemma variation_monotone a b f (s t : list R) :
   itv_partition a b s -> itv_partition a b t ->
   subseq s t ->
   variation a b f s <= variation a b f t.
 Proof.
-move=> [ps lsb] [pt ltb] /subseqP [m sizemt smt].
+move=> [ps lsb] abt /subseqP [m sizemt smt].
+move: (abt) => [pt ltb].
 rewrite [leRHS]variationE //.
-rewrite (_: \sum_(i <- zip t (a :: t)) _ =
-  \sum_(j <- a :: s) \sum_(i <- zip t (a :: t) | j < i.1 <= next j s) _).
-rewrite (partition_big
-       (fun i => (nth _ (a :: s) n) < i.1 <= (nth _ (a :: s) n.+1))
-        (fun x => x))
-        ); last first.
-  move=> i _.
-  rewrite !inE /=.
-  rewrite eqb_id eqbF_neg.
-  exact: orbN.
-rewrite -big_uniq; last by [].
-rewrite big_cons.
-rewrite big_mkcondr -big_seq -big_mkcondr.
-rewrite big_andbC -big_filter_cond.
-rewrite variationE //.
-rewrite ler_paddr //.
+pose t_ (c d : R) := [seq x <- t | d < x <= c].
+rewrite (_: \sum_(x <- zip t (a :: t)) `|f x.1 - f x.2| =
+  \sum_(j <- zip s (a :: s))
+    \sum_(x <- zip (t_ j.1 j.2) (j.2 :: t_ j.1 j.2)) `|f x.1 - f x.2|); last first.
+  (* partition_big or partition_pair *)
   admit.
-move: (sbst).
-move/subseqP =>[m sizemt smt].
-
-have: [seq i <- zip t (a :: t) | (i \in zip s (a :: s))]
-  = zip s (a :: s).
-  (* move/subseq_uniqP : sbst. *)
-  apply/esym.
-  apply/subseq_uniqP; first admit.
-  apply/subseqP.
-  exists m.
-  rewrite size1_zip => //=.
-  rewrite smt.
-  clear -sizemt.
-  elim: m sizemt => //.
-  case => m2; elim: t => // t1 t2.
-
-  move: m t sizemt a.
-  apply: seq_ind2 => //.
-  case => t1 m2 t2 sizemt IH a.
-  - transitivity ((t1, a) :: (zip (mask m2 t2) (t1 :: mask m2 t2))).
-      done.
-    by rewrite IH.
-  - transitivity (zip (mask m2 t2) (a :: mask m2 t2)).
-      done.
-    rewrite IH.
-    rewrite /=.
-
-  clear -sizemt.
-  move: sizemt.
-  move hn: (size t) => n.
-  move: hn.
-  elim: n t m a.
-  - by move=> [] // [].
-  - move=> n IH.
-    case=> [] // t1 t2.
-    case=> [] // m1 m2 a.
-    move=> sizet sizem.
-    case: m1 sizem => sizem.
-    + transitivity ((t1, a) :: (zip (mask m2 t2) (t1 :: mask m2 t2))).
-        done.
-      rewrite IH //.
-      * by case: sizet.
-      * by case: sizem.
-    + transitivity (zip (mask m2 t2) (a :: mask m2 t2)).
-        done.
-      rewrite IH.
-      rewrite /=.
-  have: subseq (zip t (a :: t)) (zip
-
-rewrite big_filter.
-
-rewrite big_mask.
+rewrite variationE //.
+apply: ler_sum => [[s1 s2] _].
+have s1s2 : s2 < s1.
+  admit.
+rewrite -(variationE f
+      (itv_partition_filter f _ _ abt)); last 2 first.
+    admit.
+  admit.
+rewrite (_: `|f (s1, s2).1 - f (s1, s2).2| = variation s2 s1 f [:: s1]); last first.
+  rewrite variationE; last exact: itv_partition1.
+  by rewrite big_seq1 /=.
+apply: variation_ge1 => //.
+apply: (@itv_partition_filter a b _ _ f) => //.
+  admit.
+admit.
 Admitted.
 
 xxx
