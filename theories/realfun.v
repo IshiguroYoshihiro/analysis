@@ -1878,6 +1878,18 @@ suff: (f \o -%R) \o -%R = f by move=> ->.
 by apply/funext=> ? /=; rewrite opprK.
 Qed.
 
+Lemma big_seq_zip (T : Type) (idx : T) (op : T -> T -> T)
+  (I : eqType) (a : I) (r : seq I) (F : I -> I -> T) :
+  \big[op/idx]_(j <- belast a r ) F (next (a :: r) j) j =
+    \big[op/idx]_(jj <- zip r (a :: r)) F jj.1 jj.2.
+Proof.
+Admitted.
+
+Lemma uniq_nthS_next (T : eqType) (x0 : T) (s : seq T) (n : nat) :
+uniq s -> (n.+1 < (size s) )%nat -> nth x0 s n.+1 = next s (nth x0 s n).
+Proof.
+Admitted.
+
 Lemma itv_partition_filter a b c d f s : a <= c < d -> d <= b ->
   itv_partition a b s ->
   itv_partition c d [seq x <- s | c < x <= d].
@@ -1896,13 +1908,6 @@ move/orP; case => [/eqP <- cd|ac cd]; move/orP; case => [/eqP -> |db] abs.
   by apply: lt_trans cd.
 Admitted.
 
-Lemma variation_ge1 a b f s :
-  a < b ->
-  itv_partition a b s ->
-  variation a b f [:: b] <= variation a b f s.
-Proof.
-Admitted.
-
 Lemma variation_monotone a b f (s t : list R) :
   itv_partition a b s -> itv_partition a b t ->
   subseq s t ->
@@ -1919,22 +1924,49 @@ rewrite (_: \sum_(x <- zip t (a :: t)) `|f x.1 - f x.2| =
   admit.
 rewrite variationE //.
 apply: ler_sum => [[s1 s2] _].
+have lastt_s1 : [seq x <- t | s2 < x <= s1] = rcons [seq x <- t | s2 < x < s1] s1.
+  admit.
+have ts2s1 : itv_partition s2 s1 [seq x <- t | s2 < x & x <= s1].
+  admit.
 have s1s2 : s2 < s1.
   admit.
-rewrite -(variationE f
-      (itv_partition_filter f _ _ abt)); last 2 first.
-    admit.
+have as2s1 : a <= s2 < s1.
   admit.
-rewrite (_: `|f (s1, s2).1 - f (s1, s2).2| = variation s2 s1 f [:: s1]); last first.
-  rewrite variationE; last exact: itv_partition1.
-  by rewrite big_seq1 /=.
-apply: variation_ge1 => //.
-apply: (@itv_partition_filter a b _ _ f) => //.
+have s1b : s1 <= b.
   admit.
-admit.
+rewrite (_: f (s1, s2).1 - f (s1, s2).2 =
+ \sum_(x <- zip [seq x <- t | (s1, s2).2 < x & x <= (s1, s2).1]
+               ((s1, s2).2 :: [seq x <- t | (s1, s2).2 < x & x <= (s1, s2).1]))
+     (f x.1 - f x.2)); last first.
+  rewrite -(big_seq_zip _ _ s2 (t_ s1 s2) (fun x y => f x - f y)) //.
+  rewrite (big_nth s2).
+  rewrite big_seq.
+  under eq_bigr.
+    move=> i it.
+    rewrite (_: next (s2 :: t_ s1 s2) (nth s2 (belast s2 (t_ s1 s2)) i)
+               = next (rcons (belast s2 (t_ s1 s2)) s1) (nth s2 (belast s2 (t_ s1 s2)) i))
+            ; last first.
+      admit.
+    have H j def bb sq : uniq sq ->
+      (next (rcons sq bb) (nth def sq j)) =
+                 if j == (size sq).-1 then bb else next sq (nth def sq j).
+      admit.
+    rewrite H; last first.
+      admit.
+    rewrite -uniq_nthS_next; last 2 first.
+        admit.
+      admit.
+    rewrite (_: (if i == (size (belast s2 (t_ s1 s2))).-1
+             then s1
+             else nth s2 (belast s2 (t_ s1 s2)) i.+1)
+                = next (rcons (belast s2 (t_ s1 s2)) s1) (nth s2 (belast s2 (t_ s1 s2)) i.+1)); last first.
+      admit.
+    over.
+  rewrite /=.
+  rewrite -big_seq.
+(* rewrite telescope_sumr. *)
+(* apply: ler_norm_sum. *)
 Admitted.
-
-xxx
 
 End variation.
 
@@ -2436,3 +2468,47 @@ apply/continuous_within_itvP; repeat split.
 Qed.
 
 End variation_continuity.
+
+
+Section AC.
+
+Variable (R : realType).
+
+Local Definition cball (xr : R * {posnum R}) := @closed_ball_ R R normr xr.1 xr.2%:num.
+(*(B : R * {posnum R}) := [set y | `|B.1 - y| <= B.2%:num].*)
+
+Definition AC (a b : R) (f : R -> R) := forall e : {posnum R},
+  exists d : {posnum R}, forall (I : finType) (B : I -> R * R),
+    (forall i, `[(B i).2, (B i).1] `<=` `[a, b]) /\
+    trivIset setT (fun i => `[(B i).2, (B i).1]%classic) /\
+    \sum_(k in I) ((B k).1 - (B k).2) < d%:num ->
+    \sum_(k in I) (f (B k).1- f ((B k).2)) < e%:num.
+(* Lemma lipschitz_is_AC (a : R) (r : {posnum R}) (f : R^o -> R^o) : *)
+(*   [lipschitz f x | x in `[a, a + r%:num]] -> AC a r f. *)
+(* Proof. *)
+(* move=> [L [_ lipf]] e. *)
+(* pose d := (2 * (`|L| + 1))^-1 * e%:num. (* TODO : e%:num / (`|L| + 1) *) *)
+(* have dgt0 : 0 < d by apply: mulr_gt0. *)
+(* exists (PosNum dgt0) => /=. *)
+(* move=> I B [Bar [trivB sum_ltd]]. *)
+(* apply: (@le_lt_trans _ _ (\sum_(k in I) *)
+(*     `|f ((B k).1 + (B k).2%:num) - f ((B k).1 - (B k).2%:num)|)). *)
+(*   by rewrite ler_sum // => k _ /=; rewrite ler_norm. *)
+(* have LL1 : L < (`|L| + 1) by rewrite (le_lt_trans (ler_norm _)) // ltr_addl. *)
+(* apply: (@le_lt_trans _ _ (\sum_(k in I) 2 * (`|L| + 1) * (B k).2%:num)). *)
+(*   rewrite ler_sum => //= k _. *)
+(*   have := lipf _ LL1 ((B k).1 + (B k).2%:num, (B k).1 - (B k).2%:num) => /=. *)
+(*   rewrite {3}addrC addrKA opprK -mulr2n normrMn -(mulr_natl `|(B k).2%:num| 2). *)
+(*   rewrite mulrCA mulrA (@gtr0_norm _ (B k).2%:num) // => -> //. *)
+(*   split; apply: (Bar k) => /=; rewrite /cball /closed_ball_ /= -{1}(add0r (B k).1) addrKA sub0r. *)
+(*     by rewrite ltr0_norm // opprK. *)
+(*   by rewrite opprK gtr0_norm. *)
+(* by rewrite -mulr_sumr -ltr_pdivlMl. *)
+(* Qed. *)
+
+Lemma AC_is_BV (a b : R) (f : R -> R) :
+AC a b f -> bounded_variation a b f.
+Proof.
+Admitted.
+
+End AC.
