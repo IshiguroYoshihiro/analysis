@@ -2424,3 +2424,34 @@ apply/continuous_within_itvP; (repeat split) => //.
 Qed.
 
 End variation_continuity.
+
+Section Absolute_Continuous.
+Context (R : realType).
+
+Lemma itv_partition_undup_merge (a b : R) (s t : seq R) :
+itv_partition a b s -> itv_partition a b t ->
+itv_partition a b (undup (merge <%R s t)).
+Proof.
+Admitted.
+
+Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
+  exists d : {posnum R}, forall (I : finType) (B : I -> R * R),
+    (forall i, (B i).1 <= (B i).2 /\ `[(B i).1, (B i).2] `<=` `[a, b]) /\
+      trivIset setT (fun i => `[(B i).1, (B i).2]%classic) /\
+    \sum_(k in I) ((B k).2 - (B k).1) < d%:num ->
+    \sum_(k in I) (f (B k).2 - f ((B k).1)) < e%:num.
+
+Definition eabs_cont (a b : \bar R) (f : \bar R -> \bar R) :=
+  forall e : {posnum R},
+  exists d : {posnum R}, forall (I : finType) (B : I -> R * R),
+    (forall i, (B i).1 <= (B i).2 /\ `[(B i).1%:E, (B i).2%:E] `<=` `[a, b]) /\
+    trivIset setT (fun i => `[(B i).1, (B i).2]%classic) /\
+    \sum_(k in I) ((B k).2 - (B k).1) < d%:num ->
+    (\sum_(k in I) (f (B k).2%:E- f ((B k).1%:E))%E < e%:num%:E)%E.
+
+Lemma abs_cont_bounded_variation (a b : R) (f : R -> R) :
+abs_cont a b f -> bounded_variation a b f.
+Proof.
+Admitted.
+
+End Absolute_Continuous.
