@@ -2469,24 +2469,26 @@ pose d_ (n : nat) : {posnum R} := PosNum (p2 n).
 have := (fun n => nacf (d_ n)).
 Admitted.
 
+Let H' (f : R -> R) (x : R) := fine (H f x).
+
 Lemma total_variation_BV (f : R -> R) :
-bounded_variation a b (H f) -> bounded_variation a b f.
+bounded_variation a b (H' f) -> bounded_variation a b f.
 Proof.
-move=> bvH.
+move=> bvH'.
 have able : a <= b.
   by apply/ltW.
 apply/bounded_variationP => //.
 rewrite ge0_fin_numE; last by apply: total_variation_ge0.
-apply: (@le_lt_trans _ _ (total_variation a b (H f))); last first.
+apply: (@le_lt_trans _ _ (total_variation a b (H' f))); last first.
   rewrite -ge0_fin_numE; last by apply: total_variation_ge0.
   by apply/bounded_variationP.
 apply: ub_ereal_sup => xe /= [] x /[swap] <- {xe}.
 rewrite /variations => /=.
 move/cid2 => [] s itvs <-.
 apply: ereal_sup_le.
-exists (variation a b (H f) s)%:E.
+exists (variation a b (H' f) s)%:E.
   move=> //.
-  exists (variation a b (H f) s) => //.
+  exists (variation a b (H' f) s) => //.
   exact: variations_variation.
 rewrite !variation_next //.
 elim: s itvs; first by move=> ?; rewrite !big_nil.
@@ -2500,7 +2502,7 @@ rewrite lee_add => //.
     admit.
   unlock => /=.
   rewrite !ifT => //.
-  rewrite /H total_variationxx fine0 subr0.
+  rewrite /H' /H total_variationxx fine0 subr0.
   rewrite [X in (_ <= X%:E)%E]ger0_norm; last by rewrite fine_ge0 // total_variation_ge0.
   (* BV f ? *) admit.
 rewrite !big_seq.
@@ -2512,32 +2514,34 @@ have ene : e <= ne.
   admit.
 have neb : ne <= b.
   admit.
-rewrite /H (total_variationD _ ae) //; last first.
+rewrite /H' /H (total_variationD _ ae) //; last first.
   admit.
 rewrite fineD; last 2 first.
     (* BV f ? *) admit.
   admit.
+rewrite addrAC subrr add0r.
 Abort.
 
 Lemma total_variation_AC (f : R -> R) :
-absolute_continuous a b (H f) -> absolute_continuous a b f.
+bounded_variation a b f ->
+abs_cont a b (H' f) -> abs_cont a b f.
 Proof.
-move=> acH e.
-have := acH e.
-move: (acH) => _ [d acH'].
+move=> bvH' acH' e.
+have := acH' e.
+move: (acH') => _ [d ac'H'].
 exists d => I B trivB.
-have := acH' I B trivB.
+have := ac'H' I B trivB.
 move: trivB => [/all_and2 [B21 Bab] [trivB sumBd sumHd]].
 apply: (le_lt_trans _ sumHd).
 apply: ler_sum => i iI.
-have aB2 : a <= (B i).2.
+have aB1 : a <= (B i).1.
   move: (Bab i).
   move/in1_subset_itv.
   move/(_ (fun x => a <= x)).
   apply.
     by move=> x; rewrite in_itv /= => /andP [].
   by rewrite in_itv /= B21 andbT.
-have B1b : (B i).1 <= b.
+have B2b : (B i).2 <= b.
   move: (Bab i).
   move/in1_subset_itv.
   move/(_ (fun x => x <= b)).
@@ -2546,29 +2550,23 @@ have B1b : (B i).1 <= b.
   by rewrite in_itv /= B21 andTb.
 have able : a <= b.
   by apply/ltW.
-apply: (le_trans (ler_norm (f (B i).1 - f (B i).2))).
-rewrite /H.
-rewrite (@total_variationD _ a (B i).1 (B i).2 f) => //.
+apply: (le_trans (ler_norm (f (B i).2 - f (B i).1))).
+rewrite /H' /H.
+rewrite (@total_variationD _ a (B i).2 (B i).1 f) => //.
 rewrite fineD; last 2 first.
 - apply/bounded_variationP => //.
-  apply: (@bounded_variationl _ _ _ b) => //; first by apply: (le_trans _ B1b).
-  apply: total_variation_BV.
-  by apply: absolute_continuous_bounded_variation.
+  by apply: (@bounded_variationl _ _ _ b) => //; first apply: (le_trans _ B2b).
 - apply/bounded_variationP => //.
-  apply: (bounded_variationl _ B1b) => //.
-  apply: (bounded_variationr aB2); first by apply: (le_trans _ B1b).
-  apply: total_variation_BV.
-  by apply: absolute_continuous_bounded_variation.
+  apply: (bounded_variationl _ B2b) => //.
+  by apply: (bounded_variationr aB1) => //; first apply: (le_trans _ B2b).
 rewrite addrAC subrr add0r.
 rewrite -[leLHS]add0r -ler_subr_addr.
 rewrite -lee_fin.
 rewrite EFinB.
 rewrite fineK; last first.
   apply/bounded_variationP => //.
-  apply: (bounded_variationl _ B1b) => //.
-  apply: (bounded_variationr aB2); first by apply: (@le_trans _ _ (B i).1).
-  apply: total_variation_BV.
-  by apply: absolute_continuous_bounded_variation.
+  apply: (bounded_variationl _ B2b) => //.
+  by apply: (bounded_variationr aB1); first apply: (@le_trans _ _ (B i).2).
 rewrite lee_subr_addr; last first.
   rewrite ge0_fin_numE; last exact: normr_ge0.
   exact: ltry.
@@ -2577,7 +2575,7 @@ by apply: total_variation_ge.
 Qed.
 
 Lemma TV_nondecreasing (f : R -> R) :
-bounded_variation a b f -> {in `[a, b] &, {homo H f : x y / x <= y}}.
+bounded_variation a b f -> {in `[a, b] &, {homo H' f : x y / x <= y}}.
 Proof.
 move=> bvf x y xab yab xy.
 have ax : a <= x.
@@ -2596,13 +2594,13 @@ rewrite fine_le => //.
     by apply: (le_trans ax).
   apply: (bounded_variationl _ yb) => //.
   by apply: (le_trans ax).
-rewrite (@total_variationD _ a y x) //; last first.
+rewrite /H (@total_variationD _ a y x) //; last first.
 apply: lee_addl.
 exact: total_variation_ge0.
 Qed.
 
 Lemma TV_bounded_variation (f : R -> R) :
-bounded_variation a b f -> bounded_variation a b (H f).
+bounded_variation a b f -> bounded_variation a b (H' f).
 Proof.
 move=> bvf.
 apply/bounded_variationP; rewrite ?ltW //.
@@ -2614,13 +2612,15 @@ Qed.
 Theorem Banach_Zarecki (f : R -> R) :
 {within `[a, b], continuous f} -> bounded_variation a b f
   -> Lusin f
-  -> AC a b f.
+  -> abs_cont a b f.
 Proof.
 move=> cf bvf Lf.
-apply: total_variation_AC.
+apply: total_variation_AC => //.
 apply: Banach_Zarecki_increasing.
-      exact: TV_continuous.
+      exact: total_variation_continuous.
     exact: TV_nondecreasing.
   exact: TV_bounded_variation.
 exact: Lusin_total_variation.
 Qed.
+
+End Banach_Zarecki.
