@@ -237,25 +237,35 @@ Lemma Banach_Zarecki_increasing (f : R -> R) :
   lusinN `[a, b] f ->
   abs_cont a b f.
 Proof.
-move=> cf incf bvf lf.
-apply: contrapT.
-move=> /existsNP[e0].
-move=> /forallNP fe0.
-have {}fe0 : forall d : {posnum R},
+move=> cf incf bvf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
+have {fe0} : forall d : {posnum R},
     exists n, exists B : 'I_n -> R * R,
       [/\ (forall i, (B i).1 <= (B i).2 /\ `[(B i).1, (B i).2] `<=` `[a, b]),
           trivIset setT (fun i => `[(B i).1, (B i).2]%classic),
           \sum_(k < n) ((B k).2 - (B k).1) < d%:num &
-          \sum_(k < n) (f (B k).2 - f (B k).1) >= e0%:num ].
-  move=> d.
-  have {fe0} := fe0 d.
-  move=> /existsNP[n].
-  move=> /existsNP[B].
-  move=> /not_implyP[] [H1 H2 H3 H4].
-  exists n, B; split => //.
-  by rewrite leNgt; apply/negP.
-pose delta_ (i : nat) := 0 < (2 ^ i)^-1 :> R.
-
+          \sum_(k < n) (f (B k).2 - f (B k).1) >= e0%:num].
+  move=> d; have {fe0} := fe0 d.
+  move=> /existsNP[n] /existsNP[B] /not_implyP[] [H1 H2 H3 H4].
+  by exists n, B; split => //; rewrite leNgt; apply/negP.
+move=> /choice[n_0 ab_0].
+pose delta_0 (i : nat) : R := (2 ^+ i)^-1.
+have delta_0_ge0 (i : nat) : 0 < (2 ^+ i)^-1 :> R by rewrite invr_gt0 exprn_gt0.
+pose delta_ (i : nat) : {posnum R} := PosNum (delta_0_ge0 i).
+pose n_ i := n_0 (delta_ i).
+pose ab_ i : 'I_(n_ i) -> R * R := projT1 (cid (ab_0 (delta_ i))).
+have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
+  by rewrite /ab_; case: cid => ? [].
+have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:num.
+  by rewrite /ab_; case: cid => ? [].
+pose E_ i := \big[setU/set0]_(k < n_ i) `]((ab_ i) k).2, ((ab_ i) k).1[%classic.
+pose G_ i := \bigcup_(j in [set j | (j >= i)%N]) E_ j.
+pose A := \bigcap_i (G_ i).
+have mA0 : lebesgue_measure A = 0.
+  rewrite /A.
+  admit.
+have mfA0 := lebesgue_measure (f @` A) = 0.
+  (* use lf *)
+  admit.
 Admitted.
 
 Theorem Banach_Zarecki (f : R -> R) :
