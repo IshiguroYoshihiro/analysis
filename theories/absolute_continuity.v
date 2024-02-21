@@ -23,6 +23,43 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+(* TODO: move to sequences.v *)
+Lemma nneseries_addn (R : realType) (k : nat) (f : nat -> \bar R) :
+  (forall i, 0 <= f i)%E ->
+  (\sum_(k <= i <oo) f i = \sum_(0 <= i <oo) (f (i + k)%N))%E.
+Proof.
+move=> f0; have /cvg_ex[/= l fl] : cvg (\sum_(k <= i < n) f i @[n --> \oo]).
+  by apply: ereal_nondecreasing_is_cvgn => m n mn; exact: lee_sum_nneg_natr.
+rewrite (cvg_lim _ fl)//; apply/esym/cvg_lim => //=.
+move: fl; rewrite -(cvg_shiftn k) /=.
+by under eq_fun do rewrite -{1}(add0n k)// big_addn addnK.
+Qed.
+
+Section move_to_realfun.
+Context {R : realType}.
+
+Lemma total_variation_nondecreasing a b (f : R -> R) :
+  bounded_variation a b f ->
+  {in `[a, b] &, {homo fine \o (total_variation a ^~ f) : x y / x <= y}}.
+Proof.
+move=> BVf x y; rewrite !in_itv/= => /andP[ax xb] /andP[ay yb] xy.
+rewrite fine_le //.
+- exact/(bounded_variationP _ ax)/(bounded_variationl ax xb).
+- exact/(bounded_variationP _ ay)/(bounded_variationl ay yb).
+- by rewrite (total_variationD f ax xy)// lee_addl// total_variation_ge0.
+Qed.
+
+Lemma total_variation_bounded a b (f : R -> R) : a <= b ->
+  bounded_variation a b f ->
+  bounded_variation a b (fine \o (total_variation a ^~ f)).
+Proof.
+move=> ab BVf; apply/bounded_variationP => //.
+rewrite ge0_fin_numE; last exact: total_variation_ge0.
+rewrite nondecreasing_total_variation/= ?ltry//.
+exact: total_variation_nondecreasing.
+Qed.
+
+End move_to_realfun.
 
 (* TODO: move to topology.v *)
 Section Gdelta.
@@ -33,39 +70,18 @@ Definition Gdelta (S : set R) :=
 
 Lemma open_Gdelta (S : set R) : open S -> Gdelta S.
 Proof.
-pose S_ i := bigcap2 S setT i.
-exists S_.
-- move=> i.
-  rewrite /S_ /bigcap2.
-  case: ifP => // _.
-  by case: ifP => // _; apply: openT.
-- by rewrite bigcap2E setIT.
+exists (bigcap2 S setT) => [i|]; last by rewrite bigcap2E setIT.
+by rewrite /bigcap2; case: ifP => // _; case: ifP => // _; exact: openT.
 Qed.
 
 Lemma Gdelta_measuable (S : set R) : Gdelta S -> (@measurable _ R) S.
 Proof.
-move=> [] B oB ->.
-apply: bigcapT_measurable => i.
-by apply: open_measurable.
+by move=> [] B oB ->; apply: bigcapT_measurable => i; exact: open_measurable.
 Qed.
 
 End Gdelta.
 
-(*
-Section total_variation_lim.
-Context {R : realType}.
-Context (a b : R) (f : R -> R).
-Context (ab : a < b).
-
-(* subdevide itv_partition by mean *)
-Let regular_itv_partition (n : nat) : seq R :=
- [seq (fun (j : nat) => (a + ((b - a) * j))) i | i <- iota 1 n].
-
-Lemma total_variation_lim :
-End.
-*)
-
-Section absolute_continuity.
+Section for_abs_cont.
 Context {R : realType}.
 
 Lemma incl_itv_lb a (b : itv_bound R) n (B : 'I_n -> R * R) :
@@ -102,6 +118,10 @@ move=> /[swap] /[apply] /andP[_].
 rewrite ler_pdivrMr// mulr_natr mulr2n leNgt => /negP; apply.
 by rewrite ler_ltD// le_maxr lexx orbT.
 Qed.
+End for_abs_cont.
+
+Section absolute_continuity.
+Context {R : realType}.
 
 Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
   exists d : {posnum R}, forall n (B : 'I_n -> R * R),
@@ -134,28 +154,21 @@ rewrite addrAC subrr add0r -subr_ge0 -lee_fin EFinB fineK; last first.
 by rewrite lee_subr_addr// add0e total_variation_ge// ltW.
 Qed.
 
-Lemma total_variation_nondecreasing a b (f : R -> R) :
-  bounded_variation a b f ->
-  {in `[a, b] &, {homo fine \o (total_variation a ^~ f) : x y / x <= y}}.
-Proof.
-move=> BVf x y; rewrite !in_itv/= => /andP[ax xb] /andP[ay yb] xy.
-rewrite fine_le //.
-- exact/(bounded_variationP _ ax)/(bounded_variationl ax xb).
-- exact/(bounded_variationP _ ay)/(bounded_variationl ay yb).
-- by rewrite (total_variationD f ax xy)// lee_addl// total_variation_ge0.
-Qed.
-
-Lemma total_variation_bounded a b (f : R -> R) : a <= b ->
-  bounded_variation a b f ->
-  bounded_variation a b (fine \o (total_variation a ^~ f)).
-Proof.
-move=> ab BVf; apply/bounded_variationP => //.
-rewrite ge0_fin_numE; last exact: total_variation_ge0.
-rewrite nondecreasing_total_variation/= ?ltry//.
-exact: total_variation_nondecreasing.
-Qed.
-
 End absolute_continuity.
+
+(*
+Section total_variation_lim.
+Context {R : realType}.
+Context (a b : R) (f : R -> R).
+Context (ab : a < b).
+
+(* subdivide itv_partition by mean *)
+Let regular_itv_partition (n : nat) : seq R :=
+ [seq (fun (j : nat) => (a + ((b - a) * j))) i | i <- iota 1 n].
+
+Lemma total_variation_lim :
+End.
+*)
 
 Section wip.
 Context {R : realType}.
@@ -327,19 +340,6 @@ have : exists n, exists I : (R * R)^nat,
 
 Admitted.
 
-Lemma lim_eq_eseries_addn (k : nat) (f : nat -> \bar R) :
-\big[+%R/0]_(k <= i <oo) f i = \big[+%R/0]_(0 <= i <oo) (f (i + k)).
-Proof.
-apply: cvg_lim => //.
-rewrite -(cvg_shiftn k) /=.
-(*
-under eq_cvg => n.
-rewrite 
-rewrite eseries_addn.
-*)
-Admitted.
-
-
 Lemma Banach_Zarecki_increasing (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b]  &, {homo f : x y / x <= y}} ->
@@ -375,115 +375,71 @@ pose ab_  i := projT1 (cid (ab_0 (delta_ i))).
 have ablt i t : (ab_ i t).1 < (ab_ i t).2.
   move: (projT2 (cid (ab_0 (delta_ i)))).
   by move=> [] /all_and2 [] => + _ _ _ _; apply.
-have tab_ t: trivIset [set: 'I_(n_ t)]
+have tab_ t : trivIset [set: 'I_(n_ t)]
     (fun i : 'I_(n_ t) => `](ab_ t i).1, (ab_ t i).2[%classic).
-  admit.
+  move: (projT2 (cid (ab_0 (delta_ t)))).
+  by case => _ + _ _ /=.
 have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
   by rewrite /ab_; case: cid => ? [].
 have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:num.
   by rewrite /ab_; case: cid => ? [].
+have H3 i k : (ab_ i k).1 < (ab_ i k).2 /\ `](ab_ i k).1, (ab_ i k).2[ `<=` `[a, b].
+  by rewrite /ab_; case: cid => ? [].
 pose E_ i := \big[setU/set0]_(k < n_ i) `](ab_ i k).1, (ab_ i k).2[%classic.
-have mE i: measurable (E_ i) by exact: bigsetU_measurable.
+have mE i : measurable (E_ i) by exact: bigsetU_measurable.
 pose G_ i := \bigcup_(j in [set j | (j >= i)%N]) E_ j.
 have mG i : measurable (G_ i) by exact: bigcup_measurable.
 pose A := \bigcap_i (G_ i).
-have Eled : forall n, (mu (E_ n) <= (delta_0 n)%:E)%E.
-  move=> t.
-  rewrite measure_semi_additive_ord //=; last first.
-    by apply: bigsetU_measurable => i _.
+have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
+  rewrite measure_semi_additive_ord //=; last exact: bigsetU_measurable.
   apply/ltW.
   under eq_bigr do rewrite lebesgue_measure_itv/= lte_fin ifT // -EFinD.
-  rewrite sumEFin lte_fin.
-  by apply: d_prop.
-have mA0 : lebesgue_measure A = 0.
+  by rewrite sumEFin lte_fin; exact: d_prop.
+have mA0 : mu A = 0.
   rewrite /A.
-  have H1 : (mu \o G_) x @[x --> \oo] --> mu (\bigcap_n G_ n).
-    apply: nonincreasing_cvg_mu => //.
-    - move=> /=.
-      rewrite (@le_lt_trans _ _ (\sum_(0 <= i <oo) mu (E_ i))%E) //.
-        apply: measure_sigma_sub_additive => //; first exact: mG.
-        rewrite /G_.
-        apply: bigcup_sub => i _.
-        by apply: bigcup_sup.
-      apply: (@le_lt_trans _ _ 1%E); last exact: ltry.
-      rewrite (_:1%E = (\big[+%R/0%R]_(0 <= i <oo) (delta_0 i)%:E)).
-        by apply: lee_nneseries.
-      apply: esym.
-      rewrite -(_:2^-1 / (1 - 2^-1) = 1); last first.
-        have H : 1 - (@GRing.inv R 2) != 0.
-          rewrite lt0r_neq0  //.
-          rewrite subr_gt0.
-          rewrite invf_lt1 //.
-          by rewrite ltr1n.
-        apply: (@mulIf _ (1 - 2^-1)) => //.
-        rewrite mul1r divrK; last by rewrite unitfE.
-        rewrite -[X in _ = X - _](@mulfK _ 2) //.
-        rewrite mulrC mul1r.
-        rewrite mulr_natr [X in X - _]mulrSr mulr1n.
-        by rewrite addrK.
-      apply: cvg_lim => //.
-      apply: cvg_EFin.
-        apply: nearW => n.
-        by apply/sum_fin_numP.
-      under eq_cvg => n.
-        rewrite /=.
-        rewrite sumEFin /=.
-        under eq_bigr => i _.
-        rewrite (_:delta_0 i = geometric 2^-1 2^-1 i); last first.
-          rewrite /delta_0 /geometric /=.
-          by rewrite -exprVn exprS.
-          over.
-        over.
-      apply: cvg_geometric_series.
-      rewrite gtr0_norm => //.
-      rewrite invf_lt1 //.
-      by rewrite ltr1n.
-    - by apply: bigcap_measurable => ? _; apply: mG.
-    - move=> s k sk.
-      rewrite /G_.
-      rewrite subsetEset.
-      apply: bigcup_sub => n /= kn.
-      apply: bigcup_sup => /=.
-      by apply: (@le_trans _ _ k).
-  have : (lebesgue_measure \o G_) x @[x --> \oo] --> 0%E.
+  have : (mu \o G_) x @[x --> \oo] --> 0%E.
     rewrite /=.
-    have :  (\forall k \near \oo, (cst 0 k <= (mu \o G_) k  <= (delta_0 k.-1)%:E)%E).
+    have : \forall k \near \oo, (cst 0 k <= (mu \o G_) k <= (delta_0 k.-1)%:E)%E.
       near=> k => /=.
       rewrite measure_ge0 /=.
       apply: (@le_trans _ _ (\big[+%E/0%E]_(k <= j <oo) (mu (E_ j))%E)).
         rewrite (_: G_ k = \bigcup_n G_ (n + k)%N); last first.
         apply/seteqP; split.
-        - by exists 0%N => //.
+        - by exists 0%N.
         - apply: bigcup_sub => n _.
           apply: bigcup_sub => j /= nkj.
           apply: bigcup_sup => /=.
-          apply: (@leq_trans (n + k)%N) => //.
-          exact: leq_addl.
-        rewrite lim_eq_eseries_addn.
+          by rewrite (leq_trans _ nkj)// leq_addl.
+        rewrite nneseries_addn; last by move=> i; by [].
         apply: measure_sigma_sub_additive.
-            by move=> n; apply: mE.
-          apply: bigcup_measurable => n _.
-          by apply: mG.
+            by move=> n; exact: mE.
+          by apply: bigcup_measurable => n _; exact: mG.
         move=> x.
         move=> [/= i _] [j /= ikj Ejx].
         exists (j - k)%N => //.
-        rewrite subnK //.
-        apply: leq_trans ikj.
-        by apply: leq_addl.
-      rewrite [leRHS](_:_ = (\big[+%E/0%E]_(k <= j <oo) (delta_0 j)%:E)); last first.
-      apply: esym.
-      apply: cvg_lim => //.
-      rewrite d_geo0; last first.
-        near: k.
-        by exists 1%N.
-      rewrite /geometric /=.
-        under eq_cvg => ?.
-          under eq_bigr => ? _.
-            rewrite /delta_0 -exprVn.
-            over.
-            rewrite /=.
-          over.
-        rewrite /=.
+        by rewrite subnK// (leq_trans _ ikj)// leq_addl.
+(*      rewrite d_geo0; last by near: k; exists 1%N.*)
+      rewrite [leRHS](_:_ = (\sum_(k <= j <oo) (delta_0 j)%:E)%E); last first.
+        apply: esym.
+        apply: cvg_lim => //.
+        rewrite d_geo0; last first.
+          by near: k; exists 1%N.
+        rewrite /geometric /=.
+        rewrite [X in X @ _ --> _](_ : _ =
+            fun n => \sum_(k <= i < n) (geometric 1 2^-1 i.+1)%:E); last first.
+          apply/funext => n; apply: eq_bigr => i _.
+          by rewrite -d_geo0 /delta_0//.
+        rewrite mul1r.
+        apply: cvg_EFin.
+          apply: nearW => i.
+          by rewrite sumEFin.
+        rewrite [X in X @ _](_ : _ = series (geometric 1 2^-1)); last first.
+          apply/funext => i /=.
+          rewrite sumEFin//= /series/=.
+          admit.
+        apply: cvg_trans.
+          apply: cvg_geometric_series.
+          admit.
         admit.
       by apply: lee_nneseries.
     move/squeeze_cvge.
@@ -494,30 +450,57 @@ have mA0 : lebesgue_measure A = 0.
       near=> k.
       rewrite d_geo0.
       reflexivity.
-      near: k.
-      by exists 1%N.
+      by near: k; exists 1%N.
     apply: cvg_EFin.
       by near=> k.
     apply: cvg_geometric.
-    rewrite gtr0_norm; last first.
-      by rewrite invr_gt0.
-    rewrite invf_lt1 //.
-    by rewrite ltr1n.
-  move/cvg_unique : H1.
-  move=> /[apply].
-  by apply.
+    rewrite gtr0_norm ?invr_gt0//.
+    by rewrite invf_lt1 // ltr1n.
+  suff: (mu \o G_) x @[x --> \oo] --> mu (\bigcap_n G_ n).
+    by move=> /cvg_unique /[apply]; exact.
+  apply: nonincreasing_cvg_mu => //=.
+  - rewrite (@le_lt_trans _ _ (\sum_(0 <= i <oo) mu (E_ i))%E) //.
+      apply: measure_sigma_sub_additive => //; first exact: mG.
+      rewrite /G_.
+      by apply: bigcup_sub => i _; exact: bigcup_sup.
+    apply: (@le_lt_trans _ _ 1%E); last exact: ltry.
+    rewrite (_ : 1%E = (\big[+%R/0%R]_(0 <= i <oo) (delta_0 i)%:E)).
+      exact: lee_nneseries.
+    apply/esym.
+    rewrite -(_ : 2^-1 / (1 - 2^-1) = 1); last first.
+      have H : 1 - 2^-1 != 0 :> R.
+        by rewrite lt0r_neq0// subr_gt0 invf_lt1// ltr1n.
+      by rewrite [X in X - _](splitr 1) div1r addrK divff.
+    apply/cvg_lim => //.
+    apply/cvg_EFin.
+      by apply: nearW => n; rewrite sumEFin.
+    under eq_cvg => n.
+      rewrite /= sumEFin /=.
+      under eq_bigr => i _.
+      rewrite (_ : delta_0 i = geometric 2^-1 2^-1 i); last first.
+        by rewrite /delta_0 /geometric /= -exprVn exprS.
+        over.
+      over.
+    apply: cvg_geometric_series.
+    by rewrite gtr0_norm// invf_lt1// ltr1n.
+  - by apply: bigcap_measurable => ? _; exact: mG.
+  - move=> s k sk.
+    rewrite /G_.
+    rewrite subsetEset.
+    apply: bigcup_sub => n /= kn.
+    apply: bigcup_sup => /=.
+    exact: (@le_trans _ _ k).
 have mfA0 : mu (f @` A) = 0.
   (* use lf *)
   apply: lf.
-  + rewrite -[X in _ `<=` X](@bigcap_const _ _ (@setT nat) `[a, b]).
-    * apply: subset_bigcap => //.
-      move=> n _.
-      apply: bigcup_sub => j /= nj.
-      rewrite /E_.
-(*      rewrite bigcup_sup.
-      rewrite (_:`[a, b]%classic = \big[setU/set0]_(k < n_ j) `[a, b]%classic).
-(*      apply (@subset_bigsetU _ (fun k : `I_(n_ j) => `](ab_ j k).2, (ab_ j k).1[%classic)  (n_ j)).*)*)
-  admit.
+  + move=> r Ar.
+    rewrite /A /bigcap /= /G_ /= in Ar.
+    have [i _] := Ar O I.
+    rewrite /E_.
+    rewrite -bigcup_seq/= => -[j /= Hj].
+    by apply: (H3 _ _).2.
+  + by apply: bigcapT_measurable => //.
+  + exact: mA0.
 Admitted.
 
 Theorem Banach_Zarecki (f : R -> R) :
