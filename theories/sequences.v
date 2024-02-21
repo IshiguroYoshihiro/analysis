@@ -1409,7 +1409,7 @@ Proof. by rewrite addeC eseriesSr. Qed.
 Lemma eseriesSB (n : nat) :
   eseries n \is a fin_num -> eseries n.+1 - eseries n = u_ n.
 Proof. by move=> enfin; rewrite eseriesS addeK//=. Qed.
-a
+
 Lemma eseries_addn m n : eseries (n + m)%N = eseries m + \sum_(m <= k < n + m) u_ k.
 Proof. by rewrite eseriesEnat/= -big_cat_nat// leq_addl. Qed.
 
