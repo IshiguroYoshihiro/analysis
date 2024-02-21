@@ -3,7 +3,7 @@ From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import cardinality fsbigop.
 Require Import signed reals ereal topology normedtype sequences real_interval.
-Require Import esum measure lebesgue_measure numfun lebesgue_integral.
+Require Import esum measure lebesgue_measure numfun (*lebesgue_integral*).
 Require Import realfun exp lebesgue_stieltjes_measure derive.
 
 (**md**************************************************************************)
@@ -70,8 +70,8 @@ Context {R : realType}.
 
 Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
   exists d : {posnum R}, forall n (B : 'I_n -> R * R),
-    [/\ (forall i, (B i).1 <= (B i).2 /\ `[(B i).1, (B i).2] `<=` `[a, b]),
-        trivIset setT (fun i => `[(B i).1, (B i).2]%classic) &
+    [/\ (forall i, (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
+        trivIset setT (fun i => `](B i).1, (B i).2[%classic) &
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
     \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
 
@@ -81,50 +81,73 @@ Lemma total_variation_AC a b (f : R -> R) : a < b ->
 Proof.
 move=> ab bvH' acH' e.
 have := acH' e.
-move: (acH') => _ [d ac'H'].
+move: (acH') => _.
+move=> [d ac'H'].
 exists d => n B trivB.
 have := ac'H' n B trivB.
 move: trivB => [/all_and2[B21 Bab]] trivB sumBd sumHd.
 apply: (le_lt_trans _ sumHd).
-apply: ler_sum => i iI.
+apply: ler_sum => i _.
 have aB1 : a <= (B i).1.
-  move: (Bab i).
-  move/in1_subset_itv.
-  move/(_ (fun x => a <= x)).
-  apply.
-    by move=> x; rewrite in_itv /= => /andP [].
-  by rewrite in_itv /= B21 andbT.
+  rewrite leNgt; apply/negP => Bi1a.
+  have := Bab i.
+  move=> /(_ (((B i).1 + minr a (B i).2)/2)).
+  rewrite /= !in_itv/= midf_lt//=; last first.
+    by rewrite lt_minr Bi1a B21.
+  have H1 : ((B i).1 + minr a (B i).2)%E / 2 < (B i).2.
+    rewrite ltr_pdivrMr//.
+    rewrite mulr_natr mulr2n.
+    rewrite ltr_leD//.
+    by rewrite le_minl lexx orbT.
+  move=> /(_ H1) /andP[+ _].
+  rewrite ler_pdivlMr// mulr_natr mulr2n leNgt => /negP; apply.
+  by rewrite ltr_leD// le_minl lexx.
 have B2b : (B i).2 <= b.
-  move: (Bab i).
-  move/in1_subset_itv.
-  move/(_ (fun x => x <= b)).
-  apply.
-    by move=> x; rewrite in_itv /= => /andP [].
-  by rewrite in_itv /= B21 andTb.
-have able : a <= b.
-  by apply/ltW.
+  rewrite leNgt; apply/negP => Bi2b.
+  have := Bab i.
+  move=> /(_ ((maxr (B i).1 b + (B i).2)/2)).
+  rewrite /= !in_itv/= midf_lt//=; last first.
+    by rewrite lt_maxl Bi2b B21.
+  rewrite andbT.
+  have H1 : (B i).1 < (maxr (B i).1 b + (B i).2)%E / 2.
+    rewrite ltr_pdivlMr//.
+    rewrite mulr_natr mulr2n.
+    rewrite ler_ltD//.
+    by rewrite le_maxr lexx.
+  move=> /(_ H1) /andP[_].
+  rewrite ler_pdivrMr// mulr_natr mulr2n leNgt => /negP; apply.
+  by rewrite ler_ltD// le_maxr lexx orbT.
 apply: (le_trans (ler_norm (f (B i).2 - f (B i).1))).
 rewrite /=.
-rewrite (@total_variationD _ a (B i).2 (B i).1 f) => //.
+rewrite (@total_variationD _ a (B i).2 (B i).1 f)//; last first.
+  exact: ltW.
 rewrite fineD; last 2 first.
 - apply/bounded_variationP => //.
-  by apply: (@bounded_variationl _ _ _ b) => //; first apply: (le_trans _ B2b).
+  apply: (@bounded_variationl _ _ _ b) => //.
+  by rewrite (le_trans _ B2b)// ltW.
 - apply/bounded_variationP => //.
+    exact: ltW.
   apply: (bounded_variationl _ B2b) => //.
-  by apply: (bounded_variationr aB1) => //; first apply: (le_trans _ B2b).
+    exact: ltW.
+  apply: (bounded_variationr aB1) => //.
+  by rewrite (le_trans _ B2b)// ltW.
 rewrite addrAC subrr add0r.
 rewrite -[leLHS]add0r -ler_subr_addr.
 rewrite -lee_fin.
 rewrite EFinB.
 rewrite fineK; last first.
   apply/bounded_variationP => //.
+    exact: ltW.
   apply: (bounded_variationl _ B2b) => //.
-  by apply: (bounded_variationr aB1); first apply: (@le_trans _ _ (B i).2).
+    exact: ltW.
+  apply: (bounded_variationr aB1) => //.
+  by rewrite (le_trans _ B2b)// ltW.
 rewrite lee_subr_addr; last first.
   rewrite ge0_fin_numE; last exact: normr_ge0.
   exact: ltry.
 rewrite add0e.
-by apply: total_variation_ge.
+apply: total_variation_ge.
+exact: ltW.
 Qed.
 
 Lemma TV_nondecreasing a b (f : R -> R) :
@@ -344,8 +367,8 @@ Proof.
 move=> cf incf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
 have {fe0} : forall d : {posnum R},
     exists n, exists B : 'I_n -> R * R,
-      [/\ (forall i, (B i).1 <= (B i).2 /\ `[(B i).1, (B i).2] `<=` `[a, b]),
-          trivIset setT (fun i => `[(B i).1, (B i).2]%classic),
+      [/\ (forall i, (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
+          trivIset setT (fun i => `](B i).1, (B i).2[%classic),
           \sum_(k < n) ((B k).2 - (B k).1) < d%:num &
           \sum_(k < n) (f (B k).2 - f (B k).1) >= e0%:num].
   move=> d; have {fe0} := fe0 d.
@@ -371,6 +394,10 @@ have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
   by rewrite /ab_; case: cid => ? [].
 have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:num.
   by rewrite /ab_; case: cid => ? [].
+(*have tab_ t : trivIset [set: 'I_(n_ t)]
+    (fun i : 'I_(n_ t) => `](ab_ t i).2, (ab_ t i).1[%classic).
+  rewrite /ab_; case: cid => ? [_ + _ _]/=.
+  rewrite /delta_/=.*)
 pose E_ i := \big[setU/set0]_(k < n_ i) `](ab_ i k).2, (ab_ i k).1[%classic.
 have mE i: measurable (E_ i) by exact: bigsetU_measurable.
 pose G_ i := \bigcup_(j in [set j | (j >= i)%N]) E_ j.
@@ -379,39 +406,23 @@ pose A := \bigcap_i (G_ i).
 have Eled : forall n, (mu (E_ n) <= (delta_0 n)%:E)%E.
   move=> t.
   rewrite measure_semi_additive_ord //=; last 2 first.
-
-xxx
-
-  rewrite (@measure_semi_additive _ _ _ lebesgue_measure).
- /=; last 3 first.
-        by move=> k; rewrite /Iab; case: Bool.bool_dec => H.
-      apply: ltn_trivIset => n2 n1 n12.
-      rewrite {2}/Iab; case: Bool.bool_dec; last by rewrite setI0.
-      move=> H2.
-      rewrite /Iab.
-      case: Bool.bool_dec; last by rewrite set0I.
-      move=> H1.
-      admit.
-    apply: bigsetU_measurable => i _.
+(*    apply: ltn_trivIset => n2 n1 n12.
+    rewrite {2}/Iab; case: Bool.bool_dec; last by rewrite setI0.
+    move=> H2.
     rewrite /Iab.
-    by case: Bool.bool_dec.
-  under eq_bigr => i _.
-    rewrite (_:lebesgue_measure (Iab t i) = ((ab_ t i).2 - (ab_ t i).1)%:E); last first.
-        move: i.
-        rewrite /Iab.
-
-        admit.
-      over.
-    rewrite sumEFin.
-    rewrite lee_fin.
+    case: Bool.bool_dec; last by rewrite set0I.
+    move=> H1.*)
+     admit.
+    by apply: bigsetU_measurable => i _.
   apply/ltW.
-  by apply: d_prop.
+  under eq_bigr do rewrite lebesgue_measure_itv/= lte_fin.
+  (*by apply: d_prop.*) admit.
 have mA0 : lebesgue_measure A = 0.
   rewrite /A.
-  have H1 : (m \o G_) x @[x --> \oo] --> m (\bigcap_n G_ n).
+  have H1 : (mu \o G_) x @[x --> \oo] --> mu (\bigcap_n G_ n).
     apply: nonincreasing_cvg_mu => //.
     - move=> /=.
-      rewrite (@le_lt_trans _ _ (\sum_(0 <= i <oo) m (E_ i))%E) //.
+      rewrite (@le_lt_trans _ _ (\sum_(0 <= i <oo) mu (E_ i))%E) //.
         apply: measure_sigma_sub_additive => //; first exact: mG.
         rewrite /G_.
         apply: bigcup_sub => i _.
@@ -458,19 +469,19 @@ have mA0 : lebesgue_measure A = 0.
       by apply: (@le_trans _ _ k).
   have : (lebesgue_measure \o G_) x @[x --> \oo] --> 0%E.
     rewrite /=.
-    have :  (\forall k \near \oo, (cst 0 k <= (m \o G_) k  <= (delta_0 k.-1)%:E)%E).
+    have :  (\forall k \near \oo, (cst 0 k <= (mu \o G_) k  <= (delta_0 k.-1)%:E)%E).
       near=> k => /=.
       rewrite measure_ge0 /=.
-      apply: (@le_trans _ _ (\big[+%E/0%E]_(k <= j <oo) (m (E_ j))%E)).
+      apply: (@le_trans _ _ (\big[+%E/0%E]_(k <= j <oo) (mu (E_ j))%E)).
         rewrite (_: G_ k = \bigcup_n G_ (n + k)%N); last first.
         apply/seteqP; split.
-        - by exists 0.
+        - by exists 0%N => //.
         - apply: bigcup_sub => n _.
           apply: bigcup_sub => j /= nkj.
           apply: bigcup_sup => /=.
           apply: (@leq_trans (n + k)%N) => //.
           exact: leq_addl.
-        rewrite (_: (\sum_(k <= j <oo) m (E_ j))%E = (\sum_(0 <= j <oo) m (E_ (j + k)%N))%E); last admit.
+        rewrite (_: (\sum_(k <= j <oo) mu (E_ j))%E = (\sum_(0 <= j <oo) mu (E_ (j + k)%N))%E); last admit.
         apply: measure_sigma_sub_additive.
             by move=> n; apply: mE.
           apply: bigcup_measurable => n _.
@@ -517,7 +528,7 @@ have mA0 : lebesgue_measure A = 0.
   move/cvg_unique : H1.
   move=> /[apply].
   by apply.
-have mfA0 : lebesgue_measure (f @` A) = 0.
+have mfA0 : mu (f @` A) = 0.
   (* use lf *)
   apply: lf.
   + rewrite -[X in _ `<=` X](@bigcap_const _ _ (@setT nat) `[a, b]).
@@ -525,9 +536,9 @@ have mfA0 : lebesgue_measure (f @` A) = 0.
       move=> n _.
       apply: bigcup_sub => j /= nj.
       rewrite /E_.
-      rewrite bigcup_sup.
+(*      rewrite bigcup_sup.
       rewrite (_:`[a, b]%classic = \big[setU/set0]_(k < n_ j) `[a, b]%classic).
-(*      apply (@subset_bigsetU _ (fun k : `I_(n_ j) => `](ab_ j k).2, (ab_ j k).1[%classic)  (n_ j)).*)
+(*      apply (@subset_bigsetU _ (fun k : `I_(n_ j) => `](ab_ j k).2, (ab_ j k).1[%classic)  (n_ j)).*)*)
   admit.
 Admitted.
 
@@ -542,7 +553,6 @@ apply: total_variation_AC => //.
 apply: Banach_Zarecki_increasing.
 - exact: total_variation_continuous.
 - exact: TV_nondecreasing.
-- exact: TV_bounded_variation.
 - exact: Lusin_total_variation.
 Qed.
 
