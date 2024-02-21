@@ -9,7 +9,7 @@ Require Import realfun exp lebesgue_stieltjes_measure derive.
 (**md**************************************************************************)
 (* # Absolute Continuity                                                      *)
 (* ```                                                                        *)
-(*   Gdelta ==                                                                *)
+(*   Gdelta (S ; set R) == S is a set of countable intersection of open sets  *)
 (*   abs_cont ==                                                              *)
 (* ```                                                                        *)
 (******************************************************************************)
@@ -229,8 +229,9 @@ End lusinN.
 
 Section Banach_Zarecki.
 Context (R : realType).
-Context (m := (@lebesgue_measure R)).
 Context (a b : R) (ab : a < b).
+
+Local Notation mu := lebesgue_measure.
 
 Lemma total_variation_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -260,7 +261,7 @@ Abort.
 Lemma nondecreasing_fun_image_measure (f : R -> R) (G_ : (set R)^nat) :
   {in `[a, b] &, {homo f : x y / x <= y}} ->
   \bigcap_i G_ i `<=` `]a, b[%classic ->
-  m (\bigcap_i (G_ i)) = \sum_(i \in setT) (m (G_ i)).
+  mu (\bigcap_i (G_ i)) = \sum_(i \in setT) (mu (G_ i)).
 Proof.
 Abort.
 
@@ -270,8 +271,8 @@ Lemma Lusin_image_measure0 (f : R -> R) :
   lusinN `[a, b] f ->
   exists Z : set R, [/\ Z `<=` `[a, b]%classic,
       compact Z,
-      m Z = 0 &
-      m (f @` Z) = 0].
+      mu Z = 0 &
+      mu (f @` Z) = 0].
 Proof.
 Admitted.
 
@@ -280,8 +281,8 @@ Lemma image_measure0_Lusin (f : R -> R) :
   {in `[a, b]&, {homo f : x y / x <= y}} ->
   (forall Z : set R, [/\ measurable Z, Z `<=` `[a, b]%classic,
       compact Z,
-      m Z = 0 &
-      m (f @` Z) = 0]) ->
+      mu Z = 0 &
+      mu (f @` Z) = 0]) ->
   lusinN `[a, b] f.
 Proof.
 move=> cf ndf clusin.
@@ -316,12 +317,12 @@ apply: image_measure0_Lusin => //.
 apply: contrapT.
 move=> H.
 pose TV := (fine \o (total_variation a)^~ f).
-have : exists Z, [/\ Z `<=` `[a, b], compact Z, m Z = 0 & (0 < m (TV @` Z))%E].
+have : exists Z, [/\ Z `<=` `[a, b], compact Z, mu Z = 0 & (0 < mu (TV @` Z))%E].
   admit.
 move=> [Z [abZ cpt_timZ Z0 ptimZ]].
 pose c : R := inf Z.
 pose d : R := sup Z.
-pose alpha := m [set (fine \o (total_variation a)^~ f) x | x in Z].
+pose alpha := mu [set (fine \o (total_variation a)^~ f) x | x in Z].
 have rct : right_continuous TV.
   admit.
 have monot : {in `[a, b]&, {homo TV : x y / x <= y}}.
@@ -337,11 +338,10 @@ Admitted.
 Lemma Banach_Zarecki_increasing (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b]  &, {homo f : x y / x <= y}} ->
-  bounded_variation a b f ->
   lusinN `[a, b] f ->
   abs_cont a b f.
 Proof.
-move=> cf incf bvf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
+move=> cf incf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
 have {fe0} : forall d : {posnum R},
     exists n, exists B : 'I_n -> R * R,
       [/\ (forall i, (B i).1 <= (B i).2 /\ `[(B i).1, (B i).2] `<=` `[a, b]),
@@ -353,6 +353,16 @@ have {fe0} : forall d : {posnum R},
   by exists n, B; split => //; rewrite leNgt; apply/negP.
 move=> /choice[n_0 ab_0].
 pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
+have d_geo n : delta_0 n = geometric 2^-1 2^-1 n.
+  rewrite /geometric /=.
+  rewrite /delta_0.
+  by rewrite -exprVn exprS.
+have d_geo0 : forall k, (0 < k)%N -> (delta_0 k.-1 = geometric 1 (2 ^-1) k).
+  rewrite /geometric /=.
+  rewrite /delta_0.
+  move=> t t0.
+  rewrite prednK //.
+  by rewrite -exprVn mul1r.
 have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
 pose delta_ (i : nat) : {posnum R} := PosNum (delta_0_ge0 i).
 pose n_ i := n_0 (delta_ i).
@@ -361,28 +371,48 @@ have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
   by rewrite /ab_; case: cid => ? [].
 have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:num.
   by rewrite /ab_; case: cid => ? [].
-pose E_ i := \big[setU/set0]_(k < n_ i) `]((ab_ i) k).2, ((ab_ i) k).1[%classic.
+pose E_ i := \big[setU/set0]_(k < n_ i) `](ab_ i k).2, (ab_ i k).1[%classic.
+have mE i: measurable (E_ i) by exact: bigsetU_measurable.
 pose G_ i := \bigcup_(j in [set j | (j >= i)%N]) E_ j.
+have mG i : measurable (G_ i) by exact: bigcup_measurable.
 pose A := \bigcap_i (G_ i).
-have Eled : forall n, (m (E_ n) <= (delta_0 n)%:E)%E.
+have Eled : forall n, (mu (E_ n) <= (delta_0 n)%:E)%E.
   move=> t.
-  have : m (E_ t) = (\sum_(k < n_ t) ((ab_ t k).2 - (ab_ t k).1))%:E.
-    admit.
-  move->.
-  rewrite lee_fin.
+  rewrite measure_semi_additive_ord //=; last 2 first.
+
+xxx
+
+  rewrite (@measure_semi_additive _ _ _ lebesgue_measure).
+ /=; last 3 first.
+        by move=> k; rewrite /Iab; case: Bool.bool_dec => H.
+      apply: ltn_trivIset => n2 n1 n12.
+      rewrite {2}/Iab; case: Bool.bool_dec; last by rewrite setI0.
+      move=> H2.
+      rewrite /Iab.
+      case: Bool.bool_dec; last by rewrite set0I.
+      move=> H1.
+      admit.
+    apply: bigsetU_measurable => i _.
+    rewrite /Iab.
+    by case: Bool.bool_dec.
+  under eq_bigr => i _.
+    rewrite (_:lebesgue_measure (Iab t i) = ((ab_ t i).2 - (ab_ t i).1)%:E); last first.
+        move: i.
+        rewrite /Iab.
+
+        admit.
+      over.
+    rewrite sumEFin.
+    rewrite lee_fin.
   apply/ltW.
   by apply: d_prop.
 have mA0 : lebesgue_measure A = 0.
   rewrite /A.
   have H1 : (m \o G_) x @[x --> \oo] --> m (\bigcap_n G_ n).
-    apply: nonincreasing_cvg_mu.
+    apply: nonincreasing_cvg_mu => //.
     - move=> /=.
       rewrite (@le_lt_trans _ _ (\sum_(0 <= i <oo) m (E_ i))%E) //.
-        apply: measure_sigma_sub_additive.
-            move=> n.
-            by apply: bigsetU_measurable.
-          apply: bigcup_measurable => k _.
-          by apply: bigsetU_measurable.
+        apply: measure_sigma_sub_additive => //; first exact: mG.
         rewrite /G_.
         apply: bigcup_sub => i _.
         by apply: bigcup_sup.
@@ -419,48 +449,61 @@ have mA0 : lebesgue_measure A = 0.
       rewrite gtr0_norm => //.
       rewrite invf_lt1 //.
       by rewrite ltr1n.
-    - admit.
-    - admit.
-    - admit.
+    - by apply: bigcap_measurable => ? _; apply: mG.
+    - move=> s k sk.
+      rewrite /G_.
+      rewrite subsetEset.
+      apply: bigcup_sub => n /= kn.
+      apply: bigcup_sup => /=.
+      by apply: (@le_trans _ _ k).
   have : (lebesgue_measure \o G_) x @[x --> \oo] --> 0%E.
     rewrite /=.
     have :  (\forall k \near \oo, (cst 0 k <= (m \o G_) k  <= (delta_0 k.-1)%:E)%E).
       near=> k => /=.
       rewrite measure_ge0 /=.
       apply: (@le_trans _ _ (\big[+%E/0%E]_(k <= j <oo) (m (E_ j))%E)).
-        rewrite (_: G_ k = \bigcup_n G_ (n + k)%N); last admit.
+        rewrite (_: G_ k = \bigcup_n G_ (n + k)%N); last first.
+        apply/seteqP; split.
+        - by exists 0.
+        - apply: bigcup_sub => n _.
+          apply: bigcup_sub => j /= nkj.
+          apply: bigcup_sup => /=.
+          apply: (@leq_trans (n + k)%N) => //.
+          exact: leq_addl.
         rewrite (_: (\sum_(k <= j <oo) m (E_ j))%E = (\sum_(0 <= j <oo) m (E_ (j + k)%N))%E); last admit.
         apply: measure_sigma_sub_additive.
-            admit.
-          admit.
+            by move=> n; apply: mE.
+          apply: bigcup_measurable => n _.
+          by apply: mG.
         move=> x.
         move=> [/= i _] [j /= ikj Ejx].
         exists (j - k)%N => //.
         rewrite subnK //.
         apply: leq_trans ikj.
         by apply: leq_addl.
-      rewrite (_:(delta_0 k.-1)%:E = (\big[+%E/0%E]_(k <= j <oo) (delta_0 j)%:E)); last admit.
-      apply: lee_nneseries => // t _.
-      have : m (E_ t) = (\sum_(k < n_ t) ((ab_ t k).2 - (ab_ t k).1))%:E.
+      rewrite [leRHS](_:_ = (\big[+%E/0%E]_(k <= j <oo) (delta_0 j)%:E)); last first.
+      apply: esym.
+      apply: cvg_lim => //.
+      rewrite d_geo0; last first.
+        near: k.
+        by exists 1%N.
+      rewrite /geometric /=.
+        under eq_cvg => ?.
+          under eq_bigr => ? _.
+            rewrite /delta_0 -exprVn.
+            over.
+            rewrite /=.
+          over.
+        rewrite /=.
         admit.
-      move->.
-      rewrite lee_fin.
-      apply/ltW.
-      by apply: d_prop.
+      by apply: lee_nneseries.
     move/squeeze_cvge.
     apply.
         exact: cvg_cst.
-      have : forall k, (0 < k)%N -> (delta_0 k.-1 = geometric 1 (2 ^-1) k).
-        rewrite /geometric /=.
-        rewrite /delta_0.
-        move=> k k0.
-        rewrite prednK //.
-        by rewrite -exprVn mul1r.
-      move=> Hd.
       apply: cvg_trans.
       apply: near_eq_cvg.
       near=> k.
-      rewrite Hd.
+      rewrite d_geo0.
       reflexivity.
       near: k.
       by exists 1%N.
@@ -474,13 +517,17 @@ have mA0 : lebesgue_measure A = 0.
   move/cvg_unique : H1.
   move=> /[apply].
   by apply.
-
 have mfA0 : lebesgue_measure (f @` A) = 0.
   (* use lf *)
   apply: lf.
   + rewrite -[X in _ `<=` X](@bigcap_const _ _ (@setT nat) `[a, b]).
     * apply: subset_bigcap => //.
-      
+      move=> n _.
+      apply: bigcup_sub => j /= nj.
+      rewrite /E_.
+      rewrite bigcup_sup.
+      rewrite (_:`[a, b]%classic = \big[setU/set0]_(k < n_ j) `[a, b]%classic).
+(*      apply (@subset_bigsetU _ (fun k : `I_(n_ j) => `](ab_ j k).2, (ab_ j k).1[%classic)  (n_ j)).*)
   admit.
 Admitted.
 
