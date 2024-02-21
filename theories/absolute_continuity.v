@@ -358,6 +358,19 @@ have : exists n, exists I : (R * R)^nat,
 
 Admitted.
 
+Lemma lim_eq_eseries_addn (k : nat) (f : nat -> \bar R) :
+\big[+%R/0]_(k <= i <oo) f i = \big[+%R/0]_(0 <= i <oo) (f (i + k)).
+Proof.
+apply: cvg_lim => //.
+rewrite -(cvg_shiftn k) /=.
+(*
+under eq_cvg => n.
+rewrite 
+rewrite eseries_addn.
+*)
+Admitted.
+
+
 Lemma Banach_Zarecki_increasing (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b]  &, {homo f : x y / x <= y}} ->
@@ -477,7 +490,7 @@ have mA0 : lebesgue_measure A = 0.
           apply: bigcup_sup => /=.
           apply: (@leq_trans (n + k)%N) => //.
           exact: leq_addl.
-        rewrite (_: (\sum_(k <= j <oo) mu (E_ j))%E = (\sum_(0 <= j <oo) mu (E_ (j + k)%N))%E); last admit.
+        rewrite lim_eq_eseries_addn.
         apply: measure_sigma_sub_additive.
             by move=> n; apply: mE.
           apply: bigcup_measurable => n _.
