@@ -389,7 +389,13 @@ have d_geo0 : forall k, (0 < k)%N -> (delta_0 k.-1 = geometric 1 (2 ^-1) k).
 have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
 pose delta_ (i : nat) : {posnum R} := PosNum (delta_0_ge0 i).
 pose n_ i := n_0 (delta_ i).
-pose ab_ i : 'I_(n_ i) -> R * R := projT1 (cid (ab_0 (delta_ i))).
+pose ab_  i := projT1 (cid (ab_0 (delta_ i))).
+have able i t : (ab_ i t).1 < (ab_ i t).2.
+  move: (projT2 (cid (ab_0 (delta_ i)))).
+  by move=> [] /all_and2 [] => + _ _ _ _; apply.
+have tab i t: trivIset [set: 'I_(n_ t)]
+    (fun i : 'I_(n_ t) => `](ab_ t i).2, (ab_ t i).1[%classic).
+  admit.
 have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
   by rewrite /ab_; case: cid => ? [].
 have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:num.
@@ -406,6 +412,7 @@ pose A := \bigcap_i (G_ i).
 have Eled : forall n, (mu (E_ n) <= (delta_0 n)%:E)%E.
   move=> t.
   rewrite measure_semi_additive_ord //=; last 2 first.
+
 (*    apply: ltn_trivIset => n2 n1 n12.
     rewrite {2}/Iab; case: Bool.bool_dec; last by rewrite setI0.
     move=> H2.
