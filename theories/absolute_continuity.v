@@ -68,6 +68,41 @@ End.
 Section absolute_continuity.
 Context {R : realType}.
 
+Lemma incl_itv_lb a (b : itv_bound R) n (B : 'I_n -> R * R) :
+  (forall i, (B i).1 < (B i).2) ->
+  (forall i, `](B i).1, (B i).2[ `<=`
+             [set` Interval (BLeft a) b] (*NB: closed on the left*)) ->
+  forall i, a <= (B i).1.
+Proof.
+move=> B12 Bab i; rewrite leNgt; apply/negP => Bi1a.
+have := Bab i.
+move=> /(_ (((B i).1 + minr a (B i).2)/2)).
+rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_minr Bi1a B12.
+have : ((B i).1 + minr a (B i).2)%E / 2 < (B i).2.
+  by rewrite ltr_pdivrMr// mulr_natr mulr2n ltr_leD// le_minl lexx orbT.
+move=> /[swap] /[apply] /andP[+ _].
+rewrite ler_pdivlMr// mulr_natr mulr2n leNgt => /negP; apply.
+by rewrite ltr_leD// le_minl lexx.
+Qed.
+
+Lemma incl_itv_ub (a : itv_bound R) b n (B : 'I_n -> R * R) :
+  (forall i, (B i).1 < (B i).2) ->
+  (forall i, `](B i).1, (B i).2[ `<=`
+              [set` Interval a (BRight b)] (*NB: closed on the right*)) ->
+  forall i, (B i).2 <= b.
+Proof.
+move=> B12 Bab i; rewrite leNgt; apply/negP => Bi2b.
+have := Bab i.
+move=> /(_ ((maxr (B i).1 b + (B i).2)/2)).
+rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_maxl Bi2b B12.
+rewrite andbT.
+have : (B i).1 < (maxr (B i).1 b + (B i).2)%E / 2.
+  by rewrite ltr_pdivlMr// mulr_natr mulr2n ler_ltD// le_maxr lexx.
+move=> /[swap] /[apply] /andP[_].
+rewrite ler_pdivrMr// mulr_natr mulr2n leNgt => /negP; apply.
+by rewrite ler_ltD// le_maxr lexx orbT.
+Qed.
+
 Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
   exists d : {posnum R}, forall n (B : 'I_n -> R * R),
     [/\ (forall i, (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
@@ -79,111 +114,45 @@ Lemma total_variation_AC a b (f : R -> R) : a < b ->
   bounded_variation a b f ->
   abs_cont a b (fine \o (total_variation a ^~ f)) -> abs_cont a b f.
 Proof.
-move=> ab bvH' acH' e.
-have := acH' e.
-move: (acH') => _.
-move=> [d ac'H'].
-exists d => n B trivB.
-have := ac'H' n B trivB.
-move: trivB => [/all_and2[B21 Bab]] trivB sumBd sumHd.
-apply: (le_lt_trans _ sumHd).
-apply: ler_sum => i _.
-have aB1 : a <= (B i).1.
-  rewrite leNgt; apply/negP => Bi1a.
-  have := Bab i.
-  move=> /(_ (((B i).1 + minr a (B i).2)/2)).
-  rewrite /= !in_itv/= midf_lt//=; last first.
-    by rewrite lt_minr Bi1a B21.
-  have H1 : ((B i).1 + minr a (B i).2)%E / 2 < (B i).2.
-    rewrite ltr_pdivrMr//.
-    rewrite mulr_natr mulr2n.
-    rewrite ltr_leD//.
-    by rewrite le_minl lexx orbT.
-  move=> /(_ H1) /andP[+ _].
-  rewrite ler_pdivlMr// mulr_natr mulr2n leNgt => /negP; apply.
-  by rewrite ltr_leD// le_minl lexx.
-have B2b : (B i).2 <= b.
-  rewrite leNgt; apply/negP => Bi2b.
-  have := Bab i.
-  move=> /(_ ((maxr (B i).1 b + (B i).2)/2)).
-  rewrite /= !in_itv/= midf_lt//=; last first.
-    by rewrite lt_maxl Bi2b B21.
-  rewrite andbT.
-  have H1 : (B i).1 < (maxr (B i).1 b + (B i).2)%E / 2.
-    rewrite ltr_pdivlMr//.
-    rewrite mulr_natr mulr2n.
-    rewrite ler_ltD//.
-    by rewrite le_maxr lexx.
-  move=> /(_ H1) /andP[_].
-  rewrite ler_pdivrMr// mulr_natr mulr2n leNgt => /negP; apply.
-  by rewrite ler_ltD// le_maxr lexx orbT.
-apply: (le_trans (ler_norm (f (B i).2 - f (B i).1))).
-rewrite /=.
-rewrite (@total_variationD _ a (B i).2 (B i).1 f)//; last first.
-  exact: ltW.
-rewrite fineD; last 2 first.
-- apply/bounded_variationP => //.
-  apply: (@bounded_variationl _ _ _ b) => //.
-  by rewrite (le_trans _ B2b)// ltW.
-- apply/bounded_variationP => //.
-    exact: ltW.
-  apply: (bounded_variationl _ B2b) => //.
-    exact: ltW.
-  apply: (bounded_variationr aB1) => //.
-  by rewrite (le_trans _ B2b)// ltW.
-rewrite addrAC subrr add0r.
-rewrite -[leLHS]add0r -ler_subr_addr.
-rewrite -lee_fin.
-rewrite EFinB.
-rewrite fineK; last first.
-  apply/bounded_variationP => //.
-    exact: ltW.
-  apply: (bounded_variationl _ B2b) => //.
-    exact: ltW.
-  apply: (bounded_variationr aB1) => //.
-  by rewrite (le_trans _ B2b)// ltW.
-rewrite lee_subr_addr; last first.
-  rewrite ge0_fin_numE; last exact: normr_ge0.
-  exact: ltry.
-rewrite add0e.
-apply: total_variation_ge.
-exact: ltW.
+move=> ab BVf + e => /(_ e)[d ACf].
+exists d => n B HB; have {ACf} := ACf n B HB.
+move: HB => [/all_and2[B12 Bab]] tB sumBd sumfBe.
+rewrite (le_lt_trans _ sumfBe)//; apply: ler_sum => /= i _.
+have aBi1 : a <= (B i).1 by exact: incl_itv_lb.
+have Bi2b : (B i).2 <= b by exact: incl_itv_ub.
+rewrite (le_trans (ler_norm (f (B i).2 - f (B i).1)))//=.
+rewrite (total_variationD f aBi1 (ltW (B12 _))) fineD; last 2 first.
+  apply/(bounded_variationP f aBi1)/(@bounded_variationl _ _ _ b) => //.
+  by rewrite (le_trans _ Bi2b)// ltW.
+  apply/(bounded_variationP f (ltW (B12 _))).
+  apply/(bounded_variationl (ltW (B12 _)) Bi2b).
+  by apply: (bounded_variationr aBi1) => //; rewrite (le_trans _ Bi2b)// ltW.
+rewrite addrAC subrr add0r -subr_ge0 -lee_fin EFinB fineK; last first.
+  apply/(bounded_variationP f (ltW (B12 _))).
+  apply/(bounded_variationl (ltW (B12 _)) Bi2b).
+  by apply/(bounded_variationr aBi1 _ BVf); rewrite (le_trans _ Bi2b)// ltW.
+by rewrite lee_subr_addr// add0e total_variation_ge// ltW.
 Qed.
 
-Lemma TV_nondecreasing a b (f : R -> R) :
+Lemma total_variation_nondecreasing a b (f : R -> R) :
   bounded_variation a b f ->
   {in `[a, b] &, {homo fine \o (total_variation a ^~ f) : x y / x <= y}}.
 Proof.
-move=> bvf x y xab yab xy.
-have ax : a <= x.
-  move: xab.
-  rewrite in_itv /=.
-  by move/andP => [].
-have yb : y <= b.
-  move: yab.
-  rewrite in_itv /=.
-  by move/andP => [].
-rewrite fine_le => //.
-    apply/bounded_variationP => //.
-    apply: (@bounded_variationl _ a x b) => //.
-    by apply: (le_trans xy).
-  apply/bounded_variationP.
-    by apply: (le_trans ax).
-  apply: (bounded_variationl _ yb) => //.
-  by apply: (le_trans ax).
-rewrite  (@total_variationD _ a y x) //; last first.
-apply: lee_addl.
-exact: total_variation_ge0.
+move=> BVf x y; rewrite !in_itv/= => /andP[ax xb] /andP[ay yb] xy.
+rewrite fine_le //.
+- exact/(bounded_variationP _ ax)/(bounded_variationl ax xb).
+- exact/(bounded_variationP _ ay)/(bounded_variationl ay yb).
+- by rewrite (total_variationD f ax xy)// lee_addl// total_variation_ge0.
 Qed.
 
-Lemma TV_bounded_variation a b (f : R -> R) : a < b ->
-  bounded_variation a b f -> bounded_variation a b (fine \o (total_variation a ^~ f)).
+Lemma total_variation_bounded a b (f : R -> R) : a <= b ->
+  bounded_variation a b f ->
+  bounded_variation a b (fine \o (total_variation a ^~ f)).
 Proof.
-move=> ab bvf.
-apply/bounded_variationP; rewrite ?ltW //.
-rewrite ge0_fin_numE; last by apply: total_variation_ge0; rewrite ltW.
-rewrite nondecreasing_total_variation; rewrite ?ltW //; first exact: ltry.
-exact: TV_nondecreasing.
+move=> ab BVf; apply/bounded_variationP => //.
+rewrite ge0_fin_numE; last exact: total_variation_ge0.
+rewrite nondecreasing_total_variation/= ?ltry//.
+exact: total_variation_nondecreasing.
 Qed.
 
 End absolute_continuity.
@@ -334,7 +303,7 @@ Lemma Lusin_total_variation (f : R -> R) :
   lusinN `[a, b] (fun x => fine (total_variation a ^~ f x)).
 Proof.
 move=> cf bvf lf.
-have ndt := (TV_nondecreasing bvf).
+have ndt := (total_variation_nondecreasing bvf).
 have ct :=  (total_variation_continuous ab cf bvf).
 apply: image_measure0_Lusin => //.
 apply: contrapT.
@@ -561,7 +530,7 @@ move=> cf bvf Lf.
 apply: total_variation_AC => //.
 apply: Banach_Zarecki_increasing.
 - exact: total_variation_continuous.
-- exact: TV_nondecreasing.
+- exact: total_variation_nondecreasing.
 - exact: Lusin_total_variation.
 Qed.
 
