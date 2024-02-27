@@ -23,6 +23,13 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+Example hoge (R : realType) (f : nat -> R) : (f x @[x --> \oo] --> 0) -> (fine (f x)%:E) @[x --> \oo] --> 0.
+Proof.
+move=> H.
+rewrite /=.
+under eq_cvg do idtac.
+Abort.
+
 (* TODO: move to sequences.v *)
 Lemma nneseries_addn (R : realType) (k : nat) (f : nat -> \bar R) :
   (forall i, 0 <= f i)%E ->
@@ -340,6 +347,7 @@ have : exists n, exists I : (R * R)^nat,
 
 Admitted.
 
+
 Lemma Banach_Zarecki_increasing (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b]  &, {homo f : x y / x <= y}} ->
@@ -390,6 +398,10 @@ have mE i : measurable (E_ i) by exact: bigsetU_measurable.
 pose G_ i := \bigcup_(j in [set j | (j >= i)%N]) E_ j.
 have mG i : measurable (G_ i) by exact: bigcup_measurable.
 pose A := \bigcap_i (G_ i).
+have H2 : (@normr R _ 2^-1 < 1)%R by rewrite gtr0_norm// invf_lt1// ltr1n.
+have H20 : 1 - 2^-1 != 0 :> R by rewrite lt0r_neq0// subr_gt0; apply: ltr_normlW.
+have H1 : (@GRing.inv R 2) / (1 - 2^-1) = 1.
+  by rewrite [X in X - _](splitr 1) div1r addrK divff.
 have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
   rewrite measure_semi_additive_ord //=; last exact: bigsetU_measurable.
   apply/ltW.
@@ -403,59 +415,69 @@ have mA0 : mu A = 0.
       near=> k => /=.
       rewrite measure_ge0 /=.
       apply: (@le_trans _ _ (\big[+%E/0%E]_(k <= j <oo) (mu (E_ j))%E)).
-        rewrite (_: G_ k = \bigcup_n G_ (n + k)%N); last first.
-        apply/seteqP; split.
-        - by exists 0%N.
-        - apply: bigcup_sub => n _.
-          apply: bigcup_sub => j /= nkj.
-          apply: bigcup_sup => /=.
-          by rewrite (leq_trans _ nkj)// leq_addl.
-        rewrite nneseries_addn; last by move=> i; by [].
-        apply: measure_sigma_sub_additive.
-            by move=> n; exact: mE.
-          by apply: bigcup_measurable => n _; exact: mG.
-        move=> x.
-        move=> [/= i _] [j /= ikj Ejx].
-        exists (j - k)%N => //.
-        by rewrite subnK// (leq_trans _ ikj)// leq_addl.
+      - rewrite (_: G_ k = \bigcup_n G_ (n + k)%N); last first.
+          apply/seteqP; split.
+          + by exists 0%N.
+          + apply: bigcup_sub => n _.
+            apply: bigcup_sub => j /= nkj.
+            apply: bigcup_sup => /=.
+            by rewrite (leq_trans _ nkj)// leq_addl.
+          rewrite nneseries_addn; last by move=> i; by [].
+          apply: measure_sigma_sub_additive.
+              by move=> n; exact: mE.
+            by apply: bigcup_measurable => n _; exact: mG.
+          move=> x.
+          move=> [/= i _] [j /= ikj Ejx].
+          exists (j - k)%N => //.
+          by rewrite subnK// (leq_trans _ ikj)// leq_addl.
 (*      rewrite d_geo0; last by near: k; exists 1%N.*)
-      rewrite [leRHS](_:_ = (\sum_(k <= j <oo) (delta_0 j)%:E)%E); last first.
-        apply: esym.
-        apply: cvg_lim => //.
-        rewrite d_geo0; last first.
-          by near: k; exists 1%N.
-        rewrite /geometric /=.
-        rewrite [X in X @ _ --> _](_ : _ =
-            fun n => \sum_(k <= i < n) (geometric 1 2^-1 i.+1)%:E); last first.
-          apply/funext => n; apply: eq_bigr => i _.
-          by rewrite -d_geo0 /delta_0//.
-        rewrite mul1r.
-        apply: cvg_EFin.
-          apply: nearW => i.
-          by rewrite sumEFin.
-        rewrite [X in X @ _](_ : _ = series (geometric 1 2^-1)); last first.
-          apply/funext => i /=.
-          rewrite sumEFin//= /series/=.
-          admit.
-        apply: cvg_trans.
-          apply: cvg_geometric_series.
-          admit.
-        admit.
-      by apply: lee_nneseries.
+      - rewrite [leRHS](_:_ = (\sum_(k <= j <oo) (delta_0 j)%:E)%E); last first.
+          apply: esym.
+          apply: cvg_lim => //.
+          rewrite d_geo0; last by near: k; exists 1%N.
+          rewrite /geometric /=.
+          rewrite -[X in _ --> (X * _)%:E]H1 mulrAC -exprS.
+          rewrite -(cvg_shiftn k) /=.
+          rewrite [X in X @ _ --> _](_:_=
+         (fun n => (@series R (geometric (2^-1 ^+ k.+1) 2^-1) n)%:E)); last first.
+            apply/funext => n.
+            rewrite /series /= sumEFin.
+            rewrite -{1}(add0n k) big_addn addnK.
+            congr (_%:E).
+            apply: eq_bigr => i _.
+            rewrite -exprD addSn addnC.
+            by rewrite /delta_0 -exprVn.
+          apply: cvg_EFin; first by apply: nearW.
+          by apply: cvg_geometric_series.
+        rewrite nneseries_addn; last by move=> i; apply: measure_ge0.
+        rewrite [leRHS]nneseries_addn; last first.
+          move=> i.
+          rewrite lee_fin.
+          rewrite /delta_0.
+          apply/ltW.
+          exact: delta_0_ge0.
+        apply: lee_lim.
+            apply: ereal_nondecreasing_is_cvgn.
+            apply: ereal_nondecreasing_series => i _.
+            exact: measure_ge0.
+          apply: ereal_nondecreasing_is_cvgn.
+          apply: ereal_nondecreasing_series => i _.
+          rewrite lee_fin.
+          rewrite /delta_0.
+          apply/ltW.
+          exact: delta_0_ge0.
+        apply: nearW => /= n.
+        exact: lee_sum.
     move/squeeze_cvge.
     apply.
-        exact: cvg_cst.
-      apply: cvg_trans.
+      exact: cvg_cst.
+    apply: cvg_trans.
       apply: near_eq_cvg.
       near=> k.
-      rewrite d_geo0.
+      rewrite d_geo0; last by near: k; exists 1%N.
       reflexivity.
-      by near: k; exists 1%N.
-    apply: cvg_EFin.
-      by near=> k.
-    apply: cvg_geometric.
-    rewrite gtr0_norm ?invr_gt0//.
-    by rewrite invf_lt1 // ltr1n.
+    apply: cvg_EFin; first by near=> k.
+    by apply: cvg_geometric.
   suff: (mu \o G_) x @[x --> \oo] --> mu (\bigcap_n G_ n).
     by move=> /cvg_unique /[apply]; exact.
   apply: nonincreasing_cvg_mu => //=.
@@ -467,22 +489,19 @@ have mA0 : mu A = 0.
     rewrite (_ : 1%E = (\big[+%R/0%R]_(0 <= i <oo) (delta_0 i)%:E)).
       exact: lee_nneseries.
     apply/esym.
+(* *)
     rewrite -(_ : 2^-1 / (1 - 2^-1) = 1); last first.
       have H : 1 - 2^-1 != 0 :> R.
         by rewrite lt0r_neq0// subr_gt0 invf_lt1// ltr1n.
       by rewrite [X in X - _](splitr 1) div1r addrK divff.
     apply/cvg_lim => //.
-    apply/cvg_EFin.
+    apply: cvg_EFin.
       by apply: nearW => n; rewrite sumEFin.
-    under eq_cvg => n.
-      rewrite /= sumEFin /=.
-      under eq_bigr => i _.
-      rewrite (_ : delta_0 i = geometric 2^-1 2^-1 i); last first.
-        by rewrite /delta_0 /geometric /= -exprVn exprS.
+      under eq_cvg => n.
+        rewrite /= sumEFin.
+        under eq_bigr do rewrite d_geo.
         over.
-      over.
-    apply: cvg_geometric_series.
-    by rewrite gtr0_norm// invf_lt1// ltr1n.
+    by apply: cvg_geometric_series.
   - by apply: bigcap_measurable => ? _; exact: mG.
   - move=> s k sk.
     rewrite /G_.
