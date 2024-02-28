@@ -194,6 +194,46 @@ Abort.
 
 End wip.
 
+Section lebesgue_measure_complete.
+Context {R : realType}.
+
+Lemma outer_measure_Gdelta (A : set R) :
+caratheodory_measurable (lebesgue_measure^*)%mu A
+  -> exists H, Gdelta H /\ (lebesgue_measure^*)%mu A = lebesgue_measure H.
+Proof.
+Admitted.
+
+Lemma caratheodory_measurableR_measurable (A : set R) :
+caratheodory_measurable (lebesgue_measure^*)%mu A
+  -> measurable A.
+Proof.
+move=> cmA.
+pose H0 := outer_measure_Gdelta cmA.
+pose H := proj1_sig (cid H0).
+
+Admitted.
+
+Lemma outer_measure0_measurable (A : set R) : (lebesgue_measure^*)%mu A = 0 -> measurable A.
+Proof.
+move=> A0.
+apply: caratheodory_measurableR_measurable.
+apply: le_caratheodory_measurable => /= X.
+suff -> : (lebesgue_measure^*)%mu (X `&` A) = 0.
+  by rewrite add0r le_outer_measure //; apply: subIsetl.
+apply/eqP; rewrite eq_le outer_measure_ge0 andbT.
+by rewrite -A0 le_outer_measure //; apply: subIsetr.
+Qed.
+
+Lemma lebesgue_measure_is_complete : measure_is_complete (@lebesgue_measure R).
+Proof.
+move=> /= A [/= N[mN N0 AN]].
+apply: outer_measure0_measurable.
+apply/eqP; rewrite eq_le outer_measure_ge0 andbT.
+by rewrite -N0 -measurable_mu_extE // le_outer_measure.
+Qed.
+
+End lebesgue_measure_complete.
+
 Section lusinN.
 Context {R : realType}.
 Let mu := @lebesgue_measure R.
@@ -520,11 +560,14 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
   admit.
 have fG_cvg : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A).
   admit.
-move/eqP : mfA0.
-apply/negP.
-move: (@lt0e R (mu (f @`A))).
-rewrite measure_ge0 andbT.
-move <-.
+move/eqP : mfA0; apply/negP.
+rewrite gt_eqF// (@lt_le_trans _ _ e0%:num%:E)//.
+move/cvg_lim : (fG_cvg) => <- //.
+apply: lime_ge.
+  apply: ereal_nonincreasing_is_cvgn.
+  move => n m nm.
+  rewrite le_measure ?inE //.
+  - apply: bigcup_measurable.
 Admitted.
 
 Theorem Banach_Zarecki (f : R -> R) :
