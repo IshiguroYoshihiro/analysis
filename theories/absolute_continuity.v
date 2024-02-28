@@ -567,7 +567,16 @@ apply: lime_ge.
   apply: ereal_nonincreasing_is_cvgn.
   move => n m nm.
   rewrite le_measure ?inE //.
-  - apply: bigcup_measurable.
+  - (* by continuous? *)
+    admit.
+  - admit.
+  - apply: image_subset.
+    rewrite /G_.
+    apply: bigcup_sub => j /= mj.
+    move=> x Ejx.
+    exists j => //=.
+    by apply: leq_trans mj.
+  - by apply: nearW.
 Admitted.
 
 Theorem Banach_Zarecki (f : R -> R) :
