@@ -489,11 +489,7 @@ have mA0 : mu A = 0.
     rewrite (_ : 1%E = (\big[+%R/0%R]_(0 <= i <oo) (delta_0 i)%:E)).
       exact: lee_nneseries.
     apply/esym.
-(* *)
-    rewrite -(_ : 2^-1 / (1 - 2^-1) = 1); last first.
-      have H : 1 - 2^-1 != 0 :> R.
-        by rewrite lt0r_neq0// subr_gt0 invf_lt1// ltr1n.
-      by rewrite [X in X - _](splitr 1) div1r addrK divff.
+    rewrite -H1.
     apply/cvg_lim => //.
     apply: cvg_EFin.
       by apply: nearW => n; rewrite sumEFin.
@@ -520,6 +516,15 @@ have mfA0 : mu (f @` A) = 0.
     by apply: (H3 _ _).2.
   + by apply: bigcapT_measurable => //.
   + exact: mA0.
+have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
+  admit.
+have fG_cvg : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A).
+  admit.
+move/eqP : mfA0.
+apply/negP.
+move: (@lt0e R (mu (f @`A))).
+rewrite measure_ge0 andbT.
+move <-.
 Admitted.
 
 Theorem Banach_Zarecki (f : R -> R) :
