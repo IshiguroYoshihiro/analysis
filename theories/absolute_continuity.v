@@ -197,6 +197,25 @@ End wip.
 Section lebesgue_measure_complete.
 Context {R : realType}.
 
+(*
+  ref:https://heil.math.gatech.edu/6337/spring11/section1.1.pdf
+  Lemma 1.17
+*)
+Lemma outer_regularity_outer (A : set R) (eps : R) :
+  
+
+
+(*
+  ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
+  Lemma 1.21
+*)
+Lemma outer_measure_measurable (A : set R) :
+   (lebesgue_measure^*)%mu A = 0 -> measurable A.
+Proof.
+have := @uniform_regular R.
+rewrite /regular_space /=.
+Admitted.
+
 Lemma outer_measure_Gdelta (A : set R) :
 caratheodory_measurable (lebesgue_measure^*)%mu A
   -> exists H, Gdelta H /\ (lebesgue_measure^*)%mu A = lebesgue_measure H.
@@ -213,7 +232,7 @@ pose H := proj1_sig (cid H0).
 
 Admitted.
 
-Lemma outer_measure0_measurable (A : set R) : (lebesgue_measure^*)%mu A = 0 -> measurable A.
+Lemma outer_measure0_measurable' (A : set R) : (lebesgue_measure^*)%mu A = 0 -> measurable A.
 Proof.
 move=> A0.
 apply: caratheodory_measurableR_measurable.
@@ -222,7 +241,7 @@ suff -> : (lebesgue_measure^*)%mu (X `&` A) = 0.
   by rewrite add0r le_outer_measure //; apply: subIsetl.
 apply/eqP; rewrite eq_le outer_measure_ge0 andbT.
 by rewrite -A0 le_outer_measure //; apply: subIsetr.
-Qed.
+Abort.
 
 Lemma lebesgue_measure_is_complete : measure_is_complete (@lebesgue_measure R).
 Proof.
