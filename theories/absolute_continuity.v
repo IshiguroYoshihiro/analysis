@@ -201,25 +201,57 @@ Context {R : realType}.
   ref:https://heil.math.gatech.edu/6337/spring11/section1.1.pdf
   Lemma 1.17
 *)
-Lemma outer_regularity_outer (A : set R) (eps : R) :
-  
+Lemma outer_regularity_outer (D : set R) (eps : R) :
+  (lebesgue_measure^*)%mu D =
+  ereal_inf [set Z | exists X,
+              [/\ Z = (lebesgue_measure^* )%mu X , open X & D `<=` X]].
+Proof.
+Admitted.
 
+(*
+  ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
+  Definition 1.19
+*)
+
+Lemma measurable_outer_measureE (E : set R) :
+  measurable E <-> forall eps : R, 0 < eps -> exists U, open U /\
+   ((lebesgue_measure^*)%mu (U `\` E) < eps%:E)%E.
+Proof.
+Admitted.
 
 (*
   ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
   Lemma 1.21
 *)
-Lemma outer_measure_measurable (A : set R) :
+Lemma outer_measure0_measurable (A : set R) :
    (lebesgue_measure^*)%mu A = 0 -> measurable A.
 Proof.
-have := @uniform_regular R.
-rewrite /regular_space /=.
-Admitted.
+move=> A0.
+apply/measurable_outer_measureE.
+move=> e e0.
+have := outer_regularity_outer A e.
+rewrite A0.
+move/esym => inf0.
+have : ereal_inf [set Z |
+   exists X, [/\ Z = (lebesgue_measure^*)%mu X, open X & A `<=` X]] \is a fin_num.
+  by rewrite inf0.
+move/(lb_ereal_inf_adherent e0).
+move=> [].
+rewrite inf0 add0e.
+rewrite /=.
+move=> ee.
+move=> [U [muXee oX AX eee]].
+exists U; split => //.
+apply: (@le_lt_trans _ _ ((lebesgue_measure^*)%mu U)).
+  by rewrite le_outer_measure.
+by rewrite -muXee.
+Qed.
 
 Lemma outer_measure_Gdelta (A : set R) :
 caratheodory_measurable (lebesgue_measure^*)%mu A
-  -> exists H, Gdelta H /\ (lebesgue_measure^*)%mu A = lebesgue_measure H.
+  -> exists H, [/\ Gdelta H, A `<=` H & (lebesgue_measure^*)%mu A = lebesgue_measure H].
 Proof.
+(* use lebesgue_regularity_outer? *)
 Admitted.
 
 Lemma caratheodory_measurableR_measurable (A : set R) :
@@ -229,19 +261,23 @@ Proof.
 move=> cmA.
 pose H0 := outer_measure_Gdelta cmA.
 pose H := proj1_sig (cid H0).
+have [GdH AH muA] := proj2_sig (cid H0).
+have mH : measurable H := Gdelta_measuable GdH.
 
 Admitted.
 
-Lemma outer_measure0_measurable' (A : set R) : (lebesgue_measure^*)%mu A = 0 -> measurable A.
+(*
+Lemma outer_measure0_measurable' (A : set R) : (lebesgue_measure^* )%mu A = 0 -> measurable A.
 Proof.
 move=> A0.
 apply: caratheodory_measurableR_measurable.
 apply: le_caratheodory_measurable => /= X.
-suff -> : (lebesgue_measure^*)%mu (X `&` A) = 0.
+suff -> : (lebesgue_measure^* )%mu (X `&` A) = 0.
   by rewrite add0r le_outer_measure //; apply: subIsetl.
 apply/eqP; rewrite eq_le outer_measure_ge0 andbT.
 by rewrite -A0 le_outer_measure //; apply: subIsetr.
 Abort.
+*)
 
 Lemma lebesgue_measure_is_complete : measure_is_complete (@lebesgue_measure R).
 Proof.
