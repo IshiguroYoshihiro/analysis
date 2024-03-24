@@ -1,14 +1,13 @@
 Require Import String.
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval.
-From mathcomp Require Import lra.
+From mathcomp Require Import ring lra.
 From mathcomp Require Import unstable mathcomp_extra boolp classical_sets.
 From mathcomp Require Import functions cardinality fsbigop interval_inference.
 From mathcomp Require Import reals ereal topology normedtype sequences.
 From mathcomp Require Import esum measure lebesgue_measure numfun derive realfun.
 From mathcomp Require Import lebesgue_integral probability ftc kernel charge.
 From mathcomp Require Import prob_lang lang_syntax_util.
-From mathcomp Require Import ring lra.
 
 (**md**************************************************************************)
 (* # Syntax and Evaluation for a Probabilistic Programming Language           *)
@@ -203,19 +202,6 @@ Qed.
 End integral_indicator_function.
 End integral_indicator_function.
 
-Lemma RintegralZl d {T : measurableType d} {R : realType}
-  {mu : measure T R} {D : set T} : d.-measurable D ->
-  forall f : T -> R,
-  mu.-integrable D (EFin \o f) ->
-  forall r : R, (\int[mu]_(x in D) (r * f x) = r * \int[mu]_(x in D) f x)%R.
-Proof.
-move=> mD f intf r.
-rewrite /Rintegral.
-under eq_integral do rewrite EFinM.
-rewrite integralZl// fineM//=.
-by apply: integral_fune_fin_num.
-Qed.
-
 (* TODO: naming *)
 Lemma cvg_atNP {T : topologicalType} {R : numFieldType} (f : R -> T) (a : R) (l : T) :
   f x @[x --> a] --> l <-> (f \o -%R) x @[x --> (- a)%R] --> l.
@@ -297,6 +283,7 @@ Qed.
 
 End lt0.
 End increasing_change_of_variables_from_decreasing.
+
 
 Lemma decreasing_nonincreasing {R : realType} (F : R -> R) (J : interval R) :
   {in J &, {homo F : x y /~ (x < y)%R}} ->
