@@ -5,6 +5,7 @@ From mathcomp Require Import cardinality fsbigop.
 Require Import signed reals ereal topology normedtype sequences real_interval.
 Require Import esum measure lebesgue_measure numfun (*lebesgue_integral*).
 Require Import realfun exp lebesgue_stieltjes_measure derive.
+Require Import set_interval.
 
 (**md**************************************************************************)
 (* # Absolute Continuity                                                      *)
@@ -38,6 +39,26 @@ move=> H.
 rewrite /=.
 under eq_cvg do idtac.
 Abort.
+
+Lemma hogehoge (R: realType) : (@lebesgue_measure R) set0 = 0.
+Proof.
+rewrite /lebesgue_measure /=.
+rewrite /lebesgue_stieltjes_measure.
+rewrite /=.
+Abort.
+
+Lemma measure_is_completeP {d} {T : measurableType d} {R : realType}
+  (mu : {measure set T -> \bar R}) :
+  measure_is_complete mu <->
+  (forall B, measurable B -> mu B = 0 -> forall A, A `<=` B -> measurable A).
+Proof.
+split.
+- move=> compmu B mB B0 A AB.
+  apply: compmu.
+  by exists B.
+- move=> Hmu A [B [mB B0 AB]].
+  by apply: (Hmu B).
+Qed.
 
 (* TODO : move to measure.v *)
 Definition sigma_superadditive {T} {R : numFieldType}
@@ -195,18 +216,23 @@ Unshelve. all: by end_near. Qed.
 
 (* Section inner_measure_construction. *)
 (* Local Open Scope ereal_scope. *)
-(* Context d (T : semiRingOfSetsType d) (R : realType). *)
-(* Variable mu : set T -> \bar R. *)
+(* Context (R : realType). *)
+(* Variable mu : set R -> \bar R. *)
 (* Hypothesis (measure0 : mu set0 = 0) (measure_ge0 : forall X, mu X >= 0). *)
 (* Hint Resolve measure_ge0 measure0 : core. *)
 
-(* Lemma ex_outer_fin_num (X : set T) : mu^* X < +oo -> *)
-(* exists J,[/\ open J, X `<=` J & mu^* J < +oo *)
+(* Lemma ex_outer_approx_fin (X : set R) : (mu^* )%mu X < +oo -> *)
+(* forall eps : R, (0 < eps)%R -> exists J : set R, *)
+(*   [/\ open J, X `<=` J & mu J - (mu^* )%mu X < eps%:E]. *)
 (* Proof. *)
 (* Admitted. *)
 
-(* Let outer_open (finX : mu^* X < +oo) := *)
-(*   then proj1_sig (cid ex_outer_fin_num finX) else setT *)
+(* Lemma ex_outer_approx (X : set R) : *)
+(* exists J_ : (set R)^nat, forall i, open (J_ i) /\ J_ i `<=` X `&` `[ -%R i%:R, i%:R]%classic *)
+(*   /\ (mu^* )%mu (X `&` `[-%R i%:R, i%:R]%classic) - (mu^* )%mu (J_ i) < (2^-1 ^+ i)%:E. *)
+
+(* Let outer_open (X : set R) (finX : (mu^* )%mu X < +oo) := *)
+(*    fun e : R => proj1_sig (cid (ex_outer_approx finX e)). *)
 
 (* Definition mu_inext (X : set T) : \bar R := if pselect (mu^* X < +oo) then *)
 (*  mu^* (outer_open X) - ereal_inf [set \sum_(k <oo) mu (A k) | A in measurable_cover ((outer_open X) `&` ~` X)]. else +oo *)
@@ -468,6 +494,10 @@ Abort.
 
 End wip.
 
+(* TODO: move to lebesgue_measure.v *)
+Lemma lebesgue_measureT {R : realType} : (@lebesgue_measure R) setT = +oo%E.
+Proof. by rewrite -set_itv_infty_infty lebesgue_measure_itv. Qed.
+
 Section lebesgue_measure_complete.
 Context {R : realType}.
 
@@ -475,11 +505,43 @@ Context {R : realType}.
   ref:https://heil.math.gatech.edu/6337/spring11/section1.1.pdf
   Lemma 1.17
 *)
-Lemma outer_regularity_outer (D : set R) (eps : R) :
+Lemma outer_regularity_outer (D : set R):
   (lebesgue_measure^*)%mu D =
   ereal_inf [set Z | exists X,
               [/\ Z = (lebesgue_measure^* )%mu X , open X & D `<=` X]].
 Proof.
+apply/eqP.
+rewrite eq_le.
+apply/andP; split.
+- rewrite /mu_ext.
+  rewrite /=.
+  apply: lb_ereal_inf.
+  move=> /= r.
+  move=> [] A [] -> {r} oA DA.
+  apply: le_ereal_inf.
+  move=> B /= [] S_ covA <- {B}.
+  exists S_ => //.
+  move: covA => [] H0 H1.
+  split.
+    exact: H0.
+  by apply: (subset_trans DA).
+- have := eqVneq ((lebesgue_measure^*)%mu D)%E +oo%E.
+  case.
+    move->.
+    apply: ereal_inf_lb => /=.
+    exists setT.
+    split => //.
+      rewrite measurable_mu_extE //=.
+      by rewrite lebesgue_measureT.
+    exact: openT.
+- rewrite /mu_ext.
+  apply: le_ereal_inf.
+  rewrite /=.
+
+  apply: ereal_inf_lb.
+  rewrite /=.
+
+apply: ereal_inf_le.
 rewrite /mu_ext /=.
 (* use open_measurable, measurable_mu_extE *)
 Admitted.
@@ -599,6 +661,10 @@ by rewrite -N0 -measurable_mu_extE // le_outer_measure.
 Qed.
 
 End lebesgue_measure_complete.
+
+Lemma measure_is_completeP {d} {T : measurableType d} {R : realType}
+  (mu : {measure set T -> \bar R}) :
+  measure_is_complete mu <-> (forall A, mu A = 0 -> measurable A).
 
 Section lusinN.
 Context {R : realType}.
