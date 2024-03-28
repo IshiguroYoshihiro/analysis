@@ -33,18 +33,16 @@ Reserved Notation "[ 'inner_measure' 'of' f ]".
 (* TODO: issue *)
 (* cvg_to Notation is broken by under tactic. *)
 (* when it be a problem? i.e. broken notation would cause to fail rewrite or apply? *)
-Example hoge (R : realType) (f : nat -> R) : (f x @[x --> \oo] --> 0) -> (fine (f x)%:E) @[x --> \oo] --> 0.
+Example hoge (R : realType) (f : nat -> R) : f x @[x --> \oo] --> 0.
 Proof.
-move=> H.
-rewrite /=.
 under eq_cvg do idtac.
+Restart.
+under eq_fun do idtac.
 Abort.
 
-Lemma hogehoge (R: realType) : (@lebesgue_measure R) set0 = 0.
+Example hoge' (R : realType) (f g: nat -> R) (H : f = g) : f x @[x --> \oo] --> 0.
 Proof.
-rewrite /lebesgue_measure /=.
-rewrite /lebesgue_stieltjes_measure.
-rewrite /=.
+rewrite [X in X @ _ --> _]H.
 Abort.
 
 Lemma measure_is_completeP {d} {T : measurableType d} {R : realType}
@@ -534,15 +532,7 @@ apply/andP; split.
       rewrite measurable_mu_extE //=.
       by rewrite lebesgue_measureT.
     exact: openT.
-- rewrite /mu_ext.
-  apply: le_ereal_inf.
-  rewrite /=.
-
-  apply: ereal_inf_lb.
-  rewrite /=.
-
-apply: ereal_inf_le.
-rewrite /mu_ext /=.
+- admit.
 (* use open_measurable, measurable_mu_extE *)
 Admitted.
 
@@ -554,7 +544,7 @@ Admitted.
 Lemma regularity_outer_lebesgue (E : set R) :
  ((lebesgue_measure^*)%mu E < +oo)%E ->
  (forall eps : R, 0 < eps -> exists U, [/\ open U,
-   E `<=` U &
+   E `<=` U & 
    ((lebesgue_measure^* )%mu (U `\` E) < eps%:E)%E]) -> measurable E.
 Proof.
 move=> /= Eley H.
@@ -589,6 +579,16 @@ have EU i : forall i, E `<=` U_ i.
   by move=> n; rewrite /U_; apply: sub_bigcap.
 pose Uoo := \bigcap_i (U_ i).
 (* need definition of measurablity by equation between inner measure and outer measure? *)
+have UooE: lebesgue_measure Uoo = (lebesgue_measure^*)%mu E.
+  admit.
+have : lebesgue_measure E = (lebesgue_measure^* )%mu E.
+  admit.
+rewrite /measurable.
+rewrite /=.
+rewrite /measurableR.
+rewrite /measurable.
+rewrite /=.
+rewrite sigma_algebra_id.
 Admitted.
 
 (*
@@ -602,7 +602,7 @@ move=> A0.
 apply: regularity_outer_lebesgue.
   by rewrite A0.
 move=> e e0.
-have := outer_regularity_outer A e.
+have := outer_regularity_outer A.
 rewrite A0.
 move/esym => inf0.
 have : ereal_inf [set Z |
@@ -635,7 +635,7 @@ move=> cmA.
 pose H0 := outer_measure_Gdelta cmA.
 pose H := proj1_sig (cid H0).
 have [GdH AH muA] := proj2_sig (cid H0).
-have mH : measurable H := Gdelta_measuable GdH.
+have mH : measurable H := Gdelta_measurable GdH.
 
 Admitted.
 
@@ -661,10 +661,6 @@ by rewrite -N0 -measurable_mu_extE // le_outer_measure.
 Qed.
 
 End lebesgue_measure_complete.
-
-Lemma measure_is_completeP {d} {T : measurableType d} {R : realType}
-  (mu : {measure set T -> \bar R}) :
-  measure_is_complete mu <-> (forall A, mu A = 0 -> measurable A).
 
 Section lusinN.
 Context {R : realType}.
@@ -801,7 +797,10 @@ apply: image_measure0_Lusin => //.
 apply: contrapT.
 move=> H.
 pose TV := (fine \o (total_variation a)^~ f).
-have : exists Z, [/\ Z `<=` `[a, b], compact Z, mu Z = 0 & (0 < mu (TV @` Z))%E].
+have : exists n : nat, exists Z_ : `I_ n -> interval R, trivIset setT Z_
+   /\ (0 < mu (TV @` (\bigcup_i Z_ i)))%E
+   /\ forall i, [/\ Z_ i `<=` `[a, b], compact (Z_ i) & mu Z_ = 0].
+
   admit.
 move=> [Z [abZ cpt_timZ Z0 ptimZ]].
 pose c : R := inf Z.
