@@ -2,10 +2,10 @@ From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import cardinality fsbigop.
-Require Import signed reals ereal topology normedtype sequences real_interval.
-Require Import esum measure lebesgue_measure numfun (*lebesgue_integral*).
-Require Import realfun exp lebesgue_stieltjes_measure derive.
 Require Import set_interval.
+Require Import signed reals ereal topology normedtype sequences real_interval.
+Require Import esum measure lebesgue_stieltjes_measure lebesgue_measure numfun.
+Require Import realfun exp derive.
 
 (**md**************************************************************************)
 (* # Absolute Continuity                                                      *)
@@ -38,11 +38,6 @@ Proof.
 under eq_cvg do idtac.
 Restart.
 under eq_fun do idtac.
-Abort.
-
-Example hoge' (R : realType) (f g: nat -> R) (H : f = g) : f x @[x --> \oo] --> 0.
-Proof.
-rewrite [X in X @ _ --> _]H.
 Abort.
 
 Lemma measure_is_completeP {d} {T : measurableType d} {R : realType}
@@ -503,38 +498,89 @@ Context {R : realType}.
   ref:https://heil.math.gatech.edu/6337/spring11/section1.1.pdf
   Lemma 1.17
 *)
-Lemma outer_regularity_outer (D : set R):
-  (lebesgue_measure^*)%mu D =
-  ereal_inf [set Z | exists X,
-              [/\ Z = (lebesgue_measure^* )%mu X , open X & D `<=` X]].
+
+Local Notation mu := lebesgue_measure.
+
+Lemma outer_regularity_outer0 (E : set R) (e : R) : (e > 0)%R ->
+  exists U : set R, [/\ open U, E `<=` U & (mu E <= mu U <= mu E + e%:E)%E].
 Proof.
-apply/eqP.
-rewrite eq_le.
-apply/andP; split.
-- rewrite /mu_ext.
+move=> e0.
+have [->|] := eqVneq (mu E) +oo%E.
+  exists setT; split => //; first exact: openT.
+  by rewrite lebesgue_measureT lexx.
+rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
+move=> /lb_ereal_inf_adherent.
+set muE := ereal_inf _.
+have muEE : muE = mu E by [].
+have e20 : 0 < e / 2 by rewrite divr_gt0.
+move=> /(_ _ e20).
+move=> [x [/= Q EQ <- muEoo]].
+have [/= T QT TQ] : exists2 T : nat -> set _,
+  (forall k, Q k `<=` interior (T k)) &
+  (forall k, mu (T k) <= mu (Q k) + (e / (2 ^+ k.+2))%:E)%E.
   rewrite /=.
-  apply: lb_ereal_inf.
-  move=> /= r.
-  move=> [] A [] -> {r} oA DA.
-  apply: le_ereal_inf.
-  move=> B /= [] S_ covA <- {B}.
-  exists S_ => //.
-  move: covA => [] H0 H1.
-  split.
-    exact: H0.
-  by apply: (subset_trans DA).
-- have := eqVneq ((lebesgue_measure^*)%mu D)%E +oo%E.
-  case.
-    move->.
-    apply: ereal_inf_lb => /=.
-    exists setT.
-    split => //.
-      rewrite measurable_mu_extE //=.
-      by rewrite lebesgue_measureT.
-    exact: openT.
-- admit.
-(* use open_measurable, measurable_mu_extE *)
+  admit.
+pose U := \bigcup_k interior (T k).
+have EU : E `<=` U.
+  case: EQ => _.
+  move=> /subset_trans; apply.
+  apply: subset_bigcup => k _.
+  exact: QT.
+exists U.
+  split => //.
+  apply: bigcup_open.
+  move=> i _.
+  exact: open_interior. (* NB: should be interior_open *)
+apply/andP; split.
+  exact: le_outer_measure.
+rewrite (splitr e) EFinD addeA.
+apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (Q k) + (e / 2)%:E)%E); last first.
+  rewrite lee_add2r// ltW//.
+  apply: le_lt_trans muEoo.
+  rewrite le_eqVlt; apply/orP; left; apply/eqP.
+  apply: eq_eseriesr => k _.
+  rewrite /mu /= /lebesgue_stieltjes_measure/=.
+  rewrite /measure_extension.
+  rewrite measurable_mu_extE//.
+  by case: EQ.
+apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (T k))); last first.
+  apply: le_trans; last first.
+    apply: epsilon_trick.
+    move=> k.
+    done.
+    by rewrite ltW.
+  apply: lee_nneseries => // k _.
+  rewrite -mulrA.
+  rewrite (_ : _ / _ = 1 / (2 ^+ k.+2))%R; last first.
+    rewrite -invfM//.
+    rewrite natrX.
+    rewrite -exprS.
+    by rewrite mul1r.
+  rewrite mul1r.
+  by have := TQ k.
+rewrite /U.
+apply: (@le_trans _ _ (mu (\bigcup_k (T k)))).
+  apply: le_outer_measure.
+  apply: subset_bigcup => k _.
+  by apply: interior_subset.
+by have := outer_measure_sigma_subadditive mu T.
 Admitted.
+
+Lemma outer_regularity_outer (E : set R) :
+  mu E = ereal_inf [set mu U | U in [set U | open U /\ E `<=` U]].
+Proof.
+apply/eqP; rewrite eq_le; apply/andP; split.
+- rewrite /mu_ext.
+  apply: lb_ereal_inf => /= _ [A [oA EA]] <-.
+  apply: le_ereal_inf => _ /= [] S_ AS_ <-; exists S_ => //.
+  move: AS_ => [mS_ AS_].
+  by split; [exact: mS_|exact: (subset_trans EA)].
+- apply/lee_addgt0Pr => /= e e0.
+  have [U [oU EU /andP[UE UEe]]] := outer_regularity_outer0 E e0.
+  apply: ereal_inf_le => /=.
+  exists (mu U) => //.
+  by exists U.
+Qed.
 
 (*
   ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
@@ -542,10 +588,10 @@ Admitted.
 *)
 
 Lemma regularity_outer_lebesgue (E : set R) :
- ((lebesgue_measure^*)%mu E < +oo)%E ->
+ ((lebesgue_measure) E < +oo)%E ->
  (forall eps : R, 0 < eps -> exists U, [/\ open U,
-   E `<=` U & 
-   ((lebesgue_measure^* )%mu (U `\` E) < eps%:E)%E]) -> measurable E.
+   E `<=` U &
+   ((lebesgue_measure) (U `\` E) < eps%:E)%E]) -> measurable E.
 Proof.
 move=> /= Eley H.
 pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
@@ -568,7 +614,7 @@ have oU0 i : open (U0_ i).
 have EU0 i : E `<=` U0_ i.
   move: (projT2 (cid (U0 i))).
   by move=> [] _ + _.
-have mU0E i : ((lebesgue_measure^*)%mu ((U0_ i) `\` E) < (delta_0 i)%:E)%E.
+have mU0E i : ((lebesgue_measure) ((U0_ i) `\` E) < (delta_0 i)%:E)%E.
   move: (projT2 (cid (U0 i))).
   by move=> [] _ _ +.
 pose U_ i := \bigcap_(j < i) U0_ j.
@@ -596,7 +642,7 @@ Admitted.
   Lemma 1.21
 *)
 Lemma outer_measure0_measurable (A : set R) :
-   (lebesgue_measure^*)%mu A = 0 -> measurable A.
+   lebesgue_measure A = 0 -> measurable A.
 Proof.
 move=> A0.
 apply: regularity_outer_lebesgue.
@@ -606,7 +652,8 @@ have := outer_regularity_outer A.
 rewrite A0.
 move/esym => inf0.
 have : ereal_inf [set Z |
-   exists X, [/\ Z = (lebesgue_measure^*)%mu X, open X & A `<=` X]] \is a fin_num.
+   exists X, [/\ Z = (lebesgue_measure) X, open X & A `<=` X]] \is a fin_num.
+xxx
   by rewrite inf0.
 move/(lb_ereal_inf_adherent e0).
 move=> [].
