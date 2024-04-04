@@ -499,25 +499,24 @@ Context {R : realType}.
   Lemma 1.17
 *)
 
-Local Notation mu := lebesgue_measure.
-
 Lemma outer_regularity_outer0 (E : set R) (e : R) : (e > 0)%R ->
-  exists U : set R, [/\ open U, E `<=` U & (mu E <= mu U <= mu E + e%:E)%E].
+  exists U : set R, [/\ open U, E `<=` U &
+   (lebesgue_measure E <= lebesgue_measure U <= lebesgue_measure E + e%:E)%E].
 Proof.
 move=> e0.
-have [->|] := eqVneq (mu E) +oo%E.
+have [->|] := eqVneq (lebesgue_measure E) +oo%E.
   exists setT; split => //; first exact: openT.
   by rewrite lebesgue_measureT lexx.
 rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
 move=> /lb_ereal_inf_adherent.
-set muE := ereal_inf _.
-have muEE : muE = mu E by [].
+set infE := ereal_inf _.
+have infEE : infE = lebesgue_measure E by [].
 have e20 : 0 < e / 2 by rewrite divr_gt0.
 move=> /(_ _ e20).
 move=> [x [/= Q EQ <- muEoo]].
 have [/= T QT TQ] : exists2 T : nat -> set _,
   (forall k, Q k `<=` interior (T k)) &
-  (forall k, mu (T k) <= mu (Q k) + (e / (2 ^+ k.+2))%:E)%E.
+    (forall k, lebesgue_measure (T k) <= lebesgue_measure (Q k) + (e / (2 ^+ k.+2))%:E)%E.
   rewrite /=.
   admit.
 pose U := \bigcup_k interior (T k).
@@ -534,16 +533,16 @@ exists U.
 apply/andP; split.
   exact: le_outer_measure.
 rewrite (splitr e) EFinD addeA.
-apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (Q k) + (e / 2)%:E)%E); last first.
+apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) lebesgue_measure (Q k) + (e / 2)%:E)%E); last first.
   rewrite lee_add2r// ltW//.
   apply: le_lt_trans muEoo.
   rewrite le_eqVlt; apply/orP; left; apply/eqP.
   apply: eq_eseriesr => k _.
-  rewrite /mu /= /lebesgue_stieltjes_measure/=.
+  rewrite /= /lebesgue_measure/=/lebesgue_stieltjes_measure/=.
   rewrite /measure_extension.
   rewrite measurable_mu_extE//.
   by case: EQ.
-apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (T k))); last first.
+apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) lebesgue_measure (T k))); last first.
   apply: le_trans; last first.
     apply: epsilon_trick.
     move=> k.
@@ -559,26 +558,25 @@ apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (T k))); last first.
   rewrite mul1r.
   by have := TQ k.
 rewrite /U.
-apply: (@le_trans _ _ (mu (\bigcup_k (T k)))).
+apply: (@le_trans _ _ (lebesgue_measure (\bigcup_k (T k)))).
   apply: le_outer_measure.
   apply: subset_bigcup => k _.
   by apply: interior_subset.
-by have := outer_measure_sigma_subadditive mu T.
+  by have := outer_measure_sigma_subadditive lebesgue_measure T.
 Admitted.
 
 Lemma outer_regularity_outer (E : set R) :
-  mu E = ereal_inf [set mu U | U in [set U | open U /\ E `<=` U]].
+  lebesgue_measure E = ereal_inf [set Z | exists U, [/\ Z = lebesgue_measure U, open U & E `<=` U]].
 Proof.
 apply/eqP; rewrite eq_le; apply/andP; split.
-- rewrite /mu_ext.
-  apply: lb_ereal_inf => /= _ [A [oA EA]] <-.
+- apply: lb_ereal_inf => /= r /= [A [-> oA EA]] {r}.
   apply: le_ereal_inf => _ /= [] S_ AS_ <-; exists S_ => //.
   move: AS_ => [mS_ AS_].
   by split; [exact: mS_|exact: (subset_trans EA)].
 - apply/lee_addgt0Pr => /= e e0.
   have [U [oU EU /andP[UE UEe]]] := outer_regularity_outer0 E e0.
   apply: ereal_inf_le => /=.
-  exists (mu U) => //.
+  exists (lebesgue_measure U) => //.
   by exists U.
 Qed.
 
@@ -652,39 +650,45 @@ have := outer_regularity_outer A.
 rewrite A0.
 move/esym => inf0.
 have : ereal_inf [set Z |
-   exists X, [/\ Z = (lebesgue_measure) X, open X & A `<=` X]] \is a fin_num.
-xxx
+    exists X, [/\ Z = (lebesgue_measure) X, open X & A `<=` X]] \is a fin_num.
   by rewrite inf0.
 move/(lb_ereal_inf_adherent e0).
-move=> [].
-rewrite inf0 add0e.
-rewrite /=.
-move=> ee.
-move=> [U [muXee oX AX eee]].
+move=> [] /= r [] U [] -> oU AU.
+rewrite inf0 add0r => Ue.
 exists U; split => //.
-apply: (@le_lt_trans _ _ ((lebesgue_measure^*)%mu U)).
+apply: (@le_lt_trans _ _ (lebesgue_measure U)).
   by rewrite le_outer_measure.
-by rewrite -muXee.
+exact: Ue.
 Qed.
 
 Lemma outer_measure_Gdelta (A : set R) :
-caratheodory_measurable (lebesgue_measure^*)%mu A
-  -> exists H, [/\ Gdelta H, A `<=` H & (lebesgue_measure^*)%mu A = lebesgue_measure H].
+caratheodory_measurable lebesgue_measure A
+  -> exists H, [/\ Gdelta H, A `<=` H & lebesgue_measure A = lebesgue_measure H].
 Proof.
 (* use lebesgue_regularity_outer? *)
 Admitted.
 
+(* TODO: move to lebesgue_measure.v *)
+Lemma boundary_lebesgue_meausure0 (A : set R) :
+  lebesgue_measure (A `\` (interior A)) = 0.
+Proof.
+Admitted.
+
 Lemma caratheodory_measurableR_measurable (A : set R) :
-caratheodory_measurable (lebesgue_measure^*)%mu A
+caratheodory_measurable lebesgue_measure A
   -> measurable A.
 Proof.
 move=> cmA.
-pose H0 := outer_measure_Gdelta cmA.
-pose H := proj1_sig (cid H0).
-have [GdH AH muA] := proj2_sig (cid H0).
+have := outer_measure_Gdelta cmA.
+move=> [H [GdH AH muA]].
 have mH : measurable H := Gdelta_measurable GdH.
-
-Admitted.
+rewrite -(@setDKU _ (interior A) A); last exact: interior_subset.
+apply: measurableU; last first.
+  apply: open_measurable.
+  by apply: open_interior.
+apply: outer_measure0_measurable.
+exact: boundary_lebesgue_meausure0.
+Qed.
 
 (*
 Lemma outer_measure0_measurable' (A : set R) : (lebesgue_measure^* )%mu A = 0 -> measurable A.
@@ -703,9 +707,10 @@ Lemma lebesgue_measure_is_complete : measure_is_complete (@lebesgue_measure R).
 Proof.
 move=> /= A [/= N[mN N0 AN]].
 apply: outer_measure0_measurable.
-apply/eqP; rewrite eq_le outer_measure_ge0 andbT.
-by rewrite -N0 -measurable_mu_extE // le_outer_measure.
-Qed.
+apply/eqP; rewrite eq_le measure_ge0 andbT.
+rewrite -N0 le_measure ?inE //.
+rewrite measurable_g_measurableTypeE /=.
+Abort.
 
 End lebesgue_measure_complete.
 
@@ -844,15 +849,17 @@ apply: image_measure0_Lusin => //.
 apply: contrapT.
 move=> H.
 pose TV := (fine \o (total_variation a)^~ f).
-have : exists n : nat, exists Z_ : `I_ n -> interval R, trivIset setT Z_
-   /\ (0 < mu (TV @` (\bigcup_i Z_ i)))%E
-   /\ forall i, [/\ Z_ i `<=` `[a, b], compact (Z_ i) & mu Z_ = 0].
-
+have : exists n : nat, (0 < n)%N /\ exists Z_ : `I_ n -> interval R, trivIset setT (fun i => [set` (Z_ i)])
+   /\ (0 < mu (TV @` (\bigcup_i [set` Z_ i])))%E
+   /\ forall i, [/\ [set` Z_ i] `<=` `[a, b], compact [set` Z_ i] & mu [set` Z_ i] = 0].
   admit.
-move=> [Z [abZ cpt_timZ Z0 ptimZ]].
-pose c : R := inf Z.
-pose d : R := sup Z.
-pose alpha := mu [set (fine \o (total_variation a)^~ f) x | x in Z].
+move=> [n [] n0 [Z_]] [trivZ [Uz0]] /all_and3 [Zab cZ Z0].
+pose UZ := \bigcup_i [set` Z_ i].
+have UZ_not_empty : UZ !=set0.
+  admit.
+pose l_ i : R := inf [set` Z_ i].
+pose r_ i : R := sup [set` Z_ i].
+pose alpha := mu [set (fine \o (total_variation a)^~ f) x | x in UZ].
 have rct : right_continuous TV.
   admit.
 have monot : {in `[a, b]&, {homo TV : x y / x <= y}}.
