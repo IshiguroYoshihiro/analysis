@@ -604,15 +604,22 @@ Qed.
   ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
   Definition 1.19. the converse of lebesgue_regularity_outer in lebesgue_measure.
 *)
-Lemma open_bigcap (U0_ : (set R)^nat) :
+Lemma bigcap_open (U0_ : (set R)^nat) :
     (forall i : nat, open (U0_ i)) ->
     let U_ := fun i : nat => \bigcap_(j < i) U0_ j
     in (forall i, open (U_ i)).
 Proof.
 move=> HU U_.
 elim.
-rewrite /U_ bigcap_mkord.
-Admitted.
+  rewrite /U_ bigcap_mkord.
+  rewrite big_ord0.
+  exact: openT.
+move=> n IH.
+suff -> : U_ n.+1 = U_ n `&` U0_ n by apply: openI.
+rewrite /U_.
+rewrite !bigcap_mkord.
+by rewrite big_ord_recr.
+Qed.
 
 Lemma regularity_outer_lebesgue (E : set R) :
  ((lebesgue_measure) E < +oo)%E ->
@@ -654,7 +661,9 @@ pose Uoo := \bigcap_i (U_ i).
 have mUoo : measurable Uoo.
   apply: Gdelta_measurable.
   exists U_ => //.
-  elim.
+  move=> n.
+  rewrite /U_.
+  by apply: bigcap_open.
 (* need definition of measurablity by equation between inner measure and outer measure? *)
 have UooE: lebesgue_measure Uoo = (lebesgue_measure^* )%mu E.
   apply: cvg_eq => //.
