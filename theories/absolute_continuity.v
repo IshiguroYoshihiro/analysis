@@ -651,7 +651,7 @@ have EU0 i : E `<=` U0_ i.
 have mU0E i : ((lebesgue_measure) ((U0_ i) `\` E) < (delta_0 i)%:E)%E.
   move: (projT2 (cid (U0 i))).
   by move=> [] _ _ +.
-pose U_ i := \bigcap_(j < i) U0_ j.
+pose U_ i := \bigcap_(j < i.+1) U0_ j.
 have mU i : measurable (U_ i).
   apply: bigcap_measurable => n _.
   by apply: open_measurable.
@@ -664,12 +664,37 @@ have mUoo : measurable Uoo.
   move=> n.
   rewrite /U_.
   by apply: bigcap_open.
+have cvgUoo : lebesgue_measure (U_ n) @[n --> \oo] --> lebesgue_measure Uoo.
+  apply: nonincreasing_cvg_mu => //=.
+    rewrite /U_ bigcap_mkord.
+    rewrite big_ord_recr big_ord0 /= setTI.
+    rewrite -(setDKU (EU0 0%N)).
+    rewrite /lebesgue_measure/=/lebesgue_stieltjes_measure/=/measure_extension/=.
+    have /= Hle := outer_measureU2 ((wlength idfun)^*)%mu (U0_ 0%N `\` E) E.
+    apply: (le_lt_trans Hle).
+    apply: lte_add_pinfty => //.
+    apply: (lt_trans (mU0E 0%N)).
+    by rewrite ltry.
+  apply/nonincreasing_seqP.
+  move=> n.
+  rewrite subsetEset.
+  rewrite /U_.
+  rewrite !bigcap_mkord.
+  rewrite big_ord_recr /=.
+  exact: subIsetl.
 (* need definition of measurablity by equation between inner measure and outer measure? *)
+
+
 have UooE: lebesgue_measure Uoo = (lebesgue_measure^* )%mu E.
+  rewrite -(cvg_lim _ cvgUoo) //.
   apply: cvg_eq => //.
+  rewrite -is_cvg_limn_esupE; last first.
+    apply: ereal_nonincreasing_is_cvgn.
+    apply/nonincreasing_seqP.
+    admit.
   admit.
-have : lebesgue_measure E = (lebesgue_measure^* )%mu E.
-  admit.
+
+
 rewrite /measurable.
 rewrite /=.
 rewrite /measurableR.
