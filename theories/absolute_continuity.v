@@ -508,7 +508,8 @@ have [->|] := eqVneq (lebesgue_measure E) +oo%E.
   exists setT; split => //; first exact: openT.
   by rewrite lebesgue_measureT lexx.
 rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
-move=> /lb_ereal_inf_adherent.
+move=> mEfin.
+move: (mEfin) => /lb_ereal_inf_adherent.
 set infE := ereal_inf _.
 have infEE : infE = lebesgue_measure E by [].
 have e20 : 0 < e / 2 by rewrite divr_gt0.
@@ -518,6 +519,25 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
   (forall k, Q k `<=` interior (T k)) &
     (forall k, lebesgue_measure (T k) <= lebesgue_measure (Q k) + (e / (2 ^+ k.+2))%:E)%E.
   rewrite /=.
+  have mQfin k: lebesgue_measure (Q k) \is a fin_num.
+    rewrite ge0_fin_numE; last exact: measure_ge0.
+    apply: (@le_lt_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) wlength idfun (Q k))).
+    rewrite {1}/lebesgue_measure/=/lebesgue_stieltjes_measure/=/measure_extension/=.
+    rewrite measurable_mu_extE /=; last admit.
+      admit.
+    apply: (lt_trans muEoo).
+    admit.
+  have : forall k, exists T : set R,
+  [/\ open T, (Q k) `<=` T
+    & ([the measure
+              [the measurableType (R.-ocitv.-measurable).-sigma of 
+              salgebraType R.-ocitv.-measurable] R of lebesgue_measure]
+         (T `\` (Q k)) < (e / 2 ^+ k.+2)%:E)%E].
+    admit.
+  move/choice.
+  move=> [T /= TH].
+  exists T.
+    admit.
   admit.
 pose U := \bigcup_k interior (T k).
 have EU : E `<=` U.
@@ -584,6 +604,15 @@ Qed.
   ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
   Definition 1.19. the converse of lebesgue_regularity_outer in lebesgue_measure.
 *)
+Lemma open_bigcap (U0_ : (set R)^nat) :
+    (forall i : nat, open (U0_ i)) ->
+    let U_ := fun i : nat => \bigcap_(j < i) U0_ j
+    in (forall i, open (U_ i)).
+Proof.
+move=> HU U_.
+elim.
+rewrite /U_ bigcap_mkord.
+Admitted.
 
 Lemma regularity_outer_lebesgue (E : set R) :
  ((lebesgue_measure) E < +oo)%E ->
@@ -622,8 +651,13 @@ have mU i : measurable (U_ i).
 have EU i : forall i, E `<=` U_ i.
   by move=> n; rewrite /U_; apply: sub_bigcap.
 pose Uoo := \bigcap_i (U_ i).
+have mUoo : measurable Uoo.
+  apply: Gdelta_measurable.
+  exists U_ => //.
+  elim.
 (* need definition of measurablity by equation between inner measure and outer measure? *)
-have UooE: lebesgue_measure Uoo = (lebesgue_measure^*)%mu E.
+have UooE: lebesgue_measure Uoo = (lebesgue_measure^* )%mu E.
+  apply: cvg_eq => //.
   admit.
 have : lebesgue_measure E = (lebesgue_measure^* )%mu E.
   admit.
@@ -632,7 +666,6 @@ rewrite /=.
 rewrite /measurableR.
 rewrite /measurable.
 rewrite /=.
-rewrite sigma_algebra_id.
 Admitted.
 
 (*
