@@ -51,7 +51,7 @@ Variable mu : {measure set T -> \bar R}.
 Let Rmu := SetRing.measure mu.
 Notation rT := (SetRing.type T).
 
-Let I :=  [the measurableType _ of caratheodory_type (mu^*)%mu].
+Let I := [the measurableType _ of caratheodory_type (mu^*)%mu].
 
 Definition completed_measure_extension : set I -> \bar R := (mu^*)%mu.
 
@@ -97,6 +97,31 @@ Abort.
 *)
 
 End completed_measure_extension.
+
+Section wlength_completed_extension.
+Context {R : realType}.
+
+Definition completed_lebesgue_stieltjes_measure (f : cumulative R) :=
+  @completed_measure_extension _ _ _ [the measure _ _ of wlength f].
+HB.instance Definition _ (f : cumulative R) :=
+  Measure.on (@completed_lebesgue_stieltjes_measure f).
+
+Let sigmaT_finite_completed_lebesgue_stieltjes_measure (f : cumulative R) :
+  sigma_finite setT (@completed_lebesgue_stieltjes_measure f).
+Proof. exact/completed_measure_extension_sigma_finite/wlength_sigma_finite. Qed.
+
+HB.instance Definition _ (f : cumulative R) := @Measure_isSigmaFinite.Build _ _ _
+  (@completed_lebesgue_stieltjes_measure f) (sigmaT_finite_completed_lebesgue_stieltjes_measure f).
+
+End wlength_completed_extension.
+Arguments completed_lebesgue_stieltjes_measure {R}.
+
+Definition completed_lebesgue_measure {R : realType} :
+  set _ -> \bar R :=
+  [the measure _ _ of completed_lebesgue_stieltjes_measure [the cumulative _ of idfun]].
+HB.instance Definition _ (R : realType) := Measure.on (@completed_lebesgue_measure R).
+HB.instance Definition _ (R : realType) :=
+  SigmaFiniteMeasure.on (@completed_lebesgue_measure R).
 
 (* TODO: move to sequences.v *)
 Lemma nneseries_addn (R : realType) (k : nat) (f : nat -> \bar R) :
