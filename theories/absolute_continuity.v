@@ -30,16 +30,6 @@ Reserved Notation "[ 'inner_measure' 'of' f 'as' g ]"
   (at level 0, format "[ 'inner_measure'  'of'  f  'as'  g ]").
 Reserved Notation "[ 'inner_measure' 'of' f ]".
 
-(* TODO: issue *)
-(* cvg_to Notation is broken by under tactic. *)
-(* when it be a problem? i.e. broken notation would cause to fail rewrite or apply? *)
-Example hoge (R : realType) (f : nat -> R) : f x @[x --> \oo] --> 0.
-Proof.
-under eq_cvg do idtac.
-Restart.
-under eq_fun do idtac.
-Abort.
-
 Lemma measure_is_completeP {d} {T : measurableType d} {R : realType}
   (mu : {measure set T -> \bar R}) :
   measure_is_complete mu <->
@@ -53,7 +43,7 @@ split.
   by apply: (Hmu B).
 Qed.
 
-(* TODO : move to measure.v *)
+(* TODO : Is this needed? *)
 Definition sigma_superadditive {T} {R : numFieldType}
   (mu : set T -> \bar R) := forall (F : (set T) ^nat), trivIset setT F ->
     (\sum_(i <oo) mu (F i) <= mu (\bigcup_n (F n)))%E.
