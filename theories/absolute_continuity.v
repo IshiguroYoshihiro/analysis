@@ -531,22 +531,13 @@ rewrite !bigcap_mkord.
 by rewrite big_ord_recr.
 Qed.
 
-(* Theorem 1.45 in https://heil.math.gatech.edu/6337/spring11/section1.5.pdf *)
-Lemma clebesgue_measurableP (E : set _) :
-  (completed_lebesgue_measure E < +oo)%E ->
- (forall eps : R, 0 < eps -> exists U, [/\ open U,
-   E `<=` U &
-   (completed_lebesgue_measure (U `\` E) < eps%:E)%E]) -> _.-cara.-measurable E.
-Proof.
-Abort.
-
 (* Theorem 1.36 in https://heil.math.gatech.edu/6337/spring11/section1.3.pdf *)
 Lemma clebesgue_Gdelta_approximation (E : set R) :
   caratheodory_measurable completed_lebesgue_measure E ->
   exists H : set _, Gdelta H /\
   ((wlength idfun)^*)%mu E = completed_lebesgue_measure H.
 Proof.
-move=> 
+move=> mE.
 pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
 have d_geo n : delta_0 n = geometric 2^-1 2^-1 n.
   rewrite /geometric /=.
@@ -559,7 +550,14 @@ have d_geo0 : forall k, (0 < k)%N -> (delta_0 k.-1 = geometric 1 (2 ^-1) k).
   rewrite prednK //.
   by rewrite -exprVn mul1r.
 have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
-have U0 := fun i => (H (delta_0 i) (delta_0_ge0 i)).
+have outer_approx : forall i : nat, exists U : set R,
+ [/\ open U, E `<=` U &
+   (completed_lebesgue_measure U <= completed_lebesgue_measure E + (delta_0 i)%:E)%E].
+  move=> i.
+  have := outer_regularity_outer0 E (delta_0_ge0 i).
+  move=> [U [? ? /andP [_ ?]]].
+  by exists U.
+have U0 := fun i => (outer_approx i).
 pose U0_ i := proj1_sig (cid (U0 i)).
 have oU0 i : open (U0_ i).
   move: (projT2 (cid (U0 i))).
@@ -567,9 +565,15 @@ have oU0 i : open (U0_ i).
 have EU0 i : E `<=` U0_ i.
   move: (projT2 (cid (U0 i))).
   by move=> [] _ + _.
-have mU0E i : ((lebesgue_measure) ((U0_ i) `\` E) < (delta_0 i)%:E)%E.
+have mU0E i : ((completed_lebesgue_measure) ((U0_ i) `\` E) < (delta_0 i)%:E)%E.
   move: (projT2 (cid (U0 i))).
-  by move=> [] _ _ +.
+  move=> [] _ _ +.
+  rewrite (mE (U0_ i)).
+  rewrite setIidr // -setDE lee_add2lE.
+
+  xxx
+
+  rewrite outer_measureD.
 pose U_ i := \bigcap_(j < i.+1) U0_ j.
 have mU i : measurable (U_ i).
   apply: bigcap_measurable => n _.
