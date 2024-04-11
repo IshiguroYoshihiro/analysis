@@ -303,6 +303,18 @@ End wip.
 Lemma lebesgue_measureT {R : realType} : (@lebesgue_measure R) setT = +oo%E.
 Proof. by rewrite -set_itv_infty_infty lebesgue_measure_itv. Qed.
 
+Lemma completed_lebesgue_measure_itv {R : realType} (i : interval R) :
+  completed_lebesgue_measure ([set` i] : set R) =
+  (if i.1 < i.2 then (i.2 : \bar R) - i.1 else 0)%E.
+Proof.
+Admitted.
+
+Lemma completed_lebesgue_measureT {R : realType} :
+  (@completed_lebesgue_measure R) setT = +oo%E.
+Proof.
+by rewrite -set_itv_infty_infty completed_lebesgue_measure_itv.
+Qed.
+
 Section lebesgue_measure_complete.
 Context {R : realType}.
 
@@ -502,10 +514,6 @@ apply/eqP; rewrite eq_le; apply/andP; split.
   by exists U.
 Qed.*)
 
-(*
-  ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
-  Definition 1.19. the converse of lebesgue_regularity_outer in lebesgue_measure.
-*)
 Lemma bigcap_open (U0_ : (set R)^nat) :
     (forall i : nat, open (U0_ i)) ->
     let U_ := fun i : nat => \bigcap_(j < i) U0_ j
@@ -523,8 +531,96 @@ rewrite !bigcap_mkord.
 by rewrite big_ord_recr.
 Qed.
 
+(* Theorem 1.45 in https://heil.math.gatech.edu/6337/spring11/section1.5.pdf *)
+Lemma clebesgue_measurableP (E : set _) :
+  (completed_lebesgue_measure E < +oo)%E ->
+ (forall eps : R, 0 < eps -> exists U, [/\ open U,
+   E `<=` U &
+   (completed_lebesgue_measure (U `\` E) < eps%:E)%E]) -> _.-cara.-measurable E.
+Proof.
+Abort.
+
+(* Theorem 1.36 in https://heil.math.gatech.edu/6337/spring11/section1.3.pdf *)
+Lemma clebesgue_Gdelta_approximation (E : set R) :
+  caratheodory_measurable completed_lebesgue_measure E ->
+  exists H : set _, Gdelta H /\
+  ((wlength idfun)^*)%mu E = completed_lebesgue_measure H.
+Proof.
+move=> 
+pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
+have d_geo n : delta_0 n = geometric 2^-1 2^-1 n.
+  rewrite /geometric /=.
+  rewrite /delta_0.
+  by rewrite -exprVn exprS.
+have d_geo0 : forall k, (0 < k)%N -> (delta_0 k.-1 = geometric 1 (2 ^-1) k).
+  rewrite /geometric /=.
+  rewrite /delta_0.
+  move=> t t0.
+  rewrite prednK //.
+  by rewrite -exprVn mul1r.
+have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
+have U0 := fun i => (H (delta_0 i) (delta_0_ge0 i)).
+pose U0_ i := proj1_sig (cid (U0 i)).
+have oU0 i : open (U0_ i).
+  move: (projT2 (cid (U0 i))).
+  by move=> [] + _ _.
+have EU0 i : E `<=` U0_ i.
+  move: (projT2 (cid (U0 i))).
+  by move=> [] _ + _.
+have mU0E i : ((lebesgue_measure) ((U0_ i) `\` E) < (delta_0 i)%:E)%E.
+  move: (projT2 (cid (U0 i))).
+  by move=> [] _ _ +.
+pose U_ i := \bigcap_(j < i.+1) U0_ j.
+have mU i : measurable (U_ i).
+  apply: bigcap_measurable => n _.
+  by apply: open_measurable.
+have EU i : forall i, E `<=` U_ i.
+  by move=> n; rewrite /U_; apply: sub_bigcap.
+pose Uoo := \bigcap_i (U_ i).
+have mUoo : measurable Uoo.
+  apply: Gdelta_measurable.
+  exists U_ => //.
+  move=> n.
+  rewrite /U_.
+  by apply: bigcap_open.
+have cvgUoo : lebesgue_measure (U_ n) @[n --> \oo] --> lebesgue_measure Uoo.
+  apply: nonincreasing_cvg_mu => //=.
+    rewrite /U_ bigcap_mkord.
+    rewrite big_ord_recr big_ord0 /= setTI.
+    rewrite -(setDKU (EU0 0%N)).
+    rewrite /lebesgue_measure/=/lebesgue_stieltjes_measure/=/measure_extension/=.
+    have /= Hle := outer_measureU2 ((wlength idfun)^*)%mu (U0_ 0%N `\` E) E.
+    apply: (le_lt_trans Hle).
+    apply: lte_add_pinfty => //.
+    apply: (lt_trans (mU0E 0%N)).
+    by rewrite ltry.
+  apply/nonincreasing_seqP.
+  move=> n.
+  rewrite subsetEset.
+  rewrite /U_.
+  rewrite !bigcap_mkord.
+  rewrite big_ord_recr /=.
+  exact: subIsetl.
+have UooE: lebesgue_measure Uoo = (lebesgue_measure^* )%mu E.
+  rewrite -(cvg_lim _ cvgUoo) //.
+  apply: cvg_eq => //.
+  rewrite -is_cvg_limn_esupE; last first.
+    apply: ereal_nonincreasing_is_cvgn.
+    apply/nonincreasing_seqP.
+    admit.
+  admit.
+
+xxx
+
+
+(*
+  ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
+  Definition 1.19. the converse of lebesgue_regularity_outer in lebesgue_measure.
+*)
+
+
 Lemma regularity_outer_lebesgue (E : set R) :
- ((lebesgue_measure) E < +oo)%E ->
+ (lebesgue_measure E < +oo)%E ->
  (forall eps : R, 0 < eps -> exists U, [/\ open U,
    E `<=` U &
    ((lebesgue_measure) (U `\` E) < eps%:E)%E]) -> measurable E.
