@@ -43,263 +43,60 @@ split.
   by apply: (Hmu B).
 Qed.
 
-(* TODO : Is this needed? *)
-Definition sigma_superadditive {T} {R : numFieldType}
-  (mu : set T -> \bar R) := forall (F : (set T) ^nat), trivIset setT F ->
-    (\sum_(i <oo) mu (F i) <= mu (\bigcup_n (F n)))%E.
-
-HB.mixin Record isInnerMeasure
-    (R : numFieldType) (T : Type) (mu : set T -> \bar R) := {
-  inner_measure0 : mu set0 = 0 ;
-  inner_measure_ge0 : forall x, (0 <= mu x)%E ;
-  inner_measure_sigma_superadditive : sigma_superadditive mu }.
-
-#[short(type= inner_measure)]
-HB.structure Definition InnerMeasure (R : numFieldType) (T : Type) :=
-  {mu & isInnerMeasure R T mu}.
-
-Notation "{ 'inner_measure' 'set' T '->' '\bar' R }" := (inner_measure R T)
-  (at level 36, T, R at next level,
-    format "{ 'inner_measure'  'set'  T  '->'  '\bar'  R }") : ring_scope.
-
-#[global] Hint Extern 0 (_ set0 = 0%R) => solve [apply: inner_measure0] : core.
-#[global] Hint Extern 0 (sigma_superadditive _) =>
-  solve [apply: inner_measure_sigma_superadditive] : core.
-
-Arguments inner_measure0 {R T} _.
-Arguments inner_measure_ge0 {R T} _.
-Arguments inner_measure_sigma_superadditive {R T} _.
-
-Lemma le_inner_measure {T : Type} {R : realType}
-  (mu : {inner_measure set T -> \bar R})
-  : {homo mu : A B / A `<=` B >-> (A <= B)%E}.
-Proof.
-move=> A B AB.
-apply: (@le_trans _ _ (mu A + mu (B `\` A))).
-- apply: lee_addl.
-  exact: inner_measure_ge0.
-- pose F i := match i with 0%N => A | 1%N => B `\` A | _ => set0 end.
-  have -> : (mu A + mu (B `\` A) = \sum_(i <oo) mu (F i))%E.
-    apply: esym.
-    apply: cvg_lim => //.
-    apply: cvg_near_cst.
-    exists 2%N => // n /= n0.
-    rewrite -(subnK n0) addn2.
-    rewrite !big_nat_recl /=; last 2 first.
-        by rewrite leq_subRL // addn0 ltnW // leq0Sn.
-      by rewrite ltnW // leq0Sn.
-    rewrite inner_measure0.
-    rewrite big_const_nat.
-    rewrite iter_addr_0.
-    rewrite mul0rn.
-    by rewrite addr0.
-  have -> : B = \bigcup_i F i.
-    rewrite (bigcup_splitn 2%N).
-    rewrite !big_ord_recl /=.
-    rewrite big_const_ord /= setU0.
-    rewrite bigcup_const ?setU0; last by exists 0%N.
-    by apply: esym; apply: setDUK.
-  apply: inner_measure_sigma_superadditive.
-  have -> : F = bigcup2 A (B `\` A).
-    apply: funext.
-    rewrite /F.
-    by case; last case.
-  rewrite -trivIset_bigcup2.
-  exact: setDIK.
-Qed.
-
-Lemma inner_measure_sigma_superadditive_tail (T : Type) (R : realType)
-    (mu : {inner_measure set T -> \bar R}) N (F : (set T) ^nat) :
-  trivIset (~` `I_N) F ->
-  (\sum_(N <= i <oo) mu (F i) <= mu (\bigcup_(n in ~` `I_N) (F n)))%E.
-Proof.
-move=> triF.
-rewrite bigcup_mkcond.
-have triF' : trivIset [set: nat] (fun n => if n \in ~` `I_N then F n else set0).
-  by apply/(trivIset_mkcond (~` `I_N)).
-have := inner_measure_sigma_superadditive mu
-  (fun n => if n \in ~` `I_N then F n else set0).
-move/(_ triF').
-apply: le_trans.
-rewrite [in leLHS]eseries_cond [in leLHS]eseries_mkcondr; apply: lee_nneseries.
-- by move=> k _; rewrite fun_if; case: ifPn => Nk //; rewrite inner_measure_ge0.
-- move=> k _.
-  case: ifPn => Nk; last by rewrite inner_measure_ge0.
-  by case: ifPn; rewrite mem_not_I; move/negP.
-Qed.
-
-Section inner_measureU.
-Context d (T : semiRingOfSetsType d) (R : realType).
-Variable mu : {inner_measure set T -> \bar R}.
+Section completed_measure_extension.
 Local Open Scope ereal_scope.
 
-Lemma inner_measure_superadditive (F : nat -> set T) n :
-trivIset [set k : nat | (k < n)%N] F ->
-  \sum_(i < n) mu (F i) <= mu (\big[setU/set0]_(i < n) F i).
+Context d (T : semiRingOfSetsType d) (R : realType).
+Variable mu : {measure set T -> \bar R}.
+Let Rmu := SetRing.measure mu.
+Notation rT := (SetRing.type T).
+
+Let I :=  [the measurableType _ of caratheodory_type (mu^*)%mu].
+
+Definition completed_measure_extension : set I -> \bar R := (mu^*)%mu.
+
+Local Lemma completed_measure_extension0 : completed_measure_extension set0 = 0.
+Proof. exact: mu_ext0. Qed.
+
+Local Lemma completed_measure_extension_ge0 (A : set I) : 0 <= completed_measure_extension A.
+Proof. exact: mu_ext_ge0. Qed.
+
+Local Lemma completed_measure_extension_semi_sigma_additive :
+  semi_sigma_additive completed_measure_extension.
 Proof.
-move=> trivF.
-pose F' := fun k => if (k < n)%N then F k else set0.
-have trivF' : trivIset [set: nat] F'.
-  rewrite /F'.
-  suff -> : (fun k : nat => if (k < n)%N then F k else set0) = (fun k=> if k \in `I_n then F k else set0 ) by rewrite -(trivIset_mkcond).
-  apply: funext => k.
-  case: ifP => Hkn; first by rewrite ifT // inE.
-  rewrite ifF //.
-  apply: memNset.
-  by rewrite /= Hkn.
-rewrite -(big_mkord xpredT F) big_nat (eq_bigr F')//; last first.
-  by move=> k /= kn; rewrite /F' kn.
-rewrite -big_nat big_mkord.
-have := inner_measure_sigma_superadditive mu F'.
-rewrite (bigcup_splitn n) (_ : bigcup _ _ = set0) ?setU0; last first.
-  by rewrite bigcup0 // => k _; rewrite /F' /= ltnNge leq_addr.
-move/(_ trivF').
-apply le_trans.
-rewrite (nneseries_split n); last by move=> ?; exact: inner_measure_ge0.
-rewrite [X in _ + X](_ : _ = 0) ?adde0//; last first.
-  rewrite eseries_cond/= eseries_mkcond eseries0//.
-  by move=> k _; case: ifPn => //; rewrite /F' leqNgt => /negbTE ->.
-by apply: lee_sum => i _; rewrite /F' ltn_ord.
+move=> F mF tF mUF; rewrite /completed_measure_extension.
+by apply: caratheodory_measure_sigma_additive.
 Qed.
 
-Lemma inner_measureU2 A B : A `&` B = set0 -> mu A + mu B <= mu (A `|` B).
+HB.instance Definition _ := isMeasure.Build _ _ _ completed_measure_extension
+  completed_measure_extension0 completed_measure_extension_ge0
+  completed_measure_extension_semi_sigma_additive.
+
+Lemma completed_measure_extension_sigma_finite : @sigma_finite _ T _ setT mu ->
+  @sigma_finite _ _ _ setT completed_measure_extension.
 Proof.
-move=> ab0.
-have trivab : trivIset `I_2 (bigcup2 A B).
-  apply: (@sub_trivIset _ _ _ setT) => //.
-  by rewrite -trivIset_bigcup2.
-have := inner_measure_superadditive trivab.
-by rewrite !big_ord_recl/= !big_ord0 setU0 adde0.
+move=> -[S setTS mS]; exists S => //; move=> i; split.
+  apply: sub_caratheodory.
+  apply: sub_sigma_algebra.
+  by have := (mS i).1.
+by rewrite /completed_measure_extension /= measurable_mu_extE //;
+  [exact: (mS i).2 | exact: (mS i).1].
 Qed.
 
-End inner_measureU.
+(*
+d.-cara.-measurable = (d.-measurable `|` [set N | mu' N = 0]).-sigma.-measurable
+*)
 
-Lemma ge_inner_measureIC (R : realFieldType) T
-  (mu : {inner_measure set T -> \bar R}) (A X : set T) :
-  (mu (X `&` A) + mu (X `&` ~` A) <= mu X)%E.
+(* Lemma completed_measure_extension_unique : sigma_finite [set: T] mu ->
+  (forall mu' : {measure set I -> \bar R},
+    (forall X, d.-measurable X -> mu X = mu' X) ->
+    (forall X, (d.-measurable `|` [set N | mu' N = 0]).-sigma.-measurable X ->
+      completed_measure_extension X = mu' X)).
 Proof.
-pose B : (set T) ^nat := bigcup2 (X `&` A) (X `&` ~` A).
-have trivB : trivIset setT B.
-  rewrite -trivIset_bigcup2.
-  by rewrite setIACA setIid setIA setICK.
-have cvg_mu : (fun n => \sum_(i < n) mu (B i)) @ \oo --> mu (B 0%N) + mu (B 1%N).
-  rewrite -2!cvg_shiftS /=.
-  rewrite [X in X @ \oo --> _](_ : _ = (fun=> mu (B 0%N) + mu (B 1%N))); last first.
-    rewrite funeqE => i; rewrite 2!big_ord_recl /= big1 ?adde0 // => j _.
-    by rewrite /B /bigcup2 /=.
-  exact: cvg_cst.
-have := inner_measure_sigma_superadditive mu B trivB.
-suff : \bigcup_n B n = X.
-  move=> ->; apply: le_trans; under eq_fun do rewrite big_mkord.
-  by rewrite (cvg_lim _ cvg_mu).
-transitivity (\big[setU/set0]_(i < 2) B i).
-  by rewrite (bigcup_splitn 2) // -bigcup_mkord setUidl// => t -[].
-by rewrite 2!big_ord_recl big_ord0 setU0 /= -setIUr setUCr setIT.
-Unshelve. all: by end_near. Qed.
+Abort.
+*)
 
-(* Section inner_measure_construction. *)
-(* Local Open Scope ereal_scope. *)
-(* Context (R : realType). *)
-(* Variable mu : set R -> \bar R. *)
-(* Hypothesis (measure0 : mu set0 = 0) (measure_ge0 : forall X, mu X >= 0). *)
-(* Hint Resolve measure_ge0 measure0 : core. *)
-
-(* Lemma ex_outer_approx_fin (X : set R) : (mu^* )%mu X < +oo -> *)
-(* forall eps : R, (0 < eps)%R -> exists J : set R, *)
-(*   [/\ open J, X `<=` J & mu J - (mu^* )%mu X < eps%:E]. *)
-(* Proof. *)
-(* Admitted. *)
-
-(* Lemma ex_outer_approx (X : set R) : *)
-(* exists J_ : (set R)^nat, forall i, open (J_ i) /\ J_ i `<=` X `&` `[ -%R i%:R, i%:R]%classic *)
-(*   /\ (mu^* )%mu (X `&` `[-%R i%:R, i%:R]%classic) - (mu^* )%mu (J_ i) < (2^-1 ^+ i)%:E. *)
-
-(* Let outer_open (X : set R) (finX : (mu^* )%mu X < +oo) := *)
-(*    fun e : R => proj1_sig (cid (ex_outer_approx finX e)). *)
-
-(* Definition mu_inext (X : set T) : \bar R := if pselect (mu^* X < +oo) then *)
-(*  mu^* (outer_open X) - ereal_inf [set \sum_(k <oo) mu (A k) | A in measurable_cover ((outer_open X) `&` ~` X)]. else +oo *)
-(* Local Notation "mu_*" := mu_inext. *)
-
-(* Lemma le_mu_inext : {homo mu^* : A B / A `<=` B >-> A <= B}. *)
-(* Proof. *)
-(* move=> A B AB; apply/le_ereal_inf => x [B' [mB' BB']]. *)
-(* by move=> <-{x}; exists B' => //; split => //; apply: subset_trans AB BB'. *)
-(* Qed. *)
-
-(* Lemma mu_inext_ge0 A : 0 <= mu_* A. *)
-(* Proof. *)
-(* apply: lb_ereal_inf => x [B [mB AB] <-{x}]; rewrite lime_ge //=. *)
-(*   exact: is_cvg_nneseries. *)
-(* by near=> n; rewrite sume_ge0. *)
-(* Unshelve. all: by end_near. Qed. *)
-
-(* Lemma mu_inext0 : mu_* set0 = 0. *)
-(* Proof. *)
-(* apply/eqP; rewrite eq_le; apply/andP; split; last exact/mu_ext_ge0. *)
-(* rewrite /mu_ext; apply: ereal_inf_lb; exists (fun=> set0); first by split. *)
-(* by apply: lim_near_cst => //; near=> n => /=; rewrite big1. *)
-(* Unshelve. all: by end_near. Qed. *)
-
-(* Lemma mu_inext_sigma_superadditive : sigma_superadditive mu^*. *)
-(* Proof. *)
-(* move=> A; have [[i ioo]|] := pselect (exists i, mu^* (A i) = +oo). *)
-(*   rewrite (eseries_pinfty _ _ ioo) ?leey// => n _. *)
-(*   by rewrite -ltNye (lt_le_trans _ (mu_ext_ge0 _)). *)
-(* rewrite -forallNE => Aoo. *)
-(* suff add2e (e : {posnum R}) : *)
-(*     mu^* (\bigcup_n A n) <= \sum_(i <oo) mu^* (A i) + e%:num%:E. *)
-(*   by apply/lee_addgt0Pr => _/posnumP[]. *)
-(* rewrite (le_trans _ (epsilon_trick _ _ _))//; last first. *)
-(*   by move=> n; exact: mu_ext_ge0. *)
-(* pose P n (B : (set T)^nat) := measurable_cover (A n) B /\ *)
-(*   \sum_(k <oo) mu (B k) <= mu^* (A n) + (e%:num / (2 ^ n.+1)%:R)%:E. *)
-(* have [G PG] : {G : ((set T)^nat)^nat & forall n, P n (G n)}. *)
-(*   apply: (@choice _ _ P) => n; rewrite /P /mu_ext. *)
-(*   set S := (X in ereal_inf X); move infS : (ereal_inf S) => iS. *)
-(*   case: iS infS => [r Sr|Soo|Soo]. *)
-(*   - have en1 : (0 < e%:num / (2 ^ n.+1)%:R)%R by []. *)
-(*     have /(lb_ereal_inf_adherent en1) : ereal_inf S \is a fin_num by rewrite Sr. *)
-(*     move=> [x [B [mB AnB muBx] xS]]. *)
-(*     by exists B; split => //; rewrite muBx -Sr; exact/ltW. *)
-(*   - by have := Aoo n; rewrite /mu^* Soo. *)
-(*   - suff : lbound S 0 by move/lb_ereal_inf; rewrite Soo. *)
-(*     by move=> /= _ [B [mB AnB] <-]; exact: nneseries_ge0. *)
-(* have muG_ge0 x : 0 <= (mu \o uncurry G) x by exact: measure_ge0. *)
-(* apply: (@le_trans _ _ (\esum_(i in setT) (mu \o uncurry G) i)). *)
-(*   rewrite /mu_ext; apply: ereal_inf_lb => /=. *)
-(*   have /card_esym/ppcard_eqP[f] := card_nat2. *)
-(*   exists (uncurry G \o f). *)
-(*     split => [i|]; first exact/measurable_uncurry/(PG (f i).1).1.1. *)
-(*     apply: (@subset_trans _  (\bigcup_n \bigcup_k G n k)) => [t [i _]|]. *)
-(*       by move=> /(cover_subset (PG i).1) -[j _ ?]; exists i => //; exists j. *)
-(*     move=> t [i _ [j _ Bijt]]; exists (f^-1%FUN (i, j)) => //=. *)
-(*     by rewrite invK ?inE. *)
-(*   rewrite -(esum_pred_image (mu \o uncurry G) _ xpredT) ?[fun=> _]set_true//. *)
-(*   by rewrite image_eq. *)
-(* rewrite (_ : esum _ _ = \sum_(i <oo) \sum_(j <oo ) mu (G i j)); last first. *)
-(*   pose J : nat -> set (nat * nat) := fun i => [set (i, j) | j in setT]. *)
-(*   rewrite (_ : setT = \bigcup_k J k); last first. *)
-(*     by rewrite predeqE => -[a b]; split => // _; exists a => //; exists b. *)
-(*   rewrite esum_bigcupT /=; last 2 first. *)
-(*     - apply/trivIsetP => i j _ _ ij. *)
-(*       rewrite predeqE => -[n m] /=; split => //= -[] [_] _ [<-{n} _]. *)
-(*       by move=> [m' _] [] /esym/eqP; rewrite (negbTE ij). *)
-(*     - by move=> /= [n m]; apply: measure_ge0; exact: (cover_measurable (PG n).1). *)
-(*   rewrite -(image_id [set: nat]) -fun_true esum_pred_image//; last first. *)
-(*     by move=> n _; exact: esum_ge0. *)
-(*   apply: eq_eseriesr => /= j _. *)
-(*   rewrite -(esum_pred_image (mu \o uncurry G) (pair j) predT)//=; last first. *)
-(*     by move=> ? ? _ _; exact: (@can_inj _ _ _ snd). *)
-(*   by congr esum; rewrite predeqE => -[a b]; split; move=> [i _ <-]; exists i. *)
-(* apply: lee_lim. *)
-(* - apply: is_cvg_nneseries => n _. *)
-(*   by apply: nneseries_ge0 => m _; exact: (muG_ge0 (n, m)). *)
-(* - by apply: is_cvg_nneseries => n _; apply: adde_ge0 => //; exact: mu_ext_ge0. *)
-(* - by near=> n; apply: lee_sum => i _; exact: (PG i).2. *)
-(* Unshelve. all: by end_near. Qed. *)
-
-(* End inner_measure_construction. *)
+End completed_measure_extension.
 
 (* TODO: move to sequences.v *)
 Lemma nneseries_addn (R : realType) (k : nat) (f : nat -> \bar R) :
