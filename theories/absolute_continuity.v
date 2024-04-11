@@ -538,6 +538,11 @@ Lemma clebesgue_Gdelta_approximation (E : set R) :
   ((wlength idfun)^*)%mu E = completed_lebesgue_measure H.
 Proof.
 move=> mE.
+have [Eoo|] := eqVneq (completed_lebesgue_measure E) +oo%E.
+  exists setT; split => //; first exact: open_Gdelta openT.
+  by rewrite completed_lebesgue_measureT.
+rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
+move=> Efin.
 pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
 have d_geo n : delta_0 n = geometric 2^-1 2^-1 n.
   rewrite /geometric /=.
@@ -565,57 +570,84 @@ have oU0 i : open (U0_ i).
 have EU0 i : E `<=` U0_ i.
   move: (projT2 (cid (U0 i))).
   by move=> [] _ + _.
-have mU0E i : ((completed_lebesgue_measure) ((U0_ i) `\` E) < (delta_0 i)%:E)%E.
+have mU0E i : ((completed_lebesgue_measure) ((U0_ i) `\` E) <= (delta_0 i)%:E)%E.
   move: (projT2 (cid (U0 i))).
   move=> [] _ _ +.
   rewrite (mE (U0_ i)).
-  rewrite setIidr // -setDE lee_add2lE.
-
-  xxx
-
-  rewrite outer_measureD.
+  by rewrite setIidr // -setDE lee_add2lE.
+have U0fin n : completed_lebesgue_measure (U0_ n) \is a fin_num.
+  rewrite -(setDKU (EU0 n%N)).
+  have /= Hle := outer_measureU2 ((wlength idfun)^*)%mu (U0_ n `\` E) E.
+  rewrite ge0_fin_numE //.
+  apply: (le_lt_trans Hle).
+  apply: lte_add_pinfty => //; last by rewrite ge0_fin_numE in Efin.
+  apply: (le_lt_trans (mU0E n)).
+  by rewrite ltry.
 pose U_ i := \bigcap_(j < i.+1) U0_ j.
-have mU i : measurable (U_ i).
+have mU i : ((wlength idfun)^*)%mu.-cara.-measurable (U_ i).
   apply: bigcap_measurable => n _.
-  by apply: open_measurable.
-have EU i : forall i, E `<=` U_ i.
+  apply: open_measurable => //=.
+  admit.
+have EU i : E `<=` U_ i.
   by move=> n; rewrite /U_; apply: sub_bigcap.
+have Ufin n : completed_lebesgue_measure (U_ n) \is a fin_num.
+  admit.
 pose Uoo := \bigcap_i (U_ i).
-have mUoo : measurable Uoo.
-  apply: Gdelta_measurable.
+have mUoo : ((wlength idfun)^*)%mu.-cara.-measurable Uoo.
+  apply: Gdelta_measurable; last first.
+    admit.
   exists U_ => //.
   move=> n.
   rewrite /U_.
   by apply: bigcap_open.
-have cvgUoo : lebesgue_measure (U_ n) @[n --> \oo] --> lebesgue_measure Uoo.
+have cvgUoo : completed_lebesgue_measure (U_ n) @[n --> \oo] --> completed_lebesgue_measure Uoo.
   apply: nonincreasing_cvg_mu => //=.
     rewrite /U_ bigcap_mkord.
     rewrite big_ord_recr big_ord0 /= setTI.
-    rewrite -(setDKU (EU0 0%N)).
-    rewrite /lebesgue_measure/=/lebesgue_stieltjes_measure/=/measure_extension/=.
-    have /= Hle := outer_measureU2 ((wlength idfun)^*)%mu (U0_ 0%N `\` E) E.
-    apply: (le_lt_trans Hle).
-    apply: lte_add_pinfty => //.
-    apply: (lt_trans (mU0E 0%N)).
-    by rewrite ltry.
+    have := U0fin 0%N.
+    by rewrite ge0_fin_numE.
   apply/nonincreasing_seqP.
   move=> n.
-  rewrite subsetEset.
   rewrite /U_.
-  rewrite !bigcap_mkord.
-  rewrite big_ord_recr /=.
+  rewrite !bigcap_mkord big_ord_recr /=.
+  rewrite subsetEset.
   exact: subIsetl.
-have UooE: lebesgue_measure Uoo = (lebesgue_measure^* )%mu E.
-  rewrite -(cvg_lim _ cvgUoo) //.
-  apply: cvg_eq => //.
-  rewrite -is_cvg_limn_esupE; last first.
-    apply: ereal_nonincreasing_is_cvgn.
-    apply/nonincreasing_seqP.
-    admit.
+exists Uoo; split.
+  exists U_ => //.
+  move=> n.
+  exact: bigcap_open.
+suff : (completed_lebesgue_measure Uoo - ((wlength idfun)^*)%mu E = 0)%E.
   admit.
+rewrite -(cvg_lim _ cvgUoo) //.
+rewrite [LHS]
+(_:_ = (limn (fun n : nat => (completed_lebesgue_measure (U_ n)
+      - ((wlength idfun)^* )%mu E)))%E); last first.
+  admit.
+apply: cvg_lim => //.
+apply: (@squeeze_cvge _ _ _ R (cst 0) _ (fun i => (delta_0 i)%:E)).
+    apply: nearW => n.
+    apply/andP; split.
+      rewrite subre_ge0; last exact: Ufin.
+      rewrite /completed_lebesgue_measure/=/completed_lebesgue_stieltjes_measure/completed_measure_extension/=.
+      by apply: le_outer_measure.
+    rewrite lee_subl_addl //.
+    rewrite -(setDKU (EU n)).
+    rewrite measureU //=; last 2 first.
+        by apply: measurableD.
+      exact: setDKI.
+    rewrite addeC.
+    rewrite lee_add2l //.
+    apply: le_trans (mU0E n).
+    apply: le_measure => /=.
+        admit.
+      admit.
+    apply: setSD.
+    by apply: bigcap_inf => /=.
+  exact: cvg_cst.
+admit.
+Admitted.
 
 xxx
-
 
 (*
   ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
