@@ -337,13 +337,11 @@ Local Notation mu := (((wlength idfun)^*)%mu).
 
 Lemma outer_measureT : (mu setT = +oo%E :> \bar R).
 Proof.
-rewrite /=.
-rewrite ereal_inf_pinfty.
-move=> r /= [] B cB <-.
 Abort.
 
 Local Close Scope ereal_scope.
 
+(* Theorem 1.17, https://heil.math.gatech.edu/6337/spring11/section1.1.pdf *)
 Lemma outer_regularity_outer0 (E : set R) (e : R) : (e > 0)%R ->
   exists U : set R, [/\ open U, E `<=` U & (mu E <= mu U <= mu E + e%:E)%E].
 Proof.
@@ -359,6 +357,8 @@ have infEE : infE = lebesgue_measure E by [].
 have e20 : 0 < e / 2 by rewrite divr_gt0.
 move=> /(_ _ e20).
 move=> [x [/= Q EQ <- muEoo]].
+have : forall k : nat, (0%R <= wlength idfun (Q k))%E.
+  by move=> ?; rewrite wlength_ge0.
 have [/= T QT TQ] : exists2 T : nat -> set _,
   (forall k, Q k `<=` interior (T k)) &
   (forall k, mu (T k) <= mu (Q k) + (e / (2 ^+ k.+2))%:E)%E.
@@ -372,9 +372,7 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
 (*      rewrite {1}/lebesgue_measure/= /lebesgue_stieltjes_measure/=.
       rewrite/measure_extension/=.*)
       rewrite measurable_mu_extE /=; last by move: EQ => [+ _]; exact.
-      rewrite (nneseriesD1 k); last first.
-        move=> m.
-        by rewrite wlength_ge0.
+      rewrite (nneseriesD1 k) //.
       rewrite leeDl//.
       exact: nneseries_ge0.
     by rewrite (lt_le_trans muEoo)// leey.
@@ -390,8 +388,16 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
     rewrite /=.
     by rewrite -ge0_fin_numE.
     by rewrite divr_gt0.*)
-    
-admit.
+    have ocitvQk : ocitv (Q k).
+      move: EQ.
+      move/cover_measurable.
+      move/(_ k).
+      by rewrite /measurable /=.
+    exists `]inf (Q k), sup (Q k) + (e / 2 ^+ k.+3) [%classic.
+    split.
+        admit.
+      admit.
+    admit.
   move/choice.
   move=> [T /= TH].
   exists T.
@@ -448,12 +454,12 @@ apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (Q k) + (e / 2)%:E)%E); las
   by case: EQ.
 apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (T k))); last first.
   apply: le_trans; last first.
-    apply: epsilon_trick.
-    move=> k.
-    admit.
+    apply: epsilon_trick => //.
+      move=> k.
+      by apply: outer_measure_ge0.
     by rewrite ltW.
   apply: lee_nneseries => // k _.
-  admit.
+    by apply: outer_measure_ge0.
   rewrite -mulrA.
   rewrite (_ : _ / _ = 1 / (2 ^+ k.+2))%R; last first.
     rewrite -invfM//.
@@ -470,6 +476,8 @@ apply: (@le_trans _ _ (mu (\bigcup_k (T k)))).
 by have := outer_measure_sigma_subadditive lebesgue_measure T.
 Admitted.
 
+
+(* Theorem 1.17 https://heil.math.gatech.edu/6337/spring11/section1.1.pdf *)
 Lemma outer_regularity_outer (E : set R) :
   mu E = ereal_inf [set mu U | U in [set U | open U /\ E `<=` U]].
 Proof.
