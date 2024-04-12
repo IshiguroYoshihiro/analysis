@@ -33,6 +33,23 @@ Reserved Notation "[ 'inner_measure' 'of' f ]".
 Section move_to_realfun.
 Context {R : realType}.
 
+Lemma bigcap_open (U0_ : (set R)^nat) :
+    (forall i : nat, open (U0_ i)) ->
+    let U_ := fun i : nat => \bigcap_(j < i) U0_ j
+    in (forall i, open (U_ i)).
+Proof.
+move=> HU U_.
+elim.
+  rewrite /U_ bigcap_mkord.
+  rewrite big_ord0.
+  exact: openT.
+move=> n IH.
+suff -> : U_ n.+1 = U_ n `&` U0_ n by apply: openI.
+rewrite /U_.
+rewrite !bigcap_mkord.
+by rewrite big_ord_recr.
+Qed.
+
 (* PR#1209 *)
 Lemma total_variation_nondecreasing a b (f : R -> R) :
   {in `[a, b] &, nondecreasing_fun (total_variation a ^~ f)}.
@@ -393,8 +410,6 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
       move: EQ.
       by move/cover_measurable.
     apply: (@le_lt_trans _ _ (\sum_(0 <= k <oo) wlength idfun (Q k)))%E.
-(*      rewrite {1}/lebesgue_measure/= /lebesgue_stieltjes_measure/=.
-      rewrite/measure_extension/=.*)
       rewrite measurable_mu_extE /=; last by move: EQ => [+ _]; exact.
       rewrite (nneseriesD1 k) //.
       rewrite leeDl//.
@@ -406,12 +421,6 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
               salgebraType R.-ocitv.-measurable] R of lebesgue_measure]*)mu
          (T `\` (Q k)) < (e / 2 ^+ k.+2)%:E)%E].
     move=> k.
-(*    apply: lcebesgue_regularity_outer.
-    case: EQ => + _ => /(_ k).
-    by apply: sub_sigma_algebra.
-    rewrite /=.
-    by rewrite -ge0_fin_numE.
-    by rewrite divr_gt0.*)
     have ocitvQk : ocitv (Q k).
       move: EQ.
       move/cover_measurable.
@@ -434,27 +443,12 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
   have [_ H1] := TH k.
   move=> /ltW.
   apply: le_trans.
-(*  rewrite measureD//=.
-  rewrite setIidr//.
-  apply: open_measurable.
-  by have [] := TH k.
-  case: EQ => + _ => /(_ k).
-  by apply: sub_sigma_algebra.
-  rewrite -(setDKU H1).
-  rewrite measureU//=.
-  rewrite lte_add_pinfty//.
-  have [_ _] := TH k.
-  move=> /lt_le_trans; apply.
-  by rewrite leey.
-  by rewrite -ge0_fin_numE//.
-  apply: measurableD.
-  apply: open_measurable.
-  by case: (TH k).
-  case: EQ => + _ => /(_ k).
-  by apply: sub_sigma_algebra.
-  case: EQ => + _ => /(_ k).
-  by apply: sub_sigma_algebra.
-  by rewrite setDKI.*) admit.
+  rewrite lee_subel_addl; last first.
+    rewrite ge0_fin_numE//; last exact: outer_measure_ge0.
+    have [_ _] := TH k => /lt_le_trans; apply.
+    by rewrite leey.
+  rewrite -[in leLHS](setDKU H1) (le_trans (outer_measureU2 _ _ _))//=.
+  by rewrite addeC.
 pose U := \bigcup_k interior (T k).
 have EU : E `<=` U.
   case: EQ => _.
@@ -500,7 +494,6 @@ apply: (@le_trans _ _ (mu (\bigcup_k (T k)))).
 by have := outer_measure_sigma_subadditive lebesgue_measure T.
 Admitted.
 
-
 (* Theorem 1.17 https://heil.math.gatech.edu/6337/spring11/section1.1.pdf *)
 Lemma outer_regularity_outer (E : set R) :
   mu E = ereal_inf [set mu U | U in [set U | open U /\ E `<=` U]].
@@ -531,23 +524,6 @@ apply/eqP; rewrite eq_le; apply/andP; split.
   exists (lebesgue_measure U) => //.
   by exists U.
 Qed.*)
-
-Lemma bigcap_open (U0_ : (set R)^nat) :
-    (forall i : nat, open (U0_ i)) ->
-    let U_ := fun i : nat => \bigcap_(j < i) U0_ j
-    in (forall i, open (U_ i)).
-Proof.
-move=> HU U_.
-elim.
-  rewrite /U_ bigcap_mkord.
-  rewrite big_ord0.
-  exact: openT.
-move=> n IH.
-suff -> : U_ n.+1 = U_ n `&` U0_ n by apply: openI.
-rewrite /U_.
-rewrite !bigcap_mkord.
-by rewrite big_ord_recr.
-Qed.
 
 Lemma sigma_algebra_completed_lebesgue_measure :
   sigma_algebra [set: ocitv_type R] ((((wlength idfun)^*)%mu).-cara.-measurable).
@@ -700,16 +676,18 @@ have mAE : (mue A <= mue (A `&` E) + mue (A `\` E))%E.
 have [H [GdeltaH [AH mAH]]] := clebesgue_Gdelta_approximation A.
 have HE : H = (H `&` E) `|` (H `\` E) by rewrite setUIDK.
 have H1 : (mue A >= mue (A `&` E) + mue (A `\` E))%E.
-  rewrite [leRHS]mAH HE.
+  rewrite [leRHS]mAH.
+  apply: (@le_trans _ _ (cmu (H `&` E) + cmu (H `\` E))).
+    rewrite lee_add//.
+    apply: le_outer_measure.
+      by apply: setSI.
+    apply: le_outer_measure.
+      by apply: setSD.
+  rewrite [in leRHS]HE.
   rewrite measureU//=; last 3 first.
     admit.
     admit.
     admit.
-  rewrite lee_add//.
-  apply: le_outer_measure.
-    by apply: setSI.
-  apply: le_outer_measure.
-    by apply: setSD.
 apply/eqP; rewrite eq_le -setDE.
 by rewrite mAE/=.
 Admitted.
