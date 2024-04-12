@@ -338,9 +338,8 @@ Local Notation mu := (((wlength idfun)^*)%mu).
 Lemma outer_measureT : (mu setT = +oo%E :> \bar R).
 Proof.
 rewrite /=.
-apply/eqP.
-rewrite -leye_eq.
-rewrite -(@wlength_setT R idfun).
+rewrite ereal_inf_pinfty.
+move=> r /= [] B cB <-.
 Abort.
 
 Local Close Scope ereal_scope.
@@ -366,7 +365,9 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
   rewrite /=.
   have mQfin k : mu (Q k) \is a fin_num.
     rewrite ge0_fin_numE; last first.
-      (*exact: measure_ge0.*) admit.
+      rewrite measurable_mu_extE /= ?wlength_ge0 //.
+      move: EQ.
+      by move/cover_measurable.
     apply: (@le_lt_trans _ _ (\sum_(0 <= k <oo) wlength idfun (Q k)))%E.
 (*      rewrite {1}/lebesgue_measure/= /lebesgue_stieltjes_measure/=.
       rewrite/measure_extension/=.*)
@@ -383,12 +384,14 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
               salgebraType R.-ocitv.-measurable] R of lebesgue_measure]*)mu
          (T `\` (Q k)) < (e / 2 ^+ k.+2)%:E)%E].
     move=> k.
-(*    apply: lebesgue_regularity_outer.
+(*    apply: lcebesgue_regularity_outer.
     case: EQ => + _ => /(_ k).
     by apply: sub_sigma_algebra.
     rewrite /=.
     by rewrite -ge0_fin_numE.
-    by rewrite divr_gt0.*) admit.
+    by rewrite divr_gt0.*)
+    
+admit.
   move/choice.
   move=> [T /= TH].
   exists T.
