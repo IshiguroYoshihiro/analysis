@@ -325,6 +325,13 @@ Proof.
 by rewrite -set_itv_infty_infty completed_lebesgue_measure_itv.
 Qed.
 
+Lemma wlength_idfun_le {R : realType} : forall A, R.-ocitv.-measurable A ->
+  ((@wlength R idfun) A <= ((wlength idfun)^*)%mu A)%E.
+Proof.
+move=> A mA; apply: lb_ereal_inf => /= _ [F [mF AF] <-].
+by apply: (wlength_sigma_subadditive idfun mF mA AF).
+Qed.
+
 Section lebesgue_measure_complete.
 Context {R : realType}.
 
@@ -335,9 +342,26 @@ Context {R : realType}.
 
 Local Notation mu := (((wlength idfun)^*)%mu).
 
+Lemma lee_addltyPr (x : \bar R) : reflect (forall y, y%:E <= x)%E (x == +oo%E).
+Proof.
+apply/(iffP idP) => [/eqP -> y|]; first by rewrite leey.
+move: x => [x lex|//|]; last by move/(_ 0); rewrite leeNy_eq.
+rewrite eq_le leey/= leNgt; apply/negP => xoo.
+have := lex (x + 1); rewrite leNgt => /negP; apply.
+by rewrite lte_fin ltr_addl.
+Qed.
+
 Lemma outer_measureT : (mu setT = +oo%E :> \bar R).
 Proof.
-Abort.
+apply/eqP/lee_addltyPr => y /=.
+have [->|y0] := eqVneq y 0; first exact: outer_measure_ge0.
+apply: (@le_trans _ _ (mu (`] (- `|y|)%R, `|y|%R ]%classic : set R)))%E.
+  apply: (@le_trans _ _ (wlength idfun `](- normr y)%R, (normr y)])).
+    rewrite wlength_itv/= lte_fin gtrN ?normr_gt0// opprK.
+    by rewrite -EFinD lee_fin -[leLHS]addr0 lerD// ler_norm.
+  by apply: wlength_idfun_le => //; exists (- normr y, normr y).
+by apply: le_outer_measure.
+Qed.
 
 Local Close Scope ereal_scope.
 
@@ -348,7 +372,7 @@ Proof.
 move=> e0.
 have [->|] := eqVneq (mu E) +oo%E.
   exists setT; split => //; first exact: openT.
-  (*by rewrite lebesgue_measureT lexx.*) admit.
+  by rewrite leey andbT outer_measureT.
 rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
 move=> mEfin.
 move: (mEfin) => /lb_ereal_inf_adherent.
