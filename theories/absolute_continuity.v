@@ -33,26 +33,18 @@ Reserved Notation "[ 'inner_measure' 'of' f ]".
 Section move_to_realfun.
 Context {R : realType}.
 
+(* PR#1209 *)
 Lemma total_variation_nondecreasing a b (f : R -> R) :
-  bounded_variation a b f ->
-  {in `[a, b] &, {homo fine \o (total_variation a ^~ f) : x y / x <= y}}.
+  {in `[a, b] &, nondecreasing_fun (total_variation a ^~ f)}.
 Proof.
-move=> BVf x y; rewrite !in_itv/= => /andP[ax xb] /andP[ay yb] xy.
-rewrite fine_le //.
-- exact/(bounded_variationP _ ax)/(bounded_variationl ax xb).
-- exact/(bounded_variationP _ ay)/(bounded_variationl ay yb).
-- by rewrite (total_variationD f ax xy)// lee_addl// total_variation_ge0.
-Qed.
+Admitted.
 
+(* PR#1209 *)
 Lemma total_variation_bounded a b (f : R -> R) : a <= b ->
   bounded_variation a b f ->
   bounded_variation a b (fine \o (total_variation a ^~ f)).
 Proof.
-move=> ab BVf; apply/bounded_variationP => //.
-rewrite ge0_fin_numE; last exact: total_variation_ge0.
-rewrite nondecreasing_total_variation/= ?ltry//.
-exact: total_variation_nondecreasing.
-Qed.
+Admitted.
 
 End move_to_realfun.
 
@@ -382,7 +374,7 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
       rewrite (nneseriesD1 k); last first.
         move=> m.
         by rewrite wlength_ge0.
-      rewrite lee_addl//.
+      rewrite leeDl//.
       exact: nneseries_ge0.
     by rewrite (lt_le_trans muEoo)// leey.
   have : forall k, exists T : set R,
@@ -998,7 +990,7 @@ Lemma Lusin_total_variation (f : R -> R) :
   lusinN `[a, b] (fun x => fine (total_variation a ^~ f x)).
 Proof.
 move=> cf bvf lf.
-have ndt := (total_variation_nondecreasing bvf).
+have ndt := total_variation_nondecreasing.
 have ct :=  (total_variation_continuous ab cf bvf).
 apply: image_measure0_Lusin => //.
 apply: contrapT.
@@ -1229,7 +1221,11 @@ move=> cf bvf Lf.
 apply: total_variation_AC => //.
 apply: Banach_Zarecki_increasing.
 - exact: total_variation_continuous.
-- exact: total_variation_nondecreasing.
+- move=> x y; rewrite !in_itv /= => /andP[ax xb] /andP[ay yb] xy.
+  apply: fine_le.
+  + apply/(bounded_variationP _ ax); exact:(bounded_variationl _ xb).
+  + apply/(bounded_variationP _ ay); exact:(bounded_variationl _ yb).
+  + by apply: (@total_variation_nondecreasing _ _ b); rewrite ?in_itv /= ?ax ?ay.
 - exact: Lusin_total_variation.
 Qed.
 
