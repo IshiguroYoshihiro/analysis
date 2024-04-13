@@ -243,6 +243,465 @@ HB.instance Definition _ (R : realType) := Measure.on (@completed_lebesgue_measu
 HB.instance Definition _ (R : realType) :=
   SigmaFiniteMeasure.on (@completed_lebesgue_measure R).
 
+Lemma sigma_algebra_mu_ext {R : realType} :
+  sigma_algebra [set: ocitv_type R] ((((wlength idfun)^*)%mu).-cara.-measurable).
+Proof.
+split.
+- exact: caratheodory_measurable_set0.
+- by move=> A mA; rewrite setTD; exact: caratheodory_measurable_setC.
+- by move=> F mF; exact: caratheodory_measurable_bigcup.
+Qed.
+
+Lemma completed_lebesgue_measure_is_complete {R : realType} :
+  measure_is_complete (@completed_lebesgue_measure R).
+Proof. exact: measure_is_complete_caratheodory. Qed.
+
+(* TODO: fix negligibleI *)
+(* TODO 2 spaces in sigma_algebra_bigcup *)
+Lemma caratheodory_measurable_mu_ext_new d (R : realType) (T : semiRingOfSetsType d)
+    (mu : {measure set T -> \bar R}) A :
+  d.-measurable A -> (mu^*)%mu.-cara.-measurable A.
+Proof.
+by move=> Am; apply: sub_caratheodory => //; apply: sub_sigma_algebra.
+Qed.
+
+Definition completed_algebra_gen d {T : semiRingOfSetsType d} {R : realType}
+    (mu : set T -> \bar R) : set _ :=
+  [set A `|` N | A in d.-measurable & N in mu.-negligible].
+
+Definition completed_algebra d {T : semiRingOfSetsType d} {R : realType}
+    (mu : set T -> \bar R) : measurableType _ :=
+  salgebraType (completed_algebra_gen mu).
+
+Lemma caratheodory_completed_algebra {R : realType} :
+  ((wlength idfun)^*)%mu.-cara.-measurable `<=`
+  (completed_algebra_gen (@lebesgue_measure R)).-sigma.-measurable.
+Proof.
+move=> E.
+wlog : E / (completed_lebesgue_measure E < +oo)%E.
+  move=> /= wlg.
+  have /sigma_finiteP[/= F [UFI ndF mF]] :=
+    measure_extension_sigma_finite (@wlength_sigma_finite R idfun).
+  move=> mE.
+  rewrite -(setIT E)/= UFI setI_bigcupr.
+  apply: bigcupT_measurable => i.
+  apply: wlg.
+    rewrite (le_lt_trans _ (mF i).2)//=.
+    rewrite le_measure// inE/=.
+      apply: measurableI => //.
+      apply: sub_caratheodory.
+      exact: (mF i).1.
+    apply: sub_caratheodory.
+    exact: (mF i).1.
+  apply: measurableI => //.
+  apply: sub_caratheodory.
+  exact: (mF i).1.
+move=> mEoo mE.
+have inv0 : forall n, 0 < n.+1%:R^-1 :> R.
+  by move=> n; rewrite invr_gt0.
+set S := [set \big[+%R/0]_(0 <= k <oo) wlength idfun (A k) |
+          A in measurable_cover E].
+have H1 : forall s : R, 0 < s ->
+     exists2 A_ : nat -> set R,
+       @measurable_cover _ (ocitv_type R) E A_ &
+       (\big[+%R/0%R]_(0 <= k <oo) wlength idfun (A_ k) <
+        completed_lebesgue_measure E + s%:E)%E.
+  move=> s s0.
+  have : lebesgue_measure E \is a fin_num.
+    by rewrite ge0_fin_numE//.
+  move/lb_ereal_inf_adherent => /(_ _ s0)[_/= [A_ EA_] <-] ?.
+  by exists A_ => //.
+pose A_ (n : nat) := projT1 (cid2 (H1 _ (inv0 n))).
+have mA k : @measurable_cover _ (ocitv_type R) E (A_ k).
+  by rewrite /A_; case: cid2.
+have mA_E n : (\big[+%R/0%R]_(0 <= k <oo) wlength idfun (A_ n k) <
+        completed_lebesgue_measure E + n.+1%:R^-1%:E)%E.
+  by rewrite /A_; case: cid2.
+pose F_ (n : nat) := \bigcup_m (A_ n m).
+have EF_n n : E `<=` F_ n.
+  have [/= _] := mA n.
+  move=> /subset_trans; apply.
+  apply: subset_bigcup => i _.
+  done.
+have mF_ m : (lebesgue_measure (F_ m) <
+             completed_lebesgue_measure E + m.+1%:R^-1%:E)%E.
+  apply: (le_lt_trans _ (mA_E m)).
+  rewrite /lebesgue_measure/=.
+  rewrite /lebesgue_stieltjes_measure/=.
+  rewrite /measure_extension/=.
+  apply: (le_trans (outer_measure_sigma_subadditive ((@wlength R idfun)^*)%mu (A_ m))).
+  apply: lee_nneseries => // n _.
+  have := (measurable_mu_extE (@wlength R idfun)) (A_ m n).
+  move=> <-//.
+  by have [/(_ n)] := mA m.
+pose F := \bigcap_n (F_ n).
+have FM : @measurable _ (salgebraType R.-ocitv.-measurable) F.
+  apply: bigcapT_measurable => k.
+  apply: bigcupT_measurable => i.
+  apply: sub_sigma_algebra.
+  by have [/(_ i)] := mA k.
+have EF : E `<=` F.
+  rewrite /F.
+  by apply: sub_bigcap.
+have muEF : completed_lebesgue_measure E = lebesgue_measure F.
+  apply/eqP; rewrite eq_le; apply/andP; split.
+    by rewrite le_outer_measure.
+  apply/lee_addgt0Pr => /= _/posnumP[e].
+  near \oo => n.
+  apply: (@le_trans _ _ (lebesgue_measure (F_ n))).
+    apply: le_outer_measure.
+    by apply: bigcap_inf.
+  apply: (le_trans (ltW (mF_ n))).
+  rewrite leeD// lee_fin.
+  apply/ltW.
+  by near: n; apply: near_infty_natSinv_lt.
+(* G *)
+have H2 : forall s : R, 0 < s ->
+     exists2 A_ : nat -> set R,
+       @measurable_cover _ (ocitv_type R) (F `\` E) A_ &
+       (\big[+%R/0%R]_(0 <= k <oo) wlength idfun (A_ k) <
+        completed_lebesgue_measure (F `\` E) + s%:E)%E.
+  move=> s s0.
+  have : lebesgue_measure (F `\` E) \is a fin_num.
+    rewrite ge0_fin_numE// (@le_lt_trans _ _ (lebesgue_measure F))//.
+    apply: le_outer_measure.
+    exact: subDsetl.
+    by rewrite -muEF.
+  move/lb_ereal_inf_adherent => /(_ _ s0)[_/= [B_ FEB_] <-] ?.
+  by exists B_ => //.
+pose B_ (n : nat) := projT1 (cid2 (H2 _ (inv0 n))).
+have mB k : @measurable_cover _ (ocitv_type R) (F `\` E) (B_ k).
+  by rewrite /B_; case: cid2.
+have mB_FE n : (\big[+%R/0%R]_(0 <= k <oo) wlength idfun (B_ n k) <
+        completed_lebesgue_measure (F `\` E) + n.+1%:R^-1%:E)%E.
+  by rewrite /B_; case: cid2.
+pose G_ (n : nat) := \bigcup_m (B_ n m).
+have FEG_n n : F `\` E `<=` G_ n.
+  have [/= _] := mB n.
+  move=> /subset_trans; apply.
+  apply: subset_bigcup => i _.
+  done.
+have mG_ m : (lebesgue_measure (G_ m) <
+             completed_lebesgue_measure (F `\` E) + m.+1%:R^-1%:E)%E.
+  apply: (le_lt_trans _ (mB_FE m)).
+  rewrite /lebesgue_measure/=.
+  rewrite /lebesgue_stieltjes_measure/=.
+  rewrite /measure_extension/=.
+  apply: (le_trans (outer_measure_sigma_subadditive ((@wlength R idfun)^*)%mu (B_ m))).
+  apply: lee_nneseries => // n _.
+  have := (measurable_mu_extE (@wlength R idfun)) (B_ m n).
+  move=> <-//.
+  by have [/(_ n)] := mB m.
+pose G := \bigcap_n (G_ n).
+have GM : @measurable _ (salgebraType R.-ocitv.-measurable) G.
+  apply: bigcapT_measurable => k.
+  apply: bigcupT_measurable => i.
+  apply: sub_sigma_algebra.
+  by have [/(_ i)] := mB k.
+have FEG : F `\` E `<=` G.
+  by apply: sub_bigcap.
+have muG : lebesgue_measure G = 0.
+  transitivity (completed_lebesgue_measure (F `\` E)).
+    apply/eqP; rewrite eq_le; apply/andP; split.
+      apply/lee_addgt0Pr => _/posnumP[e].
+      near \oo => n.
+      apply: (@le_trans _ _ (lebesgue_measure (G_ n))).
+        apply: le_outer_measure.
+        by apply: bigcap_inf.
+      apply/ltW.
+      apply: (lt_le_trans (mG_ n)).
+      rewrite leeD// lee_fin.
+      apply/ltW.
+      by near: n; apply: near_infty_natSinv_lt.
+    by apply: le_outer_measure.
+  rewrite measureD//=.
+  rewrite setIidr//.
+  rewrite muEF subee//.
+  rewrite ge0_fin_numE//.
+  move: mEoo.
+  by rewrite muEF.
+  apply: sub_caratheodory.
+  done.
+  move: mEoo.
+  by rewrite muEF.
+apply: sub_sigma_algebra.
+exists (F `\` G).
+  by apply: measurableD => //.
+exists (E `&` G).
+  apply: (@negligibleS _ _ _ lebesgue_measure G).
+  apply: subIsetr.
+  by exists G; split => //.
+apply/seteqP; split.
+  move=> /= x [[Fx Gx]|[]//].
+  rewrite -(notK (E x)) => Ex.
+  apply: Gx.
+  exact: FEG.
+move=> x Ex.
+have [|FGx] := pselect ((F `\` G) x).
+  by left.
+right; split => //.
+move/not_andP : FGx => [|].
+  by have := EF _ Ex.
+by rewrite notK.
+Unshelve. all: by end_near. Qed.
+
+Lemma setDU {T} (U V W : set T) :
+  U `<=` V -> V `<=` W ->
+  W `\` U = (W `\` V) `|` (V `\` U).
+Proof.
+move=> UV VW; apply/seteqP; split.
+  move=> x [Wx Ux].
+  have [Vx|Vx] := pselect (V x).
+    by right.
+  by left.
+move=> x [[Wx Vx]|[Vx Ux]].
+  split => //.
+  by move/UV.
+split => //.
+by apply/VW.
+Qed.
+
+Lemma completed_algebraE {R : realType} :
+  (completed_algebra_gen (@lebesgue_measure R)).-sigma.-measurable =
+  @completed_algebra_gen _ _ R (@lebesgue_measure R).
+Proof.
+apply/seteqP; split; last first.
+  move=> X [/= A /= mA [N neglN]] <-{X}.
+  apply: sub_sigma_algebra.
+  by exists A => //; exists N.
+apply: smallest_sub => //=.
+split => /=.
+- exists set0 => //.
+  exists set0 => //.
+    exact: negligible_set0.
+  by rewrite setU0.
+- move=> G [/= A mA [N negN ANG]].
+  case: negN => /= F [mF F0 NF].
+  have H1 : ~` G = ~` A `\` (N `&` ~` A).
+    rewrite -ANG setCU.
+    rewrite setDE.
+    rewrite setCI setCK.
+    rewrite setIUr.
+    by rewrite setICl setU0.
+  pose AA := ~` A `\` (F `&` ~` A).
+  pose NN := (F `&` ~` A) `\` (N `&` ~` A).
+  have H2 : ~` G = AA `|` NN.
+    rewrite (_ : ~` G = ~` A `\` (N `&` ~` A))//.
+    apply: setDU.
+      by apply: setSI.
+    by apply: subIsetr.
+  exists AA.
+    apply: measurableI => //=.
+      by apply: measurableC.
+    apply: measurableC; apply: measurableI => //.
+    by apply: measurableC.
+  exists NN.
+    exists F; split => //.
+    rewrite /NN.
+    by move=> x [] [].
+  by rewrite setDE setTI.
+- move=> F mF/=.
+  rewrite /completed_algebra_gen/=.
+  pose A n := projT1 (cid2 (mF n)).
+  pose N n := projT1 (cid2 (projT2 (cid2 (mF n))).2).
+  exists (\bigcup_k A k).
+    apply: bigcupT_measurable => i.
+    rewrite /A.
+    by case: cid2 => //.
+  exists (\bigcup_k N k).
+  apply: negligible_bigcup => /= k.
+  rewrite /N.
+  case: (cid2 (mF k)) => //= *.
+  by case: cid2 => //.
+rewrite -bigcupU.
+apply: eq_bigcup => // i _.
+rewrite /A /N.
+case: (cid2 (mF i)) => //= *.
+by case: cid2 => //=.
+Qed.
+
+Lemma completed_algebra_caratheodory_aux {R : realType} N :
+  (@completed_lebesgue_measure R).-negligible N ->
+  ((wlength idfun)^*)%mu.-cara.-measurable N.
+Proof.
+move=> /= [/= A] [mA A0 NA].
+have H1 : ((wlength idfun)^*)%mu N = 0.
+  apply/eqP; rewrite eq_le; apply/andP; split.
+    rewrite -A0.
+    rewrite (_ : completed_lebesgue_measure A = ((wlength idfun)^*)%mu A)//.
+    by apply: le_outer_measure.
+  exact: outer_measure_ge0.
+apply: le_caratheodory_measurable => /= X.
+apply: (@le_trans _ _ (((wlength idfun)^*)%mu (N) +
+   ((wlength idfun)^*)%mu (X `&` ~` N))).
+  rewrite leeD2r//.
+  apply: le_outer_measure.
+  exact: subIsetr.
+rewrite H1 add0e.
+apply: le_outer_measure.
+exact: subIsetl.
+Qed.
+
+Lemma completed_algebra_caratheodory {R : realType} :
+  (completed_algebra_gen (@lebesgue_measure R)).-sigma.-measurable `<=`
+  ((wlength idfun)^*)%mu.-cara.-measurable.
+Proof.
+rewrite /=.
+have : ((@ocitv R)).-sigma.-measurable `<=`
+  ((wlength idfun)^*)%mu.-cara.-measurable.
+  rewrite /=.
+  move=> x Hx.
+  apply: sub_caratheodory.
+  move: Hx.
+  by apply: sub_sigma_algebra2.
+rewrite /=.
+move=> h.
+rewrite completed_algebraE => A -[/= X mX] [N negN] <-{A}.
+apply: measurableU => //; last first.
+  apply: completed_algebra_caratheodory_aux.
+  case: negN => /= B [mB B0 NB].
+  exists B; split => //=.
+  apply: sub_caratheodory.
+  done.
+by apply: sub_caratheodory.
+Qed.
+
+Lemma compatible {R : realType} :
+  (completed_algebra_gen (@lebesgue_measure R)).-sigma.-measurable =
+  ((wlength idfun)^*)%mu.-cara.-measurable.
+Proof.
+apply/seteqP; split => /=.
+  by apply: completed_algebra_caratheodory.
+by apply: caratheodory_completed_algebra.
+Qed.
+
+(*mu^*(A)=0 -> A satisfies caratheodory criterion
+
+https://math.stackexchange.com/questions/2913728/complete-measures-and-complete-sigma-algebras*)
+
+Definition open_itv_cover {R : realType} (X : set R) :=
+  [set F : (set R)^nat |
+    (forall i, (is_interval (F i) /\ open (F i))) /\ X `<=` \bigcup_k (F k)].
+
+Definition ocitv_cover {R : realType} (X : set R) :=
+  [set F : (set R)^nat |
+    (forall i, (ocitv (F i))) /\ X `<=` \bigcup_k (F k)].
+
+Section li.
+
+Lemma pro20 {R : realType} (X : set R) :
+  ((wlength idfun)^*)%mu X =
+  ereal_inf [set \sum_(k <oo) wlength idfun (A k) | A in open_itv_cover X]%E.
+Proof.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  apply: le_ereal_inf => x/= [I_ [mI_ XI_ <-{x}]].
+  admit.
+Admitted.
+
+Definition cmu {R : realType} := (@(*completed_*)lebesgue_measure R).
+
+Lemma pro211 {R : realType} (X : set R) :
+  (((wlength idfun)^*)%mu X < +oo)%E ->
+  forall e, 0 < e -> exists U, [/\ open U,
+    X `<=` U &
+    (cmu U <= ((wlength idfun)^*)%mu X + e%:E)%E].
+Proof.
+move=> Xoo/= e e0.
+have := pro20 X.
+set ei := (X in _ = X -> _) => Xei.
+have : ei \is a fin_num.
+  rewrite ge0_fin_numE//; first by rewrite -Xei.
+  apply: lb_ereal_inf => _ [F _ <-].
+  by apply: nneseries_ge0 => n _; exact: wlength_ge0.
+move=> /lb_ereal_inf_adherent => /(_ _ e0)[_ /= [I_ HI_]] <-.
+rewrite -/ei -Xei {Xei ei} => I_X.
+exists (\bigcup_i (I_ i)); split.
+- by apply: bigcup_open => i _; have [] := HI_.1 i.
+- exact: HI_.2.
+- rewrite (le_trans _ (ltW I_X))//.
+  case: HI_ => HI_1 HI_2.
+  apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) cmu (I_ k))%E).
+    exact: outer_measure_sigma_subadditive.
+  apply: lee_nneseries => // n _.
+  have I_E : exists a b, I_ n = `]a, b[%classic.
+    admit.
+  have [a [b ->]] := I_E.
+  apply: (@le_trans _ _ (cmu `]a, b])).
+    apply: le_outer_measure.
+    by apply/subset_itv_oo_oc.
+  rewrite /cmu/=.
+  rewrite /lebesgue_measure/=.
+  rewrite /lebesgue_stieltjes_measure/=.
+  rewrite /measure_extension/=.
+  rewrite /completed_lebesgue_measure/=.
+  rewrite /completed_lebesgue_stieltjes_measure/=.
+  rewrite /completed_measure_extension/=.
+  rewrite measurable_mu_extE//=; last first.
+    by exists (a, b) => //.
+  by rewrite !wlength_itv.
+Admitted.
+
+Lemma pro212 {R : realType} (X : set R) :
+  (((wlength idfun)^*)%mu X < +oo)%E ->
+  exists G_ : (set R)^nat, [/\ (forall i, open (G_ i)),
+    X `<=` \bigcap_i G_ i &
+    cmu (\bigcap_i G_ i) = ((wlength idfun)^*)%mu X].
+Proof.
+move=> Xoo.
+have inv0 (k : nat) : (0 < k.+1%:R^-1 :> R) by rewrite invr_gt0.
+pose U_ (k : nat) := projT1 (cid (pro211 Xoo (inv0 k))).
+have oU_ (k : nat) : open (U_ k) by rewrite /U_; case: cid => x /= [].
+have XU_ (k : nat) : X `<=` U_ k by rewrite /U_; case: cid => x /= [].
+have mUX (k : nat) :
+  (cmu (U_ k) <=
+   ((wlength idfun)^*)%mu X + k.+1%:R^-1%:E)%E.
+  by rewrite /U_; case: cid => x /= [].
+pose G := \bigcap_k (U_ k).
+exists U_; split => //; first by apply: sub_bigcap.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  apply/lee_addgt0Pr => /= _/posnumP[e].
+  near \oo => k.
+  apply: (@le_trans _ _ (((wlength idfun)^*)%mu X + k.+1%:R^-1%:E)).
+    apply: (le_trans _ (mUX k)).
+    apply: le_outer_measure.
+    by apply: bigcap_inf.
+  rewrite leeD2l// lee_fin; apply: ltW.
+  by near: k; exact: near_infty_natSinv_lt.
+rewrite [leRHS](_ : _ = ((wlength idfun)^*)%mu (\bigcap_i U_ i))//.
+apply: le_outer_measure.
+exact: sub_bigcap.
+Unshelve. all: by end_near. Qed.
+
+Lemma cor22 {R : realType} (N : set R) :
+  (@cmu R).-negligible N <->
+  ((wlength idfun)^*)%mu N = 0.
+Proof.
+split.
+  move=> [/= A [mA cmuA NA]].
+  apply/eqP; rewrite eq_le outer_measure_ge0 andbT.
+  rewrite (@le_trans _ _ (((wlength idfun)^*)%mu A))//.
+    exact: le_outer_measure.
+  move: cmuA.
+  rewrite /cmu/=.
+  rewrite /lebesgue_measure/=.
+  rewrite /lebesgue_stieltjes_measure.
+  rewrite /measure_extension/=.
+  rewrite /completed_lebesgue_measure/=.
+  rewrite /completed_lebesgue_stieltjes_measure.
+  by rewrite /completed_measure_extension/= => ->.
+move=> N0.
+have := @pro212 _ N.
+rewrite N0 ltry => /(_ isT)[G_ [oG_ NG_ mG_0]].
+exists (\bigcap_i G_ i); split => //=.
+apply: bigcapT_measurable => i.
+apply: open_measurable => //=.
+(*split.
+  exact: sigma_algebra_mu_ext.
+by move=> A mA; apply: sub_caratheodory; exact: sub_sigma_algebra.*)
+Qed.
+
+End li.
+
 (* TODO: move to topology.v *)
 Section Gdelta.
 Context (R : realType).
@@ -333,7 +792,7 @@ rewrite addrAC subrr add0r -subr_ge0 -lee_fin EFinB fineK; last first.
   apply/(bounded_variationP f (ltW (B12 _))).
   apply/(bounded_variationl (ltW (B12 _)) Bi2b).
   by apply/(bounded_variationr aBi1 _ BVf); rewrite (le_trans _ Bi2b)// ltW.
-by rewrite lee_subr_addr// add0e total_variation_ge// ltW.
+by rewrite leeBrDr// add0e total_variation_ge// ltW.
 Qed.
 
 End absolute_continuity.
@@ -392,7 +851,7 @@ move=> A mA; apply: lb_ereal_inf => /= _ [F [mF AF] <-].
 by apply: (wlength_sigma_subadditive idfun mF mA AF).
 Qed.
 
-Section lebesgue_measure_complete.
+Section outer_measureT.
 Context {R : realType}.
 
 (*
@@ -408,7 +867,7 @@ apply/(iffP idP) => [/eqP -> y|]; first by rewrite leey.
 move: x => [x lex|//|]; last by move/(_ 0); rewrite leeNy_eq.
 rewrite eq_le leey/= leNgt; apply/negP => xoo.
 have := lex (x + 1); rewrite leNgt => /negP; apply.
-by rewrite lte_fin ltr_addl.
+by rewrite lte_fin ltrDl.
 Qed.
 
 Lemma outer_measureT : (mu setT = +oo%E :> \bar R).
@@ -423,7 +882,12 @@ apply: (@le_trans _ _ (mu (`] (- `|y|)%R, `|y|%R ]%classic : set R)))%E.
 by apply: le_outer_measure.
 Qed.
 
+End outer_measureT.
+
+Section lebesgue_regularity_outer_inf.
 Local Close Scope ereal_scope.
+Context {R : realType}.
+Notation mu := (@lebesgue_measure R).
 
 (* Theorem 1.17, https://heil.math.gatech.edu/6337/spring11/section1.1.pdf *)
 Lemma outer_regularity_outer0 (E : set R) (e : R) : (e > 0)%R ->
@@ -432,125 +896,83 @@ Proof.
 move=> e0.
 have [->|] := eqVneq (mu E) +oo%E.
   exists setT; split => //; first exact: openT.
-  by rewrite leey andbT outer_measureT.
+  by rewrite leey andbT -set_itv_infty_infty lebesgue_measure_itv.
 rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
-move=> mEfin.
-move: (mEfin) => /lb_ereal_inf_adherent.
+move=> /[dup] mEfin => /lb_ereal_inf_adherent.
 set infE := ereal_inf _.
-have infEE : infE = lebesgue_measure E by [].
 have e20 : 0 < e / 2 by rewrite divr_gt0.
-move=> /(_ _ e20).
-move=> [x [/= Q EQ <- muEoo]].
-have : forall k : nat, (0%R <= wlength idfun (Q k))%E.
-  by move=> ?; rewrite wlength_ge0.
-have [/= T QT TQ] : exists2 T : nat -> set _,
-  (forall k, Q k `<=` interior (T k)) &
-  (forall k, mu (T k) <= mu (Q k) + (e / (2 ^+ k.+2))%:E)%E.
-  rewrite /=.
+move=> /(_ _ e20)[x [/= Q EQ <- muEoo]].
+have [/= T QT TQ] : exists2 T : nat -> set R,
+    (forall k, Q k `<=` interior (T k)) &
+    (forall k, mu (T k) <= mu (Q k) + (e / (2 ^+ k.+2))%:E)%E.
   have mQfin k : mu (Q k) \is a fin_num.
-    rewrite ge0_fin_numE; last first.
-      rewrite measurable_mu_extE /= ?wlength_ge0 //.
-      move: EQ.
-      by move/cover_measurable.
+    rewrite ge0_fin_numE//.
     apply: (@le_lt_trans _ _ (\sum_(0 <= k <oo) wlength idfun (Q k)))%E.
+      rewrite /mu/= /lebesgue_stieltjes_measure/= /measure_extension/=.
       rewrite measurable_mu_extE /=; last by move: EQ => [+ _]; exact.
-      rewrite (nneseriesD1 k) //.
-      rewrite leeDl//.
-      exact: nneseries_ge0.
+      by rewrite (nneseriesD1 k) // leeDl// nneseries_ge0.
     by rewrite (lt_le_trans muEoo)// leey.
-  have : forall k, exists T : set R,
-    [/\ open T, (Q k) `<=` T & ((*[the measure
-              [the measurableType (R.-ocitv.-measurable).-sigma of
-              salgebraType R.-ocitv.-measurable] R of lebesgue_measure]*)mu
-         (T `\` (Q k)) < (e / 2 ^+ k.+2)%:E)%E].
+  have /choice[T /= TH] : forall k, exists T : set R,
+      [/\ open T, (Q k) `<=` T & (mu (T `\` Q k) < (e / 2 ^+ k.+2)%:E)%E].
     move=> k.
-    have ocitvQk : ocitv (Q k).
-      move: EQ.
-      move/cover_measurable.
-      move/(_ k).
-      by rewrite /measurable /=.
-    move: ocitvQk.
-    move/ocitvP.
-    case.
-      move ->.
-      exists set0.
-      split => //.
-      rewrite setD0.
-      rewrite outer_measure0.
-      rewrite exprS.
-      admit.
+    have /ocitvP[->|] : ocitv (Q k) by move: EQ => /cover_measurable/(_ k).
+      by exists set0; split=> //; rewrite setD0 measure0 exprS lte_fin divr_gt0.
     move=> [[Qkl Qkr] lr] ->.
-    exists `]Qkl, Qkr + (e / 2 ^+ k.+3) [%classic.
-    split => //.
-        admit.
-        
-      admit.
-    admit.
-  move/choice.
-  move=> [T /= TH].
-  exists T.
-    move=> k.
-    have [H1 H2 _] := TH k.
-    apply: (subset_trans H2).
-    by rewrite -open_subsetE//.
-  move=> k.
+    exists `]Qkl, Qkr + (e / 2 ^+ k.+3) [%classic; split => //=.
+    - exact: interval_open.
+    - move=> y/=; rewrite !in_itv/= => /andP[-> yQkr].
+      by rewrite (le_lt_trans yQkr)// ltrDl// divr_gt0.
+    - rewrite (_ : _ `\` _ = `]Qkr, Qkr + e / 2 ^+ k.+3[%classic); last first.
+        apply/seteqP; split => [y|y]/=.
+          rewrite !in_itv/= => -[/andP[-> yQKr /negP]].
+            by rewrite -ltNge => -> /=.
+          rewrite !in_itv/= => /andP[H1 ->].
+          rewrite andbT (lt_trans lr)//=; split => //.
+          by apply/negP; rewrite -ltNge.
+      rewrite lebesgue_measure_itv/= lte_fin ltrDl// divr_gt0//.
+      rewrite -EFinD addrAC subrr add0r lte_fin.
+      by rewrite ltr_pM2l// -!exprVn exprSr ltr_pdivrMr// ltr_pMr// ltr1n.
+  exists T => k.
+    have [oTk QkTk _] := TH k.
+    by apply: (subset_trans QkTk); rewrite -open_subsetE.
   rewrite -lee_subel_addl//.
-  have [_ H1] := TH k.
-  move=> /ltW.
+  have [_ QkTk /ltW] := TH k.
   apply: le_trans.
   rewrite lee_subel_addl; last first.
-    rewrite ge0_fin_numE//; last exact: outer_measure_ge0.
+    rewrite ge0_fin_numE//.
     have [_ _] := TH k => /lt_le_trans; apply.
     by rewrite leey.
-  rewrite -[in leLHS](setDKU H1) (le_trans (outer_measureU2 _ _ _))//=.
-  by rewrite addeC.
+  by rewrite -[in leLHS](setDKU QkTk) (le_trans (outer_measureU2 _ _ _))//= addeC.
 pose U := \bigcup_k interior (T k).
 have EU : E `<=` U.
-  case: EQ => _.
-  move=> /subset_trans; apply.
-  apply: subset_bigcup => k _.
-  exact: QT.
-exists U.
-  split => //.
-  apply: bigcup_open.
-  move=> i _.
-  exact: open_interior. (* NB: should be interior_open *)
-apply/andP; split.
-  exact: le_outer_measure.
-rewrite (splitr e) EFinD addeA.
-apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (Q k) + (e / 2)%:E)%E); last first.
-  rewrite lee_add2r// ltW//.
-  apply: le_lt_trans muEoo.
-  rewrite le_eqVlt; apply/orP; left; apply/eqP.
-  apply: eq_eseriesr => k _.
-  rewrite measurable_mu_extE//.
-  by case: EQ.
-apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (T k))); last first.
+  case: EQ => _ /subset_trans; apply.
+  by apply: subset_bigcup => k _; exact: QT.
+exists U; split => //.
+- by apply: bigcup_open => i _; exact: open_interior. (* NB: should be interior_open *)
+- apply/andP; split; first exact: le_outer_measure.
+  rewrite (splitr e) EFinD addeA.
+  apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (Q k) + (e / 2)%:E)%E); last first.
+    rewrite leeD2r// ltW//.
+    rewrite (le_lt_trans _ muEoo)// le_eqVlt; apply/orP; left; apply/eqP.
+    apply: eq_eseriesr => k _.
+    rewrite /mu/= /lebesgue_stieltjes_measure/= /measure_extension/=.
+    by rewrite measurable_mu_extE//; case: EQ.
+  apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (T k))).
+    apply: (@le_trans _ _ (mu (\bigcup_k (T k)))).
+      apply: le_outer_measure; apply: subset_bigcup => k _.
+      exact: interior_subset.
+    exact: outer_measure_sigma_subadditive.
   apply: le_trans; last first.
-    apply: epsilon_trick => //.
-      move=> k.
-      by apply: outer_measure_ge0.
-    by rewrite ltW.
-  apply: lee_nneseries => // k _.
-    by apply: outer_measure_ge0.
-  rewrite -mulrA.
-  rewrite (_ : _ / _ = 1 / (2 ^+ k.+2))%R; last first.
-    rewrite -invfM//.
-    rewrite natrX.
-    rewrite -exprS.
-    by rewrite mul1r.
-  rewrite mul1r.
-  by have := TQ k.
-rewrite /U.
-apply: (@le_trans _ _ (mu (\bigcup_k (T k)))).
-  apply: le_outer_measure.
-  apply: subset_bigcup => k _.
-  by apply: interior_subset.
-by have := outer_measure_sigma_subadditive lebesgue_measure T.
-Admitted.
+    by apply: epsilon_trick => //; rewrite ltW.
+  apply: lee_nneseries => // k _//.
+  rewrite -mulrA (_ : _ / _ = 1 / (2 ^+ k.+2))%R; last first.
+    by rewrite -invfM// natrX -exprS mul1r.
+  by rewrite mul1r; exact: TQ.
+Qed.
 
 (* Theorem 1.17 https://heil.math.gatech.edu/6337/spring11/section1.1.pdf *)
-Lemma outer_regularity_outer (E : set R) :
+(* was outer_regularity_outer *)
+Lemma lebesgue_regularity_outer_inf (E : set R) :
   mu E = ereal_inf [set mu U | U in [set U | open U /\ E `<=` U]].
 Proof.
 apply/eqP; rewrite eq_le; apply/andP; split.
@@ -565,141 +987,139 @@ apply/eqP; rewrite eq_le; apply/andP; split.
   by exists U.
 Qed.
 
-(*Lemma outer_regularity_outer (E : set R) :
-  lebesgue_measure E = ereal_inf [set Z | exists U, [/\ Z = lebesgue_measure U, open U & E `<=` U]].
-Proof.
-apply/eqP; rewrite eq_le; apply/andP; split.
-- apply: lb_ereal_inf => /= r /= [A [-> oA EA]] {r}.
-  apply: le_ereal_inf => _ /= [] S_ AS_ <-; exists S_ => //.
-  move: AS_ => [mS_ AS_].
-  by split; [exact: mS_|exact: (subset_trans EA)].
-- apply/lee_addgt0Pr => /= e e0.
-  have [U [oU EU /andP[UE UEe]]] := outer_regularity_outer0 E e0.
-  apply: ereal_inf_le => /=.
-  exists (lebesgue_measure U) => //.
-  by exists U.
-Qed.*)
+End lebesgue_regularity_outer_inf.
 
-Lemma sigma_algebra_completed_lebesgue_measure :
-  sigma_algebra [set: ocitv_type R] ((((wlength idfun)^*)%mu).-cara.-measurable).
+Section lebesgue_measurable.
+Context {R : realType}.
+
+Let mue := ((@wlength R idfun)^*)%mu.
+
+Definition lebesgue_measurability (E : set R) :=
+  forall eps : R, 0 < eps -> exists U, [/\ open U,
+  E `<=` U & (mue (U `\` E) <= eps%:E)%E].
+
+Lemma Gdelta_lebesgue_measurability_bounded (E : set R) : Gdelta E ->
+  (mue E < +oo%E)%E ->
+  lebesgue_measurability E.
 Proof.
-split.
-- exact: caratheodory_measurable_set0.
-- by move=> A mA; rewrite setTD; exact: caratheodory_measurable_setC.
-- by move=> F mF; exact: caratheodory_measurable_bigcup.
-Qed.
+move=> [] B oB SB mE.
+rewrite /lebesgue_measurability => _/posnumP[e] /=.
+pose delta_0 (i : nat) : R := (2 ^+ i)^-1.
+have delta_0_ge0 (i : nat) : 0 < (2 ^+ i)^-1 :> R by rewrite invr_gt0 exprn_gt0.
+pose U_ (k : nat) := projT1 (cid (outer_regularity_outer0 E (delta_0_ge0 k))).
+have oU_ k : open (U_ k).
+  by rewrite /U_; case: cid => // x/= [].
+have EU_ k : E `<=` U_ k.
+  by rewrite /U_; case: cid => // x/= [].
+have leU_ k : (mue E <= mue (U_ k) <= mue E + (2 ^- k)%:E)%E.
+  by rewrite /U_; case: cid => // x/= [].
+near \oo => k.
+pose Uoo_trunc := \bigcap_(i < k.+1) (U_ i).
+exists Uoo_trunc; split.
+- exact: bigcap_open.
+- exact: sub_bigcap.
+- rewrite (_ : mue = lebesgue_measure)//.
+  rewrite measureD//=; last 3 first.
+    apply: bigcap_measurable => ? ?.
+    by apply: open_measurable.
+  rewrite SB.
+  apply: bigcap_measurable => ? ?.
+  by apply: open_measurable.
+  rewrite (@le_lt_trans _ _ (mue (U_ 0%N)))//.
+  apply: le_outer_measure.
+  apply: bigcap_inf.
+  near: k.
+  by exists 1%N.
+  have [/andP[_]] := leU_ 0%N.
+  move=> /le_lt_trans; apply.
+  rewrite -exprVn expr0.
+  by rewrite lte_add_pinfty// ltry.
+- rewrite /Uoo_trunc.
+  rewrite lee_subel_addl//.
+  rewrite setIidr//; last first.
+    by apply: sub_bigcap.
+  rewrite (@le_trans _ _ (mue (U_ k)))//.
+    apply: le_outer_measure.
+      by apply: bigcap_inf => /=.
+  have [/andP[_]] := leU_ k.
+  move=> /le_trans; apply.
+  rewrite leeD2l//.
+  rewrite lee_fin.
+  rewrite -div1r.
+  apply/ltW.
+  near: k.
+  exact: near_infty_natSinv_expn_lt.
+Unshelve. all: by end_near. Qed.
 
 (* Theorem 1.36 in https://heil.math.gatech.edu/6337/spring11/section1.3.pdf *)
 Lemma clebesgue_Gdelta_approximation (E : set R) :
   exists H : set _, Gdelta H /\ E `<=` H /\
-  ((wlength idfun)^*)%mu E = completed_lebesgue_measure H.
+  (mue E = mue H /\ lebesgue_measurability H).
 Proof.
-have [Eoo|] := eqVneq (completed_lebesgue_measure E) +oo%E.
+have [Eoo|] := eqVneq (mue E) +oo%E.
   exists setT; split => //; first exact: open_Gdelta openT.
-  by rewrite completed_lebesgue_measureT.
+  split => //.
+  rewrite Eoo /mue outer_measureT; split => //.
+  rewrite /lebesgue_measurability => e e0 /=.
+  exists setT; split => //.
+    exact: openT.
+  by rewrite setDv /mue outer_measure0 lee_fin ltW.
 rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
 move=> Efin.
 pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
-have d_geo n : delta_0 n = geometric 2^-1 2^-1 n.
-  rewrite /geometric /=.
-  rewrite /delta_0.
-  by rewrite -exprVn exprS.
-have d_geo0 : forall k, (0 < k)%N -> (delta_0 k.-1 = geometric 1 (2 ^-1) k).
-  rewrite /geometric /=.
-  rewrite /delta_0.
-  move=> t t0.
-  rewrite prednK //.
-  by rewrite -exprVn mul1r.
 have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
-have outer_approx : forall i : nat, exists U : set R,
- [/\ open U, E `<=` U &
-   (completed_lebesgue_measure U <= completed_lebesgue_measure E + (delta_0 i)%:E)%E].
-  move=> i.
-  have := outer_regularity_outer0 E (delta_0_ge0 i).
-  move=> [U [? ? /andP [_ ?]]].
-  by exists U.
-have U0 := fun i => (outer_approx i).
-pose U0_ i := proj1_sig (cid (U0 i)).
-have oU0 i : open (U0_ i).
-  move: (projT2 (cid (U0 i))).
-  by move=> [] + _ _.
-have EU0 i : E `<=` U0_ i.
-  move: (projT2 (cid (U0 i))).
-  by move=> [] _ + _.
-have mU0E i : (completed_lebesgue_measure (U0_ i) <=
-              completed_lebesgue_measure E + (delta_0 i)%:E)%E.
-  move: (projT2 (cid (U0 i))).
-  by move=> [] _ _ +.
-have U0fin n : completed_lebesgue_measure (U0_ n) \is a fin_num.
-  rewrite ge0_fin_numE//.
-  rewrite (le_lt_trans (mU0E n))// lte_add_pinfty// ?ltry//.
-  by rewrite -ge0_fin_numE//.
-pose U_ i := \bigcap_(j < i.+1) U0_ j.
-have mU i : ((wlength idfun)^*)%mu.-cara.-measurable (U_ i).
-  apply: bigcap_measurable => n _ /=.
-  apply: open_measurable => //=.
-  split; first exact: sigma_algebra_completed_lebesgue_measure.
-  by move=> A mA; apply: sub_caratheodory; exact: sub_sigma_algebra.
-have EU i : E `<=` U_ i.
-  by move=> n; rewrite /U_; apply: sub_bigcap.
-have Ufin n : completed_lebesgue_measure (U_ n) \is a fin_num.
-  rewrite ge0_fin_numE//.
-  rewrite (@le_lt_trans _ _ (completed_lebesgue_measure (U_ 0%N)))//.
-    by rewrite le_measure//= ?inE// /U_ II1/= bigcap_set1; exact: bigcap_inf.
-  by rewrite -ge0_fin_numE// /U_ II1 bigcap_set1.
+pose U_ (k : nat) := projT1 (cid (outer_regularity_outer0 E (delta_0_ge0 k))).
+have oU_ k : open (U_ k).
+  by rewrite /U_; case: cid => // x/= [].
+have EU_ k : E `<=` U_ k.
+  by rewrite /U_; case: cid => // x/= [].
+have leU_ k : (mue E <= mue (U_ k) <= mue E + (2 ^- k.+1)%:E)%E.
+  by rewrite /U_; case: cid => // x/= [].
 pose Uoo := \bigcap_i (U_ i).
-have mUoo : ((wlength idfun)^*)%mu.-cara.-measurable Uoo.
-  apply: Gdelta_measurable; last first.
-    split; first exact: sigma_algebra_completed_lebesgue_measure.
-    by move=> A mA; apply: sub_caratheodory; exact: sub_sigma_algebra.
-  by exists U_ => // i; exact: bigcap_open.
-have cvgUoo : completed_lebesgue_measure (U_ n) @[n --> \oo] -->
-    completed_lebesgue_measure Uoo.
-  apply: nonincreasing_cvg_mu => //=.
-    by rewrite /U_ II1 bigcap_set1 -ge0_fin_numE.
-  apply/nonincreasing_seqP => n.
-  rewrite /U_.
-  (* TODO: use bigcap_recr/l which has been merged since *)
-  by rewrite !bigcap_mkord big_ord_recr /= subsetEset; exact: subIsetl.
 exists Uoo; split.
-  by exists U_ => // n; exact: bigcap_open.
-suff : (completed_lebesgue_measure Uoo - ((wlength idfun)^*)%mu E = 0)%E.
-  move=> /eqP; rewrite sube_eq// ?add0e.
-    move=> /eqP ->.
-    split => //.
-    by apply: sub_bigcap.
-  rewrite ge0_fin_numE//.
-  rewrite (@le_lt_trans _ _ (completed_lebesgue_measure (U_ 0%N)))//.
-    rewrite le_measure// ?inE//.
-    rewrite /U_ /Uoo II1 bigcap_set1.
-    rewrite /U_.
-    (* TODO: lemma? *)
-    by move=> /= x /(_ 0%N) /= =>/(_ Logic.I); rewrite II1 bigcap_set1.
-  by rewrite -ge0_fin_numE.
-rewrite -(cvg_lim _ cvgUoo) //.
-rewrite [LHS]
-    (_:_ = (limn (fun n : nat => (completed_lebesgue_measure (U_ n)
-       - ((wlength idfun)^* )%mu E)))%E); last first.
-  admit.
-apply: cvg_lim => //.
-apply: (@squeeze_cvge _ _ _ R (cst 0) _ (fun i => (delta_0 i)%:E)).
-- apply: nearW => n.
+  by exists U_.
+split.
+  by apply: sub_bigcap.
+have H1 : forall k, (mue E <= mue Uoo <= mue E + (delta_0 k)%:E)%E.
+  move=> k.
   apply/andP; split.
-    rewrite subre_ge0; last exact: Ufin.
-    rewrite /completed_lebesgue_measure/=.
-    rewrite /completed_lebesgue_stieltjes_measure.
-    rewrite /completed_measure_extension/=.
-    by apply: le_outer_measure.
-  rewrite lee_subl_addl //.
-  rewrite (le_trans _ (mU0E _))//.
-  rewrite le_measure// ?inE//=.
-    apply: sub_caratheodory.
-    by apply: open_measurable.
-  rewrite /U_.
-  by apply: bigcap_inf => /=.
-- exact: cvg_cst.
-admit.
-Admitted.
+    apply: le_outer_measure.
+    by apply: sub_bigcap.
+  apply: (@le_trans _ _ (mue (U_ k))).
+    apply: le_outer_measure.
+    by apply: bigcap_inf.
+  by have /andP[] := (leU_ k).
+split.
+  apply/eqP; rewrite eq_le; apply/andP; split.
+    apply: le_outer_measure.
+    by apply: sub_bigcap.
+  apply/lee_addgt0Pr => /= _/posnumP[e].
+  rewrite /delta_0 in H1.
+  near \oo => k.
+  have Ek := H1 k.-1.
+  move: Ek => /andP[EUoo UooE].
+  rewrite (le_trans UooE)// leeD2l//.
+  rewrite lee_fin.
+  rewrite -exprVn.
+  rewrite -div1r.
+  rewrite expr_div_n expr1n.
+  rewrite ltW//.
+  rewrite prednK; last first.
+    by near: k; exists 1%N.
+  near: k.
+  by apply: near_infty_natSinv_expn_lt.
+apply: Gdelta_lebesgue_measurability_bounded.
+  rewrite /Gdelta.
+  by exists U_.
+rewrite (@le_lt_trans _ _ (mue (U_ 0%N)))//.
+  apply: le_outer_measure.
+  by apply: bigcap_inf.
+have /andP[_] := leU_ 0%N.
+move=> /le_lt_trans; apply.
+rewrite lte_add_pinfty// ?ltry//.
+rewrite -ge0_fin_numE//.
+exact: outer_measure_ge0.
+Unshelve. all: by end_near. Qed.
 
 (*
   ref: https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
@@ -710,146 +1130,6 @@ Admitted.
   except that measurability is Lebesgue-measurability
   which we take here to be Caratheodory-measurability
 *)
-
-Local Notation cmu := completed_lebesgue_measure.
-
-Definition lebesgue_measurability (E : set R) :=
-  forall eps : R, 0 < eps -> exists U, [/\ open U,
-  E `<=` U & (cmu (U `\` E) <= eps%:E)%E].
-
-Lemma lebesgue_measurability_implies_caratheodory (E : set R) :
- (cmu E < +oo)%E ->
- lebesgue_measurability E ->
- (*measurable E*) caratheodory_measurable cmu E.
-Proof.
-move=> _ mE /= A.
-set mue := ((wlength idfun)^*)%mu.
-have mAE : (mue A <= mue (A `&` E) + mue (A `\` E))%E.
-  rewrite (le_trans _ (outer_measureU2 _ _ _))//=.
-  apply: le_outer_measure.
-  by rewrite setUIDK.
-have [H [GdeltaH [AH mAH]]] := clebesgue_Gdelta_approximation A.
-have HE : H = (H `&` E) `|` (H `\` E) by rewrite setUIDK.
-have H1 : (mue A >= mue (A `&` E) + mue (A `\` E))%E.
-  rewrite [leRHS]mAH.
-  apply: (@le_trans _ _ (cmu (H `&` E) + cmu (H `\` E))).
-    rewrite lee_add//.
-    apply: le_outer_measure.
-      by apply: setSI.
-    apply: le_outer_measure.
-      by apply: setSD.
-  rewrite [in leRHS]HE.
-  rewrite measureU//=; last 3 first.
-    admit.
-    admit.
-    admit.
-apply/eqP; rewrite eq_le -setDE.
-by rewrite mAE/=.
-Admitted.
-
-Lemma caratheodory_implies_lebesgue_measurability_bounded (E : set R) :
- (cmu E < +oo)%E ->
- caratheodory_measurable cmu E ->
- lebesgue_measurability E.
-Proof.
-move=> Elty cmE e e0.
-have [U [oU EU /andP[mEU mUE]]] := outer_regularity_outer0 E e0.
-exists U; split => //.
-rewrite measureD //=; last 2 first.
-    apply: open_measurable => //=.
-    (* hint? *)
-    split; first exact: sigma_algebra_completed_lebesgue_measure.
-    by move=> A mA; apply: sub_caratheodory; exact: sub_sigma_algebra.
-  apply: (le_lt_trans mUE).
-  rewrite lte_add_pinfty //; exact: ltry.
-rewrite setIidr //.
-rewrite leeBlDr; last by rewrite ge0_fin_numE.
-by rewrite addeC.
-Qed.
-
-Lemma regularity_outer_lebesgue_old (E : set R) :
- (mu E < +oo)%E ->
- (forall eps : R, 0 < eps -> exists U, [/\ open U,
-   E `<=` U &
-   (mu (U `\` E) < eps%:E)%E]) ->
-   measurable E.
-Proof.
-move=> /= Eley H.
-pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
-have d_geo n : delta_0 n = geometric 2^-1 2^-1 n.
-  rewrite /geometric /=.
-  rewrite /delta_0.
-  by rewrite -exprVn exprS.
-have d_geo0 : forall k, (0 < k)%N -> (delta_0 k.-1 = geometric 1 (2 ^-1) k).
-  rewrite /geometric /=.
-  rewrite /delta_0.
-  move=> t t0.
-  rewrite prednK //.
-  by rewrite -exprVn mul1r.
-have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
-have U0 := fun i => (H (delta_0 i) (delta_0_ge0 i)).
-pose U0_ i := proj1_sig (cid (U0 i)).
-have oU0 i : open (U0_ i).
-  move: (projT2 (cid (U0 i))).
-  by move=> [] + _ _.
-have EU0 i : E `<=` U0_ i.
-  move: (projT2 (cid (U0 i))).
-  by move=> [] _ + _.
-have mU0E i : ((cmu) ((U0_ i) `\` E) < (delta_0 i)%:E)%E.
-  move: (projT2 (cid (U0 i))).
-  by move=> [] _ _ +.
-pose U_ i := \bigcap_(j < i.+1) U0_ j.
-have mU i : measurable (U_ i).
-  apply: bigcap_measurable => n _.
-  by apply: open_measurable.
-have EU i : forall i, E `<=` U_ i.
-  by move=> n; rewrite /U_; apply: sub_bigcap.
-pose Uoo := \bigcap_i (U_ i).
-have mUoo : measurable Uoo.
-  apply: Gdelta_measurable.
-  exists U_ => //.
-  move=> n.
-  rewrite /U_.
-  by apply: bigcap_open.
-have cvgUoo : cmu (U_ n) @[n --> \oo] --> cmu Uoo.
-  apply: nonincreasing_cvg_mu => //=.
-    rewrite /U_ bigcap_mkord.
-    rewrite big_ord_recr big_ord0 /= setTI.
-    rewrite -(setDKU (EU0 0%N)).
-    rewrite /lebesgue_measure/=/lebesgue_stieltjes_measure/=/measure_extension/=.
-    have /= Hle := outer_measureU2 ((wlength idfun)^*)%mu (U0_ 0%N `\` E) E.
-    apply: (le_lt_trans Hle).
-    apply: lte_add_pinfty => //.
-    apply: (lt_trans (mU0E 0%N)).
-    by rewrite ltry.
-  move=> i.
-(*  
-  apply/nonincreasing_seqP.
-  move=> n.
-  rewrite subsetEset.
-  rewrite /U_.
-  rewrite !bigcap_mkord.
-  rewrite big_ord_recr /=.
-  exact: subIsetl.
-(* need definition of measurablity by equation between inner measure and outer measure? *)
-
-
-have UooE: lebesgue_measure Uoo = (lebesgue_measure^* )%mu E.
-  rewrite -(cvg_lim _ cvgUoo) //.
-  apply: cvg_eq => //.
-  rewrite -is_cvg_limn_esupE; last first.
-    apply: ereal_nonincreasing_is_cvgn.
-    apply/nonincreasing_seqP.
-    admit.
-  admit.
-
-
-rewrite /measurable.
-rewrite /=.
-rewrite /measurableR.
-rewrite /measurable.
-rewrite /=.
-Admitted.*) Abort.
 
 (*
   ref:https://heil.math.gatech.edu/6337/spring11/section1.2.pdf
@@ -864,76 +1144,17 @@ move=> A0.
   by rewrite [ltLHS]A0.*)
 move=> e e0.
 have [U [oU AU]] := outer_regularity_outer0 A e0.
+rewrite /lebesgue_measure /=.
+rewrite /lebesgue_stieltjes_measure/=.
+rewrite /measure_extension/=.
 rewrite A0 add0e => /andP[mU0 mUe].
 exists U; split => //.
 rewrite (le_trans _ mUe)//.
 apply: le_outer_measure.
 exact: subDsetl.
-(*move/esym => inf0.
-have : ereal_inf [set Z |
-    exists X, [/\ Z = (lebesgue_measure) X, open X & A `<=` X]] \is a fin_num.
-  by rewrite inf0.
-move/(lb_ereal_inf_adherent e0).
-move=> [] /= r [] U [] -> oU AU.
-rewrite inf0 add0r => Ue.
-exists U; split => //.
-apply: (@le_lt_trans _ _ (lebesgue_measure U)).
-  by rewrite le_outer_measure.
-exact: Ue.*)
 Qed.
 
-Lemma outer_measure_Gdelta (A : set R) :
-caratheodory_measurable lebesgue_measure A
-  -> exists H, [/\ Gdelta H, A `<=` H & lebesgue_measure A = lebesgue_measure H].
-Proof.
-(* use lebesgue_regularity_outer? *)
-Admitted.
-
-(* TODO: move to lebesgue_measure.v *)
-Lemma boundary_lebesgue_meausure0 (A : set R) :
-  lebesgue_measure (A `\` (interior A)) = 0.
-Proof.
-Admitted.
-
-Lemma caratheodory_measurableR_measurable (A : set R) :
-caratheodory_measurable lebesgue_measure A
-  -> measurable A.
-Proof.
-move=> cmA.
-have := outer_measure_Gdelta cmA.
-move=> [H [GdH AH muA]].
-have mH : measurable H := Gdelta_measurable GdH.
-rewrite -(@setDKU _ (interior A) A); last exact: interior_subset.
-apply: measurableU; last first.
-  apply: open_measurable.
-  by apply: open_interior.
-(*apply: outer_measure0_measurable.
-exact: boundary_lebesgue_meausure0.
-Qed.*) Abort.
-
-(*
-Lemma outer_measure0_measurable' (A : set R) : (lebesgue_measure^* )%mu A = 0 -> measurable A.
-Proof.
-move=> A0.
-apply: caratheodory_measurableR_measurable.
-apply: le_caratheodory_measurable => /= X.
-suff -> : (lebesgue_measure^* )%mu (X `&` A) = 0.
-  by rewrite add0r le_outer_measure //; apply: subIsetl.
-apply/eqP; rewrite eq_le outer_measure_ge0 andbT.
-by rewrite -A0 le_outer_measure //; apply: subIsetr.
-Abort.
-*)
-
-(*Lemma lebesgue_measure_is_complete : measure_is_complete (@lebesgue_measure R).
-Proof.
-move=> /= A [/= N[mN N0 AN]].
-apply: outer_measure0_measurable.
-apply/eqP; rewrite eq_le measure_ge0 andbT.
-rewrite -N0 le_measure ?inE //.
-rewrite measurable_g_measurableTypeE /=.
-Abort.*)
-
-End lebesgue_measure_complete.
+End lebesgue_measurable.
 
 Section lusinN.
 Context {R : realType}.
