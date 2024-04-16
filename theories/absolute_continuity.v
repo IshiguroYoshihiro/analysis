@@ -426,9 +426,21 @@ have [/= T QT TQ] : exists2 T : nat -> set _,
       move/cover_measurable.
       move/(_ k).
       by rewrite /measurable /=.
-    exists `]inf (Q k), sup (Q k) + (e / 2 ^+ k.+3) [%classic.
-    split.
+    move: ocitvQk.
+    move/ocitvP.
+    case.
+      move ->.
+      exists set0.
+      split => //.
+      rewrite setD0.
+      rewrite outer_measure0.
+      rewrite exprS.
+      admit.
+    move=> [[Qkl Qkr] lr] ->.
+    exists `]Qkl, Qkr + (e / 2 ^+ k.+3) [%classic.
+    split => //.
         admit.
+        
       admit.
     admit.
   move/choice.
@@ -697,14 +709,20 @@ Lemma caratheodory_implies_lebesgue_measurability_bounded (E : set R) :
  caratheodory_measurable cmu E ->
  lebesgue_measurability E.
 Proof.
-Admitted.
-
-Lemma caratheodory_implies_lebesgue_measurability (E : set R) :
- (cmu E < +oo)%E ->
- caratheodory_measurable cmu E ->
- lebesgue_measurability E.
-Proof.
-Admitted.
+move=> Elty cmE e e0.
+have [U [oU EU /andP[mEU mUE]]] := outer_regularity_outer0 E e0.
+exists U; split => //.
+rewrite measureD //=; last 2 first.
+    apply: open_measurable => //=.
+    (* hint? *)
+    split; first exact: sigma_algebra_completed_lebesgue_measure.
+    by move=> A mA; apply: sub_caratheodory; exact: sub_sigma_algebra.
+  apply: (le_lt_trans mUE).
+  rewrite lte_add_pinfty //; exact: ltry.
+rewrite setIidr //.
+rewrite leeBlDr; last by rewrite ge0_fin_numE.
+by rewrite addeC.
+Qed.
 
 Lemma regularity_outer_lebesgue_old (E : set R) :
  (mu E < +oo)%E ->
