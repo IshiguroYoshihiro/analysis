@@ -63,6 +63,49 @@ Lemma total_variation_bounded a b (f : R -> R) : a <= b ->
 Proof.
 Admitted.
 
+
+(* move to realfun.v? *)
+Lemma nondecreasing_image_itvoo (a b : R) (f : R -> R) : {in `[a, b] &, {homo f : x y / (x <= y)%O}} ->
+  f @` `]a, b[%classic = `]f a, f b[%classic.
+Proof.
+Admitted.
+
+(* move to realfun.v? *)
+Lemma nonincreasing_image_itvoo (a b : R) (f : R -> R) : {in `[a, b] &, {homo f : x y / (x <= y)%O >-> (y <= x)%O}} ->
+  f @` `]a, b[%classic = `]f b, f a[%classic.
+Proof.
+Admitted.
+
+(* not using notation "f @`]a, b[" version of mono_mem_image_itvoo *)
+(* move to realfun.v? *)
+Lemma mono_mem_image_itvoo' (a b : R) (f : R -> R) : monotonous `[a, b] f ->
+  {homo f : x / x \in `]a, b[ >-> x \in f @` `]a, b[%classic}.
+Proof.
+move=> monof.
+move: (monof) => []/[dup] => [/leW_mono_in|/leW_nmono_in] flt fle x.
+  rewrite nondecreasing_image_itvoo; last first.
+    move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd.
+    by rewrite fle // !in_itv /= ?ac ?ad /=.
+  rewrite !in_itv /=; move/andP=> [ax xb].
+  have leab : a <= b.
+    apply/ltW; by apply: (lt_trans ax).
+  have fax : f a < f x.
+    by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW.
+  rewrite inE /= in_itv /= fax /=.
+  by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW.
+rewrite nonincreasing_image_itvoo; last first.
+  move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd.
+  by rewrite fle // !in_itv /= ?ac ?ad /=.
+rewrite !in_itv /=; move/andP=> [ax xb].
+have ab : a < b by apply (lt_trans ax).
+have: f a >= f b by rewrite fle ?bound_itvE ?ltW.
+case: leP => // fbfa _.
+have fbx : f b < f x.
+  by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW.
+rewrite inE /= in_itv /= fbx /=.
+by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW.
+Qed.
+
 End move_to_realfun.
 
 Section PRme.
@@ -894,10 +937,10 @@ End lebesgue_measure_complete.
 
 Section lusinN.
 Context {R : realType}.
-Let mu := @lebesgue_measure R.
+Let mu := @completed_lebesgue_measure R.
 
 Definition lusinN (A : set R) (f : R -> R) :=
-  forall E, E `<=` A -> measurable E -> mu E = 0 -> mu (f @` E) = 0.
+  forall E, E `<=` A -> mu.-cara.-measurable E -> mu E = 0 -> mu (f @` E) = 0.
 
 Definition abs_contN (a b : R) (f : R -> R) :=
   [/\ {within `[a, b]%classic, continuous f},
@@ -941,7 +984,7 @@ Section Banach_Zarecki.
 Context (R : realType).
 Context (a b : R) (ab : a < b).
 
-Local Notation mu := lebesgue_measure.
+Local Notation mu := (@completed_lebesgue_measure R).
 
 Lemma total_variation_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -956,7 +999,7 @@ Let increasing_points (f : R -> R) :=
 
 Lemma nondecreasing_fun_setD_measurable f :
   {in `[a, b] &, {homo f : x y / x <= y}} ->
-  measurable (`[f a, f b]%classic `\` increasing_points f).
+  mu.-cara.-measurable (`[f a, f b]%classic `\` increasing_points f).
 Proof.
 Abort.
 
@@ -964,7 +1007,7 @@ Lemma nondecreasing_fun_image_Gdelta_measurable (f : R -> R) (Z : set R) :
   {in `[a, b] &, {homo f : x y / x <= y}} ->
   Z `<=` `]a, b[%classic ->
   Gdelta Z ->
-  measurable (f @` Z).
+  mu.-cara.-measurable (f @` Z).
 Proof.
 Abort.
 
@@ -1009,7 +1052,7 @@ Let ex_perfect_set (cmf : cumulative R) (cZ : set R) :
   (forall i, trivIset setT (fun i => `[(I i).1, (I i).2]%classic) /\
     `](I i).1, (I i).2[ `<=` cZ) /\
      (\sum_(0 <= i < n) `|f (I i).2 - f (I i).1|)%:E
-     = lebesgue_stieltjes_measure f cZ.
+     = completed_lebesgue_stieltjes_measure f cZ.
 Proof.
 Abort.
 
@@ -1049,7 +1092,6 @@ have : exists n, exists I : (R * R)^nat,
      \bigcup_(0 <= i < n) (`[(I i).1, (I i).2]%classic) = Z].*)
 
 Admitted.
-
 
 Lemma Banach_Zarecki_increasing (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -1097,18 +1139,24 @@ have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:nu
 have H3 i k : (ab_ i k).1 < (ab_ i k).2 /\ `](ab_ i k).1, (ab_ i k).2[ `<=` `[a, b].
   by rewrite /ab_; case: cid => ? [].
 pose E_ i := \big[setU/set0]_(k < n_ i) `](ab_ i k).1, (ab_ i k).2[%classic.
-have mE i : measurable (E_ i) by exact: bigsetU_measurable.
+have mE i : mu.-cara.-measurable (E_ i).
+  apply: bigsetU_measurable => /=.
+  move=> k _.
+  by apply: sub_caratheodory.
 pose G_ i := \bigcup_(j in [set j | (j >= i)%N]) E_ j.
-have mG i : measurable (G_ i) by exact: bigcup_measurable.
+have mG i : mu.-cara.-measurable (G_ i) by exact: bigcup_measurable.
 pose A := \bigcap_i (G_ i).
 have H2 : (@normr R _ 2^-1 < 1)%R by rewrite gtr0_norm// invf_lt1// ltr1n.
 have H20 : 1 - 2^-1 != 0 :> R by rewrite lt0r_neq0// subr_gt0; apply: ltr_normlW.
 have H1 : (@GRing.inv R 2) / (1 - 2^-1) = 1.
   by rewrite [X in X - _](splitr 1) div1r addrK divff.
 have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
-  rewrite measure_semi_additive_ord //=; last exact: bigsetU_measurable.
+  rewrite measure_semi_additive_ord //=; last 2 first.
+      move=> k.
+      by apply: sub_caratheodory.
+    exact: mE.
   apply/ltW.
-  under eq_bigr do rewrite lebesgue_measure_itv/= lte_fin ifT // -EFinD.
+  under eq_bigr do rewrite completed_lebesgue_measure_itv/= lte_fin ifT // -EFinD.
   by rewrite sumEFin lte_fin; exact: d_prop.
 have mA0 : mu A = 0.
   rewrite /A.
@@ -1185,7 +1233,7 @@ have mA0 : mu A = 0.
     by move=> /cvg_unique /[apply]; exact.
   apply: nonincreasing_cvg_mu => //=.
   - rewrite (@le_lt_trans _ _ (\sum_(0 <= i <oo) mu (E_ i))%E) //.
-      apply: measure_sigma_subadditive => //; first exact: mG.
+      apply: measure_sigma_subadditive => //.
       rewrite /G_.
       by apply: bigcup_sub => i _; exact: bigcup_sup.
     apply: (@le_lt_trans _ _ 1%E); last exact: ltry.
@@ -1220,6 +1268,32 @@ have mfA0 : mu (f @` A) = 0.
   + by apply: bigcapT_measurable => //.
   + exact: mA0.
 have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
+  rewrite image_bigcup.
+  rewrite measure_bigcup /=; last 2 first.
+      move=> k nk.
+      apply: sub_caratheodory.
+      suff -> : [set f x | x in E_ k] =
+                         \big[setU/set0]_(t < n_ k) f @`
+                 [set x | x in `](ab_ k t).1, (ab_ k t).2[%classic].
+        apply: bigsetU_measurable => /=.
+        move=> i _.
+        
+        rewrite [X in _.-measurable X](_:_=`]f (ab_ k i).1, f (ab_ k i).2[%classic); last first.
+          apply/seteqP; split => x /=.
+            move=> [_ [r]] rabki <- <- {x}.
+            have :=(@mono_mem_image_itvoo' R (ab_ k i).1 (ab_ k i).2 f).
+            have /[swap]/[apply]: monotonous `[ (ab_ k i).1, (ab_ k i).2] f.
+              admit.
+            move/(_ r).
+            rewrite nondecreasing_image_itvoo.
+              rewrite inE /=.
+              by apply.
+            (* incf *)
+            admit.
+          admit.
+        admit.
+      admit.
+    admit.
   admit.
 have fG_cvg : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A).
   admit.
