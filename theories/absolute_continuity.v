@@ -47,15 +47,21 @@ Qed.
 Lemma big_ord_setUP T (n : nat) (F : 'I_n -> _) (x : T) :
 reflect (exists i, x \in F i) (x \in \big[setU/set0]_(i < n) F i).
 Proof.
-apply: (iffP idP) => [|[i xFi]]; last first.
-  destruct n.
-    admit.
-  have : (exists2 i, (i < n.+1)%N & x \in (F \o inord) i).
-    admit.
-  move/(big_nat_setUP n.+1 ).
+apply: (iffP idP) => [xFi|[i xFi]]; last first.
+  move: n => [[//]|n] in i F xFi *.
+  have /big_nat_setUP : (exists2 i, (i < n.+1)%N & x \in (F \o inord) i).
+    by exists i => //=; rewrite inord_val.
   rewrite big_mkord /=.
   by under eq_bigr do rewrite inord_val.
-Admitted.
+move: n => [|n] in F xFi *.
+  by move: xFi; rewrite big_ord0 inE.
+suff: exists2 i, (i < n.+1)%N & x \in F (inord i).
+  move=> [i ni] xFi'.
+  by exists (inord i).
+apply/big_nat_setUP.
+rewrite big_mkord.
+by under eq_bigr do rewrite inord_val.
+Qed.
 
 Section move_to_realfun.
 Context {R : realType}.
@@ -103,7 +109,6 @@ case : (leP a b) => [|ba].
     by move/eqP ->; rewrite !set_itvoo0 image_set0 => _ _.
   move=> ltab cf ndf.
 Admitted.
-
 
 (* move to realfun.v? *)
 Lemma continuous_decreasing_image_itvoo (a b : R) (f : R -> R) :
@@ -826,6 +831,19 @@ rewrite ler_pdivlMr// mulr_natr mulr2n leNgt => /negP; apply.
 by rewrite ltr_leD// le_minl lexx.
 Qed.
 
+Lemma incl_itv_lb_nat a (b : itv_bound R) n (B : nat -> R * R) :
+  (forall i, (i < n)%N -> (B i).1 < (B i).2) ->
+  (forall i, (i < n)%N -> `](B i).1, (B i).2[ `<=`
+             [set` Interval (BLeft a) b] (*NB: closed on the left*)) ->
+  forall i, (i < n)%N -> a <= (B i).1.
+Proof.
+move: n => [_ _ []//|n] H1 H2 i ni.
+have /= := (@incl_itv_lb a b n.+1 (B \o @inord n) _ _ (Ordinal ni)).
+rewrite inordK//; apply => j.
+- exact: H1.
+- exact: H2.
+Qed.
+
 Lemma incl_itv_ub (a : itv_bound R) b n (B : 'I_n -> R * R) :
   (forall i, (B i).1 < (B i).2) ->
   (forall i, `](B i).1, (B i).2[ `<=`
@@ -843,6 +861,20 @@ move=> /[swap] /[apply] /andP[_].
 rewrite ler_pdivrMr// mulr_natr mulr2n leNgt => /negP; apply.
 by rewrite ler_ltD// le_maxr lexx orbT.
 Qed.
+
+Lemma incl_itv_ub_nat (a : itv_bound R) b n (B : nat -> R * R) :
+  (forall i, (i < n)%N -> (B i).1 < (B i).2) ->
+  (forall i, (i < n)%N -> `](B i).1, (B i).2[ `<=`
+              [set` Interval a (BRight b)] (*NB: closed on the right*)) ->
+  forall i, (i < n)%N -> (B i).2 <= b.
+Proof.
+move: n => [_ _ []//|n] H1 H2 i ni.
+have /= := (@incl_itv_ub a b n.+1 (B \o @inord n) _ _ (Ordinal ni)).
+rewrite inordK//; apply => j.
+- exact: H1.
+- exact: H2.
+Qed.
+
 End for_abs_cont.
 
 Section absolute_continuity.
@@ -863,22 +895,27 @@ move=> ab BVf + e => /(_ e)[d ACf].
 exists d => n B HB; have {ACf} := ACf n B HB.
 move: HB => [B12Bab] tB sumBd sumfBe.
 rewrite (le_lt_trans _ sumfBe)//; apply: ler_sum => /= i _.
-have [B12 Bab {B12Bab}] := B12Bab i (ltn_ord i).
+have [B12 Bab] := B12Bab i (ltn_ord i).
 have aBi1 : a <= (B i).1.
-  apply: (@incl_itv_lb _ _ 
-xxx
-
-have Bi2b : (B i).2 <= b by exact: incl_itv_ub.
+  apply: (incl_itv_lb_nat (n := n)) => // j jn.
+  by have [] := B12Bab _ jn.
+  have [_] := B12Bab _ jn.
+  exact.
+have Bi2b : (B i).2 <= b.
+  apply: (incl_itv_ub_nat (n := n)) => // j jn.
+  by have [] := B12Bab _ jn.
+  have [_] := B12Bab _ jn.
+  exact.
 rewrite (le_trans (ler_norm (f (B i).2 - f (B i).1)))//=.
-rewrite (total_variationD f aBi1 (ltW (B12 _))) fineD; last 2 first.
+rewrite (total_variationD f aBi1 (ltW B12)) fineD; last 2 first.
   apply/(bounded_variationP f aBi1)/(@bounded_variationl _ _ _ b) => //.
   by rewrite (le_trans _ Bi2b)// ltW.
-  apply/(bounded_variationP f (ltW (B12 _))).
-  apply/(bounded_variationl (ltW (B12 _)) Bi2b).
+  apply/(bounded_variationP f (ltW B12)).
+  apply/(bounded_variationl (ltW B12) Bi2b).
   by apply: (bounded_variationr aBi1) => //; rewrite (le_trans _ Bi2b)// ltW.
 rewrite addrAC subrr add0r -subr_ge0 -lee_fin EFinB fineK; last first.
-  apply/(bounded_variationP f (ltW (B12 _))).
-  apply/(bounded_variationl (ltW (B12 _)) Bi2b).
+  apply/(bounded_variationP f (ltW B12)).
+  apply/(bounded_variationl (ltW B12) Bi2b).
   by apply/(bounded_variationr aBi1 _ BVf); rewrite (le_trans _ Bi2b)// ltW.
 by rewrite leeBrDr// add0e total_variation_ge// ltW.
 Qed.
@@ -1410,9 +1447,9 @@ Lemma Banach_Zarecki_increasing (f : R -> R) :
 Proof.
 move=> cf incf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
 have {fe0} : forall d : {posnum R},
-    exists n, exists B : 'I_n -> R * R, (* nat -> R * R? *)
-      [/\ (forall i, (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
-          trivIset setT (fun i => `](B i).1, (B i).2[%classic),
+    exists n, exists B : nat -> R * R,
+      [/\ (forall i, (i < n)%N -> (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
+          trivIset `I_n (fun i => `](B i).1, (B i).2[%classic),
           \sum_(k < n) ((B k).2 - (B k).1) < d%:num &
           \sum_(k < n) (f (B k).2 - f (B k).1) >= e0%:num].
   move=> d; have {fe0} := fe0 d.
@@ -1434,19 +1471,24 @@ have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_g
 pose delta_ (i : nat) : {posnum R} := PosNum (delta_0_ge0 i).
 pose n_ i := n_0 (delta_ i).
 pose ab_  i := projT1 (cid (ab_0 (delta_ i))).
-have ablt i t : (ab_ i t).1 < (ab_ i t).2.
+have ablt i t : (t < n_0 (delta_ i))%N -> (ab_ i t).1 < (ab_ i t).2.
+  move=> tn0i.
   move: (projT2 (cid (ab_0 (delta_ i)))).
-  by move=> [] /all_and2 [] => + _ _ _ _; apply.
-have tab_ t : trivIset [set: 'I_(n_ t)]
-    (fun i : 'I_(n_ t) => `](ab_ t i).1, (ab_ t i).2[%classic).
+  move=> [] + _ _ _.
+  by move=> /(_ _ tn0i)[+ _].
+have tab_ t : trivIset `I_(n_ t)
+    (fun i => `](ab_ t i).1, (ab_ t i).2[%classic).
   move: (projT2 (cid (ab_0 (delta_ t)))).
   by case => _ + _ _ /=.
 have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
   by rewrite /ab_; case: cid => ? [].
 have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:num.
   by rewrite /ab_; case: cid => ? [].
-have H3 i k : (ab_ i k).1 < (ab_ i k).2 /\ `](ab_ i k).1, (ab_ i k).2[ `<=` `[a, b].
-  by rewrite /ab_; case: cid => ? [].
+have H3 i k : (k < n_0 (delta_ i))%N ->
+    (ab_ i k).1 < (ab_ i k).2 /\ `](ab_ i k).1, (ab_ i k).2[ `<=` `[a, b].
+  move=> in0i.
+  rewrite /ab_; case: cid => ? [] /=.
+  by move/(_ _ in0i).
 pose E_ i := \big[setU/set0]_(k < n_ i) `](ab_ i k).1, (ab_ i k).2[%classic.
 have mE i : mu.-cara.-measurable (E_ i).
   apply: bigsetU_measurable => /=.
@@ -1460,9 +1502,12 @@ have H20 : 1 - 2^-1 != 0 :> R by rewrite lt0r_neq0// subr_gt0; apply: ltr_normlW
 have H1 : (@GRing.inv R 2) / (1 - 2^-1) = 1.
   by rewrite [X in X - _](splitr 1) div1r addrK divff.
 have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
-  rewrite measure_semi_additive_ord //=; last 2 first.
-      move=> k.
-      by apply: sub_caratheodory.
+  rewrite measure_semi_additive_ord //=; last 3 first.
+    move=> k.
+    by apply: sub_caratheodory => //=.
+    have := tab_ n.
+    rewrite trivIset_mkcond.
+    admit.
     exact: mE.
   apply/ltW.
   under eq_bigr do rewrite completed_lebesgue_measure_itv/= lte_fin ifT // -EFinD.
