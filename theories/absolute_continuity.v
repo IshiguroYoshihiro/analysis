@@ -30,9 +30,43 @@ Reserved Notation "[ 'inner_measure' 'of' f 'as' g ]"
   (at level 0, format "[ 'inner_measure'  'of'  f  'as'  g ]").
 Reserved Notation "[ 'inner_measure' 'of' f ]".
 
+Lemma big_nat_setUP T (n : nat) (F : nat -> _) (x : T) :
+reflect (exists2 i, (i < n)%N & x \in F i) (x \in \big[setU/set0]_(0 <= i < n) F i).
+Proof.
+apply: (iffP idP) => [|[i Pi]]; last first.
+  rewrite !inE.
+  rewrite big_mkord.
+  by apply: bigsetU_sup.
+rewrite inE.
+elim: n.
+  by rewrite big_nil.
+move => n IH.
+rewrite big_nat_recr //=; case.
+  move/IH => [k kn xFk].
+  exists k => //.
+  by rewrite ltnS ltnW.
+move=> Fnx.
+exists n => //.
+by rewrite inE.
+Qed.
+
+Lemma big_ord_setUP T (n : nat) (F : 'I_n -> _) (x : T) :
+reflect (exists i, x \in F i) (x \in \big[setU/set0]_(i < n) F i).
+Proof.
+apply: (iffP idP) => [|[i xFi]]; last first.
+  destruct n.
+    admit.
+  have : (exists2 i, (i < n.+1)%N & x \in (F \o inord) i).
+    admit.
+  move/(big_nat_setUP n.+1 ).
+  rewrite big_mkord /=.
+  by under eq_bigr do rewrite inord_val.
+Admitted.
+
 Section move_to_realfun.
 Context {R : realType}.
 
+(* TODO:PR *)
 Lemma bigcap_open (U0_ : (set R)^nat) :
     (forall i : nat, open (U0_ i)) ->
     let U_ := fun i : nat => \bigcap_(j < i) U0_ j
@@ -63,48 +97,69 @@ Lemma total_variation_bounded a b (f : R -> R) : a <= b ->
 Proof.
 Admitted.
 
-
 (* move to realfun.v? *)
-Lemma nondecreasing_image_itvoo (a b : R) (f : R -> R) : {in `[a, b] &, {homo f : x y / (x <= y)%O}} ->
+Lemma continuous_increasing_image_itvoo (a b : R) (f : R -> R) :
+  {within `[a, b] , continuous f} ->
+  {in `[a, b] &, {homo f : x y / (x < y)%O}} ->
   f @` `]a, b[%classic = `]f a, f b[%classic.
 Proof.
+case : (leP a b) => [|ba].
+  rewrite le_eqVlt.
+  case/orP.
+    by move/eqP ->; rewrite !set_itvoo0 image_set0 => _ _.
+  move=> ltab cf ndf.
 Admitted.
 
+
 (* move to realfun.v? *)
-Lemma nonincreasing_image_itvoo (a b : R) (f : R -> R) : {in `[a, b] &, {homo f : x y / (x <= y)%O >-> (y <= x)%O}} ->
+Lemma continuous_decreasing_image_itvoo (a b : R) (f : R -> R) :
+  {within `[a, b] , continuous f} ->
+  {in `[a, b] &, {homo f : x y /~ (x < y)%O}} ->
   f @` `]a, b[%classic = `]f b, f a[%classic.
 Proof.
+case : (leP a b) => [|ba].
+  rewrite le_eqVlt.
+  case/orP.
+    by move/eqP ->; rewrite !set_itvoo0 image_set0 => _ _.
+  move=> ltab cf ndf.
 Admitted.
 
 (* not using notation "f @`]a, b[" version of mono_mem_image_itvoo *)
 (* move to realfun.v? *)
-Lemma mono_mem_image_itvoo' (a b : R) (f : R -> R) : monotonous `[a, b] f ->
-  {homo f : x / x \in `]a, b[ >-> x \in f @` `]a, b[%classic}.
+Lemma mono_mem_image_itvoo' (a b : R) (f : R -> R) :
+{within `[a, b], continuous f} ->
+ monotonous `[a, b] f ->
+  {mono f : x / x \in `]a, b[ >-> x \in f @` `]a, b[%classic}.
 Proof.
-move=> monof.
+move=> cf monof.
 move: (monof) => []/[dup] => [/leW_mono_in|/leW_nmono_in] flt fle x.
-  rewrite nondecreasing_image_itvoo; last first.
+  rewrite continuous_increasing_image_itvoo //; last first.
     move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd.
-    by rewrite fle // !in_itv /= ?ac ?ad /=.
-  rewrite !in_itv /=; move/andP=> [ax xb].
-  have leab : a <= b.
-    apply/ltW; by apply: (lt_trans ax).
-  have fax : f a < f x.
-    by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW.
-  rewrite inE /= in_itv /= fax /=.
-  by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW.
-rewrite nonincreasing_image_itvoo; last first.
-  move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd.
-  by rewrite fle // !in_itv /= ?ac ?ad /=.
-rewrite !in_itv /=; move/andP=> [ax xb].
-have ab : a < b by apply (lt_trans ax).
-have: f a >= f b by rewrite fle ?bound_itvE ?ltW.
-case: leP => // fbfa _.
-have fbx : f b < f x.
-  by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW.
-rewrite inE /= in_itv /= fbx /=.
-by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW.
-Qed.
+    by rewrite flt // !in_itv //= ?ac ?ad /=.
+  apply/idP/idP.
+  rewrite inE /=.
+  rewrite in_itv /=.
+
+(*   rewrite !in_itv /=; move/andP=> [ax xb]. *)
+(*   have leab : a <= b. *)
+(*     apply/ltW; by apply: (lt_trans ax). *)
+(*   have fax : f a < f x. *)
+(*     by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW. *)
+(*   rewrite inE /= in_itv /= fax /=. *)
+(*   by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW. *)
+(* rewrite nonincreasing_image_itvoo; last first. *)
+(*   move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd. *)
+(*   by rewrite fle // !in_itv /= ?ac ?ad /=. *)
+(* rewrite !in_itv /=; move/andP=> [ax xb]. *)
+(* have ab : a < b by apply (lt_trans ax). *)
+(* have: f a >= f b by rewrite fle ?bound_itvE ?ltW. *)
+(* case: leP => // fbfa _. *)
+(* have fbx : f b < f x. *)
+(*   by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW. *)
+(* rewrite inE /= in_itv /= fbx /=. *)
+(* by rewrite flt // inE subitvE !leBSide; apply/andP; split => //=; apply/ltW. *)
+(* Qed. *)
+Admitted.
 
 End move_to_realfun.
 
@@ -765,9 +820,9 @@ Section absolute_continuity.
 Context {R : realType}.
 
 Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
-  exists d : {posnum R}, forall n (B : 'I_n -> R * R),
-    [/\ (forall i, (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
-        trivIset setT (fun i => `](B i).1, (B i).2[%classic) &
+  exists d : {posnum R}, forall n (B : nat -> R * R), (* B : 'I_n -> R * R *)
+    [/\ (forall i, (i < n)%N -> ((B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b])),
+        trivIset `I_n (fun i => `](B i).1, (B i).2[%classic) &
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
     \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
 
@@ -777,9 +832,13 @@ Lemma total_variation_AC a b (f : R -> R) : a < b ->
 Proof.
 move=> ab BVf + e => /(_ e)[d ACf].
 exists d => n B HB; have {ACf} := ACf n B HB.
-move: HB => [/all_and2[B12 Bab]] tB sumBd sumfBe.
+move: HB => [B12Bab] tB sumBd sumfBe.
 rewrite (le_lt_trans _ sumfBe)//; apply: ler_sum => /= i _.
-have aBi1 : a <= (B i).1 by exact: incl_itv_lb.
+have [B12 Bab {B12Bab}] := B12Bab i (ltn_ord i).
+have aBi1 : a <= (B i).1.
+
+xxx
+
 have Bi2b : (B i).2 <= b by exact: incl_itv_ub.
 rewrite (le_trans (ler_norm (f (B i).2 - f (B i).1)))//=.
 rewrite (total_variationD f aBi1 (ltW (B12 _))) fineD; last 2 first.
@@ -1322,7 +1381,7 @@ Lemma Banach_Zarecki_increasing (f : R -> R) :
 Proof.
 move=> cf incf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
 have {fe0} : forall d : {posnum R},
-    exists n, exists B : 'I_n -> R * R,
+    exists n, exists B : 'I_n -> R * R, (* nat -> R * R? *)
       [/\ (forall i, (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
           trivIset setT (fun i => `](B i).1, (B i).2[%classic),
           \sum_(k < n) ((B k).2 - (B k).1) < d%:num &
@@ -1495,24 +1554,23 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
       apply: sub_caratheodory.
       suff -> : [set f x | x in E_ k] =
                          \big[setU/set0]_(t < n_ k) f @`
-                 [set x | x in `](ab_ k t).1, (ab_ k t).2[%classic].
+                  `](ab_ k t).1, (ab_ k t).2[.
         apply: bigsetU_measurable => /=.
         move=> i _.
-        
-        rewrite [X in _.-measurable X](_:_=`]f (ab_ k i).1, f (ab_ k i).2[%classic); last first.
-          apply/seteqP; split => x /=.
-            move=> [_ [r]] rabki <- <- {x}.
-            have :=(@mono_mem_image_itvoo' R (ab_ k i).1 (ab_ k i).2 f).
-            have /[swap]/[apply]: monotonous `[ (ab_ k i).1, (ab_ k i).2] f.
-              admit.
-            move/(_ r).
-            rewrite nondecreasing_image_itvoo.
-              rewrite inE /=.
-              by apply.
-            (* incf *)
-            admit.
+        rewrite (_:[set f x | x in `](ab_ k i).1, (ab_ k i).2[] =
+                         `]f (ab_ k i).1, f (ab_ k i).2[%classic); last first.
           admit.
-        admit.
+        exact: measurable_itv.
+      apply/seteqP; split.
+        move=> _ [x + <-].
+        rewrite /E_.
+        move/mem_set.
+        move/big_ord_setUP.
+        move=> [i xH].
+        apply: set_mem.
+        apply/big_ord_setUP.
+        exists i.
+        rewrite image_in.
       admit.
     admit.
   admit.
@@ -1536,7 +1594,7 @@ apply: lime_ge.
     by apply: leq_trans mj.
   - by apply: nearW.
 Admitted.
-
+n
 Theorem Banach_Zarecki (f : R -> R) :
   {within `[a, b], continuous f} ->
   bounded_variation a b f ->
