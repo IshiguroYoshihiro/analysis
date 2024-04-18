@@ -24,12 +24,6 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
-Reserved Notation "{ 'inner_measure' fUV }"
-  (at level 0, format "{ 'inner_measure'  fUV }").
-Reserved Notation "[ 'inner_measure' 'of' f 'as' g ]"
-  (at level 0, format "[ 'inner_measure'  'of'  f  'as'  g ]").
-Reserved Notation "[ 'inner_measure' 'of' f ]".
-
 Lemma big_nat_setUP T (n : nat) (F : nat -> _) (x : T) :
 reflect (exists2 i, (i < n)%N & x \in F i) (x \in \big[setU/set0]_(0 <= i < n) F i).
 Proof.
@@ -780,6 +774,41 @@ End Gdelta.
 Section for_abs_cont.
 Context {R : realType}.
 
+Lemma incl_itv_lb_nat a (b : itv_bound R) n (B : nat -> R * R) :
+  (forall i, (i < n)%N -> (B i).1 < (B i).2) ->
+  (forall i, (i < n)%N -> `](B i).1, (B i).2[ `<=`
+             [set` Interval (BLeft a) b] (*NB: closed on the left*)) ->
+  forall i, (i < n)%N -> a <= (B i).1.
+Proof.
+move=> B12 Bab i iltn; rewrite leNgt; apply/negP=> Bi1a.
+have := Bab i.
+move=> /(_ iltn (((B i).1 + minr a (B i).2)/2)).
+rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_minr Bi1a B12.
+have : ((B i).1 + minr a (B i).2)%E / 2 < (B i).2.
+  by rewrite ltr_pdivrMr// mulr_natr mulr2n ltr_leD// ?(B12 i iltn)// le_minl lexx orbT.
+move=> /[swap] /[apply] /andP[+ _].
+rewrite ler_pdivlMr// mulr_natr mulr2n leNgt => /negP; apply.
+by rewrite ltr_leD// le_minl lexx.
+Qed.
+
+Lemma incl_itv_ub_nat (a : itv_bound R) b n (B : nat -> R * R) :
+  (forall i, (i < n)%N -> (B i).1 < (B i).2) ->
+  (forall i, (i < n)%N -> `](B i).1, (B i).2[ `<=`
+              [set` Interval a (BRight b)] (*NB: closed on the right*)) ->
+  forall i, (i < n)%N -> (B i).2 <= b.
+Proof.
+move=> B12 Bab i iltn; rewrite leNgt; apply/negP => Bi2b.
+have := Bab i.
+move=> /(_ iltn ((maxr (B i).1 b + (B i).2)/2)).
+rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_maxl Bi2b B12.
+rewrite andbT.
+have : (B i).1 < (maxr (B i).1 b + (B i).2)%E / 2.
+  by rewrite ltr_pdivlMr// mulr_natr mulr2n ler_ltD// ?(B12 i iltn) // le_maxr lexx.
+move=> /[swap] /[apply] /andP[_].
+rewrite ler_pdivrMr// mulr_natr mulr2n leNgt => /negP; apply.
+by rewrite ler_ltD// le_maxr lexx orbT.
+Qed.
+
 Lemma incl_itv_lb a (b : itv_bound R) n (B : 'I_n -> R * R) :
   (forall i, (B i).1 < (B i).2) ->
   (forall i, `](B i).1, (B i).2[ `<=`
@@ -836,7 +865,7 @@ move: HB => [B12Bab] tB sumBd sumfBe.
 rewrite (le_lt_trans _ sumfBe)//; apply: ler_sum => /= i _.
 have [B12 Bab {B12Bab}] := B12Bab i (ltn_ord i).
 have aBi1 : a <= (B i).1.
-
+  apply: (@incl_itv_lb _ _ 
 xxx
 
 have Bi2b : (B i).2 <= b by exact: incl_itv_ub.
