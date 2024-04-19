@@ -99,7 +99,7 @@ Admitted.
 
 (* move to realfun.v? *)
 Lemma continuous_increasing_image_itvoo (a b : R) (f : R -> R) :
-  {within `[a, b] , continuous f} ->
+  {within `]a, b[ , continuous f} ->
   {in `[a, b] &, {homo f : x y / (x < y)%O}} ->
   f @` `]a, b[%classic = `]f a, f b[%classic.
 Proof.
@@ -135,9 +135,9 @@ move: (monof) => []/[dup] => [/leW_mono_in|/leW_nmono_in] flt fle x.
   rewrite continuous_increasing_image_itvoo //; last first.
     move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd.
     by rewrite flt // !in_itv //= ?ac ?ad /=.
-  apply/idP/idP.
-  rewrite inE /=.
-  rewrite in_itv /=.
+  (* apply/idP/idP. *)
+  (* rewrite inE /=. *)
+  (* rewrite in_itv /=. *)
 
 (*   rewrite !in_itv /=; move/andP=> [ax xb]. *)
 (*   have leab : a <= b. *)
@@ -778,41 +778,6 @@ End Gdelta.
 
 Section for_abs_cont.
 Context {R : realType}.
-
-Lemma incl_itv_lb_nat a (b : itv_bound R) n (B : nat -> R * R) :
-  (forall i, (i < n)%N -> (B i).1 < (B i).2) ->
-  (forall i, (i < n)%N -> `](B i).1, (B i).2[ `<=`
-             [set` Interval (BLeft a) b] (*NB: closed on the left*)) ->
-  forall i, (i < n)%N -> a <= (B i).1.
-Proof.
-move=> B12 Bab i iltn; rewrite leNgt; apply/negP=> Bi1a.
-have := Bab i.
-move=> /(_ iltn (((B i).1 + minr a (B i).2)/2)).
-rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_minr Bi1a B12.
-have : ((B i).1 + minr a (B i).2)%E / 2 < (B i).2.
-  by rewrite ltr_pdivrMr// mulr_natr mulr2n ltr_leD// ?(B12 i iltn)// le_minl lexx orbT.
-move=> /[swap] /[apply] /andP[+ _].
-rewrite ler_pdivlMr// mulr_natr mulr2n leNgt => /negP; apply.
-by rewrite ltr_leD// le_minl lexx.
-Qed.
-
-Lemma incl_itv_ub_nat (a : itv_bound R) b n (B : nat -> R * R) :
-  (forall i, (i < n)%N -> (B i).1 < (B i).2) ->
-  (forall i, (i < n)%N -> `](B i).1, (B i).2[ `<=`
-              [set` Interval a (BRight b)] (*NB: closed on the right*)) ->
-  forall i, (i < n)%N -> (B i).2 <= b.
-Proof.
-move=> B12 Bab i iltn; rewrite leNgt; apply/negP => Bi2b.
-have := Bab i.
-move=> /(_ iltn ((maxr (B i).1 b + (B i).2)/2)).
-rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_maxl Bi2b B12.
-rewrite andbT.
-have : (B i).1 < (maxr (B i).1 b + (B i).2)%E / 2.
-  by rewrite ltr_pdivlMr// mulr_natr mulr2n ler_ltD// ?(B12 i iltn) // le_maxr lexx.
-move=> /[swap] /[apply] /andP[_].
-rewrite ler_pdivrMr// mulr_natr mulr2n leNgt => /negP; apply.
-by rewrite ler_ltD// le_maxr lexx orbT.
-Qed.
 
 Lemma incl_itv_lb a (b : itv_bound R) n (B : 'I_n -> R * R) :
   (forall i, (B i).1 < (B i).2) ->
@@ -1510,7 +1475,7 @@ have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
     admit.
     exact: mE.
   apply/ltW.
-  under eq_bigr do rewrite completed_lebesgue_measure_itv/= lte_fin ifT // -EFinD.
+  under eq_bigr do rewrite completed_lebesgue_measure_itv/= lte_fin ifT // ?(ablt n _ (ltn_ord _))// -EFinD.
   by rewrite sumEFin lte_fin; exact: d_prop.
 have mA0 : mu A = 0.
   rewrite /A.
@@ -1618,7 +1583,7 @@ have mfA0 : mu (f @` A) = 0.
     have [i _] := Ar O I.
     rewrite /E_.
     rewrite -bigcup_seq/= => -[j /= Hj].
-    by apply: (H3 _ _).2.
+    by apply: (H3 _ _ _).2.
   + by apply: bigcapT_measurable => //.
   + exact: mA0.
 have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
@@ -1633,6 +1598,11 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
         move=> i _.
         rewrite (_:[set f x | x in `](ab_ k i).1, (ab_ k i).2[] =
                          `]f (ab_ k i).1, f (ab_ k i).2[%classic); last first.
+          rewrite continuous_increasing_image_itvoo //.
+            move: cf.
+            apply: continuous_subspaceW.
+            move: (H3 k i (ltn_ord i)) => [_ +].
+            by apply: subset_trans.
           admit.
         exact: measurable_itv.
       apply/seteqP; split.
@@ -1644,7 +1614,13 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
         apply: set_mem.
         apply/big_ord_setUP.
         exists i.
-        rewrite image_in.
+        rewrite inE /=.
+        exists x => //.
+        move: xH.
+        by rewrite set_itvoo inE in_itv /=.
+      move=> x /=.
+      move/mem_set.
+      move/big_ord_setUP.
       admit.
     admit.
   admit.
