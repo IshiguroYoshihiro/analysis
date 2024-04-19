@@ -117,6 +117,14 @@ Lemma continuous_nondecreasing_image_itvoo (a b : R) (f : R -> R) :
 Proof.
 Admitted.
 
+Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) :
+  {within `]a, b[ , continuous f} ->
+  {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
+exists b0 b1,
+  f @` `]a, b[%classic = [set x | x \in (Interval (BSide b0 (f a)) (BSide b1 (f b)))].
+Proof.
+Admitted.
+
 (* move to realfun.v? *)
 Lemma continuous_decreasing_image_itvoo (a b : R) (f : R -> R) :
   {within `[a, b] , continuous f} ->
@@ -1604,104 +1612,84 @@ have mfA0 : mu (f @` A) = 0.
     by apply: (H3 _ _ _).2.
   + by apply: bigcapT_measurable => //.
   + exact: mA0.
+have imfitv n k : (k < n_ n)%N -> exists b0 b1,
+  (f @` `](ab_ n k).1, (ab_ n k).2[ =
+     [set` Interval (BSide b0 (f (ab_ n k).1)) (BSide b1 (f (ab_ n k).2))]).
+  move=> knn.
+  have := (@continuous_nondecreasing_image_itvoo_itv _ (ab_ n k).1 (ab_ n k).2 f).
+    have Hc : {within `](ab_ n k).1, (ab_ n k).2[, continuous f}.
+    move: cf.
+    apply: continuous_subspaceW.
+    by apply: (absub n k).
+  move/(_ Hc) => {Hc}.
+  have Hhomo : {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}. 
+    move=> x y xab yab.
+    by apply: incf; apply: (absub n k).
+  by move/(_ Hhomo) => {Hhomo}.
+have mimf n k :(k < n_ n)%N -> (R.-ocitv.-measurable).-sigma.-measurable (f @` `](ab_ n k).1, (ab_ n k).2[%classic).
+  move=> knn.
+  move: (imfitv n k knn) => [b0 [b1]] ->.
+  exact: measurable_itv.
 have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
   rewrite image_bigcup.
   have /= := (@bigcup_sup _ _ n [set j | (n <= j)%N] E_).
   move/(_ (leqnn n)).
   move/(@le_measure _ R _ mu) => /=.
   rewrite !inE; move/(_ (mE n)).
-  have : (((wlength idfun)^*)%mu).-cara.-measurable (\bigcup_(j in [set j | (n <= j)%N]) E_ j).
+  have /= mEn : (((wlength idfun)^*)%mu).-cara.-measurable (\bigcup_(j in [set j | (n <= j)%N]) E_ j).
     by apply: bigcup_measurable => k _ /=.
-  move=> mEn /(_ mEn) => H.
+  move/(_ mEn) => H.
   apply: (@le_trans _ _ (mu (f @` E_ n))) => //.
     rewrite [leRHS](_:_= \sum_(k < n_ n) mu (f @` `](ab_ n k).1, (ab_ n k).2[%classic)); last first.
       rewrite image_E.
-      apply: (@measure_semi_additive_ord_I _ _ _ mu (fun k => f @` `](ab_ n k).1, (ab_ n k).2[%classic)).
+      apply: (@measure_semi_additive_ord_I _ _ _ mu (fun k => f @` `](ab_ n k).1, (ab_ n k).2[%classic)) => /=.
           move=> k knn.
           apply: sub_caratheodory.
-          rewrite continuous_nondecreasing_image_itvoo; last 2 first.
-              move: cf.
-              apply: continuous_subspaceW.
-              exact: absub.
-            move=> x y xab yab.
-            by apply: incf; apply: (absub n k).
-          exact: measurable_itv.
-        exact: ablt.
-      rewrite trivIset_comp /=.
-xxx
-      admit.
+          exact: mimf.
+        admit. (* unprovable *)
+      apply: sub_caratheodory.
+      apply: bigsetU_measurable.
+      move=> i _.
+      by apply: mimf.
     under eq_bigr.
       move=> k _.
-      rewrite continuous_nondecreasing_image_itvoo; last 3 first.
-            exact: (ablt n k).
-          move: cf.
-          apply: continuous_subspaceW.
-          have := (H3 n k).
-          by move/(_ (ltn_ord k)) => [_ +].
-
-        move=> x y xab yab.
-        by apply: incf; apply:nkab.
-      rewrite (_:mu `](f (ab_ n k).1), (f (ab_ n k).2)[ = (f (ab_ n k).2 - f (ab_ n k).1)%:E); last first.
-        rewrite completed_lebesgue_measure_itv /=.
-        admit.
+      move: (imfitv n k (ltn_ord k)) => [b0 [b1]] ->.
+      rewrite completed_lebesgue_measure_itv /=.
+      rewrite (_:(if ((f (ab_ n k).1)%:E < (f (ab_ n k).2)%:E)%E
+          then ((f (ab_ n k).2)%:E + (- f (ab_ n k).1)%:E)%E
+          else 0) = (f (ab_ n k).2 - f (ab_ n k).1)%:E); last first.
+        move: (ablt n k (ltn_ord k)).
+        move/ltW.
+        move/incf.
+        have Habnk1 : (ab_ n k).1 \in `[a, b].
+          admit.
+        have Habnk2 : (ab_ n k).2 \in `[a, b].
+          admit.
+        move/(_ Habnk1 Habnk2).
+        rewrite le_eqVlt.
+        move/orP; case.
+          move/eqP ->.
+          by rewrite ifF // subrr.
+        rewrite lte_fin => ->.
+        by rewrite EFinD.
       over.
-    rewrite /=.
     rewrite sumEFin lee_fin.
     exact: e0_prop.
   apply: le_measure => /=.
+      rewrite inE.
+      apply: sub_caratheodory.
+      rewrite image_E.
+      apply: bigsetU_measurable => i _.
+      by apply: mimf.
     rewrite inE.
     apply: sub_caratheodory.
-    
-
-      move=> k _.
-      exact: measurable_itv.
-    rewrite /=.
-
-      move=> k nk.
-      apply: sub_caratheodory.
-      suff -> : [set f x | x in E_ k] =
-                         \big[setU/set0]_(t < n_ k) f @`
-                  `](ab_ k t).1, (ab_ k t).2[.
-        apply: bigsetU_measurable => /=.
-        move=> i _.
-        rewrite (_:[set f x | x in `](ab_ k i).1, (ab_ k i).2[] =
-                         `]f (ab_ k i).1, f (ab_ k i).2[%classic); last first.
-          rewrite continuous_nondecreasing_image_itvoo //.
-              exact: ablt.
-            move: cf.
-            apply: continuous_subspaceW.
-            move: (H3 k i (ltn_ord i)) => [_ +].
-            by apply: subset_trans.
-          move=> x y xab yab xy.
-          apply: incf => //.
-            admit.
-          admit.
-        exact: measurable_itv.
-      apply/seteqP; split.
-        move=> _ [x + <-].
-        rewrite /E_.
-        move/mem_set.
-        move/big_ord_setUP.
-        move=> [i xH].
-        apply: set_mem.
-        apply/big_ord_setUP.
-        exists i.
-        rewrite inE /=.
-        exists x => //.
-        move: xH.
-        by rewrite set_itvoo inE in_itv /=.
-      move=> x /=.
-      move/mem_set.
-      move/big_ord_setUP.
-      move=> [i].
-      rewrite inE /= => -[r] rab <- {x}.
-      exists r => //.
-      apply: set_mem.
-      apply/big_ord_setUP.
-      exists i.
-      by rewrite inE /=.
-    admit.
-  admit.
+    apply: bigcup_measurable => k /= nk.
+    rewrite image_E.
+    apply: bigsetU_measurable => i _.
+    exact: mimf.
+  move=> _ [x Enx] <-.
+  exists n => //=.
+  by exists x.
 have fG_cvg : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A).
   admit.
 move/eqP : mfA0; apply/negP.
