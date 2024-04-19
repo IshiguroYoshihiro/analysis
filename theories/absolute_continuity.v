@@ -100,7 +100,7 @@ Admitted.
 (* move to realfun.v? *)
 Lemma continuous_increasing_image_itvoo (a b : R) (f : R -> R) :
   {within `]a, b[ , continuous f} ->
-  {in `[a, b] &, {homo f : x y / (x < y)%O}} ->
+  {in `]a, b[ &, {homo f : x y / (x < y)%O}} ->
   f @` `]a, b[%classic = `]f a, f b[%classic.
 Proof.
 case : (leP a b) => [|ba].
@@ -108,6 +108,13 @@ case : (leP a b) => [|ba].
   case/orP.
     by move/eqP ->; rewrite !set_itvoo0 image_set0 => _ _.
   move=> ltab cf ndf.
+Admitted.
+
+Lemma continuous_nondecreasing_image_itvoo (a b : R) (f : R -> R) :
+  {within `]a, b[ , continuous f} ->
+  {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
+  f @` `]a, b[%classic `<=` `[f a, f b]%classic.
+Proof.
 Admitted.
 
 (* move to realfun.v? *)
@@ -134,7 +141,10 @@ move=> cf monof.
 move: (monof) => []/[dup] => [/leW_mono_in|/leW_nmono_in] flt fle x.
   rewrite continuous_increasing_image_itvoo //; last first.
     move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd.
-    by rewrite flt // !in_itv //= ?ac ?ad /=.
+    by rewrite flt // !in_itv /= !ltW.
+  move: cf.
+  apply: continuous_subspaceW.
+
   (* apply/idP/idP. *)
   (* rewrite inE /=. *)
   (* rewrite in_itv /=. *)
@@ -1441,6 +1451,11 @@ have ablt i t : (t < n_0 (delta_ i))%N -> (ab_ i t).1 < (ab_ i t).2.
   move: (projT2 (cid (ab_0 (delta_ i)))).
   move=> [] + _ _ _.
   by move=> /(_ _ tn0i)[+ _].
+have absub i t : (t < n_ i)%N -> `](ab_ i t).1, (ab_ i t).2[ `<=` `[a, b].
+  move=> tn.
+  move: (projT2 (cid (ab_0 (delta_ i)))).
+  move=> [+ _ _ _].
+  by move/(_ t tn) => [_ +].
 have tab_ t : trivIset `I_(n_ t)
     (fun i => `](ab_ t i).1, (ab_ t i).2[%classic).
   move: (projT2 (cid (ab_0 (delta_ t)))).
@@ -1477,6 +1492,9 @@ have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
   apply/ltW.
   under eq_bigr do rewrite completed_lebesgue_measure_itv/= lte_fin ifT // ?(ablt n _ (ltn_ord _))// -EFinD.
   by rewrite sumEFin lte_fin; exact: d_prop.
+(* lemma? *)
+    have image_E : forall i, (f @` (E_ i)) = \big[setU/set0]_(k < n_ i)f @` `](ab_ i k).1, (ab_ i k).2[%classic.
+      admit.
 have mA0 : mu A = 0.
   rewrite /A.
   have : (mu \o G_) x @[x --> \oo] --> 0%E.
@@ -1588,7 +1606,57 @@ have mfA0 : mu (f @` A) = 0.
   + exact: mA0.
 have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
   rewrite image_bigcup.
-  rewrite measure_bigcup /=; last 2 first.
+  have /= := (@bigcup_sup _ _ n [set j | (n <= j)%N] E_).
+  move/(_ (leqnn n)).
+  move/(@le_measure _ R _ mu) => /=.
+  rewrite !inE; move/(_ (mE n)).
+  have : (((wlength idfun)^*)%mu).-cara.-measurable (\bigcup_(j in [set j | (n <= j)%N]) E_ j).
+    by apply: bigcup_measurable => k _ /=.
+  move=> mEn /(_ mEn) => H.
+  apply: (@le_trans _ _ (mu (f @` E_ n))) => //.
+    rewrite [leRHS](_:_= \sum_(k < n_ n) mu (f @` `](ab_ n k).1, (ab_ n k).2[%classic)); last first.
+      rewrite image_E.
+      apply: (@measure_semi_additive_ord_I _ _ _ mu (fun k => f @` `](ab_ n k).1, (ab_ n k).2[%classic)).
+          move=> k knn.
+          apply: sub_caratheodory.
+          rewrite continuous_nondecreasing_image_itvoo; last 2 first.
+              move: cf.
+              apply: continuous_subspaceW.
+              exact: absub.
+            move=> x y xab yab.
+            by apply: incf; apply: (absub n k).
+          exact: measurable_itv.
+        exact: ablt.
+      rewrite trivIset_comp /=.
+xxx
+      admit.
+    under eq_bigr.
+      move=> k _.
+      rewrite continuous_nondecreasing_image_itvoo; last 3 first.
+            exact: (ablt n k).
+          move: cf.
+          apply: continuous_subspaceW.
+          have := (H3 n k).
+          by move/(_ (ltn_ord k)) => [_ +].
+
+        move=> x y xab yab.
+        by apply: incf; apply:nkab.
+      rewrite (_:mu `](f (ab_ n k).1), (f (ab_ n k).2)[ = (f (ab_ n k).2 - f (ab_ n k).1)%:E); last first.
+        rewrite completed_lebesgue_measure_itv /=.
+        admit.
+      over.
+    rewrite /=.
+    rewrite sumEFin lee_fin.
+    exact: e0_prop.
+  apply: le_measure => /=.
+    rewrite inE.
+    apply: sub_caratheodory.
+    
+
+      move=> k _.
+      exact: measurable_itv.
+    rewrite /=.
+
       move=> k nk.
       apply: sub_caratheodory.
       suff -> : [set f x | x in E_ k] =
@@ -1598,11 +1666,15 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
         move=> i _.
         rewrite (_:[set f x | x in `](ab_ k i).1, (ab_ k i).2[] =
                          `]f (ab_ k i).1, f (ab_ k i).2[%classic); last first.
-          rewrite continuous_increasing_image_itvoo //.
+          rewrite continuous_nondecreasing_image_itvoo //.
+              exact: ablt.
             move: cf.
             apply: continuous_subspaceW.
             move: (H3 k i (ltn_ord i)) => [_ +].
             by apply: subset_trans.
+          move=> x y xab yab xy.
+          apply: incf => //.
+            admit.
           admit.
         exact: measurable_itv.
       apply/seteqP; split.
@@ -1621,7 +1693,13 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
       move=> x /=.
       move/mem_set.
       move/big_ord_setUP.
-      admit.
+      move=> [i].
+      rewrite inE /= => -[r] rab <- {x}.
+      exists r => //.
+      apply: set_mem.
+      apply/big_ord_setUP.
+      exists i.
+      by rewrite inE /=.
     admit.
   admit.
 have fG_cvg : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A).
@@ -1644,7 +1722,7 @@ apply: lime_ge.
     by apply: leq_trans mj.
   - by apply: nearW.
 Admitted.
-n
+
 Theorem Banach_Zarecki (f : R -> R) :
   {within `[a, b], continuous f} ->
   bounded_variation a b f ->
