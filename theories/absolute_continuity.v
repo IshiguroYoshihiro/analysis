@@ -1536,7 +1536,18 @@ have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
   by rewrite sumEFin lte_fin; exact: d_prop.
 (* lemma? *)
 have image_E : forall i, (f @` (E_ i)) = \big[setU/set0]_(k < n_ i)f @` `](ab_ i k).1, (ab_ i k).2[%classic.
-  admit.
+  move=> i.
+  apply/seteqP; split => [y/= [x + <-{y}]|].
+    rewrite /E_ => /mem_set/big_ord_setUP[j xj].
+    apply/set_mem/big_ord_setUP; exists j.
+    rewrite inE/=.
+    exists x => //.
+    by rewrite inE in xj.
+  move=> y/= /mem_set/big_ord_setUP[j].
+  rewrite inE/= => -[x xj] <-{y}.
+  exists x => //; rewrite /E_.
+  apply/set_mem.
+  by apply/big_ord_setUP; exists j; rewrite inE.
 have mA0 : mu A = 0.
   rewrite /A.
   have : (mu \o G_) x @[x --> \oo] --> 0%E.
