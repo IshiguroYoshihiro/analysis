@@ -1524,15 +1524,19 @@ have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
     move=> k.
     by apply: sub_caratheodory => //=.
     have := tab_ n.
-    rewrite trivIset_mkcond.
-    admit.
+    rewrite trivIset_mkcond/= => /trivIsetP/= tab_n.
+    apply/trivIsetP => /= i j _ _ ij.
+    have := tab_n i j Logic.I Logic.I ij.
+    rewrite ifT; last by rewrite inE/=.
+    rewrite ifT; last by rewrite inE/=.
+    by [].
     exact: mE.
   apply/ltW.
   under eq_bigr do rewrite completed_lebesgue_measure_itv/= lte_fin ifT // ?(ablt n _ (ltn_ord _))// -EFinD.
   by rewrite sumEFin lte_fin; exact: d_prop.
 (* lemma? *)
-    have image_E : forall i, (f @` (E_ i)) = \big[setU/set0]_(k < n_ i)f @` `](ab_ i k).1, (ab_ i k).2[%classic.
-      admit.
+have image_E : forall i, (f @` (E_ i)) = \big[setU/set0]_(k < n_ i)f @` `](ab_ i k).1, (ab_ i k).2[%classic.
+  admit.
 have mA0 : mu A = 0.
   rewrite /A.
   have : (mu \o G_) x @[x --> \oo] --> 0%E.
