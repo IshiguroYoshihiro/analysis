@@ -111,11 +111,41 @@ case : (leP a b) => [|ba].
 Admitted.
 
 Lemma continuous_nondecreasing_image_itvoo (a b : R) (f : R -> R) :
-  {within `]a, b[ , continuous f} ->
+  {within `[a, b], continuous f} ->
   {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
   f @` `]a, b[%classic `<=` `[f a, f b]%classic.
 Proof.
-Admitted.
+move=> cf ndf x/= [r rab] <-{x}.
+move: rab; rewrite in_itv/= => /andP[ar rb].
+have [cabf [fa fb]] := (continuous_within_itvP f (lt_trans ar rb)).1 cf.
+rewrite in_itv/=; apply/andP; split.
+  move: (fa) => /cvg_lim <-//.
+  apply: limr_le.
+  - apply/cvg_ex.
+    exists (f a).
+    exact: fa.
+  - near=> a0.
+    apply: ndf.
+    rewrite in_itv/=; apply/andP; split => //.
+    rewrite (le_lt_trans _ rb)//.
+    near: a0.
+    by apply: nbhs_right_le.
+    by rewrite in_itv/= ar.
+    near: a0.
+    by apply: nbhs_right_le.
+move: (fb) => /cvg_lim <-//.
+apply: limr_ge.
+- apply/cvg_ex.
+  exists (f b).
+  exact: fb.
+- near=> b0.
+  apply: ndf.
+  by rewrite in_itv/= ar.
+  rewrite in_itv/=; apply/andP; split => //.
+  by rewrite (lt_trans ar)//.
+  near: b0.
+  by apply: nbhs_left_ge.
+Unshelve. all: by end_near. Qed.
 
 Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) :
   {within `]a, b[ , continuous f} ->
@@ -1730,3 +1760,4 @@ apply: Banach_Zarecki_increasing.
 Qed.
 
 End Banach_Zarecki.
+
