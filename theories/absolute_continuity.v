@@ -14,7 +14,6 @@ Require Import realfun exp derive.
 (*   abs_cont ==                                                              *)
 (* ```                                                                        *)
 (******************************************************************************)
-
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -99,16 +98,77 @@ Admitted.
 
 (* move to realfun.v? *)
 Lemma continuous_increasing_image_itvoo (a b : R) (f : R -> R) :
-  {within `]a, b[ , continuous f} ->
+  {within `[a, b] , continuous f} ->
   {in `]a, b[ &, {homo f : x y / (x < y)%O}} ->
-  f @` `]a, b[%classic = `]f a, f b[%classic.
+  f @` `]a, b[%classic `<=` `]f a, f b[%classic.
 Proof.
-case : (leP a b) => [|ba].
-  rewrite le_eqVlt.
-  case/orP.
-    by move/eqP ->; rewrite !set_itvoo0 image_set0 => _ _.
-  move=> ltab cf ndf.
+move=> cf ndf.
+move=> _ /= [r + <-].
+rewrite in_itv /= => /andP [ar rb].
+move: cf.
+move/continuous_within_itvP.
+move/(_ (lt_trans ar rb)) => [cf [fa fb]].
+
+move : fa.
+move/cvg_at_rightP.
+move/(_ (fun n => a + 2^-1 ^ n.+1)).
+have H : ((forall n : nat, a < (a + 2^-1 ^ n.+1)%E) /\ (a + 2^-1 ^ n.+1)%E @[n --> \oo] --> a).
+  admit.
+move/(_ H) => {H}.
+have H : (f (a + 2^-1 ^ n.+1)%E - f a) @[n --> \oo] --> 0%R.
+  admit.
+move=> cvgfa.
+have : \forall x \near a^'+, f x < f r.
+  admit.
+rewrite -nbhs_nearE.
+move=> [e /= e0].
+(* move/(cvg_lim (@Rhausdorff R)). *)
+
+(* apply: have_near. *)
+
+(*   apply (real_cvgr_lt ). *)
+
+(*   apply: filter_near_of. *)
+(*   rewrite near_filter_onE. *)
+(*   rewrite /lim. *)
+(*   Unset Printing Notations. *)
+
+(*   have : cvg (f x @[x --> a^']). *)
+(*   Unset Printing Notations. *)
+
+(*   apply: limr_le. *)
+(*   - apply/cvg_ex. *)
+(*     exists (f a). *)
+(*     exact: fa. *)
+(*   - near=> a0. *)
+(*     apply: ndf. *)
+(*     rewrite in_itv/=; apply/andP; split => //. *)
+(*     rewrite (le_lt_trans _ rb)//. *)
+(*     near: a0. *)
+(*     by apply: nbhs_right_le. *)
+(*     by rewrite in_itv/= ar. *)
+(*     near: a0. *)
+(*     by apply: nbhs_right_le. *)
+(* move: (fb) => /cvg_lim <-//. *)
+(* apply: limr_ge. *)
+(* - apply/cvg_ex. *)
+(*   exists (f b). *)
+(*   exact: fb. *)
+(* - near=> b0. *)
+(*   apply: ndf. *)
+(*   by rewrite in_itv/= ar. *)
+(*   rewrite in_itv/=; apply/andP; split => //. *)
+(*   by rewrite (lt_trans ar)//. *)
+(*   near: b0. *)
+(*   by apply: nbhs_left_ge. *)
+(* Unshelve. all: by end_near. Qed. *)
+(* case : (leP a b) => [|ba]. *)
+(*   rewrite le_eqVlt. *)
+(*   case/orP. *)
+(*     by move/eqP ->; rewrite !set_itvoo0 image_set0 => _ _. *)
+(*   move=> ltab cf ndf. *)
 Admitted.
+
 
 Lemma continuous_nondecreasing_image_itvoo (a b : R) (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -177,11 +237,10 @@ Lemma mono_mem_image_itvoo' (a b : R) (f : R -> R) :
 Proof.
 move=> cf monof.
 move: (monof) => []/[dup] => [/leW_mono_in|/leW_nmono_in] flt fle x.
-  rewrite continuous_increasing_image_itvoo //; last first.
-    move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd.
-    by rewrite flt // !in_itv /= !ltW.
-  move: cf.
-  apply: continuous_subspaceW.
+  (* rewrite continuous_increasing_image_itvoo //; last first. *)
+  (*   move=> c d; rewrite !in_itv /= => /andP [ac cb] /andP [ad db] cd. *)
+  (*   by rewrite flt // !in_itv /= !ltW. *)
+  (* move: cf. *)
 
   (* apply/idP/idP. *)
   (* rewrite inE /=. *)
@@ -209,6 +268,34 @@ move: (monof) => []/[dup] => [/leW_mono_in|/leW_nmono_in] flt fle x.
 Admitted.
 
 End move_to_realfun.
+
+Section interval_bound.
+
+
+
+End interval_bound.
+
+Section image_of_itv.
+Context (R : realType).
+Implicit Type (f : R -> R) (a b: R).
+
+Local Notation mu := (@lebesgue_measure R).
+
+Lemma nondecreasing_fun_image_itv_lebesgue_measure_sigma_additive f a b (n : nat)
+  (ab_ : nat -> R * R) :
+  {within `[a, b], continuous f} ->
+  {in `[a, b] &, nondecreasing_fun f} ->
+  (forall i, (i < n)%N -> `](ab_ i).1, (ab_ i).2[ `<=` `[a, b]) ->
+  trivIset (`I_ n) (fun i=> `](ab_ i).1, (ab_ i).2[%classic) ->
+exists (m : nat) (fab_ : nat -> R * R),
+[/\ (forall i, (i < m)%N -> `](fab_ i).1, (fab_ i).2[ `<=` `[a, b]),
+ trivIset (`I_ m) (fun i => `](fab_ i).1, (fab_ i).2[%classic) &
+  \sum_(i < n) mu (f @` `](ab_ i).1, (ab_ i).2[%classic)
+       = \sum_(i < m) mu `](fab_ i).1, (fab_ i).2[%classic].
+Proof.
+Admitted.
+
+End image_of_itv.
 
 Section PRme.
 Context {R : realType}.
@@ -251,6 +338,7 @@ Unshelve. all: by end_near. Qed.
 End PRme.
 
 (* NB: work starts here *)
+
 
 Lemma measure_is_completeP {d} {T : measurableType d} {R : realType}
   (mu : {measure set T -> \bar R}) :
@@ -1452,13 +1540,13 @@ have : exists n, exists I : (R * R)^nat,
 
 Admitted.
 
-Lemma Banach_Zarecki_increasing (f : R -> R) :
+Lemma Banach_Zarecki_nondecreasing (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b]  &, {homo f : x y / x <= y}} ->
   lusinN `[a, b] f ->
   abs_cont a b f.
 Proof.
-move=> cf incf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
+move=> cf nndf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
 have {fe0} : forall d : {posnum R},
     exists n, exists B : nat -> R * R,
       [/\ (forall i, (i < n)%N -> (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
@@ -1498,6 +1586,14 @@ have tab_ t : trivIset `I_(n_ t)
     (fun i => `](ab_ t i).1, (ab_ t i).2[%classic).
   move: (projT2 (cid (ab_0 (delta_ t)))).
   by case => _ + _ _ /=.
+have Hc n k :(k < n_ n)%N -> {within `](ab_ n k).1, (ab_ n k).2[, continuous f}.
+  move=> knn.
+  move: cf.
+  apply: continuous_subspaceW.
+  by apply: (absub n k).
+have Hhomo n k :(k < n_ n)%N -> {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}. 
+  move=>knn x y xab yab.
+  by apply: nndf; apply: (absub n k).
 have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
   by rewrite /ab_; case: cid => ? [].
 have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:num.
@@ -1539,14 +1635,15 @@ have image_E : forall i, (f @` (E_ i)) = \big[setU/set0]_(k < n_ i)f @` `](ab_ i
   move=> i.
   apply/seteqP; split => [y/= [x + <-{y}]|].
     rewrite /E_ => /mem_set/big_ord_setUP[j xj].
-    apply/set_mem/big_ord_setUP; exists j.
+    apply:set_mem.
+    apply/big_ord_setUP; exists j.
     rewrite inE/=.
     exists x => //.
     by rewrite inE in xj.
   move=> y/= /mem_set/big_ord_setUP[j].
   rewrite inE/= => -[x xj] <-{y}.
   exists x => //; rewrite /E_.
-  apply/set_mem.
+  apply:set_mem.
   by apply/big_ord_setUP; exists j; rewrite inE.
 have mA0 : mu A = 0.
   rewrite /A.
@@ -1662,15 +1759,8 @@ have imfitv n k : (k < n_ n)%N -> exists b0 b1,
      [set` Interval (BSide b0 (f (ab_ n k).1)) (BSide b1 (f (ab_ n k).2))]).
   move=> knn.
   have := (@continuous_nondecreasing_image_itvoo_itv _ (ab_ n k).1 (ab_ n k).2 f).
-    have Hc : {within `](ab_ n k).1, (ab_ n k).2[, continuous f}.
-    move: cf.
-    apply: continuous_subspaceW.
-    by apply: (absub n k).
-  move/(_ Hc) => {Hc}.
-  have Hhomo : {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}. 
-    move=> x y xab yab.
-    by apply: incf; apply: (absub n k).
-  by move/(_ Hhomo) => {Hhomo}.
+  move/(_ (Hc n k knn)).
+  by move/(_ (Hhomo n k knn)) => {Hhomo}.
 have mimf n k :(k < n_ n)%N -> (R.-ocitv.-measurable).-sigma.-measurable (f @` `](ab_ n k).1, (ab_ n k).2[%classic).
   move=> knn.
   move: (imfitv n k knn) => [b0 [b1]] ->.
@@ -1685,40 +1775,57 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
     by apply: bigcup_measurable => k _ /=.
   move/(_ mEn) => H.
   apply: (@le_trans _ _ (mu (f @` E_ n))) => //.
-    rewrite [leRHS](_:_= \sum_(k < n_ n) mu (f @` `](ab_ n k).1, (ab_ n k).2[%classic)); last first.
-      rewrite image_E.
-      apply: (@measure_semi_additive_ord_I _ _ _ mu (fun k => f @` `](ab_ n k).1, (ab_ n k).2[%classic)) => /=.
-          move=> k knn.
-          apply: sub_caratheodory.
-          exact: mimf.
-        admit. (* unprovable *)
-      apply: sub_caratheodory.
-      apply: bigsetU_measurable.
-      move=> i _.
-      by apply: mimf.
-    under eq_bigr.
-      move=> k _.
-      move: (imfitv n k (ltn_ord k)) => [b0 [b1]] ->.
-      rewrite completed_lebesgue_measure_itv /=.
-      rewrite (_:(if ((f (ab_ n k).1)%:E < (f (ab_ n k).2)%:E)%E
-          then ((f (ab_ n k).2)%:E + (- f (ab_ n k).1)%:E)%E
-          else 0) = (f (ab_ n k).2 - f (ab_ n k).1)%:E); last first.
-        move: (ablt n k (ltn_ord k)).
-        move/ltW.
-        move/incf.
-        have Habnk1 : (ab_ n k).1 \in `[a, b].
-          admit.
-        have Habnk2 : (ab_ n k).2 \in `[a, b].
-          admit.
-        move/(_ Habnk1 Habnk2).
-        rewrite le_eqVlt.
-        move/orP; case.
-          move/eqP ->.
-          by rewrite ifF // subrr.
-        rewrite lte_fin => ->.
-        by rewrite EFinD.
-      over.
-    rewrite sumEFin lee_fin.
+  rewrite image_E.
+  have [m [fab]]:= (nondecreasing_fun_image_itv_lebesgue_measure_sigma_additive
+              cf nndf (absub n) (tab_ n)).
+  move=> [fabsub tfab ab2fab].
+  rewrite [leRHS](_:_=mu (\big[setU/set0]_(k < m) `](fab k).1, (fab k).2[%classic)); last first.
+    admit.
+  rewrite (@measure_semi_additive_ord_I _ _ _ mu (fun k => `](fab k).1, (fab k).2[%classic)) => /=; last 3 first.
+        move=> k _.
+        by apply: sub_caratheodory.
+      exact: tfab.
+    apply: sub_caratheodory.
+    by apply: bigsetU_measurable.
+  rewrite -ab2fab.
+  under eq_bigr.
+    move=> /= i _.
+    have -> : lebesgue_measure [set f x | x in `](ab_ n i).1, (ab_ n i).2[] =
+               (f (ab_ n i).2 - f (ab_ n i).1)%:E.
+      have cabf : {within `](ab_ n i).1, (ab_ n i).2[, continuous f}.
+        admit.
+      have nndabf : {in `](ab_ n i).1, (ab_ n i).2[ &, nondecreasing_fun f}.
+        admit.
+      have := (continuous_nondecreasing_image_itvoo_itv cabf nndabf).
+      move=> [b0 [b1]] ->.
+      rewrite lebesgue_measure_itv.
+      rewrite /=.
+      have Habni : (ab_ n i).1 <= (ab_ n i).2.
+        apply/ltW.
+        exact: (ablt n i (ltn_ord i)).
+      have : f (ab_ n i).1 <= f (ab_ n i).2.
+        apply: nndf => //.
+          rewrite in_itv //=.
+          apply/andP; split.
+            by apply: (incl_itv_lb_nat (ablt n) (absub n)).
+          apply: (@le_trans _ _ (ab_ n i).2) => //.
+          by apply: (incl_itv_ub_nat (ablt n) (absub n)).
+        rewrite in_itv //=.
+        apply/andP; split.
+          apply: (@le_trans _ _ (ab_ n i).1) => //.
+          by apply: (incl_itv_lb_nat (ablt n) (absub n)).
+        by apply: (incl_itv_ub_nat (ablt n) (absub n)).
+      rewrite le_eqVlt.
+      move/orP => [/eqP <- |Hlt].
+        rewrite ifF //.
+        by rewrite subrr.
+      rewrite ifT; last first.
+        by rewrite lte_fin.
+      by rewrite EFinD.
+    over.
+    rewrite /=.
+    rewrite sumEFin.
+    rewrite lee_fin.
     exact: e0_prop.
   apply: le_measure => /=.
       rewrite inE.
