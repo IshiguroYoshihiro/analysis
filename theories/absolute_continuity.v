@@ -169,7 +169,6 @@ move=> [e /= e0].
 (*   move=> ltab cf ndf. *)
 Admitted.
 
-
 Lemma continuous_nondecreasing_image_itvoo (a b : R) (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
@@ -224,6 +223,12 @@ move=> cf ndf.
 case minfa : ((\forall x \near a^'+, f x = cst (f a) x) == true); case maxfb : ((\forall x
  \near b^'-, f x = cst (f b) x) == true).
 - exists true; exists false.
+  rewrite eqEsubset; split.
+    move=> y H.
+    rewrite /= in_itv /=.
+    apply/andP; split.
+      admit.
+    admit.
   admit.
 - exists true; exists true.
   admit.
@@ -248,12 +253,6 @@ Admitted.
 
 End move_to_realfun.
 
-Section interval_bound.
-
-
-
-End interval_bound.
-
 Section image_of_itv.
 Context (R : realType).
 Implicit Type (f : R -> R) (a b: R).
@@ -266,6 +265,7 @@ Lemma eq_image_itv a b f :
    mu (f @` `]a, b[) = mu `]f a, f b[.
 Proof.
 move=> cf ndf.
+Admitted.
 
 Lemma get_nice_image_itv f a b (n : nat)
   (ab_ : nat -> R * R) :
@@ -286,8 +286,6 @@ have ndfab i :(i < n)%N -> {in `](ab_ i).1, (ab_ i).2[ &, {homo f: n m / n <= m}
   admit.
 have fab0 i (Hi : (i < n)%N) := (continuous_nondecreasing_image_itvoo_itv (cfab i Hi) (ndfab i Hi)).
 exists n.
-move=> 
-
 Admitted.
 
 End image_of_itv.
@@ -1781,7 +1779,9 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
   move/(_ mEn) => H.
   apply: (@le_trans _ _ (mu (f @` E_ n))) => //.
   rewrite image_E.
-  have [m [fab]]:= (get_nice_image_itv cf nndf (absub n) (tab_ n)).
+  have nndf' : {in `]a, b[ &, {homo f : n m / n <= m}}.
+    admit.
+  have [m [fab]]:= (get_nice_image_itv cf nndf' (absub n) (tab_ n)).
   move=> [fabsub tfab ab2fab].
   rewrite [leRHS](_:_=mu (\big[setU/set0]_(k < m) `](fab k).1, (fab k).2[%classic)); last first.
     admit.
@@ -1796,7 +1796,7 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
     move=> /= i _.
     have -> : lebesgue_measure [set f x | x in `](ab_ n i).1, (ab_ n i).2[] =
                (f (ab_ n i).2 - f (ab_ n i).1)%:E.
-      have cabf : {within `](ab_ n i).1, (ab_ n i).2[, continuous f}.
+      have cabf : {within `[(ab_ n i).1, (ab_ n i).2], continuous f}.
         admit.
       have nndabf : {in `](ab_ n i).1, (ab_ n i).2[ &, nondecreasing_fun f}.
         admit.
