@@ -83,19 +83,6 @@ rewrite !bigcap_mkord.
 by rewrite big_ord_recr.
 Qed.
 
-(* PR#1209 *)
-Lemma total_variation_nondecreasing a b (f : R -> R) :
-  {in `[a, b] &, nondecreasing_fun (total_variation a ^~ f)}.
-Proof.
-Admitted.
-
-(* PR#1209 *)
-Lemma total_variation_bounded a b (f : R -> R) : a <= b ->
-  bounded_variation a b f ->
-  bounded_variation a b (fine \o (total_variation a ^~ f)).
-Proof.
-Admitted.
-
 (* move to realfun.v? *)
 Lemma continuous_increasing_image_itvoo (a b : R) (f : R -> R) :
   {within `[a, b] , continuous f} ->
@@ -219,6 +206,66 @@ Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) :
 exists b0 b1,
   f @` `]a, b[%classic = [set x | x \in (Interval (BSide b0 (f a)) (BSide b1 (f b)))].
 Proof.
+have ab : a < b by admit.
+move=> cf ndf.
+have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
+  have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
+    exists true, false; apply/seteqP; split => [x/=|x].
+    - move=> [r]; rewrite in_itv/= => /andP[ar rb] <-{x}.
+      rewrite in_itv/=; apply/andP; split.
+        near a^'+ => a0.
+        have : f a0 <= f r.
+          rewrite ndf//.
+          - by rewrite in_itv/=; apply/andP; split.
+          - by rewrite in_itv/= ar.
+          - by near: a0; exact: nbhs_right_le.
+        apply: le_trans.
+        by near: a0; apply: filterS fa => y ->.
+      near b^'- => b0.
+      have : f r <= f b0.
+        rewrite ndf//.
+        - by rewrite in_itv/=; apply/andP; split.
+        - by rewrite in_itv/=; apply/andP; split.
+        - by near: b0; exact: nbhs_left_ge.
+      move=> /le_trans; apply.
+      by near: b0; apply: filterS fb => y ->.
+    - rewrite /= in_itv/= => /andP[fax xfb].
+      have /(IVT (ltW ab)) : minr (f a) (f b) <= x <= maxr (f a) (f b).
+        by rewrite ge_min fax/= le_max xfb orbT.
+      move=> /(_ cf)[r].
+      rewrite in_itv => /= /andP[].
+      rewrite le_eqVlt => /predU1P[<-{r} _ {}fax|].
+        near a^'+ => a0.
+        exists a0.
+          by rewrite in_itv/=; apply/andP; split.
+        by near: a0; apply: filterS fa => z ->.
+      move=> ar; rewrite le_eqVlt => /predU1P[rb frx|].
+        subst x r.
+        near b^'- => b0.
+        exists b0.
+        by rewrite in_itv/=; apply/andP; split.
+        by near: b0; apply: filterS fb => z ->.
+      move=> rb fxr; exists r => //.
+      by rewrite in_itv/= ar rb.
+  - exists true, true; apply/seteqP; split => [x/=|x].
+      move=> [r] rab frx.
+      rewrite in_itv/=; apply/andP; split.
+        admit.
+      admit.
+    admit.
+ have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
+- exists false; exists false.
+  admit.
+- exists false; exists true.
+  admit.
+Admitted.
+
+(*Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) :
+  {within `[a, b] , continuous f} ->
+  {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
+exists b0 b1,
+  f @` `]a, b[%classic = [set x | x \in (Interval (BSide b0 (f a)) (BSide b1 (f b)))].
+Proof.
 move=> cf ndf.
 case minfa : ((\forall x \near a^'+, f x = cst (f a) x) == true); case maxfb : ((\forall x
  \near b^'-, f x = cst (f b) x) == true).
@@ -236,7 +283,7 @@ case minfa : ((\forall x \near a^'+, f x = cst (f a) x) == true); case maxfb : (
   admit.
 - exists false; exists true.
   admit.
-Admitted.
+Admitted.*)
 
 (* move to realfun.v? *)
 Lemma continuous_decreasing_image_itvoo (a b : R) (f : R -> R) :
@@ -267,24 +314,23 @@ Proof.
 move=> cf ndf.
 Admitted.
 
-Lemma get_nice_image_itv f a b (n : nat)
-  (ab_ : nat -> R * R) :
+Lemma get_nice_image_itv f a b (n : nat) (ab_ : nat -> R * R) :
   {within `[a, b], continuous f} ->
   {in `]a, b[ &, nondecreasing_fun f} ->
   (forall i, (i < n)%N -> `](ab_ i).1, (ab_ i).2[ `<=` `[a, b]) ->
   trivIset (`I_ n) (fun i=> `](ab_ i).1, (ab_ i).2[%classic) ->
 exists (m : nat) (fab_ : nat -> R * R),
-[/\ (forall i, (i < m)%N -> `](fab_ i).1, (fab_ i).2[ `<=` `[a, b]),
- trivIset (`I_ m) (fun i => `](fab_ i).1, (fab_ i).2[%classic) &
-  \sum_(i < n) mu (f @` `](ab_ i).1, (ab_ i).2[%classic)
-       = \sum_(i < m) mu `](fab_ i).1, (fab_ i).2[%classic].
+  [/\ (forall i, (i < m)%N -> `](fab_ i).1, (fab_ i).2[ `<=` `[a, b]),
+      trivIset (`I_ m) (fun i => `](fab_ i).1, (fab_ i).2[%classic) &
+      \sum_(i < n) mu (f @` `](ab_ i).1, (ab_ i).2[%classic) =
+      \sum_(i < m) mu `](fab_ i).1, (fab_ i).2[%classic].
 Proof.
 move=> cf ndf absub tab.
-have cfab i:(i < n)%N -> {within `[(ab_ i).1, (ab_ i).2], continuous f}.
+have cfab i : (i < n)%N -> {within `[(ab_ i).1, (ab_ i).2], continuous f}.
   admit.
 have ndfab i :(i < n)%N -> {in `](ab_ i).1, (ab_ i).2[ &, {homo f: n m / n <= m}}.
   admit.
-have fab0 i (Hi : (i < n)%N) := (continuous_nondecreasing_image_itvoo_itv (cfab i Hi) (ndfab i Hi)).
+have fab0 i (Hi : (i < n)%N) := continuous_nondecreasing_image_itvoo_itv (cfab i Hi) (ndfab i Hi).
 exists n.
 Admitted.
 
@@ -1591,8 +1637,9 @@ have tab_ t : trivIset `I_(n_ t)
     (fun i => `](ab_ t i).1, (ab_ t i).2[%classic).
   move: (projT2 (cid (ab_0 (delta_ t)))).
   by case => _ + _ _ /=.
-have Hc n k :(k < n_ n)%N -> {within `[(ab_ n k).1, (ab_ n k).2], continuous f}.
+have Hc n k : (k < n_ n)%N -> {within `[(ab_ n k).1, (ab_ n k).2], continuous f}.
   move=> knn.
+  apply: continuous_subspaceW cf.
   admit.  (* ? *)
 have Hhomo n k :(k < n_ n)%N -> {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}. 
   move=>knn x y xab yab.
@@ -1780,7 +1827,9 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
   apply: (@le_trans _ _ (mu (f @` E_ n))) => //.
   rewrite image_E.
   have nndf' : {in `]a, b[ &, {homo f : n m / n <= m}}.
-    admit.
+    move=> x y xab yab xy; apply: nndf => //.
+    - by move: x xab {xy}; exact/subset_itv_oo_cc.
+    - by move: y yab {xy}; exact/subset_itv_oo_cc.
   have [m [fab]]:= (get_nice_image_itv cf nndf' (absub n) (tab_ n)).
   move=> [fabsub tfab ab2fab].
   rewrite [leRHS](_:_=mu (\big[setU/set0]_(k < m) `](fab k).1, (fab k).2[%classic)); last first.
@@ -1800,7 +1849,7 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
         admit.
       have nndabf : {in `](ab_ n i).1, (ab_ n i).2[ &, nondecreasing_fun f}.
         admit.
-      have := (continuous_nondecreasing_image_itvoo_itv cabf nndabf).
+      have := continuous_nondecreasing_image_itvoo_itv cabf nndabf.
       move=> [b0 [b1]] ->.
       rewrite lebesgue_measure_itv.
       rewrite /=.
@@ -1886,4 +1935,3 @@ apply: Banach_Zarecki_nondecreasing.
 Qed.
 
 End Banach_Zarecki.
-
