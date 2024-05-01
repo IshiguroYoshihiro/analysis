@@ -271,7 +271,7 @@ Proof.
 move=> ab cf ndf.
 rewrite -[LHS]mul1e.
 rewrite -integral_cst /=.
-rewrite (_: (\int[mu]_(_ in [set f x | x in `]a, b[]) 1)%E  = 
+rewrite (_: (\int[mu]_(_ in f @` `]a, b[) 1)%E  = 
   (\int[mu]_(x in `]a, b[) dlafdmu x)%E).
 rewrite -Radon_Nikodym_integral /=.
 rewrite /lebesgue_stieltjes_measure /=.
