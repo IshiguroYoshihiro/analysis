@@ -1639,8 +1639,27 @@ have tab_ t : trivIset `I_(n_ t)
   by case => _ + _ _ /=.
 have Hc n k : (k < n_ n)%N -> {within `[(ab_ n k).1, (ab_ n k).2], continuous f}.
   move=> knn.
-  apply: continuous_subspaceW cf.
-  admit.  (* ? *)
+  move: cf.
+  apply: continuous_subspaceW.
+  move=> /= x.
+  rewrite !in_itv /=.
+  move/andP => [].
+  rewrite le_eqVlt.
+  move/orP => [/eqP <- _|abnkx xabnk].
+    have /= -> := (incl_itv_lb (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
+      (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn)).
+    have /= := (incl_itv_ub (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
+      (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn)).
+    apply: le_trans.
+    apply/ltW.
+    exact: ablt.
+  apply/andP; split.
+    apply: (le_trans _ (ltW abnkx)).
+    by have /= := (incl_itv_lb (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
+      (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn)).
+  apply: (le_trans xabnk).
+  by have /= := (incl_itv_ub (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
+      (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn)).
 have Hhomo n k :(k < n_ n)%N -> {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}. 
   move=>knn x y xab yab.
   by apply: nndf; apply: (absub n k).
