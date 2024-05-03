@@ -262,6 +262,16 @@ Lemma continuous_nondecreasing_total_variation_radon_nikodym_derivative :
 Proof.
 Admitted.
 
+Lemma lebesgue_stieltjes_measureE (f : cumulative R) (x y : bool):
+  a < b ->
+  {within `[a, b], continuous f} ->
+  {in `]a, b[ &, nondecreasing_fun f} ->
+  lebesgue_stieltjes_measure f [set` (Interval (BSide x a) (BSide y b))] = mu (f @` [set` (Interval (BSide x a) (BSide y b))]).
+Proof.
+move=> ab cf ndf.
+rewrite lebesgue_stieltjes_measure_bounded_itv ab.
+Admitted.
+
 Lemma integral_continuous_nondecreasing_itv :
   a < b ->
   {within `[a, b], continuous f} ->
@@ -270,10 +280,19 @@ Lemma integral_continuous_nondecreasing_itv :
 Proof.
 move=> ab cf ndf.
 rewrite -[LHS]mul1e.
-rewrite -integral_cst /=.
+rewrite -integral_cst /=; last first.
+  admit.
 rewrite (_: (\int[mu]_(_ in f @` `]a, b[) 1)%E  = 
-  (\int[mu]_(x in `]a, b[) dlafdmu x)%E).
-rewrite -Radon_Nikodym_integral /=.
-rewrite /lebesgue_stieltjes_measure /=.
-rewrite wlength_itv.
+  (\int[mu]_(x in `]a, b[) dlafdmu x)%E); last first.
+  (* ? *)
+  admit.
+rewrite -Radon_Nikodym_integral /=; last 2 first.
+    admit.
+  admit.
+rewrite lebesgue_stieltjes_measure_bounded_itv ab /= /drestrict ab.
+have -> : (b < a) = false.
+  by rewrite lt_gtF.
+rewrite !ltxx.
+rewrite /TVf total_variationxx nondecreasing_total_variation //=; last by apply/ltW.
+by rewrite subr0 EFinD.
 Admitted.
