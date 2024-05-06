@@ -234,6 +234,42 @@ HB.instance Definition _ := @isFinite.Build _ _ R laf laf_finite.
 
 End drestrict_finite_measure.
 
+Section lebesgue_stieltjes_measureE.
+Context (R : realType).
+
+Local Notation mu := (@lebesgue_measure R).
+
+Variables (a b : R).
+Variable (f : R -> R).
+
+Hypothesis (ab : a < b).
+Hypothesis (cf : {within `[a, b], continuous f}).
+Hypothesis (ndf : {in `[a, b] &, nondecreasing_fun f}).
+
+Lemma lebesgue_stieltjes_measureE (x y : bool) :
+  lebesgue_stieltjes_measure (drestrict  cf ndf) [set` (Interval (BSide x a) (BSide y b))] = mu (f @` [set` (Interval (BSide x a) (BSide y b))]).
+Proof.
+rewrite lebesgue_stieltjes_measure_bounded_itv ab /=.
+rewrite /drestrict !ltxx ab ifF; last by rewrite lt_gtF.
+apply/eqP.
+rewrite eq_le; apply/andP; split.
+  rewrite [leLHS](_:_= mu `]f a, f b[); last first.
+    rewrite lebesgue_measure_itv /=.
+    have : f a <= f b.
+      apply: ndf; rewrite ?boundl_in_itv ?boundr_in_itv /=; by rewrite ltW.
+    rewrite le_eqVlt.
+    move/orP => [/eqP -> |].
+      by rewrite subrr ifF.
+    by rewrite lte_fin EFinD => ->.
+  apply: lb_ereal_inf.
+  move=> /= _ [I [mI subbigI]] <-.
+rewrite /mu/=/lebesgue_stieltjes_measure/measure_extension /=.
+
+Admitted.
+
+End lebesgue_stieltjes_measureE.
+
+Section FTC_for_continous.
 Context (R : realType).
 
 Local Notation mu := (@lebesgue_measure R).
@@ -262,23 +298,10 @@ Lemma continuous_nondecreasing_total_variation_radon_nikodym_derivative :
 Proof.
 Admitted.
 
-Lemma lebesgue_stieltjes_measureE (f : cumulative R) (x y : bool):
-  a < b ->
-  {within `[a, b], continuous f} ->
-  {in `]a, b[ &, nondecreasing_fun f} ->
-  lebesgue_stieltjes_measure f [set` (Interval (BSide x a) (BSide y b))] = mu (f @` [set` (Interval (BSide x a) (BSide y b))]).
-Proof.
-move=> ab cf ndf.
-rewrite lebesgue_stieltjes_measure_bounded_itv ab.
-Admitted.
 
 Lemma integral_continuous_nondecreasing_itv :
-  a < b ->
-  {within `[a, b], continuous f} ->
-  {in `[a, b] &, nondecreasing_fun f} ->
   mu (f @` `]a, b[) = ((f b)%:E - (f a)%:E)%E.
 Proof.
-move=> ab cf ndf.
 rewrite -[LHS]mul1e.
 rewrite -integral_cst /=; last first.
   admit.
