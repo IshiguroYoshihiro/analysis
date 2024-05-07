@@ -198,12 +198,18 @@ Lemma nondecreasing_fun_decomp (a b : R) (f : R -> R) :
   forall x, x \in `]a, b[ ->
   \near x, {in `]a, b[ &, {homo f : x y / x < y}} \/ {in `]a, b[ , f =1 cst (f x)}.
 Proof.
-Admitted.
+Abort.
 
+(* TODO: PR *)
 Lemma not_near_at_leftP T (f : R -> T) (p : R) (P : set T) :
   ~ (\forall x \near p^'-, P (f x)) ->
   forall e : {posnum R}, exists2 x : R, p - e%:num < x < p & ~ P (f x).
-Admitted.
+Proof.
+move=> pPf e; apply: contrapT => /forallPNP pePf; apply: pPf; near=> t.
+apply: contrapT; apply: pePf; apply/andP; split.
+- by near: t; apply: nbhs_left_gt; rewrite ltrBlDr ltrDl.
+- by near: t; exact: nbhs_left_lt.
+Unshelve. all: by end_near. Qed.
 
 Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) : a < b ->
   {within `[a, b] , continuous f} ->
@@ -292,7 +298,10 @@ have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
         - by rewrite in_itv/=; apply/andP; split.
         - by near: b0; exact: nbhs_left_ge.
       by rewrite (le_trans _ fyz)// fyb.
-    - admit.
+    - 
+
+xxx
+      admit.
  have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
 - exists false; exists false.
   admit.
