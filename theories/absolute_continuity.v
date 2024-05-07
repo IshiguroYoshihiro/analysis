@@ -200,14 +200,18 @@ Lemma nondecreasing_fun_decomp (a b : R) (f : R -> R) :
 Proof.
 Admitted.
 
-Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) :
+Lemma not_near_at_leftP T (f : R -> T) (p : R) (P : set T) :
+  ~ (\forall x \near p^'-, P (f x)) ->
+  forall e : {posnum R}, exists2 x : R, p - e%:num < x < p & ~ P (f x).
+Admitted.
+
+Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) : a < b ->
   {within `[a, b] , continuous f} ->
   {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
 exists b0 b1,
   f @` `]a, b[%classic = [set x | x \in (Interval (BSide b0 (f a)) (BSide b1 (f b)))].
 Proof.
-have ab : a < b by admit.
-move=> cf ndf.
+move=> ab cf ndf.
 have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
   have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
     exists true, false; apply/seteqP; split => [x/=|x].
@@ -248,11 +252,47 @@ have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
       move=> rb fxr; exists r => //.
       by rewrite in_itv/= ar rb.
   - exists true, true; apply/seteqP; split => [x/=|x].
-      move=> [r] rab frx.
+      move=> [y]; rewrite in_itv/= => /andP[ay yb] <-{x}.
       rewrite in_itv/=; apply/andP; split.
-        admit.
-      admit.
-    admit.
+        near a^'+ => a0.
+        have : f a0 <= f y.
+          rewrite ndf//.
+          - by rewrite in_itv/=; apply/andP; split.
+          - by rewrite in_itv/= ay.
+          - by near: a0; exact: nbhs_right_le.
+        apply: le_trans.
+        by near: a0; apply: filterS fa => ? ->.
+      rewrite lt_neqAle; apply/andP; split; last first.
+        have [cf' [_ fxb]] := (continuous_within_itvP f ab).1 cf.
+        move: (fxb) => /cvg_lim <-//.
+        apply: limr_ge => //.
+          by apply/cvgP; exact: fxb.
+        near=> b0.
+        apply: ndf.
+        - by rewrite in_itv/=; apply/andP; split.
+        - by rewrite in_itv/=; apply/andP; split.
+        - by near: b0; exact: nbhs_left_ge.
+      apply/negP => /eqP fyb.
+      apply: fb.
+      near=> z.
+      rewrite /cst/=.
+      have yz : y <= z by near: z; exact: nbhs_left_ge.
+      have fyz : f y <= f z.
+        apply: ndf => //.
+          by rewrite in_itv/= ay yb.
+        by rewrite !in_itv/= (lt_le_trans ay yz)//=.
+      apply/eqP; rewrite eq_le; apply/andP; split.
+        have [cf' [_ fxb]] := (continuous_within_itvP f ab).1 cf.
+        move: (fxb) => /cvg_lim <-//.
+        apply: limr_ge => //.
+        apply/cvgP; exact: fxb.
+        near=> b0.
+        apply: ndf.
+        - by rewrite in_itv/=; apply/andP; split.
+        - by rewrite in_itv/=; apply/andP; split.
+        - by near: b0; exact: nbhs_left_ge.
+      by rewrite (le_trans _ fyz)// fyb.
+    - admit.
  have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
 - exists false; exists false.
   admit.
@@ -314,7 +354,7 @@ Proof.
 move=> cf ndf.
 Admitted.
 
-Lemma get_nice_image_itv f a b (n : nat) (ab_ : nat -> R * R) :
+Lemma get_nice_image_itv f a b (n : nat) (ab_ : nat -> R * R) : a < b ->
   {within `[a, b], continuous f} ->
   {in `]a, b[ &, nondecreasing_fun f} ->
   (forall i, (i < n)%N -> `](ab_ i).1, (ab_ i).2[ `<=` `[a, b]) ->
@@ -325,12 +365,12 @@ exists (m : nat) (fab_ : nat -> R * R),
       \sum_(i < n) mu (f @` `](ab_ i).1, (ab_ i).2[%classic) =
       \sum_(i < m) mu `](fab_ i).1, (fab_ i).2[%classic].
 Proof.
-move=> cf ndf absub tab.
+move=> ab cf ndf absub tab.
 have cfab i : (i < n)%N -> {within `[(ab_ i).1, (ab_ i).2], continuous f}.
   admit.
 have ndfab i :(i < n)%N -> {in `](ab_ i).1, (ab_ i).2[ &, {homo f: n m / n <= m}}.
   admit.
-have fab0 i (Hi : (i < n)%N) := continuous_nondecreasing_image_itvoo_itv (cfab i Hi) (ndfab i Hi).
+have fab0 i (Hi : (i < n)%N) := continuous_nondecreasing_image_itvoo_itv ab (cfab i Hi) (ndfab i Hi).
 exists n.
 Admitted.
 
