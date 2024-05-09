@@ -200,16 +200,12 @@ Lemma nondecreasing_fun_decomp (a b : R) (f : R -> R) :
 Proof.
 Abort.
 
-(* TODO: PR *)
+(* #PR1221 *)
 Lemma not_near_at_leftP T (f : R -> T) (p : R) (P : pred T) :
   ~ (\forall x \near p^'-, P (f x)) ->
   forall e : {posnum R}, exists2 x : R, p - e%:num < x < p & ~ P (f x).
 Proof.
-move=> pPf e; apply: contrapT => /forallPNP pePf; apply: pPf; near=> t.
-apply: contrapT; apply: pePf; apply/andP; split.
-- by near: t; apply: nbhs_left_gt; rewrite ltrBlDr ltrDl.
-- by near: t; exact: nbhs_left_lt.
-Unshelve. all: by end_near. Qed.
+Admitted.
 
 Lemma continuous_in_nondecreasing_oo_cc (a b : R) (f : R -> R) : a < b ->
   {within `[a, b] , continuous f} ->
