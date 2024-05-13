@@ -213,6 +213,8 @@ Lemma nondecreasing_bound_le (a : R) (b : itv_bound R) (f : R -> R) :
   f x @[x --> a^'+] --> f a ->
   forall x, a < x -> f a <= f x.
 Proof.
+case: b.
+case => t.
 Admitted.
 
 Lemma continuous_in_nondecreasing_oo_cc (a b : R) (f : R -> R) : a < b ->
@@ -614,34 +616,59 @@ Implicit Type (f : R -> R) (a b: R).
 
 Local Notation mu := (@lebesgue_measure R).
 
-Lemma eq_image_itv a b f :
-  {within `[a, b], continuous f} ->
-  {in `]a, b[ &, nondecreasing_fun f} ->
-   mu (f @` `]a, b[) = mu `]f a, f b[.
-Proof.
-move=> cf ndf.
-Admitted.
-
 Lemma get_nice_image_itv f a b (n : nat) (ab_ : nat -> R * R) : a < b ->
   {within `[a, b], continuous f} ->
   {in `]a, b[ &, nondecreasing_fun f} ->
+  (forall i, (i < n)%N -> (ab_ i).1 < (ab_ i).2) ->
   (forall i, (i < n)%N -> `](ab_ i).1, (ab_ i).2[ `<=` `[a, b]) ->
   trivIset (`I_ n) (fun i=> `](ab_ i).1, (ab_ i).2[%classic) ->
 exists (m : nat) (fab_ : nat -> R * R),
-  [/\ (forall i, (i < m)%N -> `](fab_ i).1, (fab_ i).2[ `<=` `[a, b]),
+  [/\ (forall i, (i < m)%N -> `](fab_ i).1, (fab_ i).2[ `<=` f @` `[a, b]),
       trivIset (`I_ m) (fun i => `](fab_ i).1, (fab_ i).2[%classic) &
       \sum_(i < n) mu (f @` `](ab_ i).1, (ab_ i).2[%classic) =
       \sum_(i < m) mu `](fab_ i).1, (fab_ i).2[%classic].
 Proof.
-move=> ab cf ndf absub tab.
-have ablt i : (i < n)%N -> (ab_ i).1 < (ab_ i).2.
-  admit.
+move=> ab cf ndf ablt absub tab.
+(* have ndfcc := continuous_in_nondecreasing_oo_cc ab cf ndf. *)
+have [cf' [fxa fxb]] := (continuous_within_itvP f ab).1 cf.
 have cfab i : (i < n)%N -> {within `[(ab_ i).1, (ab_ i).2], continuous f}.
   admit.
 have ndfab i :(i < n)%N -> {in `](ab_ i).1, (ab_ i).2[ &, {homo f: n m / n <= m}}.
   admit.
 have fab0 i (Hi : (i < n)%N) := continuous_nondecreasing_image_itvoo_itv (ablt i Hi) (cfab i Hi) (ndfab i Hi).
 exists n.
+exists (fun n => (f (ab_ n).1, f (ab_ n).2)).
+split.
+    move=> i iltn /=.
+    move=> x.
+    rewrite /= in_itv/=.
+    move/andP=> [fax xfb].
+    have /(IVT (ltW (ablt i iltn)) (cfab i iltn)) : minr (f (ab_ i).1) (f (ab_ i).2) <= x <= maxr (f (ab_ i).1) (f (ab_ i).2).
+      rewrite ge_min le_max.
+      apply/andP; split.
+      - by apply/orP; left; rewrite ltW.
+      - by apply/orP; right; rewrite ltW.
+    move=> [r + frx].
+    rewrite -frx.
+    rewrite in_itv/=.
+    move/andP => [].
+    rewrite le_eqVlt.
+    move/predU1P => [<- _|abir].
+      exists (ab_ i).1 => //.
+      admit.
+    rewrite le_eqVlt.
+    move/predU1P => [-> |rabi].
+      exists (ab_ i).2 => //.
+      admit.
+    exists r => //.
+    rewrite in_itv/=.
+    apply/andP; split.
+      apply: le_trans (ltW abir).
+      admit.
+    apply: (le_trans (ltW rabi)).
+      admit.
+  rewrite /=.
+  admit.
 Admitted.
 
 End image_of_itv.
@@ -2158,7 +2185,7 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
     move=> x y xab yab xy; apply: nndf => //.
     - by move: x xab {xy}; exact/subset_itv_oo_cc.
     - by move: y yab {xy}; exact/subset_itv_oo_cc.
-  have [m [fab]] := (get_nice_image_itv ab cf nndf' (absub n) (tab_ n)).
+  have [m [fab]] := (get_nice_image_itv ab cf nndf' (ablt n) (absub n) (tab_ n)).
   move=> [fabsub tfab ab2fab].
   rewrite [leRHS](_:_=mu (\big[setU/set0]_(k < m) `](fab k).1, (fab k).2[%classic)); last first.
     admit.
