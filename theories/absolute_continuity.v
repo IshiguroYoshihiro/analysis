@@ -207,11 +207,84 @@ Lemma not_near_at_leftP T (f : R -> T) (p : R) (P : pred T) :
 Proof.
 Admitted.
 
+Lemma nondecreasing_bound_le (a : R) (b : itv_bound R) (f : R -> R) :
+  ((BLeft a) < b)%O ->
+  {in (Interval (BLeft a) b) &, {homo f : x y / (x <= y)%O}} ->
+  f x @[x --> a^'+] --> f a ->
+  forall x, a < x -> f a <= f x.
+Proof.
+Admitted.
+
 Lemma continuous_in_nondecreasing_oo_cc (a b : R) (f : R -> R) : a < b ->
   {within `[a, b] , continuous f} ->
   {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
   {in `[a, b] &, {homo f : x y / (x <= y)%O}}.
-Abort.
+Proof.
+move=> ab cf ndf.
+have [cf' [fxa fxb]] := (continuous_within_itvP f ab).1 cf.
+move=> r x.
+rewrite !in_itv/=.
+have faz z : a < z -> z <= b -> f a <= f z.
+  move=> az zb.
+  move: (fxa).
+  move/cvg_lim => <- //.
+  rewrite limr_le //.
+    by apply: cvgP fxa.
+  near=> y.
+  move: zb.
+  rewrite le_eqVlt.
+  move/predU1P => [-> |zb].
+    move: (fxb).
+    move/cvg_lim => <- //.
+    rewrite limr_ge //.
+      by apply: cvgP fxb.
+    near=> b0.
+    apply: ndf.
+     - by rewrite ?in_itv/=; apply/andP.
+     - by rewrite ?in_itv/=; apply/andP.
+     near: b0.
+     by apply: nbhs_left_ge.
+  apply: ndf => //.
+      rewrite in_itv /=.
+      by apply/andP.
+    by rewrite in_itv/= az.
+  near: y.
+  by apply: nbhs_right_le.
+have fzb z : a < z -> z < b -> f z <= f b.
+  move=> az zb.
+  move: (fxb).
+  move/cvg_lim => <- //.
+  apply: limr_ge.
+    by apply: cvgP fxb.
+  near=> y.
+  apply: ndf.
+  - by rewrite ?in_itv/=; apply/andP.
+  - by rewrite ?in_itv/=; apply/andP.
+  near: y.
+  by apply: nbhs_left_ge.
+move => /andP[].
+rewrite le_eqVlt.
+move=> /predU1P[<- |].
+  move=> _ /andP[_].
+  rewrite le_eqVlt.
+  move/predU1P => [-> _|xb].
+    by apply: faz => //.
+  rewrite le_eqVlt.
+  move/predU1P => [-> //| ax].
+  apply: faz => //.
+  by rewrite ltW.
+move=> ar.
+move=> _ /andP[_].
+rewrite le_eqVlt.
+move=> /predU1P[-> //|].
+  rewrite le_eqVlt.
+  move/predU1P => [-> //|rb].
+  by apply: fzb.
+move=> xb rx.
+have ax : a < x by apply: lt_le_trans rx.
+have rb : r < b by apply: le_lt_trans xb.
+by apply: ndf => //; rewrite in_itv/= ?ar ?ax.
+Unshelve. all: by end_near. Qed.
 
 Lemma nondecreasing_lim_le (a : R) (f : R -> R) :
   \forall x \near a^'+, {homo f : x y / (x <= y)%O} ->
@@ -230,6 +303,7 @@ exists b0 b1,
   f @` `]a, b[%classic = [set x | x \in (Interval (BSide b0 (f a)) (BSide b1 (f b)))].
 Proof.
 move=> ab cf ndf.
+(* have ndfcc := continuous_in_nondecreasing_oo_cc ab cf ndf. *)
 have [cf' [fxa fxb]] := (continuous_within_itvP f ab).1 cf.
 have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
   have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
@@ -237,6 +311,7 @@ have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
     - move=> [r]; rewrite in_itv/= => /andP[ar rb] <-{x}.
       rewrite in_itv/=; apply/andP; split.
 (* f a <= f r *)
+        (* by rewrite ndfcc// ?in_itv/= ?lexx ?ltW. *)
         near a^'+ => a0.
         have : f a0 <= f r.
           rewrite ndf//.
@@ -246,6 +321,7 @@ have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
         apply: le_trans.
         by near: a0; apply: filterS fa => y ->.
 (* f r <= f b *)
+        (* by rewrite ndfcc// ?in_itv/= ?lexx ?ltW. *)
       near b^'- => b0.
       have : f r <= f b0.
         rewrite ndf//.
