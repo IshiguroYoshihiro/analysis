@@ -196,9 +196,16 @@ Unshelve. all: by end_near. Qed.
 Lemma nondecreasing_fun_decomp (a b : R) (f : R -> R) :
   {in `]a, b[ &, {homo f : x y / x <= y}} ->
   forall x, x \in `]a, b[ ->
-  \near x, {in `]a, b[ &, {homo f : x y / x < y}} \/ {in `]a, b[ , f =1 cst (f x)}.
+ (\forall y & z \near x, y < z -> f y < f z)
+ \/ (\forall y \near x, f y = cst (f x) y).
 Proof.
-Abort.
+move=> ndf x.
+rewrite in_itv/= => /andP[ax xb].
+have [cstx|cstx] := pselect (\forall y \near x, f y = cst (f x) y).
+  by right; apply: filterS cstx.
+Admitted.
+
+
 
 (* #PR1221 *)
 Lemma not_near_at_leftP T (f : R -> T) (p : R) (P : pred T) :
@@ -307,7 +314,20 @@ Proof.
 move=> ab cf ndf.
 have ndfcc := continuous_in_nondecreasing_oo_cc ab cf ndf.
 have [cf' [fxa fxb]] := (continuous_within_itvP f ab).1 cf.
+(* TODO: use *)
+have Hfb: (\forall x \near b^'-, f x = cst (f b) x) -> exists2 x : R, x \in `]a, b[ & f b = f x.
+  move=> fb.
+  near b^'- => b0.
+  exists b0.
+    by rewrite in_itv/=; apply/andP.
+  by near: b0; apply: filterS fb => ? ->.
 have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
+  (* TODO: use *)
+  have [invfx xab Hfa] : exists2 x : R, x \in `]a, b[ & f a = f x.
+    near a^'+ => a0.
+    exists a0.
+      by rewrite in_itv/=; apply/andP.
+    by near: a0; apply: filterS fa => ? ->.
   have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
     exists true, false; apply/seteqP; split => [x/=|x].
     - move=> [r]; rewrite in_itv/= => /andP[ar rb] <-{x}.
@@ -318,23 +338,23 @@ have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
       by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
 (* *)
     - rewrite /= in_itv/= => /andP[fax xfb].
-      have /(IVT (ltW ab)) : minr (f a) (f b) <= x <= maxr (f a) (f b).
+      have /(IVT (ltW ab) cf) [r] : minr (f a) (f b) <= x <= maxr (f a) (f b).
         by rewrite ge_min fax/= le_max xfb orbT.
-      move=> /(_ cf)[r].
       rewrite in_itv => /= /andP[].
-      rewrite le_eqVlt => /predU1P[<-{r} _ {}fax|].
-        near a^'+ => a0.
+      rewrite !le_eqVlt => /predU1P[<-{r} _ {}fax|ar /predU1P[rb frx|rb frx]].
+      (* - rewrite -fax. *)
+      (*   by exists invfx. *)
+      - near a^'+ => a0.
         exists a0.
           by rewrite in_itv/=; apply/andP; split.
         by near: a0; apply: filterS fa => z ->.
-      move=> ar; rewrite le_eqVlt => /predU1P[rb frx|].
-        subst x r.
+      - subst x r.
         near b^'- => b0.
         exists b0.
         by rewrite in_itv/=; apply/andP; split.
         by near: b0; apply: filterS fb => z ->.
-      move=> rb fxr; exists r => //.
-      by rewrite in_itv/= ar rb.
+      - exists r => //.
+        by rewrite in_itv/= ar rb.
   - exists true, true; apply/seteqP; split => [x/=|x].
       move=> [y]; rewrite in_itv/= => /andP[ay yb] <-{x}.
       rewrite in_itv/=; apply/andP; split.
@@ -342,209 +362,109 @@ have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
       by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
 (* f y < f b *)
       rewrite lt_neqAle; apply/andP; split; last first.
-        move: (fxb) => /cvg_lim <-//.
-        apply: limr_ge => //.
-          by apply/cvgP; exact: fxb.
-        near=> b0.
-        apply: ndf.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by near: b0; exact: nbhs_left_ge.
+        by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
       apply/negP => /eqP fyb.
       apply: fb.
       near=> z.
       rewrite /cst/=.
-      have yz : y <= z by near: z; exact: nbhs_left_ge.
-      have fyz : f y <= f z.
-        apply: ndf => //.
-          by rewrite in_itv/= ay yb.
-        by rewrite !in_itv/= (lt_le_trans ay yz)//=.
       apply/eqP; rewrite eq_le; apply/andP; split.
-        move: (fxb) => /cvg_lim <-//.
-        apply: limr_ge => //.
-        apply/cvgP; exact: fxb.
-        near=> b0.
-        apply: ndf.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by near: b0; exact: nbhs_left_ge.
-      by rewrite (le_trans _ fyz)// fyb.
+      - by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
+      - rewrite -fyb.
+        by apply: ndf; rewrite ?in_itv/=;
+          [rewrite ay
+          |exact/andP
+          |near: z; exact: nbhs_left_ge].
 (* *)
     - rewrite /= in_itv/= => /andP[fax xfb].
-      have /(IVT (ltW ab)) : minr (f a) (f b) <= x <= maxr (f a) (f b).
+      have /(IVT (ltW ab) cf) [r] : minr (f a) (f b) <= x <= maxr (f a) (f b).
         by rewrite ge_min fax/= le_max (ltW xfb) orbT.
-      move=> /(_ cf)[r].
       rewrite in_itv => /= /andP[].
-      rewrite le_eqVlt => /predU1P[<-{r} _ {}fax|].
-        near a^'+ => a0.
+      rewrite !le_eqVlt => /predU1P[<-{r} _ {}fax|ar /predU1P[rb frx|rb fxr]].
+      - near a^'+ => a0.
         exists a0.
           by rewrite in_itv/=; apply/andP; split.
         by near: a0; apply: filterS fa => z ->.
-      move=> ar; rewrite le_eqVlt => /predU1P[rb frx|].
-        subst x r.
-        by rewrite ltxx in xfb.
-      move=> rb fxr; exists r => //.
-      by rewrite in_itv/= ar rb.
+      - by subst x r; rewrite ltxx in xfb.
+      - by exists r => //; rewrite in_itv/= ar rb.
 have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
 - exists false; exists false; apply/seteqP; split => [x/=|x].
   - move=> [r]; rewrite in_itv/= => /andP[ar rb] <-{x}.
     rewrite in_itv/=; apply/andP; split.
+(* f a < f r *)
       rewrite lt_neqAle; apply/andP; split; last first.
-(* f a <= f r *)
-        move: (fxa) => /cvg_lim <-//.
-        apply: limr_le => //.
-          by apply/cvgP; exact: fxa.
-        near=> a0.
-        apply: ndf.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by near: a0; exact: nbhs_right_le.
+        by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
       apply/negP => /eqP far.
       apply: fa.
       near=> z.
       rewrite /cst/=.
-      have zr : z <= r by near: z; apply: nbhs_right_le.
-      have fzr : f z <= f r.
-        apply: ndf => //.
-          by rewrite !in_itv/= (le_lt_trans zr rb)//= andbT.
-        by rewrite in_itv/= ar rb.
       apply/eqP; rewrite eq_le; apply/andP; split.
-        rewrite (le_trans fzr)//.
-        by rewrite far.
-      move: (fxa) => /cvg_lim <-//.
-      apply: limr_le => //.
-        apply/cvgP; exact: fxa.
-        near=> a0.
-        apply: ndf.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by near: a0; apply: nbhs_right_le.
-(* f d <= f b *)
-    near b^'- => b0.
-    have rb0 : r <= b0 by near: b0; apply: nbhs_left_ge.
-    have frb0 : f r <= f b0.
-      apply: ndf.
-      - by rewrite in_itv/=; apply/andP; split.
-      - by rewrite in_itv/=; apply/andP; split.
-      - by [].
-    apply: (le_trans frb0).
-    near: b0.
-    apply: filterS fb.
-    by rewrite /cst => x ->.
+      - rewrite far.
+        by apply: ndf; rewrite ?in_itv/=;
+          [exact/andP
+          |rewrite ar
+          |near: z; exact: nbhs_right_le].
+      - by apply: ndfcc; rewrite ?in_itv/= ?lexx ?ltW.
+(* f r <= f b *)
+    by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
+(* *)
   - rewrite /=in_itv/=.
     move/andP => [fax xfb].
-    have /(_ x):= (IVT (ltW ab) cf).
-    move=> [].
-      have fafb : f a < f b by exact: (lt_le_trans fax xfb).
-      rewrite /minr/maxr fafb.
-      by rewrite (ltW fax).
-    move=> r.
+    have /(IVT (ltW ab) cf) [r] : minr (f a) (f b) <= x <= maxr (f a) (f b).
+      by rewrite ge_min le_max xfb (ltW fax) orbT.
     rewrite in_itv/= => /andP [].
-    rewrite le_eqVlt; move/orP => [|ar].
-      move/eqP => ar _ frx.
-      by rewrite ar frx ltxx in fax.
-    rewrite le_eqVlt; move/orP => [|rb].
-      move/eqP => rb frx.
-      near b^'- => z.
+    rewrite !le_eqVlt; move/predU1P => [ar _ frx|ar /predU1P[-> <- |rb <-]].
+    - by subst x r; rewrite ltxx in fax.
+    - near b^'- => z.
       exists z.
         rewrite in_itv/=.
         by apply/andP; split.
-      rewrite -frx rb.
       near: z.
-      apply: filterS fb.
-      by rewrite/cst.
-    move=> frx.
-    exists r => //.
-    by rewrite in_itv/= ar.
+      by apply: filterS fb.
+    - exists r => //; by rewrite in_itv/= ar.
 - exists false; exists true.
   rewrite eqEsubset; split.
   - move=> x /= [y].
     rewrite in_itv/= => /andP[ay yb] <-{x}.
     rewrite in_itv/=; apply/andP; split.
-(* f y < f b *)
-      rewrite lt_neqAle; apply/andP; split.
-        apply/negP => /eqP fay.
-        apply: fa.
-        near=> a0.
-        rewrite /cst.
-        apply/eqP; rewrite eq_le; apply/andP; split.
-          rewrite fay.
-          apply: ndf.
-          - by rewrite in_itv/=; apply/andP; split.
-          - by rewrite in_itv/=; rewrite ay.
-          near: a0.
-          by apply: nbhs_right_le.
-        move: (fxa).
-        move/cvg_lim <- => //.
-        rewrite limr_le //.
-          apply: cvgP; exact: fxa.
-        near=> x.
-        apply: ndf.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by rewrite in_itv/=; apply/andP; split.
-        near: x.
-        by apply: nbhs_right_le.
-      (* same *)
-      move: (fxa).
-      move/cvg_lim <- => //.
-      rewrite limr_le //.
-        exact: cvgP fxa.
-      near=> x.
-      apply: ndf.
-      - by rewrite in_itv/=; apply/andP; split.
-      - by rewrite in_itv/=; apply/andP; split.
-      near: x.
-      by apply: nbhs_right_le.
-(* f y < f b *)
-    rewrite lt_neqAle; apply/andP; split.
-      apply/negP => /eqP fyb.
-      apply: (fb).
-      near=> b0.
+(* f a < f y *)
+      rewrite lt_neqAle; apply/andP; split; last first.
+        by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
+      apply/negP => /eqP fay.
+      apply: fa.
+      near=> a0.
       rewrite /cst.
       apply/eqP; rewrite eq_le; apply/andP; split.
-        move: (fxb).
-        move/cvg_lim <- => //.
-        rewrite limr_ge//.
-          exact: cvgP fxb.
-        near=> z.
-        apply: ndf.
-        - by rewrite in_itv/=; apply/andP; split.
-        - by rewrite in_itv/=; apply/andP; split.
-        near: z.
-        by apply: nbhs_left_ge.
-      rewrite -fyb.
-      apply: ndf.
-      - by rewrite in_itv/=; apply/andP; split.
-      - by rewrite in_itv/=; apply/andP; split.
-      near: b0.
-      by apply: nbhs_left_ge.
-    move: (fxb).
-    move/cvg_lim <- => //.
-    rewrite limr_ge //.
-      apply: cvgP fxb.
+      - rewrite fay.
+        by apply: ndf; rewrite ?in_itv/=;
+        [exact/andP
+        |rewrite ay
+        |near: a0; exact: nbhs_right_le].
+      by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
+(* f y < f b *)
+    rewrite lt_neqAle; apply/andP; split; last first.
+      by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
+    apply/negP => /eqP fyb.
+    apply: (fb).
     near=> b0.
-    apply: ndf.
-    - by rewrite in_itv/=; apply/andP; split.
-    - by rewrite in_itv/=; apply/andP; split.
-    near: b0.
-    by apply: nbhs_left_ge.
+    rewrite /cst.
+    apply/eqP; rewrite eq_le; apply/andP; split.
+    - by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
+    - rewrite -fyb.
+      by apply: ndf; rewrite ?in_itv/=;
+      [rewrite ay
+      |exact/andP
+      |near: b0; exact: nbhs_left_ge].
+(* *)
   move=> y /=.
   rewrite in_itv/=.
   move/andP => [fay yfb].
-  have /(IVT (ltW ab) cf): minr (f a) (f b) <= y <= maxr (f a) (f b).
+  have /(IVT (ltW ab) cf) [r]: minr (f a) (f b) <= y <= maxr (f a) (f b).
     by rewrite ge_min le_max (ltW fay) (ltW yfb) orbT.
-  move=> [x].
   rewrite in_itv/= => /andP[].
-  rewrite le_eqVlt => /orP; case.
-    move/eqP => <-{x} _ fay'.
-    by move: fay; rewrite fay' ltxx.
-  move=> ax.
-  rewrite le_eqVlt => /orP; case.
-    move/eqP => ->.
-    by move: yfb => /[swap] <-; rewrite ltxx.
-  move=> xb fxy.
-  exists x => //.
-  by rewrite in_itv/= ax.
+  rewrite !le_eqVlt => /predU1P[<-{r} _ faeqy|ar /predU1P[rb freqy|rb <-]].
+  - by rewrite faeqy ltxx in fay.
+  - by subst r y; rewrite ltxx in yfb.
+  - by exists r; rewrite ?in_itv/= ?ar.
 Unshelve. all: by end_near. Qed.
 
 Lemma integral_continuous_nondecreasing_itv
@@ -1976,6 +1896,165 @@ Let ex_perfect_set (cmf : cumulative R) (cZ : set R) :
 Proof.
 Abort.
 
+(* Lemma 1 *)
+Definition not_subset01 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
+  Y `&` [set y | f @^-1` [set y] !=set0 /\ ~ is_subset1 (X `&` (f @^-1` [set y]))].
+
+Lemma lemma1 (X : set R) (Y : set R) (f : {fun X >-> Y}) (X_ : (set R)^nat):
+  (\bigcap_i (f @` (X_ i))) `\` (not_subset01 f) `<=` f @` (\bigcap_i (X_ i))
+  /\ f @` (\bigcap_i (X_ i)) `<=` \bigcap_i (f @` (X_ i)).
+Proof.
+Admitted.
+
+(* Lemma 2 (i) *)
+Lemma is_countable_not_subset01_nondecreasing_fun
+  (X : set R) (Y : set R)
+  (f : {fun X >-> Y}) :
+  {in X &, nondecreasing_fun f} ->
+  countable (not_subset01 f).
+Proof.
+Admitted.
+
+
+(* see lebegue_measure_rat in lebesgue_measure.v *)
+Lemma is_borel_not_subset01_nondecreasing_fun 
+  (X : set R) (Y : set R)
+  (f : {fun X >-> Y}) :
+  {in X &, nondecreasing_fun f} ->
+  measurable (not_subset01 f).
+Proof.
+move=> ndf.
+have := is_countable_not_subset01_nondecreasing_fun ndf.
+move/countable_bijP=> [B] /pcard_eqP/bijPex [/= g bijg].
+set h := 'pinv_(fun=> 0) (not_subset01 f) g.
+rewrite /= in h.
+have -> : not_subset01 f = \bigcup_i (set1 (h i)).
+  apply/seteqP; split.
+  - move=> r ns01r.
+    exists (g r) => //.
+    rewrite /h pinvKV ?inE //.
+    apply: set_bij_inj.
+    exact: bijg.
+  move=> _ [n _] /= ->.
+  have := bijpinv_bij (fun=> 0) bijg.
+  admit.
+apply: bigcup_measurable => n _.
+exact: measurable_set1.
+Admitted.
+
+(* Lemma fG_cvg (f : R -> R) (G_ : nat -> set R) (A : set R) *)
+(*  : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A). *)
+(*   rewrite (_: mu (f @` A) = mu (\bigcap_i (f @` (G_ i)))); last first. *)
+(*     rewrite mfA0. *)
+(*     apply/esym. *)
+(*     have : (mu (\bigcap_(i < n) (f @` (G_ i))) @[n --> \oo] --> mu (\bigcap_i (f @` (G_ i)))). *)
+(*       admit. *)
+(*     move/cvg_lim => <- //. *)
+(*     apply/cvg_lim => //. *)
+(*     apply/fine_cvgP; split. *)
+(*       admit. *)
+(*     apply/cvgrPdist_le => /= d d0. *)
+(*     near=> n. *)
+(*     rewrite sub0r normrN ger0_norm; last by apply:fine_ge0; rewrite measure_ge0. *)
+(*     have n0 : (0 < n)%N by near: n; apply: (nbhs_infty_gt 0). *)
+
+(*     apply: (@squeeze_cvge _ _ _ _ (cst 0) _ (fun i => (2 ^- i)%:E)). *)
+(*         near=> n. *)
+(*         rewrite measure_ge0 /=. *)
+(*         apply: (@le_trans _ _ (mu (\bigcup_(k in [set j | (n.-1 <= j)%N]) (f @` E_ k)))). *)
+(*           apply: le_measure => /=. *)
+(*               rewrite inE. *)
+(*               apply: sub_caratheodory. *)
+(*               apply: bigcap_measurable. *)
+(*               move=> k _. *)
+(*               rewrite image_G. *)
+(*               apply: bigcup_measurable. *)
+(*               by move=> ? _; apply: mfE. *)
+(*             rewrite inE. *)
+(*             apply: sub_caratheodory. *)
+(*             apply: bigcup_measurable. *)
+(*             by move=> k _; apply: mfE. *)
+(*           rewrite [X in _ `<=` X](_:_= f @` (G_ n.-1)); last by []. *)
+(*           apply: bigcap_inf => /=; first by rewrite ltn_predL. *)
+          
+(*         admit. *)
+(*       by apply: cvg_cst. *)
+(*     rewrite -cvg_shiftS /=. *)
+(*     apply: cvg_EFin. *)
+(*       by near=> n. *)
+(*     have Hgeo : (fun n => 2 ^- n.+1) = @geometric R 2^-1 2^-1. *)
+(*       apply: funext => n. *)
+(*       by rewrite -d_geo. *)
+(*     rewrite [X in X @ _ --> _]Hgeo. *)
+(*     by apply: cvg_geometric. *)
+(*   apply: (@nonincreasing_cvg_mu _ _ R mu (fun i => f @` (G_ i))) => /=. *)
+(*         apply: (@le_lt_trans _ _ (f b - f a)%:E). *)
+(*           rewrite (_:(f b - f a)%:E = mu `[f a, f b]); last first. *)
+(*             rewrite completed_lebesgue_measure_itv. *)
+(*             have : f a <= f b. *)
+(*               by apply: nndf; rewrite ?in_itv/= ?lexx ?ltW. *)
+(*             rewrite le_eqVlt; move/predU1P => [-> |fab]. *)
+(*               by rewrite ltxx subrr. *)
+(*             by rewrite ifT. *)
+(*           apply: le_measure => /=. *)
+(*               rewrite inE. *)
+(*               apply: sub_caratheodory. *)
+(*               rewrite image_G. *)
+(*               apply: bigcup_measurable. *)
+(*               move=> k _. *)
+(*               exact: (mfE k). *)
+(*             rewrite inE. *)
+(*             by apply: sub_caratheodory. *)
+(*           rewrite image_G. *)
+(*           move=> y [n _]. *)
+(*           move=> [x + <-{y}]. *)
+(*           rewrite /E_. *)
+(*           move/mem_set/big_ord_setUP => [k abnkx]. *)
+(*           apply/andP; split. *)
+(*             apply: nndf. *)
+(*                 by rewrite in_itv/= lexx ltW. *)
+(*               apply: (absub n k (ltn_ord k)) => /=. *)
+(*               by rewrite inE in abnkx. *)
+(*             move: abnkx. *)
+(*             rewrite inE /= in_itv/=. *)
+(*             move/andP => [+ _]. *)
+(*             move/ltW; apply: le_trans. *)
+(*             apply: incl_itv_lb_nat. *)
+(*             - exact: ablt. *)
+(*             - exact: absub. *)
+(*             - by []. *)
+(*           apply: nndf. *)
+(*               apply: (absub n k (ltn_ord k)) => /=. *)
+(*               by rewrite inE in abnkx. *)
+(*             by rewrite in_itv/= lexx ltW. *)
+(*           move: abnkx. *)
+(*           rewrite inE /= in_itv/=. *)
+(*           move/andP => [_ +]. *)
+(*           move/ltW; move/le_trans; apply. *)
+(*           apply: incl_itv_ub_nat. *)
+(*           - exact: ablt. *)
+(*           - exact: absub. *)
+(*           - by []. *)
+(*         exact: ltry. *)
+(*       move=> i. *)
+(*       rewrite image_G. *)
+(*       apply: sub_caratheodory. *)
+(*       apply: bigcup_measurable. *)
+(*       by move=> + _. *)
+(*     apply: bigcap_measurable. *)
+(*     move=> k _. *)
+(*     rewrite image_G. *)
+(*     apply: sub_caratheodory. *)
+(*     apply: bigcup_measurable. *)
+(*     by move=> + _. *)
+(*   apply/nonincreasing_seqP. *)
+(*   move=> n. *)
+(*   rewrite !image_G subsetEset. *)
+(*   move=> _ [k /= nk [x] Ekx <-]. *)
+(*   exists k => //. *)
+(*   by apply: ltnW. *)
+(* Admitted. *)
+
 (* Lemma 6 *)
 Lemma Lusin_total_variation (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -2308,75 +2387,7 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
   exists n => //=.
   by exists x.
 have fG_cvg : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A).
-  rewrite (_: mu (f @` A) = mu (\bigcap_i (f @` (G_ i)))); last first.
-
-    admit.
-  apply: (@nonincreasing_cvg_mu _ _ R mu (fun i => f @` (G_ i))) => /=.
-        apply: (@le_lt_trans _ _ (f b - f a)%:E).
-          rewrite (_:(f b - f a)%:E = mu `[f a, f b]); last first.
-            rewrite completed_lebesgue_measure_itv.
-            have : f a <= f b.
-              by apply: nndf; rewrite ?in_itv/= ?lexx ?ltW.
-            rewrite le_eqVlt; move/predU1P => [-> |fab].
-              by rewrite ltxx subrr.
-            by rewrite ifT.
-          apply: le_measure => /=.
-              rewrite inE.
-              apply: sub_caratheodory.
-              rewrite image_G.
-              apply: bigcup_measurable.
-              move=> k _.
-              exact: (mfE k).
-            rewrite inE.
-            by apply: sub_caratheodory.
-          rewrite image_G.
-          move=> y [n _].
-          move=> [x + <-{y}].
-          rewrite /E_.
-          move/mem_set/big_ord_setUP => [k abnkx].
-          apply/andP; split.
-            apply: nndf.
-                by rewrite in_itv/= lexx ltW.
-              apply: (absub n k (ltn_ord k)) => /=.
-              by rewrite inE in abnkx.
-            move: abnkx.
-            rewrite inE /= in_itv/=.
-            move/andP => [+ _].
-            move/ltW; apply: le_trans.
-            apply: incl_itv_lb_nat.
-            - exact: ablt.
-            - exact: absub.
-            - by [].
-          apply: nndf.
-              apply: (absub n k (ltn_ord k)) => /=.
-              by rewrite inE in abnkx.
-            by rewrite in_itv/= lexx ltW.
-          move: abnkx.
-          rewrite inE /= in_itv/=.
-          move/andP => [_ +].
-          move/ltW; move/le_trans; apply.
-          apply: incl_itv_ub_nat.
-          - exact: ablt.
-          - exact: absub.
-          - by [].
-        exact: ltry.
-      move=> i.
-      rewrite image_G.
-      apply: sub_caratheodory.
-      apply: bigcup_measurable.
-      by move=> + _.
-    apply: bigcap_measurable.
-    move=> k _.
-    rewrite image_G.
-    apply: sub_caratheodory.
-    apply: bigcup_measurable.
-    by move=> + _.
-  apply/nonincreasing_seqP.
-  move=> n.
-  rewrite !image_G subsetEset.
-  move=> _ [k /= nk [x] Ekx <-].
-  exists k => //.
-  by apply: ltnW.
+  admit.
 move/eqP : mfA0; apply/negP.
 rewrite gt_eqF// (@lt_le_trans _ _ e0%:num%:E)//.
 move/cvg_lim : (fG_cvg) => <- //.
