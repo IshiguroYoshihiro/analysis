@@ -1024,7 +1024,7 @@ apply: le_outer_measure.
 exact: subIsetl.
 Qed.
 
-Let calgebra_sub_cara {R : realType} :
+Let calgebra_sub_cara :
   (completed_algebra_gen (@lebesgue_measure R)).-sigma.-measurable `<=`
   ((wlength idfun)^*)%mu.-cara.-measurable.
 Proof.
@@ -1035,7 +1035,7 @@ case: negN => /= B [mB B0 NB].
 by exists B; split => //=; exact: sub_caratheodory.
 Qed.
 
-Lemma completed_caratheodory_measurable {R : realType} :
+Lemma completed_caratheodory_measurable :
   (completed_algebra_gen (@lebesgue_measure R)).-sigma.-measurable =
   (wlength idfun)^*%mu.-cara.-measurable.
 Proof.
@@ -1725,6 +1725,8 @@ Context (a b : R) (ab : a < b).
 
 Local Notation mu := (@completed_lebesgue_measure R).
 
+
+
 Lemma total_variation_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
   bounded_variation a b f ->
@@ -1735,6 +1737,56 @@ Admitted.
 
 Let increasing_points (f : R -> R) :=
   [set y | exists x, x \in `[a, b] /\ f@^-1` [set y] = [set x]].
+
+Definition not_subset01 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
+  Y `&` [set y | (X `&` f @^-1` [set y] !=set0) /\
+         ~ is_subset1 (X `&` f @^-1` [set y])].
+
+Lemma lemma1 (X : set R) (Y : set R) (f : {fun X >-> Y}) (I : pointedType)
+    (X_ : I -> set R) :
+    (forall i, X_ i `<=` X) ->
+  (\bigcap_i (f @` X_ i)) `\` not_subset01 f `<=` f @` (\bigcap_i X_ i) /\
+  f @` (\bigcap_i X_ i) `<=` \bigcap_i (f @` X_ i).
+Proof.
+move=> X_x; split; last first.
+  (* TODO: lemma? *)
+  move=> _/= [x fX_x] <- i _; exists x => //.
+  exact: fX_x.
+move=> y [bigcap_y fy01].
+have Yy : Y y.
+  have [x X_pointx <-] := bigcap_y point Logic.I.
+  by apply/funS/X_x; exact: X_pointx.
+have [x [Xx yfx x_unique]] :
+    exists x, [/\ X x, y = f x & forall x', X x' -> y = f x' -> x' = x].
+  move/not_andP : fy01 => [//|/not_andP[|]].
+  - move=> /set0P/negP/negPn/eqP fy0.
+    have [x X_pointx fxy] := bigcap_y point Logic.I.
+    exfalso.
+    move: fy0 => /eqP/negPn/negP; apply.
+    apply/set0P; exists x; split => //.
+    apply: X_x.
+    exact: X_pointx.
+  - move=> /contrapT y_unique.
+    have [|] := pselect (X `&` f @^-1` [set y] !=set0); last first.
+      (* TODO: redundant with the previous subgoal *)
+      move=> /set0P/negP/negPn/eqP fy0.
+      have [x X_pointx fxy] := bigcap_y point Logic.I.
+      exfalso.
+      move: fy0 => /eqP/negPn/negP; apply.
+      apply/set0P; exists x; split => //.
+      apply: X_x.
+      exact: X_pointx.
+    move=> [x0 [Xx0 fyx0]].
+    exists x0; split => // x' Xx' yfx'.
+    exact: y_unique.
+have X_f i : exists xi, X_ i xi /\ f xi = y.
+  have [xi X_ixi <-] : (f @` X_ i) y by exact: bigcap_y.
+  by exists xi.
+exists x => // i _.
+have [xi [X_ixi fxiy]] := X_f i.
+have Xxi : X xi by apply: X_x; exact: X_ixi.
+by rewrite -(x_unique _ Xxi (esym fxiy)).
+Qed.
 
 Lemma nondecreasing_fun_setD_measurable f :
   {in `[a, b] &, {homo f : x y / x <= y}} ->
@@ -1794,16 +1846,6 @@ Let ex_perfect_set (cmf : cumulative R) (cZ : set R) :
      = completed_lebesgue_stieltjes_measure f cZ.
 Proof.
 Abort.
-
-(* Lemma 1 *)
-Definition not_subset01 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
-  Y `&` [set y | f @^-1` [set y] !=set0 /\ ~ is_subset1 (X `&` (f @^-1` [set y]))].
-
-Lemma lemma1 (X : set R) (Y : set R) (f : {fun X >-> Y}) (X_ : (set R)^nat):
-  (\bigcap_i (f @` (X_ i))) `\` (not_subset01 f) `<=` f @` (\bigcap_i (X_ i))
-  /\ f @` (\bigcap_i (X_ i)) `<=` \bigcap_i (f @` (X_ i)).
-Proof.
-Admitted.
 
 (* Lemma 2 (i) *)
 Lemma is_countable_not_subset01_nondecreasing_fun
