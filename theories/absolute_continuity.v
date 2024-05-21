@@ -67,21 +67,19 @@ Section move_to_realfun.
 Context {R : realType}.
 
 (* TODO:PR *)
-Lemma bigcap_open (U0_ : (set R)^nat) :
-    (forall i : nat, open (U0_ i)) ->
-    let U_ := fun i : nat => \bigcap_(j < i) U0_ j
-    in (forall i, open (U_ i)).
+Lemma bigcap_open (F : (set R) ^nat) :
+  (forall i, open (F i)) ->
+  forall i, open (\bigcap_(j < i) F j).
 Proof.
-move=> HU U_.
+move=> HU.
 elim.
-  rewrite /U_ bigcap_mkord.
+  rewrite bigcap_mkord.
   rewrite big_ord0.
   exact: openT.
 move=> n IH.
-suff -> : U_ n.+1 = U_ n `&` U0_ n by apply: openI.
-rewrite /U_.
-rewrite !bigcap_mkord.
-by rewrite big_ord_recr.
+rewrite bigcap_mkord big_ord_recr/=.
+apply: openI => //.
+by rewrite -bigcap_mkord.
 Qed.
 
 (* move to realfun.v? *)
@@ -194,6 +192,23 @@ apply: limr_ge.
   by apply: nbhs_left_ge.
 Unshelve. all: by end_near. Qed.
 
+Lemma continuous_nondecreasing_image_itvcc (a b : R) (f : R -> R) :
+  a <= b ->
+  {within `[a, b], continuous f} ->
+  {in `[a, b] &, {homo f : x y / (x <= y)%O}} ->
+  f @` `[a, b] `<=` `[f a, f b]%classic.
+Proof.
+move=> ab cf ndf x/= [r +] <-{x}.
+rewrite in_itv/= => /andP[].
+rewrite le_eqVlt => /predU1P[ar rb|ar].
+  by rewrite in_itv/= ar lexx/= ndf// ?in_itv/= ar lexx ?andbT.
+rewrite le_eqVlt => /predU1P[rb|rb].
+  by rewrite in_itv/= rb lexx/= ndf// ?in_itv//= lexx ?andbT.
+apply: continuous_nondecreasing_image_itvoo => //.
+  by move=> x y xab yab; apply: ndf => //; apply: subset_itv_oo_cc.
+by exists r => //=; rewrite in_itv/= ar.
+Qed.
+
 Lemma nondecreasing_fun_decomp (a b : R) (f : R -> R) :
   {in `]a, b[ &, {homo f : x y / x <= y}} ->
   forall x, x \in `]a, b[ ->
@@ -205,7 +220,6 @@ rewrite in_itv/= => /andP[ax xb].
 have [cstx|cstx] := pselect (\forall y \near x, f y = cst (f x) y).
   by right; apply: filterS cstx.
 Admitted.
-
 
 
 (* #PR1221 *)
@@ -1921,30 +1935,64 @@ Context (a b : R) (ab : a < b).
 
 Local Notation mu := (@completed_lebesgue_measure R).
 
-(* lemma3? *)
+(* lemma3 (easy direction) *)
 Lemma Lusin_image_measure0 (f : R -> R) :
-{within `[a, b], continuous f} ->
-  {in `[a, b]&, {homo f : x y / x <= y}} ->
+  {within `[a, b], continuous f} ->
+  {in `[a, b] &, {homo f : x y / x <= y}} ->
   lusinN `[a, b] f ->
-  exists Z : set R, [/\ Z `<=` `[a, b]%classic,
-      compact Z,
-      mu Z = 0 &
-      mu (f @` Z) = 0].
+  forall Z : set R, [/\ Z `<=` `[a, b]%classic,
+      compact Z &
+      mu Z = 0] ->
+      mu (f @` Z) = 0.
 Proof.
-Admitted.
+move=> cf ndf lusinNf Z [Zab cZ muZ0].
+have /= mZ : (wlength idfun)^*%mu.-cara.-measurable Z.
+  by apply: sub_caratheodory; exact: compact_measurable.
+exact: (lusinNf Z Zab mZ muZ0).
+Qed.
 
-(* lemma3? *)
+(* lemma3 (converse) *)
 Lemma image_measure0_Lusin (f : R -> R) :
-{within `[a, b], continuous f} ->
-  {in `[a, b]&, {homo f : x y / x <= y}} ->
+  {within `[a, b], continuous f} ->
+  {in `[a, b] &, {homo f : x y / x <= y}} ->
   (forall Z : set R, [/\ measurable Z, Z `<=` `[a, b]%classic,
       compact Z,
       mu Z = 0 &
       mu (f @` Z) = 0]) ->
   lusinN `[a, b] f.
 Proof.
-move=> cf ndf clusin.
-move=> X Xab mX X0.
+move=> cf ndf HZ; apply: contrapT.
+move=> /existsNP[Z] /not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
+move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
+have {}muFZ0 : (mu^*%mu (f @` Z) > 0)%E.
+  rewrite measurable_mu_extE//=.
+  apply: sub_caratheodory.
+  admit.
+wlog : Z Zab mZ muZ0 muFZ0 / Gdelta Z.
+  admit.
+move=> GdeltaZ.
+have mfZ : measurable (f @` Z).
+  have set_fun_f : set_fun `[a, b] [set: R] f by [].
+  pose Hf := isFun.Build R R `[a, b]%classic [set: R] f set_fun_f.
+  pose F : {fun `[a, b] >-> [set: R]} := HB.pack f Hf.
+  have {}ndf : {in `[a, b]%classic &, {homo f : x y / x <= y}}.
+    by move=> x y; rewrite !inE/=; exact: ndf.
+  have := @delta_set_not_subset01_nondecreasing_fun R a b ab F ndf _ _ GdeltaZ.
+  apply.
+  admit. (* ?! *)
+have [K [cK KfZ muK]] : exists K, [/\ compact K, K `<=` f @` Z & (0 < mu K)%E].
+  admit.
+pose K1 := f @^-1` K.
+have cK1 : compact K1.
+  (* using continuity *)
+  admit.
+have K1Z : K1 `<=` Z.
+  admit.
+have fK1K : f @` K1 = K.
+  admit.
+have [_ _ _ _] := HZ K1.
+rewrite fK1K => /eqP; apply/negP.
+by rewrite neq_lt muK orbT.
 Admitted.
 
 End lemma3.
@@ -2000,8 +2048,8 @@ Lemma Lusin_total_variation (f : R -> R) :
   lusinN `[a, b] (fun x => fine (total_variation a ^~ f x)).
 Proof.
 move=> cf bvf lf.
-have ndt := total_variation_nondecreasing.
-have ct :=  (total_variation_continuous ab cf bvf).
+have ndt := @total_variation_nondecreasing R a b f.
+have ct := total_variation_continuous ab cf bvf.
 apply: image_measure0_Lusin => //.
 apply: contrapT.
 move=> H.
@@ -2157,8 +2205,17 @@ Abort.*)
 (*   by apply: ltnW. *)
 (* Admitted. *)
 
+Variable f : R -> R.
+
+Let set_fun_f : set_fun `[a, b]%classic [set: R] f.
+Proof. by []. Qed.
+
+HB.instance Definition _ := isFun.Build _ _ _ _ _ set_fun_f.
+
+Let F : {fun `[a, b]%classic >-> [set: R]} := f.
+
 (* lemma7 *)
-Lemma Banach_Zarecki_nondecreasing (f : R -> R) :
+Lemma Banach_Zarecki_nondecreasing :
   {within `[a, b], continuous f} ->
   {in `[a, b]  &, {homo f : x y / x <= y}} ->
   lusinN `[a, b] f ->
@@ -2452,30 +2509,59 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
   move=> _ [x Enx] <-.
   exists n => //=.
   by exists x.
-have fG_cvg : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A).
-  admit.
-move/eqP : mfA0; apply/negP.
-rewrite gt_eqF// (@lt_le_trans _ _ e0%:num%:E)//.
-move/cvg_lim : (fG_cvg) => <- //.
-apply: lime_ge.
-  apply: ereal_nonincreasing_is_cvgn.
-  apply/nonincreasing_seqP.
-  move => n.
+have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
+  have ndF : {in `[a, b]%classic &, {homo F : n m / n <= m}}.
+    by move=> x y /[!inE] xab yab xy; exact: nndf.
+  have Gopen k : open (G_ k).
+    apply: bigcup_open => i _.
+    rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
+    by apply: bigcup_open => j _; exact: interval_open.
+  have := @measure_image_not_subset01_nondecreasing_fun R a b ab F ndF G_ Gopen.
+  by rewrite /= -/A -completed_lebesgue_measureE mfA0.
+have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
+  apply: lime_ge; last exact: nearW.
+  apply: ereal_nonincreasing_is_cvgn; apply/nonincreasing_seqP => n.
   rewrite le_measure ?inE //=.
-  - rewrite image_G.
-    apply: sub_caratheodory.
-    by apply: bigcup_measurable.
-  - rewrite image_G.
-    apply: sub_caratheodory.
-    by apply: bigcup_measurable.
-  - apply: image_subset.
-    rewrite /G_.
-    apply: bigcup_sub => j /= mj.
-    move=> x Ejx.
-    exists j => //=.
-    by apply: leq_trans mj.
-  - by apply: nearW.
+  - by rewrite image_G; apply: sub_caratheodory; exact: bigcup_measurable.
+  - by rewrite image_G; apply: sub_caratheodory; exact: bigcup_measurable.
+  - apply: image_subset; apply: bigcup_sub => j /= mj x Ejx.
+    by exists j => //=; exact: leq_trans mj.
+suff: mu (\bigcap_k (f @` G_ k)) = lim (mu (F @` G_ n) @[n --> \oo]).
+  by move=> <-; apply/negP; rewrite -ltNge muFG0.
+apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
+- apply: (@le_lt_trans _ _ (mu `[F a, F b])); last first.
+    rewrite completed_lebesgue_measureE lebesgue_measure_itv//= lte_fin.
+    rewrite (lt_neqAle (f a)) nndf ?andbT.
+    by case: ifPn => //; rewrite -EFinB ltry.
+    by rewrite in_itv/= lexx/= ltW.
+    by rewrite in_itv/= lexx/= ltW.
+    exact: ltW.
+  rewrite le_measure//= ?inE.
+    apply: sub_caratheodory; rewrite image_G.
+    by apply: bigcup_measurable => p _; exact: mfE.
+    exact: sub_caratheodory.
+  move=> x/= [r [i _]].
+  rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
+  move=> -[j jni]/= ijr <-{x}.
+  apply: continuous_nondecreasing_image_itvcc => //.
+  exact: ltW.
+  by exists r => //=; exact: (absub _ _ _ _ ijr).
+- move=> k; apply: sub_caratheodory; rewrite image_G.
+  by apply: bigcup_measurable => p _; exact: mfE.
+- apply: sub_caratheodory; apply: bigcap_measurable => p _.
+  by rewrite image_G; apply: bigcup_measurable => q _; exact: mfE.
+- move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_.
+  apply: bigcup_sub => i/= yi.
+  by apply: bigcup_sup => //=; rewrite (leq_trans xy).
 Admitted.
+
+End Banach_Zarecki.
+
+Section banach_zarecki.
+Context (R : realType).
+Context (a b : R) (ab : a < b).
+
+Local Notation mu := (@completed_lebesgue_measure R).
 
 Theorem Banach_Zarecki (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -2485,7 +2571,7 @@ Theorem Banach_Zarecki (f : R -> R) :
 Proof.
 move=> cf bvf Lf.
 apply: total_variation_AC => //.
-apply: Banach_Zarecki_nondecreasing.
+apply: Banach_Zarecki_nondecreasing => //.
 - exact: total_variation_continuous.
 - move=> x y; rewrite !in_itv /= => /andP[ax xb] /andP[ay yb] xy.
   apply: fine_le.
@@ -2495,4 +2581,4 @@ apply: Banach_Zarecki_nondecreasing.
 - exact: Lusin_total_variation.
 Qed.
 
-End Banach_Zarecki.
+End banach_zarecki.
