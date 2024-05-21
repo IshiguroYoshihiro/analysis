@@ -1788,13 +1788,92 @@ Let B := not_subset01 F.
 (* Lemma 2 (i) *)
 Lemma is_countable_not_subset01_nondecreasing_fun : countable B.
 Proof.
-set g := 'pinv_(fun=> 0) `[a, b]%classic F.
-set B_ := fun (n : nat) => B `&` [set y | sup (F @^-1` [set y]) - inf (F @^-1` [set y])
-      > (b - a) / n%:R].
+pose x1 (y : R) : R := inf (`[a, b] `&` F @^-1` [set y]).
+pose x2 (y : R) := sup (`[a, b] `&` F @^-1` [set y]).
+pose B_ := fun (n : nat) => B `&` [set y | x2 y - x1 y > (b - a) / n.+1%:R].
+have x1x2 n y : (y \in B_ n) -> x1 y < x2 y.
+  rewrite inE.
+  move=> [By] /=.
+  rewrite ltrBrDr.
+  apply: lt_trans.
+  rewrite ltrDr.
+  apply: divr_gt0 => //.
+  by rewrite ltrBrDr add0r.
+have Uab n: \bigcup_(y in B_ n) `]x1 y, x2 y[%classic `<=` `[a, b].
+  apply: bigcup_sub.
+  move=> y [[[[+ _]]] _].
+  move=> [x /=[xab <-{y}]].
+  apply: subset_itvW.
+  - apply: lb_le_inf; first by exists x.
+    move=> r /= [+ _].
+    by rewrite in_itv/= => /andP[+ _].
+  - apply: sup_le_ub; first by exists x.
+    move=> r /= [+ _].
+    by rewrite in_itv/= => /andP [_ +].
 have finBn n : finite_set (B_ n).
-  admit.
+  apply: contrapT.
+  move/infiniteP.
+  move/pcard_surjP => [/= g surjg].
+  set h := 'pinv_(fun=> 0) (B_ n) g.
+  have ty : trivIset [set: nat] (fun n => `]x1 (h n), x2 (h n)[%classic).
+    apply: ltn_trivIset => m1 m2 m12.
+    have : h m1 != h m2.
+      apply/eqP.
+      rewrite /h.
+      move=> /(f_equal g).
+      rewrite !pinvK => //.
+          apply/eqP.
+          by rewrite gt_eqF.
+        rewrite inE.
+        move: surjg.
+        rewrite surjE.
+        move/(_ m2).
+        exact.
+      rewrite inE.
+      move: surjg.
+      rewrite surjE => /(_ m1).
+      exact.
+    rewrite neq_lt.
+    move=> /orP[y12|y21].
+    - have : x2 (h m2) < x1 (h m1).
+        admit.
+      move=> H.
+      apply/disj_set2P.
+      apply: lt_disjoint.
+      move=> x y.
+      rewrite !in_itv/= => /andP[_ xx2] /andP[+ _].
+      apply: lt_trans.
+      by apply: (lt_trans xx2).
+    - have x21 : x2 (h m1) < x1 (h m2).
+        rewrite lt_neqAle; apply/andP; split.
+          admit.
+        rewrite /x1/x2.
+        rewrite lb_le_inf //.
+          admit.
+        move=> x /= [xab Fxhm2].
+        rewrite sup_le_ub //.
+          admit.
+        move=> x' /=[x'ab Fxhm1].
+          admit.
+      apply/disj_set2P.
+      rewrite disj_set_sym.
+      apply: lt_disjoint.
+      move=> x y.
+      rewrite !in_itv/= => /andP[_ xx2] /andP[+ _].
+      apply: lt_trans.
+      by apply: (lt_trans xx2).
+  have : ((\sum_(n <oo) ((x2 (h n) - x1 (h n))%:E)) < (b - a)%:E)%E.
+    (* by Uab, ty *)
+    admit.
+  have : ((\sum_(n <oo) ((x2 (h n) - x1 (h n))%:E)) = +oo%E )%E.
+    (* by ty, def of B_ n *)
+    admit.
+  by move=> ->.
 have -> : B = \bigcup_n (B_ n).
-  admit.
+  apply/seteqP; split.
+    move=> x [_ []].
+    admit.
+  by move=> ? [? _ []].
 apply: bigcup_countable => //.
 move=> n _.
 by apply: finite_set_countable.
