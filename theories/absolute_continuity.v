@@ -1793,23 +1793,22 @@ Admitted.
 (* see lebegue_measure_rat in lebesgue_measure.v *)
 Lemma is_borel_not_subset01_nondecreasing_fun : measurable B. (*TODO: right measurable inferred? *)
 Proof.
-have := is_countable_not_subset01_nondecreasing_fun.
-move/countable_bijP=> [B'] /pcard_eqP/bijPex [/= g bijg].
+have /countable_bijP[N /pcard_eqP/bijPex [/= g bijg]] := is_countable_not_subset01_nondecreasing_fun.
 set h := 'pinv_(fun=> 0) B g.
-rewrite /= in h.
-have -> : B = \bigcup_i (set1 (h i)).
-  apply/seteqP; split.
-  - move=> r ns01r.
-    exists (g r) => //.
-    rewrite /h pinvKV ?inE //.
-    apply: set_bij_inj.
-    exact: bijg.
-  move=> _ [n _] /= ->.
-  have := bijpinv_bij (fun=> 0) bijg.
-  admit.
-apply: bigcup_measurable => n _.
-exact: measurable_set1.
-Admitted.
+suff -> : B = \bigcup_(i in N) (set1 (h i)).
+  apply: bigcup_measurable => n _.
+  exact: measurable_set1.
+apply/seteqP; split.
+  move=> r Br.
+  exists (g r) => //.
+    apply: (set_bij_sub bijg).
+    by exists r.
+  rewrite /h pinvKV ?inE //.
+  exact: (set_bij_inj bijg).
+move=> _ [n Nn] /= ->.
+apply: (set_bij_sub (bijpinv_bij (fun=> 0) bijg)).
+by exists n.
+Qed.
 
 Lemma delta_set_not_subset01_nondecreasing_fun Z :
   Z `<=` `]a, b[%classic -> Gdelta Z -> measurable (F @` Z). (*TODO: right measurable inferred? *) (* use mu.-cara.-measurable (f @` Z) instead? *)
