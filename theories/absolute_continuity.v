@@ -1788,6 +1788,16 @@ Let B := not_subset01 F.
 (* Lemma 2 (i) *)
 Lemma is_countable_not_subset01_nondecreasing_fun : countable B.
 Proof.
+set g := 'pinv_(fun=> 0) `[a, b]%classic F.
+set B_ := fun (n : nat) => B `&` [set y | sup (F @^-1` [set y]) - inf (F @^-1` [set y])
+      > (b - a) / n%:R].
+have finBn n : finite_set (B_ n).
+  admit.
+have -> : B = \bigcup_n (B_ n).
+  admit.
+apply: bigcup_countable => //.
+move=> n _.
+by apply: finite_set_countable.
 Admitted.
 
 (* see lebegue_measure_rat in lebesgue_measure.v *)
