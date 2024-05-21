@@ -13,6 +13,7 @@ Require Import realfun exp derive.
 (*   Gdelta (S ; set R) == S is a set of countable intersection of open sets  *)
 (*   abs_cont ==                                                              *)
 (* ```                                                                        *)
+(* ref: An Elementary Proof of the Banach–Zarecki Theorem                     *)
 (******************************************************************************)
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -1280,6 +1281,7 @@ Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
     \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
 
+(* lemma8 *)
 Lemma total_variation_AC a b (f : R -> R) : a < b ->
   bounded_variation a b f ->
   abs_cont a b (fine \o (total_variation a ^~ f)) -> abs_cont a b f.
@@ -1719,24 +1721,8 @@ End lusinN.
 
 (* End total_variation_is_cumulative. *)
 
-Section Banach_Zarecki.
-Context (R : realType).
-Context (a b : R) (ab : a < b).
-
-Local Notation mu := (@completed_lebesgue_measure R).
-
-
-
-Lemma total_variation_Lusin (f : R -> R) :
-  {within `[a, b], continuous f} ->
-  bounded_variation a b f ->
-  lusinN `[a, b] (fun x => fine ((total_variation a ^~ f) x)) ->
-  lusinN `[a, b] f.
-Proof.
-Admitted.
-
-Let increasing_points (f : R -> R) :=
-  [set y | exists x, x \in `[a, b] /\ f@^-1` [set y] = [set x]].
+Section lemma1.
+Context {R : realType}.
 
 Definition not_subset01 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
   Y `&` [set y | (X `&` f @^-1` [set y] !=set0) /\
@@ -1788,27 +1774,66 @@ have Xxi : X xi by apply: X_x; exact: X_ixi.
 by rewrite -(x_unique _ Xxi (esym fxiy)).
 Qed.
 
-Lemma nondecreasing_fun_setD_measurable f :
-  {in `[a, b] &, {homo f : x y / x <= y}} ->
-  mu.-cara.-measurable (`[f a, f b]%classic `\` increasing_points f).
-Proof.
-Abort.
+End lemma1.
 
-Lemma nondecreasing_fun_image_Gdelta_measurable (f : R -> R) (Z : set R) :
-  {in `[a, b] &, {homo f : x y / x <= y}} ->
-  Z `<=` `]a, b[%classic ->
-  Gdelta Z ->
-  mu.-cara.-measurable (f @` Z).
-Proof.
-Abort.
+Section lemma2.
+Context {R : realType}.
+Variable a b : R.
+Hypotheses ab : a < b.
 
-Lemma nondecreasing_fun_image_measure (f : R -> R) (G_ : (set R)^nat) :
-  {in `[a, b] &, {homo f : x y / x <= y}} ->
-  \bigcap_i G_ i `<=` `]a, b[%classic ->
-  mu (\bigcap_i (G_ i)) = \sum_(i \in setT) (mu (G_ i)).
-Proof.
-Abort.
+Variable F : {fun `[a, b]%classic >-> [set: R]}.
+Variable ndF : {in `[a, b]%classic &, nondecreasing_fun F}.
+Let B := not_subset01 F.
 
+(* Lemma 2 (i) *)
+Lemma is_countable_not_subset01_nondecreasing_fun : countable B.
+Proof.
+Admitted.
+
+(* see lebegue_measure_rat in lebesgue_measure.v *)
+Lemma is_borel_not_subset01_nondecreasing_fun : measurable B. (*TODO: right measurable inferred? *)
+Proof.
+have := is_countable_not_subset01_nondecreasing_fun.
+move/countable_bijP=> [B'] /pcard_eqP/bijPex [/= g bijg].
+set h := 'pinv_(fun=> 0) B g.
+rewrite /= in h.
+have -> : B = \bigcup_i (set1 (h i)).
+  apply/seteqP; split.
+  - move=> r ns01r.
+    exists (g r) => //.
+    rewrite /h pinvKV ?inE //.
+    apply: set_bij_inj.
+    exact: bijg.
+  move=> _ [n _] /= ->.
+  have := bijpinv_bij (fun=> 0) bijg.
+  admit.
+apply: bigcup_measurable => n _.
+exact: measurable_set1.
+Admitted.
+
+Lemma delta_set_not_subset01_nondecreasing_fun Z :
+  Z `<=` `]a, b[%classic -> Gdelta Z -> measurable (F @` Z). (*TODO: right measurable inferred? *) (* use mu.-cara.-measurable (f @` Z) instead? *)
+Proof.
+Admitted.
+
+Notation mu := (@lebesgue_measure R).
+
+Lemma measure_image_not_subset01_nondecreasing_fun (G : (set R)^nat) :
+  (forall k, open (G k)) ->
+  let Z := \bigcap_k (G k) in
+  mu (F @` Z) = mu (\bigcap_k F @` G k).
+Proof.
+Admitted.
+
+End lemma2.
+
+Section lemma3.
+Context (R : realType).
+Context (a b : R) (ab : a < b).
+
+Local Notation mu := (@completed_lebesgue_measure R).
+
+(* lemma3? *)
 Lemma Lusin_image_measure0 (f : R -> R) :
 {within `[a, b], continuous f} ->
   {in `[a, b]&, {homo f : x y / x <= y}} ->
@@ -1820,6 +1845,7 @@ Lemma Lusin_image_measure0 (f : R -> R) :
 Proof.
 Admitted.
 
+(* lemma3? *)
 Lemma image_measure0_Lusin (f : R -> R) :
 {within `[a, b], continuous f} ->
   {in `[a, b]&, {homo f : x y / x <= y}} ->
@@ -1832,6 +1858,29 @@ Proof.
 move=> cf ndf clusin.
 move=> X Xab mX X0.
 Admitted.
+
+End lemma3.
+
+Section lemma6.
+Context (R : realType).
+Context (a b : R) (ab : a < b).
+
+Local Notation mu := (@completed_lebesgue_measure R).
+
+(* lemma6(i) *)
+Lemma total_variation_Lusin (f : R -> R) :
+  {within `[a, b], continuous f} ->
+  bounded_variation a b f ->
+  lusinN `[a, b] (fun x => fine ((total_variation a ^~ f) x)) ->
+  lusinN `[a, b] f.
+Proof.
+Admitted.
+
+End lemma6.
+
+Section lemma4.
+Context (R : realType).
+Context (a b : R) (ab : a < b).
 
 Let ex_perfect_set (cmf : cumulative R) (cZ : set R) :
   let f := cmf in
@@ -1847,41 +1896,65 @@ Let ex_perfect_set (cmf : cumulative R) (cZ : set R) :
 Proof.
 Abort.
 
-(* Lemma 2 (i) *)
-Lemma is_countable_not_subset01_nondecreasing_fun
-  (X : set R) (Y : set R)
-  (f : {fun X >-> Y}) :
-  {in X &, nondecreasing_fun f} ->
-  countable (not_subset01 f).
-Proof.
-Admitted.
+End lemma4.
 
+Section lemma6.
+Context (R : realType).
+Context (a b : R) (ab : a < b).
 
-(* see lebegue_measure_rat in lebesgue_measure.v *)
-Lemma is_borel_not_subset01_nondecreasing_fun 
-  (X : set R) (Y : set R)
-  (f : {fun X >-> Y}) :
-  {in X &, nondecreasing_fun f} ->
-  measurable (not_subset01 f).
+Local Notation mu := (@completed_lebesgue_measure R).
+
+(* Lemma 6 *)
+Lemma Lusin_total_variation (f : R -> R) :
+  {within `[a, b], continuous f} ->
+  bounded_variation a b f ->
+  lusinN `[a, b] f ->
+  lusinN `[a, b] (fun x => fine (total_variation a ^~ f x)).
 Proof.
-move=> ndf.
-have := is_countable_not_subset01_nondecreasing_fun ndf.
-move/countable_bijP=> [B] /pcard_eqP/bijPex [/= g bijg].
-set h := 'pinv_(fun=> 0) (not_subset01 f) g.
-rewrite /= in h.
-have -> : not_subset01 f = \bigcup_i (set1 (h i)).
-  apply/seteqP; split.
-  - move=> r ns01r.
-    exists (g r) => //.
-    rewrite /h pinvKV ?inE //.
-    apply: set_bij_inj.
-    exact: bijg.
-  move=> _ [n _] /= ->.
-  have := bijpinv_bij (fun=> 0) bijg.
+move=> cf bvf lf.
+have ndt := total_variation_nondecreasing.
+have ct :=  (total_variation_continuous ab cf bvf).
+apply: image_measure0_Lusin => //.
+apply: contrapT.
+move=> H.
+pose TV := (fine \o (total_variation a)^~ f).
+have : exists n : nat, (0 < n)%N /\ exists Z_ : `I_ n -> interval R, trivIset setT (fun i => [set` (Z_ i)])
+   /\ (0 < mu (TV @` (\bigcup_i [set` Z_ i])))%E
+   /\ forall i, [/\ [set` Z_ i] `<=` `[a, b], compact [set` Z_ i] & mu [set` Z_ i] = 0].
   admit.
-apply: bigcup_measurable => n _.
-exact: measurable_set1.
+move=> [n [] n0 [Z_]] [trivZ [Uz0]] /all_and3 [Zab cZ Z0].
+pose UZ := \bigcup_i [set` Z_ i].
+have UZ_not_empty : UZ !=set0.
+  admit.
+pose l_ i : R := inf [set` Z_ i].
+pose r_ i : R := sup [set` Z_ i].
+pose alpha := mu [set (fine \o (total_variation a)^~ f) x | x in UZ].
+have rct : right_continuous TV.
+  admit.
+have monot : {in `[a, b]&, {homo TV : x y / x <= y}}.
+  admit.
+(*
+have : exists n, exists I : (R * R)^nat,
+ [/\ (forall i, (I i).1 < (I i).2 /\ `[(I i).1, (I i).2] `<=` `[a, b] ),
+     trivIset setT (fun i => `[(I i).1, (I i).2]%classic) &
+     \bigcup_(0 <= i < n) (`[(I i).1, (I i).2]%classic) = Z].*)
 Admitted.
+
+End lemma6.
+
+Section Banach_Zarecki.
+Context (R : realType).
+Context (a b : R) (ab : a < b).
+
+Local Notation mu := (@completed_lebesgue_measure R).
+
+(* NB(rei): commented out because it looks like sigma-additivity *)
+(*Lemma nondecreasing_fun_image_measure (f : R -> R) (G_ : (set R)^nat) :
+  {in `[a, b] &, {homo f : x y / x <= y}} ->
+  \bigcap_i G_ i `<=` `]a, b[%classic ->
+  mu (\bigcap_i (G_ i)) = \sum_(i \in setT) (mu (G_ i)).
+Proof.
+Abort.*)
 
 (* Lemma fG_cvg (f : R -> R) (G_ : nat -> set R) (A : set R) *)
 (*  : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A). *)
@@ -1996,43 +2069,7 @@ Admitted.
 (*   by apply: ltnW. *)
 (* Admitted. *)
 
-(* Lemma 6 *)
-Lemma Lusin_total_variation (f : R -> R) :
-  {within `[a, b], continuous f} ->
-  bounded_variation a b f ->
-  lusinN `[a, b] f ->
-  lusinN `[a, b] (fun x => fine (total_variation a ^~ f x)).
-Proof.
-move=> cf bvf lf.
-have ndt := total_variation_nondecreasing.
-have ct :=  (total_variation_continuous ab cf bvf).
-apply: image_measure0_Lusin => //.
-apply: contrapT.
-move=> H.
-pose TV := (fine \o (total_variation a)^~ f).
-have : exists n : nat, (0 < n)%N /\ exists Z_ : `I_ n -> interval R, trivIset setT (fun i => [set` (Z_ i)])
-   /\ (0 < mu (TV @` (\bigcup_i [set` Z_ i])))%E
-   /\ forall i, [/\ [set` Z_ i] `<=` `[a, b], compact [set` Z_ i] & mu [set` Z_ i] = 0].
-  admit.
-move=> [n [] n0 [Z_]] [trivZ [Uz0]] /all_and3 [Zab cZ Z0].
-pose UZ := \bigcup_i [set` Z_ i].
-have UZ_not_empty : UZ !=set0.
-  admit.
-pose l_ i : R := inf [set` Z_ i].
-pose r_ i : R := sup [set` Z_ i].
-pose alpha := mu [set (fine \o (total_variation a)^~ f) x | x in UZ].
-have rct : right_continuous TV.
-  admit.
-have monot : {in `[a, b]&, {homo TV : x y / x <= y}}.
-  admit.
-(*
-have : exists n, exists I : (R * R)^nat,
- [/\ (forall i, (I i).1 < (I i).2 /\ `[(I i).1, (I i).2] `<=` `[a, b] ),
-     trivIset setT (fun i => `[(I i).1, (I i).2]%classic) &
-     \bigcup_(0 <= i < n) (`[(I i).1, (I i).2]%classic) = Z].*)
-Admitted.
-
-
+(* lemma7 *)
 Lemma Banach_Zarecki_nondecreasing (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b]  &, {homo f : x y / x <= y}} ->
