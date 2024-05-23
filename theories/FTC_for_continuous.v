@@ -319,3 +319,5 @@ rewrite !ltxx.
 rewrite /TVf total_variationxx nondecreasing_total_variation //=; last by apply/ltW.
 by rewrite subr0 EFinD.
 Admitted.
+
+End FTC_for_continous.
