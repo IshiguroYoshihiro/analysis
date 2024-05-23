@@ -219,8 +219,7 @@ move=> ndf x.
 rewrite in_itv/= => /andP[ax xb].
 have [cstx|cstx] := pselect (\forall y \near x, f y = cst (f x) y).
   by right; apply: filterS cstx.
-Admitted.
-
+Abort.
 
 (* #PR1221 *)
 Lemma not_near_at_leftP T (f : R -> T) (p : R) (P : pred T) :
@@ -329,157 +328,94 @@ Proof.
 move=> ab cf ndf.
 have ndfcc := continuous_in_nondecreasing_oo_cc ab cf ndf.
 have [cf' [fxa fxb]] := (continuous_within_itvP f ab).1 cf.
-(* TODO: use *)
-have Hfb: (\forall x \near b^'-, f x = cst (f b) x) -> exists2 x : R, x \in `]a, b[ & f b = f x.
-  move=> fb.
-  near b^'- => b0.
-  exists b0.
-    by rewrite in_itv/=; apply/andP.
-  by near: b0; apply: filterS fb => ? ->.
-have [fa|fa] := pselect (\forall x \near a^'+, f x = cst (f a) x).
-  (* TODO: use *)
-  have [invfx xab Hfa] : exists2 x : R, x \in `]a, b[ & f a = f x.
+have lefab y : f a <= y -> y <= f b -> minr (f a) (f b) <= y <= maxr (f a) (f b).
+  by move=> fax xfb; rewrite ge_min fax /= le_max xfb orbT.
+have ge_fa x : a < x -> x < b -> f a <= f x.
+  by move=> ax xb; apply: ndfcc;  rewrite ?in_itv/= ?lexx ?ltW.
+have le_fb x : a < x -> x < b -> f x <= f b.
+  by move=> ax xb; apply: ndfcc;  rewrite ?in_itv/= ?lexx ?ltW.
+have Hfa : (\forall x \near a^'+, f x = f a)
+      <-> exists2 x : R, x \in `]a, b[ & f x = f a.
+  split; [move=> fa|move=> [r /[dup]rab + fra]; rewrite in_itv/= => /andP[ra _]].
     near a^'+ => a0.
-    exists a0.
-      by rewrite in_itv/=; apply/andP.
+    exists a0; first by rewrite in_itv/=; apply/andP.
     by near: a0; apply: filterS fa => ? ->.
-  have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
-    exists true, false; apply/seteqP; split => [x/=|x].
-    - move=> [r]; rewrite in_itv/= => /andP[ar rb] <-{x}.
-      rewrite in_itv/=; apply/andP; split.
-(* f a <= f r *)
-        by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-(* f r <= f b *)
-      by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-(* *)
-    - rewrite /= in_itv/= => /andP[fax xfb].
-      have /(IVT (ltW ab) cf) [r] : minr (f a) (f b) <= x <= maxr (f a) (f b).
-        by rewrite ge_min fax/= le_max xfb orbT.
+  near=> a0.
+  apply/eqP; rewrite eq_le; apply/andP; split; last exact: ge_fa.
+  rewrite -fra.
+  apply: ndf => //; first by rewrite in_itv/=; apply/andP.
+  by near: a0; apply: nbhs_right_le.
+have Hfb: (\forall x \near b^'-, f x = f b)
+    <-> exists2 x : R, x \in `]a, b[ & f x = f b.
+  split; [move=> fb|move=> [r /[dup]rab + frb]; rewrite in_itv/= => /andP[_ rb]].
+    near b^'- => b0.
+    exists b0; first by rewrite in_itv/=; apply/andP.
+    by near: b0; apply: filterS fb => ? ->.
+  near=> b0.
+  apply/eqP; rewrite eq_le ; apply/andP; split; first by apply: le_fb.
+  rewrite -frb.
+  apply: ndf => //; first by rewrite ?in_itv/=; exact/andP.
+  by near: b0; apply: nbhs_left_ge.
+have [fa|fa] := pselect (\forall x \near a^'+, f x = f a).
+  have [fb|fb] := pselect (\forall x \near b^'-, f x = f b).
+  - exists true, false; apply/seteqP; split => [x/=|y].
+        move=> [r]; rewrite in_itv/= => /andP[ar rb] <-{x}.
+        by rewrite in_itv/=; apply/andP; split; [apply: ge_fa|apply: le_fb].
+      rewrite /= in_itv/= => /andP[fay yfb].
+      have [r] := (IVT (ltW ab) cf (lefab y fay yfb)).
       rewrite in_itv => /= /andP[].
-      rewrite !le_eqVlt => /predU1P[<-{r} _ {}fax|ar /predU1P[rb frx|rb frx]].
-      (* - rewrite -fax. *)
-      (*   by exists invfx. *)
-      - near a^'+ => a0.
-        exists a0.
-          by rewrite in_itv/=; apply/andP; split.
-        by near: a0; apply: filterS fa => z ->.
-      - subst x r.
-        near b^'- => b0.
-        exists b0.
-        by rewrite in_itv/=; apply/andP; split.
-        by near: b0; apply: filterS fb => z ->.
-      - exists r => //.
-        by rewrite in_itv/= ar rb.
-  - exists true, true; apply/seteqP; split => [x/=|x].
-      move=> [y]; rewrite in_itv/= => /andP[ay yb] <-{x}.
-      rewrite in_itv/=; apply/andP; split.
-(* f a <= f y *)
-      by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-(* f y < f b *)
-      rewrite lt_neqAle; apply/andP; split; last first.
-        by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-      apply/negP => /eqP fyb.
-      apply: fb.
-      near=> z.
-      rewrite /cst/=.
-      apply/eqP; rewrite eq_le; apply/andP; split.
-      - by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-      - rewrite -fyb.
-        by apply: ndf; rewrite ?in_itv/=;
-          [rewrite ay
-          |exact/andP
-          |near: z; exact: nbhs_left_ge].
-(* *)
-    - rewrite /= in_itv/= => /andP[fax xfb].
-      have /(IVT (ltW ab) cf) [r] : minr (f a) (f b) <= x <= maxr (f a) (f b).
-        by rewrite ge_min fax/= le_max (ltW xfb) orbT.
+      rewrite !le_eqVlt => /predU1P[<-{r} _ {fay} <- |ar /predU1P[/[swap] <- -> |rb <-]];
+      [exact/Hfa
+      |exact/Hfb
+      |by exists r; rewrite // in_itv/= ar rb].
+  - exists true, true; apply/seteqP; split => [x/=|y].
+        move=> [r /[dup]rab]; rewrite in_itv/= => /andP[ar rb] <-{x}.
+        rewrite in_itv/=; apply/andP; split; first exact: ge_fa.
+        rewrite lt_neqAle; apply/andP; split; last exact: le_fb.
+        apply/negP => /eqP fyb.
+        move/Hfb : fb; apply.
+        by exists r.
+      rewrite /= in_itv/= => /andP[fay yfb].
+      have [r] := (IVT (ltW ab) cf (lefab y fay (ltW yfb))).
       rewrite in_itv => /= /andP[].
-      rewrite !le_eqVlt => /predU1P[<-{r} _ {}fax|ar /predU1P[rb frx|rb fxr]].
-      - near a^'+ => a0.
-        exists a0.
-          by rewrite in_itv/=; apply/andP; split.
-        by near: a0; apply: filterS fa => z ->.
-      - by subst x r; rewrite ltxx in xfb.
-      - by exists r => //; rewrite in_itv/= ar rb.
-have [fb|fb] := pselect (\forall x \near b^'-, f x = cst (f b) x).
-- exists false; exists false; apply/seteqP; split => [x/=|x].
-  - move=> [r]; rewrite in_itv/= => /andP[ar rb] <-{x}.
-    rewrite in_itv/=; apply/andP; split.
-(* f a < f r *)
-      rewrite lt_neqAle; apply/andP; split; last first.
-        by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-      apply/negP => /eqP far.
-      apply: fa.
-      near=> z.
-      rewrite /cst/=.
-      apply/eqP; rewrite eq_le; apply/andP; split.
-      - rewrite far.
-        by apply: ndf; rewrite ?in_itv/=;
-          [exact/andP
-          |rewrite ar
-          |near: z; exact: nbhs_right_le].
-      - by apply: ndfcc; rewrite ?in_itv/= ?lexx ?ltW.
-(* f r <= f b *)
-    by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-(* *)
-  - rewrite /=in_itv/=.
-    move/andP => [fax xfb].
-    have /(IVT (ltW ab) cf) [r] : minr (f a) (f b) <= x <= maxr (f a) (f b).
-      by rewrite ge_min le_max xfb (ltW fax) orbT.
-    rewrite in_itv/= => /andP [].
-    rewrite !le_eqVlt; move/predU1P => [ar _ frx|ar /predU1P[-> <- |rb <-]].
-    - by subst x r; rewrite ltxx in fax.
-    - near b^'- => z.
-      exists z.
-        rewrite in_itv/=.
-        by apply/andP; split.
-      near: z.
-      by apply: filterS fb.
-    - exists r => //; by rewrite in_itv/= ar.
-- exists false; exists true.
-  rewrite eqEsubset; split.
-  - move=> x /= [y].
-    rewrite in_itv/= => /andP[ay yb] <-{x}.
-    rewrite in_itv/=; apply/andP; split.
-(* f a < f y *)
-      rewrite lt_neqAle; apply/andP; split; last first.
-        by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-      apply/negP => /eqP fay.
-      apply: fa.
-      near=> a0.
-      rewrite /cst.
-      apply/eqP; rewrite eq_le; apply/andP; split.
-      - rewrite fay.
-        by apply: ndf; rewrite ?in_itv/=;
-        [exact/andP
-        |rewrite ay
-        |near: a0; exact: nbhs_right_le].
-      by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-(* f y < f b *)
-    rewrite lt_neqAle; apply/andP; split; last first.
-      by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-    apply/negP => /eqP fyb.
-    apply: (fb).
-    near=> b0.
-    rewrite /cst.
-    apply/eqP; rewrite eq_le; apply/andP; split.
-    - by rewrite ndfcc// ?in_itv/= ?lexx ?ltW.
-    - rewrite -fyb.
-      by apply: ndf; rewrite ?in_itv/=;
-      [rewrite ay
-      |exact/andP
-      |near: b0; exact: nbhs_left_ge].
-(* *)
-  move=> y /=.
-  rewrite in_itv/=.
-  move/andP => [fay yfb].
-  have /(IVT (ltW ab) cf) [r]: minr (f a) (f b) <= y <= maxr (f a) (f b).
-    by rewrite ge_min le_max (ltW fay) (ltW yfb) orbT.
-  rewrite in_itv/= => /andP[].
-  rewrite !le_eqVlt => /predU1P[<-{r} _ faeqy|ar /predU1P[rb freqy|rb <-]].
-  - by rewrite faeqy ltxx in fay.
-  - by subst r y; rewrite ltxx in yfb.
-  - by exists r; rewrite ?in_itv/= ?ar.
+      rewrite !le_eqVlt => /predU1P[<- _ {fay} <- |ar /predU1P[rb frx|rb fxr]];
+      [exact/Hfa
+      |by subst y r; rewrite ltxx in yfb
+      |by exists r; rewrite // in_itv/= ar rb].
+  have [fb|fb] := pselect (\forall x \near b^'-, f x = f b).
+  - exists false; exists false; apply/seteqP; split => [x/=|y].
+      move=> [r /[dup]rab +]; rewrite in_itv/= => /andP[ar rb] <-{x}.
+      rewrite in_itv/=; apply/andP; split; last exact: le_fb.
+        rewrite lt_neqAle; apply/andP; split; last exact: ge_fa.
+        apply/negP => /eqP far.
+        move/Hfa : fa; apply.
+        by exists r.
+      rewrite /=in_itv/= => /andP[fay yfb].
+      have [r] := (IVT (ltW ab) cf (lefab y (ltW fay) yfb)).
+      rewrite in_itv => /= /andP[].
+      rewrite !le_eqVlt; move/predU1P => [ar _ frx|ar /predU1P[-> <- |rb <-]];
+      [by subst y r; rewrite ltxx in fay
+      |exact/Hfb
+      |by exists r; rewrite // in_itv/= ar rb].
+  - exists false; exists true.
+      rewrite eqEsubset; split => [|y].
+        move=> _ /= [x /[dup]xab + <-]; rewrite in_itv/= => /andP[ax xb].
+        rewrite in_itv/=; apply/andP; split.
+          rewrite lt_neqAle; apply/andP; split; last exact: ge_fa.
+          apply/negP => /eqP fafx.
+          move/Hfa : fa; apply.
+          by exists x.
+        rewrite lt_neqAle; apply/andP; split; last exact: le_fb.
+        apply/negP => /eqP fxfb.
+        move/Hfb : fb; apply.
+        by exists x.
+      rewrite /= in_itv/= => /andP[fay yfb].
+      have [r] := (IVT (ltW ab) cf (lefab y (ltW fay) (ltW yfb))).
+      rewrite in_itv => /= /andP[].
+      rewrite !le_eqVlt => /predU1P[<-{r} _ faeqy|ar /predU1P[rb freqy|rb <-]];
+      [by rewrite faeqy ltxx in fay
+      |by subst r y; rewrite ltxx in yfb
+      |by exists r; rewrite // in_itv/= ar rb].
 Unshelve. all: by end_near. Qed.
 
 Lemma integral_continuous_nondecreasing_itv
