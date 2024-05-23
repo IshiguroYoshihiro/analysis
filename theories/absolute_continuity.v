@@ -1678,6 +1678,13 @@ Definition not_subset01 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
   Y `&` [set y | (X `&` f @^-1` [set y] !=set0) /\
          ~ is_subset1 (X `&` f @^-1` [set y])].
 
+(* Lemma not_subset01P (X : set R) (Y : set R) (f : {fun X >-> Y}) : *)
+(*   not_subset01 f -> *)
+(*   (exists x0 x1, *)
+(*    [/\ x0 \in (Y `&` [set y | (X `&` f @^-1` [set y])]), *)
+(*       x1 \in (Y `&` [set y | (X `&` f @^-1` [set y])]) & *)
+(*       x0 != x1]). *)
+
 Lemma lemma1 (X : set R) (Y : set R) (f : {fun X >-> Y}) (I : pointedType)
     (X_ : I -> set R) :
     (forall i, X_ i `<=` X) ->
@@ -1741,8 +1748,7 @@ Proof.
 pose x1 (y : R) : R := inf (`[a, b] `&` F @^-1` [set y]).
 pose x2 (y : R) := sup (`[a, b] `&` F @^-1` [set y]).
 pose B_ := fun (n : nat) => B `&` [set y | x2 y - x1 y > (b - a) / n.+1%:R].
-have x1x2 n y : (y \in B_ n) -> x1 y < x2 y.
-  rewrite inE.
+have x1x2 n y : B_ n y -> x1 y < x2 y.
   move=> [By] /=.
   rewrite ltrBrDr.
   apply: lt_trans.
@@ -1760,11 +1766,28 @@ have Uab n: \bigcup_(y in B_ n) `]x1 y, x2 y[%classic `<=` `[a, b].
   - apply: sup_le_ub; first by exists x.
     move=> r /= [+ _].
     by rewrite in_itv/= => /andP [_ +].
+have a1y y : a <= x1 y.
+  admit.
+have y2b y : x2 y <= b.
+  admit.
+have x1x2F y : B y -> `]x1 y, x2 y[ `<=` F @^-1` [set y].
+  rewrite /B /not_subset01/= => -[_ [Fy0]].
+  move=> /existsNP[s1] /existsNP[s2].
+  move=> /not_implyP[[/= s1ab Fs1r]] /not_implyP[[s2ab Fs2r]] /eqP s1s2.
+  have [u [uoo sdu Fu]] : exists u : R^nat,
+      [/\ u n @[n --> \oo] --> x1 y, decreasing_seq u & forall n, F (u n) = y /\ u n > x1 y].
+    admit.
+  admit.
 have finBn n : finite_set (B_ n).
   apply: contrapT.
   move/infiniteP.
   move/pcard_surjP => [/= g surjg].
   set h := 'pinv_(fun=> 0) (B_ n) g.
+  have Bnh m : B_ n (h m).
+    admit.
+  have Bh m : B (h m).
+    have := Bnh m.
+    by apply: subIsetl.
   have ty : trivIset [set: nat] (fun n => `]x1 (h n), x2 (h n)[%classic).
     apply: ltn_trivIset => m1 m2 m12.
     have : h m1 != h m2.
@@ -1783,35 +1806,15 @@ have finBn n : finite_set (B_ n).
       move: surjg.
       rewrite surjE => /(_ m1).
       exact.
-    rewrite neq_lt.
-    move=> /orP[y12|y21].
-    - have : x2 (h m2) < x1 (h m1).
-        admit.
-      move=> H.
-      apply/disj_set2P.
-      apply: lt_disjoint.
-      move=> x y.
-      rewrite !in_itv/= => /andP[_ xx2] /andP[+ _].
-      apply: lt_trans.
-      by apply: (lt_trans xx2).
-    - have x21 : x2 (h m1) < x1 (h m2).
-        rewrite lt_neqAle; apply/andP; split.
-          admit.
-        rewrite /x1/x2.
-        rewrite lb_le_inf //.
-          admit.
-        move=> x /= [xab Fxhm2].
-        rewrite sup_le_ub //.
-          admit.
-        move=> x' /=[x'ab Fxhm1].
-          admit.
-      apply/disj_set2P.
-      rewrite disj_set_sym.
-      apply: lt_disjoint.
-      move=> x y.
-      rewrite !in_itv/= => /andP[_ xx2] /andP[+ _].
-      apply: lt_trans.
-      by apply: (lt_trans xx2).
+    move=> neqhm12.
+    apply: (subsetI_eq0 (x1x2F (h m2) (Bh m2)) (x1x2F (h m1) (Bh m1))).
+    have := (@preimage_setI_eq0 _ _ (Fun.sort F) [set h m2] [set h m1]).
+    move=> [+ _].
+    apply.
+    apply: preimage0eq.
+    rewrite -subset0 => x /= [->].
+    move/esym/eqP.
+    by apply/negP.
   have : ((\sum_(n <oo) ((x2 (h n) - x1 (h n))%:E)) < (b - a)%:E)%E.
     (* by Uab, ty *)
     admit.
