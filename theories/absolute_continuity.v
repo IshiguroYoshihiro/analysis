@@ -24,6 +24,15 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+(* TODO: PR *)
+Lemma nbhs_infty_gtr {R : realType} (r : R) :
+  \forall n \near \oo, (r < n%:R)%R.
+Proof.
+exists (`|(ceil r)|.+1)%N => // n /=; rewrite -(ler_nat R); apply: lt_le_trans.
+rewrite -natr1 -[ltLHS]addr0 ler_ltD//.
+by rewrite (le_trans (ceil_ge _))// natr_absz ler_int ler_norm.
+Qed.
+
 Lemma big_nat_setUP T (n : nat) (F : nat -> _) (x : T) :
 reflect (exists2 i, (i < n)%N & x \in F i) (x \in \big[setU/set0]_(0 <= i < n) F i).
 Proof.
@@ -1748,6 +1757,61 @@ Proof.
 pose x1 (y : R) : R := inf (`[a, b] `&` F @^-1` [set y]).
 pose x2 (y : R) := sup (`[a, b] `&` F @^-1` [set y]).
 pose B_ := fun (n : nat) => B `&` [set y | x2 y - x1 y > (b - a) / n.+1%:R].
+have x1x2B y : B y -> x1 y < x2 y.
+  move=> [_ /= [[r [abr /= <-{y}]]]].
+  move=> /existsNP[x] /existsNP[y].
+  move=> /not_implyP[[/= abx /= FxFr]] /not_implyP[[aby /= FyFr]].
+  move/eqP.
+  rewrite real_neqr_lt => //=.
+  move/orP => [xy|yx].
+    have x1x : x1 (F r) <= x.
+      rewrite -(inf1 x).
+      apply: le_inf.
+          move=> _ /= [_ -> <-].
+          exists (- x); split => //=.
+          by exists x.
+        by exists x.
+      split.
+        by exists r.
+      exists a.
+      move=> z [] /=.
+      by rewrite in_itv/= => /andP[].
+    apply: (le_lt_trans x1x).
+    have : y <= x2 (F r).
+      rewrite -(sup1 y).
+      apply: le_sup.
+          rewrite sub1set inE.
+          by exists y.
+        by exists y.
+      split.
+        by exists r.
+      exists b.
+      move=> z [] /=.
+      by rewrite in_itv/= => /andP[].
+    by apply: lt_le_trans.
+  have x1y : x1 (F r) <= y.
+    rewrite -(inf1 y).
+    apply: le_inf.
+        move=> _ /= [_ -> <-].
+        exists (- y); split => //.
+        by exists y.
+      by exists y.
+    split.
+      by exists y.
+    exists a => z /=[].
+    by rewrite in_itv/= => /andP[].
+  apply: (le_lt_trans x1y).
+  have : x <= x2 (F r).
+    rewrite -(sup1 x).
+    apply: le_sup.
+        rewrite sub1set inE.
+        by exists x.
+      by exists x.
+    split.
+      by exists r.
+    exists b => z /=[].
+    by rewrite in_itv/= => /andP[].
+  by apply: lt_le_trans.
 have x1x2 n y : B_ n y -> x1 y < x2 y.
   move=> [By] /=.
   rewrite ltrBrDr.
@@ -1766,10 +1830,20 @@ have Uab n: \bigcup_(y in B_ n) `]x1 y, x2 y[%classic `<=` `[a, b].
   - apply: sup_le_ub; first by exists x.
     move=> r /= [+ _].
     by rewrite in_itv/= => /andP [_ +].
-have a1y y : a <= x1 y.
-  admit.
-have y2b y : x2 y <= b.
-  admit.
+have a1y y : B y -> a <= x1 y.
+  move=> [_ /= [[r [abr /= <-{y}]]]].
+  move=> /existsNP[x] /existsNP[_] /not_implyP[[/= abx /= FxFr]] /not_implyP[_] _.
+  rewrite lb_le_inf//.
+    by exists x; split.
+  move=> z /=[]//.
+  by rewrite in_itv/= => /andP[].
+have y2b y : B y -> x2 y <= b.
+  move=> [_ /= [[r [abr /= <-{y}]]]].
+  move=> /existsNP[x] /existsNP[_] /not_implyP[[/= abx /= FxFr]] /not_implyP[_] _.
+  rewrite sup_le_ub//.
+    by exists x; split.
+  move=> z /=[]//.
+  by rewrite in_itv/= => /andP[].
 have x1x2F y : B y -> `]x1 y, x2 y[ `<=` F @^-1` [set y].
   rewrite /B /not_subset01/= => -[_ [Fy0]].
   move=> /existsNP[s1] /existsNP[s2].
@@ -1784,10 +1858,8 @@ have finBn n : finite_set (B_ n).
   move/pcard_surjP => [/= g surjg].
   set h := 'pinv_(fun=> 0) (B_ n) g.
   have Bnh m : B_ n (h m).
-    admit.
-  have Bh m : B (h m).
-    have := Bnh m.
-    by apply: subIsetl.
+    by apply: (surjpinv_image_sub surjg).
+  have Bh m : B (h m) by have [] := Bnh m.
   have ty : trivIset [set: nat] (fun n => `]x1 (h n), x2 (h n)[%classic).
     apply: ltn_trivIset => m1 m2 m12.
     have : h m1 != h m2.
@@ -1815,17 +1887,84 @@ have finBn n : finite_set (B_ n).
     rewrite -subset0 => x /= [->].
     move/esym/eqP.
     by apply/negP.
-  have : ((\sum_(n <oo) ((x2 (h n) - x1 (h n))%:E)) < (b - a)%:E)%E.
+  have : ((\sum_(n <oo) ((x2 (h n) - x1 (h n))%:E)) <= (b - a)%:E)%E.
     (* by Uab, ty *)
-    admit.
+    under eq_fun.
+      move=> t.
+      under eq_bigr.
+        move=> s _.
+        have -> :(x2 (h s) - x1 (h s))%:E = lebesgue_measure `]x1 (h s), x2 (h s)[.
+          rewrite lebesgue_measure_itv /=.
+          rewrite lte_fin (x1x2 _ _ (Bnh s)).
+          by rewrite EFinD.
+        over.
+      rewrite /=.
+      over.
+    rewrite /=.
+    have -> : \big[+%R/0%R]_(0 <= i <oo) lebesgue_measure `](x1 (h i)), (x2 (h i))[
+        = lebesgue_measure (\bigcup_i `]x1 (h i), x2 (h i)[%classic).
+      apply: cvg_lim => //.
+      apply: measure_semi_sigma_additive => //.
+      apply: bigcup_measurable => k _.
+      exact: measurable_itv.
+    have -> : (b - a)%:E = lebesgue_measure `[a, b].
+      by rewrite lebesgue_measure_itv lte_fin ab.
+    apply: le_measure.
+        rewrite inE.
+        apply: bigcup_measurable => k _.
+        exact: measurable_itv.
+      rewrite inE.
+      exact: measurable_itv.
+    move=> /= r [m _ x1x2r].
+    apply: (Uab n).
+    by exists (h m).
   have : ((\sum_(n <oo) ((x2 (h n) - x1 (h n))%:E)) = +oo%E )%E.
     (* by ty, def of B_ n *)
-    admit.
+    have Hsum : (\sum_(0 <= s <oo) ((b - a) / n.+1%:R)%:E = +oo)%E.
+      apply: cvg_lim => //.
+      under eq_cvg.
+        move=> m.
+        rewrite sumEFin.
+        over.
+      apply/cvgeryP.
+      apply/cvgryPge.
+      move=> r.
+      near=> m.
+      rewrite sumr_const_nat subn0.
+      rewrite -[X in _ <= X]mulr_natr.
+      rewrite -ler_pdivrMl; last first.
+        apply: divr_gt0 => //.
+        by rewrite subr_gt0.
+      near: m.
+      exact: nbhs_infty_ger.
+    apply/eqP; rewrite eq_le; apply/andP; split; first exact: leey.
+    rewrite -Hsum.
+    rewrite lee_nneseries => // k _.
+      rewrite lee_fin.
+      apply: divr_ge0 => //.
+      by rewrite subr_ge0 ltW.
+    have := Bnh k.
+    rewrite /B_ => /=.
+    by move=> [_ /ltW].
   by move=> ->.
 have -> : B = \bigcup_n (B_ n).
   apply/seteqP; split.
     move=> x [_ []].
-    admit.
+    move=> [r] /= [rab <-{x}] nsub1.
+    near \oo => n.
+    exists n => //.
+    split.
+      split => //=; split => //.
+      by exists r.
+    rewrite /=.
+    rewrite ltr_pdivrMr // -ltr_pdivrMl; last first.
+      rewrite subr_gt0 (x1x2B (F r)) //.
+      rewrite /B; split => //=; split => //.
+      by exists r.
+    rewrite -addn1 natrD.
+    rewrite -ltrBlDr.
+    near: n.
+    exact: nbhs_infty_gtr.
   by move=> ? [? _ []].
 apply: bigcup_countable => //.
 move=> n _.
