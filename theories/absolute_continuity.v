@@ -1848,10 +1848,37 @@ have x1x2F y : B y -> `]x1 y, x2 y[ `<=` F @^-1` [set y].
   rewrite /B /not_subset01/= => -[_ [Fy0]].
   move=> /existsNP[s1] /existsNP[s2].
   move=> /not_implyP[[/= s1ab Fs1r]] /not_implyP[[s2ab Fs2r]] /eqP s1s2.
-  have [u [uoo sdu Fu]] : exists u : R^nat,
-      [/\ u n @[n --> \oo] --> x1 y, decreasing_seq u & forall n, F (u n) = y /\ u n > x1 y].
-    admit.
-  admit.
+(* use RhullK *)
+  apply: (@subset_trans _ (`[a, b] `&` F @^-1` [set y])).
+    rewrite -[X in _ `<=` X]RhullK.
+      rewrite /Rhull /=.
+      rewrite !ifT.
+          apply: subset_itvW.
+            by rewrite lexx.
+          by rewrite lexx.
+        apply: asboolT.
+        exists b => x/=.
+        by rewrite in_itv/=; move=> [/andP[]].
+      apply: asboolT.
+      exists a => x/=.
+      by rewrite in_itv/=; move=> [/andP[]].
+    rewrite inE.
+    move=> p q/=.
+    rewrite !in_itv/=.
+    move=> [/andP[ap pb] Fpy] [/andP[aq qb] Fqy].
+    move=> r /andP[pr rq].
+    rewrite in_itv/=; split; [|apply/eqP; rewrite eq_le]; apply/andP; split.
+          by apply: le_trans pr.
+        by apply: le_trans qb.
+      rewrite -Fqy.
+      apply: ndF; rewrite // inE/= in_itv/=; apply/andP; split=> //.
+        by apply: le_trans pr.
+      by apply: le_trans qb.
+    rewrite -Fpy.
+    apply: ndF; rewrite // inE/= in_itv/=; apply/andP; split=> //.
+      by apply: le_trans pr.
+    by apply: le_trans qb.
+  exact: subIsetr.
 have finBn n : finite_set (B_ n).
   apply: contrapT.
   move/infiniteP.
@@ -1969,7 +1996,8 @@ have -> : B = \bigcup_n (B_ n).
 apply: bigcup_countable => //.
 move=> n _.
 by apply: finite_set_countable.
-Admitted.
+Unshelve. all: end_near.
+Qed.
 
 (* see lebegue_measure_rat in lebesgue_measure.v *)
 Lemma is_borel_not_subset01_nondecreasing_fun : measurable B. (*TODO: right measurable inferred? *)
