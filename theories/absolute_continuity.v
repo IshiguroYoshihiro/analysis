@@ -33,6 +33,24 @@ rewrite -natr1 -[ltLHS]addr0 ler_ltD//.
 by rewrite (le_trans (ceil_ge _))// natr_absz ler_int ler_norm.
 Qed.
 
+(* TODO: PR *)
+Lemma countable_lebesgue_measurable {R : realType} (S : set R) :
+  countable S -> measurable S.
+Proof.
+move/countable_injP => [f injf].
+rewrite -(injpinv_image (fun=> 0) injf).
+rewrite [X in _ X](_ :_= \bigcup_(x in f @` S) [set 'pinv_(fun=> 0) S f x]); last first .
+  rewrite eqEsubset; split => x/=.
+    move=> [n [xn Sxn xnn nx]].
+    exists n => //=.
+    by exists xn.
+  move=> [n [xn Sxn xnn] /= xinvn].
+  exists n => //=.
+  by exists xn.
+apply: bigcup_measurable => n _.
+exact: measurable_set1.
+Qed.
+
 Lemma big_nat_setUP T (n : nat) (F : nat -> _) (x : T) :
 reflect (exists2 i, (i < n)%N & x \in F i) (x \in \big[setU/set0]_(0 <= i < n) F i).
 Proof.
@@ -474,7 +492,7 @@ Implicit Type (f : R -> R) (a b: R).
 
 Local Notation mu := (@lebesgue_measure R).
 
-Let closure_itvoo (a b : R) :
+Let closure_itvoo (a b : R) : a < b ->
 closure `]a, b[%classic = `[a, b]%classic.
 Proof.
 rewrite closure_limit_point.
@@ -1996,8 +2014,7 @@ have -> : B = \bigcup_n (B_ n).
 apply: bigcup_countable => //.
 move=> n _.
 by apply: finite_set_countable.
-Unshelve. all: end_near.
-Qed.
+Unshelve. all: end_near. Qed.
 
 (* see lebegue_measure_rat in lebesgue_measure.v *)
 Lemma is_borel_not_subset01_nondecreasing_fun : measurable B. (*TODO: right measurable inferred? *)
@@ -2022,6 +2039,36 @@ Qed.
 Lemma delta_set_not_subset01_nondecreasing_fun Z :
   Z `<=` `]a, b[%classic -> Gdelta Z -> measurable (F @` Z). (*TODO: right measurable inferred? *) (* use mu.-cara.-measurable (f @` Z) instead? *)
 Proof.
+case : (pselect (Z !=set0)); last first.
+  move/set0P/negP/negPn/eqP => -> _ _.
+  by rewrite image_set0.
+move=> Z0 + [G_ oG_].
+move/[swap]; move:Z0; move/[swap] => -> G0 Gab.
+(* w.l.o.g. F @` G_ n is a countable union of intervals *)
+ wlog: G_ oG_ G0 Gab / (exists ab_ : nat -> nat -> (R * R), forall n,(forall i, (ab_ n i).1 < (ab_ n i).2) /\ F @` (G_ n) = \bigcup_i `](ab_ n i).1, (ab_ n i).2[%classic).
+  admit.
+move=> [ab_ Hab_].
+have ab12 n i : (ab_ n i).1 < (ab_ n i).2 by have [+ _] := (Hab_ n).
+have FG_itv n : F @` (G_ n) = \bigcup_i `](ab_ n i).1, (ab_ n i).2[%classic.
+  by have [_ +] := Hab_ n.
+rewrite -(setIidPr (\bigcap_i (F @` (G_ i))) (F @` \bigcap_i (G_ i))).2; last first.
+  move=> _ /= [x Gx <-] n _ /=.
+  by exists x => //; apply: Gx.
+rewrite -(setDD (\bigcap_i (F @` (G_ i))) (F @` (\bigcap_i (G_ i)))).
+apply: measurableD.
+  apply: bigcap_measurable => n _.
+  rewrite (FG_itv n).
+  apply: bigcup_measurable => k _.
+  exact: measurable_itv.
+apply: countable_lebesgue_measurable.
+apply: (@sub_countable _ _ _ B); last exact: is_countable_not_subset01_nondecreasing_fun.
+apply: subset_card_le.
+move=> y/=[Gy].
+move/forall2NP => H.
+split => //=.
+split.
+  admit.
+admit.
 Admitted.
 
 Notation mu := (@lebesgue_measure R).
@@ -2057,6 +2104,29 @@ have /= mZ : (wlength idfun)^*%mu.-cara.-measurable Z.
 exact: (lusinNf Z Zab mZ muZ0).
 Qed.
 
+  (* Lemma open_subset_itvoocc S : open S -> S `<=` `[a, b] -> S `<=` `]a, b[. *)
+  (*   move=> oS Sab. *)
+  (*   apply: (@subset_trans _ [set` Rhull S]). *)
+  (*     exact: sub_Rhull. *)
+  (*     (* lemma? *) *)
+  (*   have itv_closure_subset : {in (@is_interval R) : set (set R) &, {mono closure : i j / i `<=` j}}. *)
+  (*     move=> i j itvi itvj. *)
+  (*     rewrite propeqE; split. *)
+  (*       admit. *)
+  (*     exact: closure_subset. *)
+  (*   rewrite -itv_closure_subset; last 2 first. *)
+  (*       admit. *)
+  (*     admit. *)
+  (*   rewrite closure_itvoo //. *)
+  (*   (* lemma? *) *)
+  (*   have closurer_subset X (x y : R) : X `<=` `[x, y] -> closure X `<=` `[x, y]. *)
+  (*     admit. *)
+  (*   apply: closurer_subset. *)
+  (*   (* lemma? *) *)
+  (*   have sub_Rhullr (i : interval R) : S `<=` [set` i] -> [set` Rhull S] `<=` [set` i]. *)
+  (*     admit. *)
+  (*   by apply: sub_Rhullr. *)
+
 (* lemma3 (converse) *)
 Lemma image_measure0_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -2075,6 +2145,8 @@ have {}muFZ0 : (mu^*%mu (f @` Z) > 0)%E.
   apply: sub_caratheodory.
   admit.
 wlog : Z Zab mZ muZ0 muFZ0 / Gdelta Z.
+  move/(_ Z).
+  apply => //.
   admit.
 move=> GdeltaZ.
 have mfZ : measurable (f @` Z).
