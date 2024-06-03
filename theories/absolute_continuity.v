@@ -1776,6 +1776,19 @@ pose x1 (y : R) : R := inf (`[a, b] `&` F @^-1` [set y]).
 pose x2 (y : R) := sup (`[a, b] `&` F @^-1` [set y]).
 pose B_ := fun (n : nat) => B `&` [set y | x2 y - x1 y > (b - a) / n.+1%:R].
 have x1x2B y : B y -> x1 y < x2 y.
+  admit.
+have B2rat0 (y : R) (By : B y) := cid (rat_in_itvoo (x1x2B y By)).
+have /card_set_bijP[/= index_of bij_index] := card_rat.
+have B2nat y By := index_of (sval (B2rat0 y By)).
+
+apply: (@sub_countable _ _ _ [set: nat]).
+apply/pcard_injP.
+
+Restart.
+pose x1 (y : R) : R := inf (`[a, b] `&` F @^-1` [set y]).
+pose x2 (y : R) := sup (`[a, b] `&` F @^-1` [set y]).
+pose B_ := fun (n : nat) => B `&` [set y | x2 y - x1 y > (b - a) / n.+1%:R].
+have x1x2B y : B y -> x1 y < x2 y.
   move=> [_ /= [[r [abr /= <-{y}]]]].
   move=> /existsNP[x] /existsNP[y].
   move=> /not_implyP[[/= abx /= FxFr]] /not_implyP[[aby /= FyFr]].
@@ -2016,6 +2029,19 @@ move=> n _.
 by apply: finite_set_countable.
 Unshelve. all: end_near. Qed.
 
+(*
+Lemma countable_noncontinuous_points_nondecreasing_fun :
+  countable [set x | x \in `[a, b] /\ ~ (continuous_at x F)].
+Proof.
+set G0 := 'pinv_(fun=> 0) (range F) F.
+have HG0 : {homo G0 : x / (range F) x >-> `[a, b]%classic x}.
+  admit.
+have G := mkfun_fun HG0.
+have ndG : {in (range F) &, nondecreasing_fun G}.
+  admit.
+have := is_countable_not_subset01_nondecreasing_fun G ndG
+*)
+
 (* see lebegue_measure_rat in lebesgue_measure.v *)
 Lemma is_borel_not_subset01_nondecreasing_fun : measurable B. (*TODO: right measurable inferred? *)
 Proof.
@@ -2042,33 +2068,77 @@ Proof.
 case : (pselect (Z !=set0)); last first.
   move/set0P/negP/negPn/eqP => -> _ _.
   by rewrite image_set0.
-move=> Z0 + [G_ oG_].
-move/[swap]; move:Z0; move/[swap] => -> G0 Gab.
+move=> Z0 + [G' oG'].
+move/[swap]; move:Z0; move/[swap] => -> G'0 G'ab.
+set G_ := fun i => `[a, b]%classic `&` (G' i).
+have G_E : forall i, G_ i = `[a, b]%classic `&` (G' i) by done.
+have G0 : \bigcap_i G_ i !=set0.
+  have [x G'x] := G'0.
+  exists x.
+  split.
+    apply: subset_itv_oo_cc.
+    apply: G'ab.
+    exact: G'x.
+  exact: G'x.
+have Gab : \bigcap_i G_ i `<=` `]a, b[.
+  apply: subset_trans G'ab.
+  apply: subset_bigcap => i _.
+  exact: subIsetr.
+have near_eqG : \forall n \near \oo, G_ n = G' n.
+  admit.
+have near_capG : \forall n \near \oo, \bigcap_(i < n) G_ i = \bigcap_(i < n) G' i.
+  near=> n.
+  rewrite -(setIidPr `[a, b]%classic (\bigcap_(i < n) G' i)).2; last first.
+    admit.
+  admit.
+have bigcapG : \bigcap_n G_ n = \bigcap_n G' n.
+  admit.
+(* unprovable *)
+have bigcapFG : \bigcap_n (F @` (G_ n)) = \bigcap_n (F @` (G' n)).
+  rewrite eqEsubset; split.
+    move=> y/= FGn.
+    move=> n Nn /=.
+    by move: (FGn n Nn) => [x [_ ?] ?]; exists x.
+  (* unprovable direction *)
+  move=> y/= FGn.
+  move=> n Nn/= .
+  move: (FGn n Nn) => [x G'nx Fxy].
+  have : exists z, `[a, b]%classic z /\ F z = y.
+    have := bigcapG.
+    rewrite eqEsubset.
+    case => + _.
+    move/(_ x).
+    move=> /=.
+    admit.
+  admit.
+have [eq1 eq2] := (@lemma1 _ _ _ F _ G_ (fun i => (@subIsetl _ _ _))).
 (* w.l.o.g. F @` G_ n is a countable union of intervals *)
- wlog: G_ oG_ G0 Gab / (exists ab_ : nat -> nat -> (R * R), forall n,(forall i, (ab_ n i).1 < (ab_ n i).2) /\ F @` (G_ n) = \bigcup_i `](ab_ n i).1, (ab_ n i).2[%classic).
+ wlog: G_ G_E G0 Gab near_eqG near_capG bigcapG bigcapFG eq1 eq2 / (exists ab_ : nat -> nat -> (R * R),
+      forall n,(forall i, (ab_ n i).1 < (ab_ n i).2)
+        /\ F @` (G_ n) = \bigcup_i `](ab_ n i).1, (ab_ n i).2[%classic).
   admit.
 move=> [ab_ Hab_].
 have ab12 n i : (ab_ n i).1 < (ab_ n i).2 by have [+ _] := (Hab_ n).
-have FG_itv n : F @` (G_ n) = \bigcup_i `](ab_ n i).1, (ab_ n i).2[%classic.
-  by have [_ +] := Hab_ n.
-rewrite -(setIidPr (\bigcap_i (F @` (G_ i))) (F @` \bigcap_i (G_ i))).2; last first.
-  move=> _ /= [x Gx <-] n _ /=.
-  by exists x => //; apply: Gx.
-rewrite -(setDD (\bigcap_i (F @` (G_ i))) (F @` (\bigcap_i (G_ i)))).
+rewrite -(setIidPr (\bigcap_i (F @` (G' i))) (F @` \bigcap_i (G' i))).2; last first.
+  move=> _ /= [x G'x <-] n _ /=.
+  by exists x => //; apply: G'x.
+rewrite -setDD.
 apply: measurableD.
+  rewrite -bigcapFG. (* ? *)
   apply: bigcap_measurable => n _.
-  rewrite (FG_itv n).
-  apply: bigcup_measurable => k _.
-  exact: measurable_itv.
+  rewrite (Hab_ n).2.
+  exact: bigcup_measurable => k _.
 apply: countable_lebesgue_measurable.
 apply: (@sub_countable _ _ _ B); last exact: is_countable_not_subset01_nondecreasing_fun.
 apply: subset_card_le.
-move=> y/=[Gy].
-move/forall2NP => H.
-split => //=.
-split.
-  admit.
-admit.
+rewrite [X in X `<=` _](_:_= \bigcap_i F @` (G_ i) `\` F @` (\bigcap_i (G_ i))); last by rewrite bigcapFG bigcapG.
+have Giab i : G_ i `<=` `[a, b].
+  rewrite G_E.
+  exact: subIsetl.
+move=> y/=[FGy nFGy].
+apply: contrapT => nBy.
+apply: nFGy.
+apply: (eq1 y) => /=; by split.
 Admitted.
 
 Notation mu := (@lebesgue_measure R).
