@@ -248,13 +248,6 @@ have [cstx|cstx] := pselect (\forall y \near x, f y = cst (f x) y).
   by right; apply: filterS cstx.
 Abort.
 
-(* #PR1221 *)
-Lemma not_near_at_leftP T (f : R -> T) (p : R) (P : pred T) :
-  ~ (\forall x \near p^'-, P (f x)) ->
-  forall e : {posnum R}, exists2 x : R, p - e%:num < x < p & ~ P (f x).
-Proof.
-Admitted.
-
 Lemma nondecreasing_bound_le (a : R) (b : itv_bound R) (f : R -> R) :
   ((BLeft a) < b)%O ->
   {in (Interval (BLeft a) b) &, {homo f : x y / (x <= y)%O}} ->
@@ -482,7 +475,7 @@ case : (leP a b) => [|ba].
   case/orP.
     by move/eqP ->; rewrite !set_itvoo0 image_set0 => _ _.
   move=> ltab cf ndf.
-Admitted.
+Abort.
 
 End move_to_realfun.
 
@@ -519,7 +512,7 @@ rewrite eqEsubset; split.
 (*       apply: nbhs_right_lt. *)
 (* rewrite setUS. *)
 (* rewrite eqEsubset. *)
-Admitted.
+Abort.
 
 Lemma closure_itv (a b : R) (x y : bool) : a < b ->
 closure [set` (Interval (BSide x a) (BSide y b))] = `[a, b]%classic.
@@ -563,7 +556,7 @@ rewrite in_itv/=.
 move/andP => [ar rb].
 rewrite in_itv.
 by case: x => /=; rewrite ?ltW ?ar //=; case: y => /=; rewrite ?ltW ?rb /=.
-Admitted.
+Abort.
 
 Lemma subset_neitv_oocc a b c d : a < b ->
   `]a, b[ `<=` `[c, d] ->
@@ -1724,7 +1717,7 @@ End lusinN.
 Section lemma1.
 Context {R : realType}.
 
-Definition not_subset01 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
+Definition preimages_gt1 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
   Y `&` [set y | (X `&` f @^-1` [set y] !=set0) /\
          ~ is_subset1 (X `&` f @^-1` [set y])].
 
@@ -1738,7 +1731,7 @@ Definition not_subset01 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
 Lemma lemma1 (X : set R) (Y : set R) (f : {fun X >-> Y}) (I : pointedType)
     (X_ : I -> set R) :
     (forall i, X_ i `<=` X) ->
-  (\bigcap_i (f @` X_ i)) `\` not_subset01 f `<=` f @` (\bigcap_i X_ i) /\
+  (\bigcap_i (f @` X_ i)) `\` preimages_gt1 f `<=` f @` (\bigcap_i X_ i) /\
   f @` (\bigcap_i X_ i) `<=` \bigcap_i (f @` X_ i).
 Proof.
 move=> X_x; split; last first.
@@ -1783,273 +1776,143 @@ Qed.
 
 End lemma1.
 
+Lemma not_subset1P {R : realType} (D : set R) (F : {fun D >-> [set: R]}) z :
+  ~ is_subset1 (D `&` F @^-1` [set z]) <->
+  (exists x y, [/\ x != y, D x, D y, F x = z & F y = z]).
+Proof.
+split.
+  move=> /existsNP[x] /existsNP[y].
+  move=> /not_implyP[[/= abx /= FxFr]] /not_implyP[[aby /= FyFr]] /eqP xy.
+  by exists x, y.
+move=> [x [y [xy xab yab FxFr FyFr]]].
+apply/existsNP; exists x; apply/existsNP; exists y.
+by apply/not_implyP; split => //; apply/not_implyP; split => //; exact/eqP.
+Qed.
+
 Section lemma2.
 Context {R : realType}.
 Variable a b : R.
-Hypotheses ab : a < b.
-
 Variable F : {fun `[a, b]%classic >-> [set: R]}.
+
+Let infpre y := inf (`[a, b] `&` F @^-1` [set y]).
+Let suppre y := sup (`[a, b] `&` F @^-1` [set y]).
+
+Lemma preimages_gt1_inf_sup y : preimages_gt1 F y -> infpre y < suppre y.
+Proof.
+move=> [_ /= [[r [abr /= <-{y}]]]].
+move=> /not_subset1P[x [y [xy abx aby FxFr FyFr]]].
+wlog : x y abx aby FxFr FyFr xy / x < y.
+  move=> wlg; move: xy; rewrite neq_lt => /orP[xy|yx].
+    by apply: (wlg _ _ abx aby) => //; rewrite lt_eqF.
+  by apply: (wlg _ _ aby abx) => //; rewrite lt_eqF.
+move=> {}xy; apply: (@le_lt_trans _ _ x).
+  rewrite -(inf1 x); apply: le_inf; last 2 first.
+    by exists x.
+    split; first by exists r.
+    by exists a => z [] /=; rewrite in_itv/= => /andP[].
+  move=> _ /= [_ -> <-].
+  by exists (- x); split => //=; exists x.
+apply: (@lt_le_trans _ _ y) => //.
+rewrite -(sup1 y); apply: le_sup; last 2 first.
+  by exists y.
+  split; first by exists r.
+  exists b => z [] /=.
+  by rewrite in_itv/= => /andP[].
+by rewrite sub1set inE; exists y.
+Qed.
+
+Hypotheses ab : a < b.
 Variable ndF : {in `[a, b]%classic &, nondecreasing_fun F}.
-Let B := not_subset01 F.
+
+Let B_nonempty r : preimages_gt1 F r -> `[a, b] `&` F @^-1` [set r] !=set0.
+Proof. by move=> [_ /= []]. Qed.
 
 (* Lemma 2 (i) *)
-Lemma is_countable_not_subset01_nondecreasing_fun : countable B.
+Lemma is_countable_preimages_gt1_nondecreasing_fun : countable (preimages_gt1 F).
 Proof.
-pose x1 (y : R) : R := inf (`[a, b] `&` F @^-1` [set y]).
-pose x2 (y : R) := sup (`[a, b] `&` F @^-1` [set y]).
-pose B_ := fun (n : nat) => B `&` [set y | x2 y - x1 y > (b - a) / n.+1%:R].
-have x1x2B y : B y -> x1 y < x2 y.
-  admit.
-have B2rat0 (y : R) (By : B y) := cid (rat_in_itvoo (x1x2B y By)).
-have /card_set_bijP[/= index_of bij_index] := card_rat.
-have B2nat y By := index_of (sval (B2rat0 y By)).
-
-apply: (@sub_countable _ _ _ [set: nat]).
-apply/pcard_injP.
-
-Restart.
-pose x1 (y : R) : R := inf (`[a, b] `&` F @^-1` [set y]).
-pose x2 (y : R) := sup (`[a, b] `&` F @^-1` [set y]).
-pose B_ := fun (n : nat) => B `&` [set y | x2 y - x1 y > (b - a) / n.+1%:R].
-have x1x2B y : B y -> x1 y < x2 y.
-  move=> [_ /= [[r [abr /= <-{y}]]]].
-  move=> /existsNP[x] /existsNP[y].
-  move=> /not_implyP[[/= abx /= FxFr]] /not_implyP[[aby /= FyFr]].
-  move/eqP.
-  rewrite real_neqr_lt => //=.
-  move/orP => [xy|yx].
-    have x1x : x1 (F r) <= x.
-      rewrite -(inf1 x).
-      apply: le_inf.
-          move=> _ /= [_ -> <-].
-          exists (- x); split => //=.
-          by exists x.
-        by exists x.
-      split.
-        by exists r.
-      exists a.
-      move=> z [] /=.
-      by rewrite in_itv/= => /andP[].
-    apply: (le_lt_trans x1x).
-    have : y <= x2 (F r).
-      rewrite -(sup1 y).
-      apply: le_sup.
-          rewrite sub1set inE.
-          by exists y.
-        by exists y.
-      split.
-        by exists r.
-      exists b.
-      move=> z [] /=.
-      by rewrite in_itv/= => /andP[].
-    by apply: lt_le_trans.
-  have x1y : x1 (F r) <= y.
-    rewrite -(inf1 y).
-    apply: le_inf.
-        move=> _ /= [_ -> <-].
-        exists (- y); split => //.
-        by exists y.
-      by exists y.
-    split.
-      by exists y.
-    exists a => z /=[].
-    by rewrite in_itv/= => /andP[].
-  apply: (le_lt_trans x1y).
-  have : x <= x2 (F r).
-    rewrite -(sup1 x).
-    apply: le_sup.
-        rewrite sub1set inE.
-        by exists x.
-      by exists x.
-    split.
-      by exists r.
-    exists b => z /=[].
-    by rewrite in_itv/= => /andP[].
-  by apply: lt_le_trans.
-have x1x2 n y : B_ n y -> x1 y < x2 y.
-  move=> [By] /=.
-  rewrite ltrBrDr.
-  apply: lt_trans.
-  rewrite ltrDr.
-  apply: divr_gt0 => //.
-  by rewrite ltrBrDr add0r.
-have Uab n: \bigcup_(y in B_ n) `]x1 y, x2 y[%classic `<=` `[a, b].
-  apply: bigcup_sub.
-  move=> y [[[[+ _]]] _].
-  move=> [x /=[xab <-{y}]].
-  apply: subset_itvW.
-  - apply: lb_le_inf; first by exists x.
-    move=> r /= [+ _].
-    by rewrite in_itv/= => /andP[+ _].
-  - apply: sup_le_ub; first by exists x.
-    move=> r /= [+ _].
-    by rewrite in_itv/= => /andP [_ +].
-have a1y y : B y -> a <= x1 y.
-  move=> [_ /= [[r [abr /= <-{y}]]]].
-  move=> /existsNP[x] /existsNP[_] /not_implyP[[/= abx /= FxFr]] /not_implyP[_] _.
-  rewrite lb_le_inf//.
-    by exists x; split.
-  move=> z /=[]//.
-  by rewrite in_itv/= => /andP[].
-have y2b y : B y -> x2 y <= b.
-  move=> [_ /= [[r [abr /= <-{y}]]]].
-  move=> /existsNP[x] /existsNP[_] /not_implyP[[/= abx /= FxFr]] /not_implyP[_] _.
-  rewrite sup_le_ub//.
-    by exists x; split.
-  move=> z /=[]//.
-  by rewrite in_itv/= => /andP[].
-have x1x2F y : B y -> `]x1 y, x2 y[ `<=` F @^-1` [set y].
-  rewrite /B /not_subset01/= => -[_ [Fy0]].
-  move=> /existsNP[s1] /existsNP[s2].
-  move=> /not_implyP[[/= s1ab Fs1r]] /not_implyP[[s2ab Fs2r]] /eqP s1s2.
-(* use RhullK *)
-  apply: (@subset_trans _ (`[a, b] `&` F @^-1` [set y])).
-    rewrite -[X in _ `<=` X]RhullK.
-      rewrite /Rhull /=.
-      rewrite !ifT.
-          apply: subset_itvW.
-            by rewrite lexx.
-          by rewrite lexx.
-        apply: asboolT.
-        exists b => x/=.
-        by rewrite in_itv/=; move=> [/andP[]].
-      apply: asboolT.
-      exists a => x/=.
-      by rewrite in_itv/=; move=> [/andP[]].
-    rewrite inE.
-    move=> p q/=.
-    rewrite !in_itv/=.
-    move=> [/andP[ap pb] Fpy] [/andP[aq qb] Fqy].
-    move=> r /andP[pr rq].
-    rewrite in_itv/=; split; [|apply/eqP; rewrite eq_le]; apply/andP; split.
-          by apply: le_trans pr.
-        by apply: le_trans qb.
-      rewrite -Fqy.
-      apply: ndF; rewrite // inE/= in_itv/=; apply/andP; split=> //.
-        by apply: le_trans pr.
-      by apply: le_trans qb.
-    rewrite -Fpy.
-    apply: ndF; rewrite // inE/= in_itv/=; apply/andP; split=> //.
-      by apply: le_trans pr.
-    by apply: le_trans qb.
-  exact: subIsetr.
-have finBn n : finite_set (B_ n).
-  apply: contrapT.
-  move/infiniteP.
-  move/pcard_surjP => [/= g surjg].
-  set h := 'pinv_(fun=> 0) (B_ n) g.
-  have Bnh m : B_ n (h m).
-    by apply: (surjpinv_image_sub surjg).
-  have Bh m : B (h m) by have [] := Bnh m.
-  have ty : trivIset [set: nat] (fun n => `]x1 (h n), x2 (h n)[%classic).
+have ubb r : ubound (`[a, b] `&` F @^-1` [set r]) b.
+  by move=> s /= [+ _]; rewrite in_itv/= => /andP[].
+have lba r : lbound (`[a, b] `&` F @^-1` [set r]) a.
+  by move=> s /= [+ _]; rewrite in_itv/= => /andP[].
+have infsuppreF y : `]infpre y, suppre y[ `<=` F @^-1` [set y].
+  apply: (@subset_trans _ (`[a, b] `&` F @^-1` [set y])); last exact: subIsetr.
+  rewrite -[X in _ `<=` X]RhullK.
+    rewrite /Rhull /= -/(infpre _) -/(suppre _) !ifT; last 2 first.
+      by apply: asboolT; exists b; exact: ubb.
+      by apply: asboolT; exists a; exact: lba.
+    by apply: subset_itvW; rewrite lexx.
+  rewrite inE => p q/=.
+  rewrite !in_itv/= => -[/andP[ap pb] Fpy] [/andP[aq qb] Fqy].
+  move=> r /andP[pr rq].
+  rewrite in_itv/= (le_trans ap pr)/= (le_trans rq qb)/=; split => //.
+  apply/eqP; rewrite eq_le; apply/andP; split.
+    by rewrite -Fqy ndF// inE/= in_itv/= ?aq//= (le_trans ap pr) (le_trans rq qb).
+  by rewrite -Fpy ndF// inE/= in_itv/= ?ap//= (le_trans ap pr) (le_trans rq qb).
+pose X n :=
+  preimages_gt1 F `&` [set y | suppre y - infpre y > (b - a) / n.+1%:R].
+have infsuppre n y : X n y -> infpre y < suppre y.
+  move=> [By] /=; rewrite ltrBrDr; apply: lt_trans.
+  by rewrite ltrDr divr_gt0// subr_gt0.
+have -> : preimages_gt1 F = \bigcup_n (X n).
+  apply/seteqP; split; last by move=> ? [? _ []].
+  move=> x Fx.
+  near \oo => n.
+  exists n => //; split => //=.
+  rewrite ltr_pdivrMr// -ltr_pdivrMl; last first.
+    by rewrite subr_gt0 preimages_gt1_inf_sup.
+  rewrite -addn1 natrD -ltrBlDr.
+  by near: n; exact: nbhs_infty_gtr.
+have Uab n : \bigcup_(y in X n) `]infpre y, suppre y[%classic `<=` `[a, b].
+  apply: bigcup_sub => r B_nr; apply: subset_itvW.
+    by apply: lb_le_inf; [apply: B_nonempty; case: B_nr|exact: lba].
+  by apply: sup_le_ub; [apply: B_nonempty; case: B_nr|exact: ubb].
+have finXn n : finite_set (X n).
+  apply: contrapT => /infiniteP/pcard_surjP[/= g surjg].
+  set h := 'pinv_(fun=> 0) (X n) g.
+  have Xnh m : X n (h m) by exact: (surjpinv_image_sub surjg).
+  have Bh m : preimages_gt1 F (h m) by have [] := Xnh m.
+  have ty : trivIset [set: nat] (fun n => `]infpre (h n), suppre (h n)[%classic).
     apply: ltn_trivIset => m1 m2 m12.
-    have : h m1 != h m2.
-      apply/eqP.
-      rewrite /h.
-      move=> /(f_equal g).
-      rewrite !pinvK => //.
-          apply/eqP.
-          by rewrite gt_eqF.
-        rewrite inE.
-        move: surjg.
-        rewrite surjE.
-        move/(_ m2).
-        exact.
-      rewrite inE.
-      move: surjg.
-      rewrite surjE => /(_ m1).
-      exact.
-    move=> neqhm12.
-    apply: (subsetI_eq0 (x1x2F (h m2) (Bh m2)) (x1x2F (h m1) (Bh m1))).
-    have := (@preimage_setI_eq0 _ _ (Fun.sort F) [set h m2] [set h m1]).
-    move=> [+ _].
-    apply.
+    have neqhm12 : h m1 != h m2.
+      apply/eqP => /(f_equal g).
+      rewrite !pinvK => //; [|by rewrite inE; exact: surjg..].
+      by apply/eqP; rewrite gt_eqF.
+    apply: (subsetI_eq0 (infsuppreF (h m2)) (infsuppreF (h m1))).
+    apply: (@preimage_setI_eq0 _ _ F [set h m2] [set h m1]).1.
     apply: preimage0eq.
-    rewrite -subset0 => x /= [->].
-    move/esym/eqP.
-    by apply/negP.
-  have : ((\sum_(n <oo) ((x2 (h n) - x1 (h n))%:E)) <= (b - a)%:E)%E.
+    rewrite set1I ifF//.
+    by apply/negbTE => /=; rewrite notin_setE/=; apply/nesym/eqP.
+  have : (\sum_(n <oo) ((suppre (h n) - infpre (h n))%:E) <= (b - a)%:E)%E.
     (* by Uab, ty *)
-    under eq_fun.
-      move=> t.
-      under eq_bigr.
-        move=> s _.
-        have -> :(x2 (h s) - x1 (h s))%:E = lebesgue_measure `]x1 (h s), x2 (h s)[.
-          rewrite lebesgue_measure_itv /=.
-          rewrite lte_fin (x1x2 _ _ (Bnh s)).
-          by rewrite EFinD.
-        over.
-      rewrite /=.
-      over.
-    rewrite /=.
-    have -> : \big[+%R/0%R]_(0 <= i <oo) lebesgue_measure `](x1 (h i)), (x2 (h i))[
-        = lebesgue_measure (\bigcup_i `]x1 (h i), x2 (h i)[%classic).
+    rewrite (@eq_eseriesr _ _
+        (fun n => lebesgue_measure `]infpre (h n), suppre (h n)[)); last first.
+      move=> k _.
+      by rewrite lebesgue_measure_itv /= lte_fin (infsuppre _ _ (Xnh k)) EFinD.
+    rewrite [leLHS](_ : _ = lebesgue_measure
+        (\bigcup_i `]infpre (h i), suppre (h i)[%classic)); last first.
       apply: cvg_lim => //.
-      apply: measure_semi_sigma_additive => //.
-      apply: bigcup_measurable => k _.
-      exact: measurable_itv.
+      by apply: measure_semi_sigma_additive => //; exact: bigcup_measurable.
     have -> : (b - a)%:E = lebesgue_measure `[a, b].
       by rewrite lebesgue_measure_itv lte_fin ab.
-    apply: le_measure.
-        rewrite inE.
-        apply: bigcup_measurable => k _.
-        exact: measurable_itv.
-      rewrite inE.
-      exact: measurable_itv.
-    move=> /= r [m _ x1x2r].
-    apply: (Uab n).
-    by exists (h m).
-  have : ((\sum_(n <oo) ((x2 (h n) - x1 (h n))%:E)) = +oo%E )%E.
-    (* by ty, def of B_ n *)
-    have Hsum : (\sum_(0 <= s <oo) ((b - a) / n.+1%:R)%:E = +oo)%E.
-      apply: cvg_lim => //.
-      under eq_cvg.
-        move=> m.
-        rewrite sumEFin.
-        over.
-      apply/cvgeryP.
-      apply/cvgryPge.
-      move=> r.
-      near=> m.
-      rewrite sumr_const_nat subn0.
-      rewrite -[X in _ <= X]mulr_natr.
-      rewrite -ler_pdivrMl; last first.
-        apply: divr_gt0 => //.
-        by rewrite subr_gt0.
-      near: m.
-      exact: nbhs_infty_ger.
-    apply/eqP; rewrite eq_le; apply/andP; split; first exact: leey.
-    rewrite -Hsum.
-    rewrite lee_nneseries => // k _.
-      rewrite lee_fin.
-      apply: divr_ge0 => //.
-      by rewrite subr_ge0 ltW.
-    have := Bnh k.
-    rewrite /B_ => /=.
-    by move=> [_ /ltW].
-  by move=> ->.
-have -> : B = \bigcup_n (B_ n).
-  apply/seteqP; split.
-    move=> x [_ []].
-    move=> [r] /= [rab <-{x}] nsub1.
-    near \oo => n.
-    exists n => //.
-    split.
-      split => //=; split => //.
-      by exists r.
-    rewrite /=.
-    rewrite ltr_pdivrMr // -ltr_pdivrMl; last first.
-      rewrite subr_gt0 (x1x2B (F r)) //.
-      rewrite /B; split => //=; split => //.
-      by exists r.
-    rewrite -addn1 natrD.
-    rewrite -ltrBlDr.
-    near: n.
-    exact: nbhs_infty_gtr.
-  by move=> ? [? _ []].
-apply: bigcup_countable => //.
-move=> n _.
-by apply: finite_set_countable.
+    rewrite le_measure//= ?inE//=; first exact: bigcup_measurable.
+    move=> /= r [m _ infpresupprer].
+    by apply: (Uab n); exists (h m).
+  suff : (\sum_(n <oo) ((suppre (h n) - infpre (h n))%:E) = +oo)%E by move=> ->.
+  (* by ty, def of B_ n *)
+  have Hsum : (\sum_(0 <= s <oo) ((b - a) / n.+1%:R)%:E = +oo)%E.
+    apply: cvg_lim => //.
+    under eq_cvg do rewrite sumEFin.
+    apply/cvgeryP.
+    apply/cvgryPge => r.
+    near=> m.
+    rewrite sumr_const_nat subn0 -[X in _ <= X]mulr_natr -ler_pdivrMl; last first.
+      by rewrite divr_gt0// subr_gt0.
+    by near: m; exact: nbhs_infty_ger.
+  apply/eqP; rewrite eq_le; apply/andP; split; first exact: leey.
+  rewrite -Hsum lee_nneseries => // k _.
+    by rewrite lee_fin divr_ge0 // subr_ge0 ltW.
+  by have [_ /= /ltW] := Xnh k.
+by apply: bigcup_countable => // n _; exact: finite_set_countable.
 Unshelve. all: end_near. Qed.
 
 (*
@@ -2065,14 +1928,13 @@ have ndG : {in (range F) &, nondecreasing_fun G}.
 have := is_countable_not_subset01_nondecreasing_fun G ndG
 *)
 
-(* see lebegue_measure_rat in lebesgue_measure.v *)
-Lemma is_borel_not_subset01_nondecreasing_fun : measurable B. (*TODO: right measurable inferred? *)
+(* see lebesgue_measure_rat in lebesgue_measure.v *)
+Lemma is_borel_preimages_gt1_nondecreasing_fun : measurable (preimages_gt1 F). (*TODO: right measurable inferred? *)
 Proof.
-have /countable_bijP[N /pcard_eqP/bijPex [/= g bijg]] := is_countable_not_subset01_nondecreasing_fun.
-set h := 'pinv_(fun=> 0) B g.
-suff -> : B = \bigcup_(i in N) (set1 (h i)).
-  apply: bigcup_measurable => n _.
-  exact: measurable_set1.
+have /countable_bijP[N /pcard_eqP/bijPex [/= g bijg]] := is_countable_preimages_gt1_nondecreasing_fun.
+set h := 'pinv_(fun=> 0) (preimages_gt1 F) g.
+suff -> : preimages_gt1 F = \bigcup_(i in N) (set1 (h i)).
+  exact: bigcup_measurable.
 apply/seteqP; split.
   move=> r Br.
   exists (g r) => //.
@@ -2085,10 +1947,29 @@ apply: (set_bij_sub (bijpinv_bij (fun=> 0) bijg)).
 by exists n.
 Qed.
 
-Lemma delta_set_not_subset01_nondecreasing_fun Z :
-  Z `<=` `]a, b[%classic -> Gdelta Z -> measurable (F @` Z). (*TODO: right measurable inferred? *) (* use mu.-cara.-measurable (f @` Z) instead? *)
+Lemma discontinuties_countable :
+  countable [set x | ~ {for x, continuous F}].
 Proof.
-case : (pselect (Z !=set0)); last first.
+set A : set R := [set x | _].
+pose elt_type := {x | A x}.
+have : forall a : elt_type, exists q : rat.rat,
+  lim (F x @[x --> (sval a)^'-]) < rat.ratr q < lim (F x @[x --> (sval a)^'+]).
+  move=> [c Ac].
+  admit.
+move/choice => [f Hf].
+Abort.
+
+Lemma image_interval A : is_interval A -> exists s : nat -> set R,
+  (forall i, is_interval (s i)) /\ F @` A = \bigcup_i (s i).
+Proof.
+
+Admitted.
+
+Lemma delta_set_preimages_gt1_nondecreasing_fun Z :
+  Z `<=` `]a, b[%classic -> Gdelta Z ->
+  measurable (F @` Z). (* not mu.-cara.-measurable (f @` Z) *)
+Proof.
+have [|] := pselect (Z !=set0); last first.
   move/set0P/negP/negPn/eqP => -> _ _.
   by rewrite image_set0.
 move=> Z0 + [G' oG'].
@@ -2152,7 +2033,7 @@ apply: measurableD.
   rewrite (Hab_ n).2.
   exact: bigcup_measurable => k _.
 apply: countable_lebesgue_measurable.
-apply: (@sub_countable _ _ _ B); last exact: is_countable_not_subset01_nondecreasing_fun.
+apply: (@sub_countable _ _ _ (preimages_gt1 F)); last exact: is_countable_preimages_gt1_nondecreasing_fun.
 apply: subset_card_le.
 rewrite [X in X `<=` _](_:_= \bigcap_i F @` (G_ i) `\` F @` (\bigcap_i (G_ i))); last by rewrite bigcapFG bigcapG.
 have Giab i : G_ i `<=` `[a, b].
@@ -2166,7 +2047,7 @@ Admitted.
 
 Notation mu := (@lebesgue_measure R).
 
-Lemma measure_image_not_subset01_nondecreasing_fun (G : (set R)^nat) :
+Lemma measure_image_preimages_gt1_nondecreasing_fun (G : (set R)^nat) :
   (forall k, open (G k)) ->
   let Z := \bigcap_k (G k) in
   mu (F @` Z) = mu (\bigcap_k F @` G k).
@@ -2241,7 +2122,7 @@ have {}muFZ0 : (mu^*%mu (f @` Z) > 0)%E.
   rewrite measurable_mu_extE//=.
   apply: sub_caratheodory.
   admit.
-wlog : Z Zab mZ muZ0 muFZ0 / Gdelta Z.
+wlog : Z HZ Zab mZ muZ0 muFZ0 / Gdelta Z.
   move/(_ Z).
   apply => //.
   admit.
@@ -2252,14 +2133,16 @@ have mfZ : measurable (f @` Z).
   pose F : {fun `[a, b] >-> [set: R]} := HB.pack f Hf.
   have {}ndf : {in `[a, b]%classic &, {homo f : x y / x <= y}}.
     by move=> x y; rewrite !inE/=; exact: ndf.
-  have := @delta_set_not_subset01_nondecreasing_fun R a b ab F ndf _ _ GdeltaZ.
+  have := @delta_set_preimages_gt1_nondecreasing_fun R a b F ab ndf _ _ GdeltaZ.
   apply.
   admit. (* ?! *)
+have mfZ_gt0 : (0 < mu (f @` Z))%E.
+  admit.
 have [K [cK KfZ muK]] : exists K, [/\ compact K, K `<=` f @` Z & (0 < mu K)%E].
   admit.
 pose K1 := f @^-1` K.
 have cK1 : compact K1.
-  (* using continuity *)
+  (* using continuity, continuous_compact? *)
   admit.
 have K1Z : K1 `<=` Z.
   admit.
@@ -2791,7 +2674,7 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     apply: bigcup_open => i _.
     rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
     by apply: bigcup_open => j _; exact: interval_open.
-  have := @measure_image_not_subset01_nondecreasing_fun R a b ab F ndF G_ Gopen.
+  have := @measure_image_preimages_gt1_nondecreasing_fun R a b F ab ndF G_ Gopen.
   by rewrite /= -/A -completed_lebesgue_measureE mfA0.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
   apply: lime_ge; last exact: nearW.
