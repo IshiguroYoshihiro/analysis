@@ -1651,6 +1651,29 @@ apply: le_outer_measure.
 exact: subDsetl.
 Qed.
 
+(* https://heil.math.gatech.edu/6337/spring11/section1.3.pdf *)
+(* Theorem 1.37 (a) => (c) *)
+Lemma cmeasurable_decomp_Gdelta (E : set R) :
+  lebesgue_measurability E ->
+  exists H Z, [/\ Gdelta H, ((wlength idfun)^*)%mu.-negligible Z & E = H `\` Z].
+Proof.
+move=> mE/=.
+pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
+have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
+pose U_ (k : nat) := projT1 (cid (mE _ (delta_0_ge0 k))).
+have oU_ k : open (U_ k).
+  by rewrite /U_; case: cid => // x/= [].
+have EU_ k : E `<=` U_ k.
+  by rewrite /U_; case: cid => // x/= [].
+have leU_ k : (mue ((U_ k) `\` E) <= (2 ^- k.+1)%:E)%E.
+  by rewrite /U_; case: cid => // x/= [].
+pose Uoo := \bigcap_i (U_ i).
+pose Z := Uoo `\` E.
+exists Uoo; exists Z; split.
+    by exists U_.
+  admit.
+Admitted.
+
 End lebesgue_measurable.
 
 Section lusinN.
@@ -2197,6 +2220,7 @@ Qed.
   (*     admit. *)
   (*   by apply: sub_Rhullr. *)
 
+
 (* lemma3 (converse) *)
 Lemma image_measure0_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -2208,8 +2232,11 @@ Lemma image_measure0_Lusin (f : R -> R) :
   lusinN `[a, b] f.
 Proof.
 move=> cf ndf HZ; apply: contrapT.
-move=> /existsNP[Z] /not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
+move=> /existsNP[Z]/not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
 move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
+
+
+
 have {}muFZ0 : (mu^*%mu (f @` Z) > 0)%E.
   rewrite measurable_mu_extE//=.
   apply: sub_caratheodory.
