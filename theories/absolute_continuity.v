@@ -1646,9 +1646,9 @@ Qed.
 
 (* https://heil.math.gatech.edu/6337/spring11/section1.3.pdf *)
 (* Theorem 1.37 (a) => (c) *)
-Lemma cmeasurable_decomp_Gdelta (E : set R) :
+Lemma lebesgue_measurablity_decomp_Gdelta (E : set R) :
   lebesgue_measurability E ->
-  exists H Z, [/\ Gdelta H, ((wlength idfun)^*)%mu.-negligible Z & E = H `\` Z].
+  exists H Z, [/\ Gdelta H, ((wlength idfun)^*)%mu Z = 0 & E = H `\` Z].
 Proof.
 move=> mE/=.
 pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
@@ -1660,12 +1660,44 @@ have EU_ k : E `<=` U_ k.
   by rewrite /U_; case: cid => // x/= [].
 have leU_ k : (mue ((U_ k) `\` E) <= (2 ^- k.+1)%:E)%E.
   by rewrite /U_; case: cid => // x/= [].
+have UEcvg0 : ((wlength idfun)^*)%mu (U_ i `\` E) @[i --> \oo] --> 0%E.
+  apply: (@squeeze_cvge _ _ _ _ (cst 0) _ (fun k => (2 ^- k.+1)%:E)).
+  apply: nearW => n.
+      by rewrite leU_ outer_measure_ge0.
+    exact: cvg_cst.
+  rewrite (@cvg_shiftS (\bar R) (fun n => (2 ^- n)%:E) 0).
+  apply: cvg_EFin; first by apply: nearW.
+  rewrite /comp.
+  under eq_cvg do rewrite -exprVn.
+  apply: cvg_expr.
+  rewrite gtr0_norm.
+    rewrite invr_lt1 => //.
+      by rewrite ltr1n.
+    exact: unitf_gt0.
+  by rewrite invr_gt0.
 pose Uoo := \bigcap_i (U_ i).
 pose Z := Uoo `\` E.
 exists Uoo; exists Z; split.
     by exists U_.
-  admit.
-Admitted.
+  apply/eqP.
+  rewrite eq_sym eq_le; apply/andP; split.
+    exact: outer_measure_ge0.
+  move: (UEcvg0).
+  move/cvg_lim => <- //.
+  apply: lime_ge.
+    apply/cvg_ex.
+    by exists 0.
+  apply: nearW => n.
+  apply: le_outer_measure.
+  apply: setSD.
+  exact: bigcap_inf.
+rewrite setDD.
+rewrite eqEsubset; split.
+  rewrite subsetI; split; last exact: subset_refl.
+  apply: sub_bigcap => n _.
+  exact: EU_.
+exact: subIsetr.
+Unshelve. all: end_near. Qed.
 
 End lebesgue_measurable.
 
@@ -2115,18 +2147,26 @@ Proof.
 move=> cf ndf HZ; apply: contrapT.
 move=> /existsNP[Z]/not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
 move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
-
-
-
+have lmZ : lebesgue_measurability Z.
+  move=> e e0.
+  have [U [oU ZU /andP[muZU muUZe]]] := outer_regularity_outer0 Z e0.
+  exists U; split => //.
+  rewrite -(@leeD2lE _ (((wlength idfun)^*)%mu (U `&` Z))); last first.
+    rewrite ge0_fin_numE; last exact: outer_measure_ge0.
+    admit.
+  rewrite -mZ/=.
+  by rewrite setIidr.
+have [H [N [GdeltaH N0 ZHN]]] := (lebesgue_measurablity_decomp_Gdelta lmZ).
+wlog : N N0 ZHN / N = set0.
+  move/(_ N N0 ZHN).
+  apply => //.
+  admit.
+move=> N00.
+have {H GdeltaH N N0 ZHN N00}GdeltaZ : Gdelta Z by rewrite ZHN N00 setD0.
 have {}muFZ0 : (mu^*%mu (f @` Z) > 0)%E.
   rewrite measurable_mu_extE//=.
   apply: sub_caratheodory.
   admit.
-wlog : Z HZ Zab mZ muZ0 muFZ0 / Gdelta Z.
-  move/(_ Z).
-  apply => //.
-  admit.
-move=> GdeltaZ.
 have mfZ : measurable (f @` Z).
   have set_fun_f : set_fun `[a, b] [set: R] f by [].
   pose Hf := isFun.Build R R `[a, b]%classic [set: R] f set_fun_f.
