@@ -51,6 +51,32 @@ apply: bigcup_measurable => n _.
 exact: measurable_set1.
 Qed.
 
+(* TODO: PR *)
+Lemma bigcap_cvg_mu d (T : algebraOfSetsType d) {R : realFieldType}
+  (mu : {measure set T -> \bar R}) (F : (set T)^nat) :
+(mu (F 0%N) < +oo)%E ->
+(forall i : nat, d.-measurable (F i)) ->
+d.-measurable (\bigcap_n F n) ->
+(mu \o (fun n => (\bigcap_(i < n.+1) F i))) x @[x --> \oo] --> mu (\bigcap_n F n).
+Proof.
+move=> Foo mF mFoo.
+have Hcap : \bigcap_n F n = \bigcap_n (\bigcap_(i < n.+1) F i).
+  apply/seteqP; split.
+    move=> x Fx n _ i ni.
+    by apply: Fx.
+  move=> x Fx n _.
+  by apply: (Fx n) => /=.
+rewrite Hcap.
+apply: nonincreasing_cvg_mu.
+      by rewrite bigcap_mkord zmodp.big_ord1.
+    move=> n.
+    by apply: fin_bigcap_measurable.
+  by rewrite -Hcap.
+apply/nonincreasing_seqP => n.
+rewrite !bigcap_mkord big_ord_recr/= subsetEset.
+exact: subIsetl.
+Qed.
+
 Lemma big_nat_setUP T (n : nat) (F : nat -> _) (x : T) :
 reflect (exists2 i, (i < n)%N & x \in F i) (x \in \big[setU/set0]_(0 <= i < n) F i).
 Proof.
@@ -1488,6 +1514,7 @@ Definition lebesgue_measurability (E : set R) :=
   forall eps : R, 0 < eps -> exists U, [/\ open U,
   E `<=` U & (mue (U `\` E) <= eps%:E)%E].
 
+(* maybe duplicate lebesgue_regularity_outer *)
 Lemma Gdelta_lebesgue_measurability_bounded (E : set R) : Gdelta E ->
   (mue E < +oo%E)%E ->
   lebesgue_measurability E.
@@ -1542,6 +1569,7 @@ exists Uoo_trunc; split.
 Unshelve. all: by end_near. Qed.
 
 (* Theorem 1.36 in https://heil.math.gatech.edu/6337/spring11/section1.3.pdf *)
+(* TODO: derive lebesgue_measurability from Gdelta *)
 Lemma clebesgue_Gdelta_approximation (E : set R) :
   exists H : set _, Gdelta H /\ E `<=` H /\
   (mue E = mue H /\ lebesgue_measurability H).
@@ -1646,20 +1674,31 @@ Qed.
 
 (* https://heil.math.gatech.edu/6337/spring11/section1.3.pdf *)
 (* Theorem 1.37 (a) => (c) *)
-Lemma lebesgue_measurablity_decomp_Gdelta (E : set R) :
+Lemma lebesgue_measurablity_decomp_Gdelta0 (E : set R) :
   lebesgue_measurability E ->
-  exists H Z, [/\ Gdelta H, ((wlength idfun)^*)%mu Z = 0 & E = H `\` Z].
+  exists (U_ : (set R)^nat) (Z : set R),
+  [/\ (forall n, open (U_ n)),
+    ((wlength idfun)^*)%mu (U_ n) @[n --> \oo] --> ((wlength idfun)^*)%mu E,
+    ((wlength idfun)^*)%mu Z = 0 &
+     E = \bigcap_i U_ i `\` Z].
 Proof.
 move=> mE/=.
 pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
 have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
-pose U_ (k : nat) := projT1 (cid (mE _ (delta_0_ge0 k))).
+pose U0_ (k : nat) := projT1 (cid (mE _ (delta_0_ge0 k))).
+pose U_ (k : nat) := \bigcap_(i < k.+1) U0_ i; rewrite /= in U_.
 have oU_ k : open (U_ k).
-  by rewrite /U_; case: cid => // x/= [].
+  apply: bigcap_open => n.
+  by rewrite /U0_; case: cid => // x/= [].
 have EU_ k : E `<=` U_ k.
-  by rewrite /U_; case: cid => // x/= [].
+  apply: sub_bigcap => n.
+  by rewrite /U0_; case: cid => // x/= [].
 have leU_ k : (mue ((U_ k) `\` E) <= (2 ^- k.+1)%:E)%E.
-  by rewrite /U_; case: cid => // x/= [].
+  apply: (@le_trans _ _ (mue (U0_ k `\` E))).
+    apply: le_outer_measure.
+    apply: setSD.
+    by apply: bigcap_inf => /=.
+  by rewrite /U0_; case: cid => // x/= [].
 have UEcvg0 : ((wlength idfun)^*)%mu (U_ i `\` E) @[i --> \oo] --> 0%E.
   apply: (@squeeze_cvge _ _ _ _ (cst 0) _ (fun k => (2 ^- k.+1)%:E)).
   apply: nearW => n.
@@ -1675,10 +1714,16 @@ have UEcvg0 : ((wlength idfun)^*)%mu (U_ i `\` E) @[i --> \oo] --> 0%E.
       by rewrite ltr1n.
     exact: unitf_gt0.
   by rewrite invr_gt0.
-pose Uoo := \bigcap_i (U_ i).
-pose Z := Uoo `\` E.
-exists Uoo; exists Z; split.
-    by exists U_.
+pose Z := \bigcap_i (U_ i) `\` E.
+exists U_; exists Z; split.
+      
+    rewrite (_:(fun n => ((wlength idfun)^*)%mu (U_ n)) = fun n => completed_lebesgue_measure (U_ n)); last first.
+      admit.
+    rewrite (_:((wlength idfun)^*)%mu E = completed_lebesgue_measure (\bigcap_i U0_ i)); last first.
+      admit.
+    rewrite /U_.
+    apply: bigcap_cvg_mu => /=.
+      apply: (@le_lt_trans _ _ (mue E + delta_0 0%N)%E).
   apply/eqP.
   rewrite eq_sym eq_le; apply/andP; split.
     exact: outer_measure_ge0.
@@ -2133,15 +2178,54 @@ Qed.
   (*     admit. *)
   (*   by apply: sub_Rhullr. *)
 
+Lemma image_measure0_Lusin'
+ (f : R -> R)
+ (cf : {within `[a, b], continuous f})
+ (ndf : {in `[a, b] &, {homo f : x y / x <= y}})
+ (HZ : forall Z : set R,
+       Z `<=` `[a, b] -> compact Z -> mu Z = 0 -> mu [set f x | x in Z] = 0)
+  (Z : set R)
+  (Zab : Z `<=` `[a, b])
+  (mZ : (((wlength idfun)^*)%mu).-cara.-measurable Z)
+  (muZ0 : mu Z = 0)
+  (muFZ0 : (0%R < mu [set f x | x in Z])%E)
+  (GdeltaZ : Gdelta Z) : False.
+Proof.
+have mfZ : measurable (f @` Z).
+  have set_fun_f : set_fun `[a, b] [set: R] f by [].
+  pose Hf := isFun.Build R R `[a, b]%classic [set: R] f set_fun_f.
+  pose F : {fun `[a, b] >-> [set: R]} := HB.pack f Hf.
+  have {}ndf : {in `[a, b]%classic &, {homo f : x y / x <= y}}.
+    by move=> x y; rewrite !inE/=; exact: ndf.
+  have := @delta_set_preimages_gt1_nondecreasing_fun R a b F ab ndf _ _ GdeltaZ.
+  apply.
+  admit. (* ?! *)
+have mfZ_gt0 : (0 < mu (f @` Z))%E.
+  done.
+have [K [cK KfZ muK]] : exists K, [/\ compact K, K `<=` f @` Z & (0 < mu K)%E].
+  have /= := lebesgue_regularity_inner mfZ.
+  admit.
+pose K1 := (f @^-1` K) `&` `[a, b].
+have cK1 : compact K1.
+  (* using continuity, continuous_compact? *)
+  admit.
+have K1ab : K1 `<=` `[a, b].
+  admit.
+have K1Z : K1 `<=` Z.
+  admit.
+have fK1K : f @` K1 = K.
+  admit.
+have := HZ K1 K1ab cK1.
+Admitted.
 
 (* lemma3 (converse) *)
 Lemma image_measure0_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b] &, {homo f : x y / x <= y}} ->
-  (forall Z : set R, [/\ measurable Z, Z `<=` `[a, b]%classic,
-      compact Z,
-      mu Z = 0 &
-      mu (f @` Z) = 0]) ->
+  (forall Z : set R, Z `<=` `[a, b]%classic ->
+      compact Z ->
+      mu Z = 0 ->
+      mu (f @` Z) = 0) ->
   lusinN `[a, b] f.
 Proof.
 move=> cf ndf HZ; apply: contrapT.
@@ -2153,19 +2237,104 @@ have lmZ : lebesgue_measurability Z.
   exists U; split => //.
   rewrite -(@leeD2lE _ (((wlength idfun)^*)%mu (U `&` Z))); last first.
     rewrite ge0_fin_numE; last exact: outer_measure_ge0.
-    admit.
+    apply: (@le_lt_trans _ _ (((wlength idfun)^*)%mu `[a, b]%classic)).
+      apply: le_outer_measure.
+      by rewrite setIidr.
+    rewrite [ltLHS](_:_= lebesgue_measure `[a, b]%classic); last by [].
+    by rewrite lebesgue_measure_itv /= lte_fin ab -EFinD ltry.
   rewrite -mZ/=.
   by rewrite setIidr.
-have [H [N [GdeltaH N0 ZHN]]] := (lebesgue_measurablity_decomp_Gdelta lmZ).
-wlog : N N0 ZHN / N = set0.
-  move/(_ N N0 ZHN).
-  apply => //.
+have [H [/= N [GdeltaH N0 ZHN]]] := (lebesgue_measurablity_decomp_Gdelta lmZ).
+have /= := @image_measure0_Lusin' f cf ndf HZ (H `&` `[a, b]).
+apply.
+       exact: subIsetr.
+     apply: sub_caratheodory.
+     apply: measurableI => //.
+     exact: Gdelta_measurable.
+   move: GdeltaH => [U_ oU HU].
+   rewrite HU.
+   rewrite -bigcapIl; last by exists 0%N.
+  
+  have /= := (@nonincreasing_cvg_mu _ _ _ mu (fun n => \bigcap_(i < n.+1) (U_ i `&` `[a, b]))).
+  have multy : (mu (U_ 0%N `&` `[a, b]) < +oo)%E.
+    admit.
+  rewrite bigcap_mkord.
+  rewrite zmodp.big_ord1.
+  move/(_ multy).
+  have mUab n : (((wlength idfun)^*)%mu).-cara.-measurable (\bigcap_(i < n.+1) (U_ i `&` `[a, b])).
+    admit.
+  move/(_ mUab).
+  have mUaboo : (((wlength idfun)^*)%mu).-cara.-measurable (\bigcap_n (U_ n `&` `[a, b])).
+    admit.
+  rewrite (_: \bigcap_n (\bigcap_(i < n.+1) (U_ i `&` `[a, b])) = \bigcap_n (U_ n `&` `[a, b])); last first.
+    admit.
+  move/(_ mUaboo).
+  have niUab : {homo (fun n : nat => \bigcap_(i < n.+1) (U_ i `&` `[a, b])) : n m / (n <= m)%N >-> (m <= n)%O}.
+     admit.
+   move/(_ niUab).
+   move/cvg_lim => <- //.
+   apply/cvg_lim => //.
+   
+
+   have : mu H = 0.
+     
+wlog GdeltaZ : Z Zab mZ muZ0 muFZ0 lmZ N N0 ZHN / Gdelta Z.
+  move/(_ (H `&` `[a, b]) _ _ _ _ _ (N `&` ~` `[a, b]%classic)).
+  apply.
+  - exact: subIsetr.
+  - apply: sub_caratheodory.
+    apply: measurableI => //.
+    exact: Gdelta_measurable.
+  - apply/eqP; rewrite eq_le; apply/andP; split; last exact: measure_ge0.
+    rewrite -(_:mu ((H `&` `[a, b]%classic) `\` (N `&` `[a, b]%classic)) = 0%E); last first.
+      apply: (subset_measure0 _ mZ) => //=.
+        rewrite (_:H `&` `[a, b] `\` N `&` `[a, b] = Z)//.
+        apply/seteqP; split.
+          move=> x [[Hx abx]].
+          move/not_andP =>[|//].
+          by rewrite ZHN.
+        move=> x /[dup]Zx.
+        rewrite ZHN => -[Hx nNx]; split.
+          split => //.
+          exact: Zab.
+        by case.
+      move=> x [[Hx abx]].
+      move/not_andP =>[|//].
+      by rewrite ZHN.
+    
+ 
+    rewrite measureD/=; last 3 first.
+          apply: sub_caratheodory.
+          apply: measurableI => //.
+          exact: Gdelta_measurable.
+        admit.
+      admit.
+    apply: (@le_trans _ _ (mu (H `&` `[a, b]) - mu (N `&` `[a, b]))%E).
+      rewrite -[leLHS]sube0.
+      apply: leeB => //.
+      rewrite -N0.
+      apply: le_outer_measure.
+      exact: subIsetl.
+    
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+wlog N00 : N N0 ZHN / N = set0.
+  move/(_ N N0 ZHN) => nN0.
+  move: N0.
+  move/notP; apply.
+  move/eqP.
+
+  
   admit.
-move=> N00.
 have {H GdeltaH N N0 ZHN N00}GdeltaZ : Gdelta Z by rewrite ZHN N00 setD0.
 have {}muFZ0 : (mu^*%mu (f @` Z) > 0)%E.
   rewrite measurable_mu_extE//=.
   apply: sub_caratheodory.
+  
   admit.
 have mfZ : measurable (f @` Z).
   have set_fun_f : set_fun `[a, b] [set: R] f by [].
