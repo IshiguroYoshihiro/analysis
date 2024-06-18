@@ -587,6 +587,19 @@ rewrite in_itv.
 by case: x => /=; rewrite ?ltW ?ar //=; case: y => /=; rewrite ?ltW ?rb /=.
 Abort.
 
+Lemma closure_neitv_oo_cc a b : a < b ->
+closure `]a, b[%classic = `[a, b]%classic.
+Proof.
+move=> ab.
+set c := (a + b) / 2%:R.
+set d := (b - a) / 2%:R.
+rewrite (_:a = c - d); last by rewrite /c/d !mulrDl addrKA mulNr opprK -splitr.
+rewrite (_:b = c + d); last by rewrite addrC /c/d !mulrDl mulNr subrKA -splitr.
+rewrite -ball_itv -closed_ball_itv ?closure_ball//.
+apply: divr_gt0 => //.
+by rewrite subr_gt0.
+Qed.
+
 Lemma subset_neitv_oocc a b c d : a < b ->
   `]a, b[ `<=` `[c, d] ->
   `[a, b] `<=` `[c, d].
@@ -594,9 +607,10 @@ Proof.
 move=> ab.
 move/closure_subset.
 rewrite -(closure_id `[c, d]%classic).1; last first.
-  admit.
+  exact: interval_closed.
 apply: subset_trans.
-Admitted.
+by rewrite closure_neitv_oo_cc.
+Qed.
 
 Lemma get_nice_image_itv f a b (n : nat) (ab_ : nat -> R * R) : a < b ->
   {within `[a, b], continuous f} ->
@@ -658,7 +672,7 @@ split.
         apply: (le_trans (ltW rabi)).
         admit.
       rewrite /=.
-      admit.
+      admit. (* ? *)
     rewrite /=.
     apply/trivIset_mkcond.
     apply: ltn_trivIset => n1 n2 n12.
@@ -2909,7 +2923,7 @@ apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
 - move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_.
   apply: bigcup_sub => i/= yi.
   by apply: bigcup_sup => //=; rewrite (leq_trans xy).
-Admitted.
+Unshelve. all: end_near. Qed.
 
 End Banach_Zarecki.
 
