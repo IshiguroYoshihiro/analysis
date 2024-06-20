@@ -116,6 +116,15 @@ rewrite big_mkord.
 by under eq_bigr do rewrite inord_val.
 Qed.
 
+(* PR in progress *)
+Lemma interval_set1 (R : realType) (a : R) : `[a, a]%classic = [set a] :> set R.
+Proof.
+apply/seteqP; split => [x/=|x <-].
+  rewrite in_itv/= => /andP[ax xa].
+  by apply/eqP; rewrite eq_le ax xa.
+by rewrite /= in_itv/= lexx.
+Qed.
+
 Section move_to_realfun.
 Context {R : realType}.
 
@@ -654,91 +663,6 @@ rewrite -(closure_id `[c, d]%classic).1; last first.
 apply: subset_trans.
 by rewrite closure_neitv_oo.
 Qed.
-
-(* Lemma get_nice_image_itv f a b (n : nat) (ab_ : nat -> R * R) : a < b -> *)
-(*   {within `[a, b], continuous f} -> *)
-(*   {in `]a, b[ &, nondecreasing_fun f} -> *)
-(*   (forall i, (i < n)%N -> (ab_ i).1 < (ab_ i).2) -> *)
-(*   (forall i, (i < n)%N -> `](ab_ i).1, (ab_ i).2[ `<=` `[a, b]) -> *)
-(*   trivIset (`I_ n) (fun i=> `](ab_ i).1, (ab_ i).2[%classic) -> *)
-(* exists (m : nat) (fab_ : nat -> R * R), *)
-(*   [/\ (forall i, (i < m)%N -> `](fab_ i).1, (fab_ i).2[ `<=` f @` `[a, b]), *)
-(*      (forall i, (i < m)%N -> (fab_ i).1 < (fab_ i).2), *)
-(*       trivIset (`I_ m) (fun i => `](fab_ i).1, (fab_ i).2[%classic) & *)
-(*       mu (\big[setU/set0]_(i < n) (f @` `](ab_ i).1, (ab_ i).2[%classic)) = *)
-(*       mu (\big[setU/set0]_(i < m) `](fab_ i).1, (fab_ i).2[%classic)]. *)
-(* Proof. *)
-(* move=> ab cf ndf ablt absub tab. *)
-(* (* have ndfcc := continuous_in_nondecreasing_oo_cc ab cf ndf. *) *)
-(* have [cf' [fxa fxb]] := (continuous_within_itvP f ab).1 cf. *)
-(* have cfab i : (i < n)%N -> {within `[(ab_ i).1, (ab_ i).2], continuous f}. *)
-(*   move=> iltn. *)
-(*   move: cf. *)
-(*   apply: continuous_subspaceW. *)
-(*   apply: subset_neitv_oocc. *)
-(*     exact: (ablt i). *)
-(*   exact: (absub i). *)
-(* have ndfab i :(i < n)%N -> {in `](ab_ i).1, (ab_ i).2[ &, {homo f: n m / n <= m}}. *)
-(*   admit. *)
-(* have fab0 i (Hi : (i < n)%N) := continuous_nondecreasing_image_itvoo_itv (ablt i Hi) (cfab i Hi) (ndfab i Hi). *)
-(* set seqab : seq (R * R) := map ab_ (iota 0%N n). *)
-(* set seqfab := map (map_pair f) [seq x <- seqab | x \in [set z | z.1 < z.2]]. *)
-(* set m := size seqfab. *)
-(* pose fab_ i : R * R := nth 0 seqfab i. *)
-(* have fablt i : (i < m)%N -> (fab_ i).1 < (fab_ i).2. *)
-(*   move=> im. *)
-(*   rewrite /fab_. *)
-(*   rewrite /seqfab. *)
-(*   rewrite /=/map_pair. *)
-(*   admit. *)
-(* exists m. *)
-(* exists fab_. *)
-(* split. *)
-(*         move=> i iltm /=. *)
-(*         move=> x/=. *)
-(*         rewrite in_itv/=. *)
-(*         move=> /andP[fabix xfabi]. *)
-(*         have [q qab] := rat_in_itvoo (fablt i iltm). *)
-        
-(*         have /(IVT (ltW (fablt i iltm)) (cfab i iltm)) : minr (fab_ i).1 (fab_ i).2 <= x <= maxr (fab_ i).1 (fab_ i).2. *)
-(*         rewrite ge_min le_max. *)
-(*         apply/andP; split. *)
-(*         - by apply/orP; left; rewrite ltW. *)
-(*         - by apply/orP; right; rewrite ltW. *)
-(*         move=> [r + frx]. *)
-(*         rewrite -frx. *)
-(*         rewrite in_itv/=. *)
-(*         move/andP => []. *)
-(*         rewrite le_eqVlt. *)
-(*         move/predU1P => [<- _|abir]. *)
-(*           exists (ab_ i).1 => //. *)
-(*           admit. *)
-(*         rewrite le_eqVlt. *)
-(*         move/predU1P => [-> |rabi]. *)
-(*           exists (ab_ i).2 => //. *)
-(*           admit. *)
-(*         exists r => //. *)
-(*         rewrite in_itv/=. *)
-(*         apply/andP; split. *)
-(*           apply: le_trans (ltW abir). *)
-(*           admit. *)
-(*         apply: (le_trans (ltW rabi)). *)
-(*         admit. *)
-(*       rewrite /=. *)
-(*       admit. (* ? *) *)
-(*     rewrite /=. *)
-(*     apply/trivIset_mkcond. *)
-(*     apply: ltn_trivIset => n1 n2 n12. *)
-(*     case: ifP; last by rewrite set0I. *)
-(*     move/set_mem => /= n2n. *)
-(*     case: ifP; last by rewrite setI0. *)
-(*     move/set_mem => /= n1n. *)
-(*     admit. *)
-(*   rewrite /=. *)
-(*   (* ?? *) *)
-(*   admit. *)
-(* admit. *)
-(* Admitted. *)
 
 End image_of_itv.
 
@@ -1347,6 +1271,43 @@ Qed.
 
 End for_abs_cont.
 
+Lemma disjoint_itv_le {R : realType } (a b c d : R) : (a < b)%R -> (c < d)%R ->
+  `]a, b[%classic `&` `]c, d[%classic = set0 -> (b <= c \/ d <= a)%R.
+Proof.
+move=> ab cd abcd.
+have [bc|cb] := leP b c; [by left|right].
+rewrite leNgt; apply/negP => ad.
+move: abcd; rewrite -subset0.
+move/(_ ((maxr a c + minr b d) / 2)); apply; split =>/=.
+  rewrite in_itv /maxr /minr/=.
+  case: ifPn => ac.
+    case: ifPn => bd.
+      rewrite (lt_le_trans ac)//= ?(midf_le (ltW _))//.
+      by rewrite midf_lt//.
+    rewrite (lt_le_trans ac)//= ?(midf_le (ltW _))//.
+    rewrite -leNgt in bd.
+    rewrite (lt_le_trans _ bd)//.
+    by rewrite midf_lt//.
+  rewrite -leNgt in ac.
+  case: ifPn => bd.
+    by rewrite !midf_lt.
+  rewrite -leNgt in bd.
+  rewrite midf_lt//=.
+  rewrite (lt_le_trans _ bd)//.
+  by rewrite midf_lt//.
+rewrite in_itv /maxr /minr/=.
+case: ifPn => ac.
+  case: ifPn => bd.
+    by rewrite midf_lt//= (le_lt_trans _ bd)// midf_le//= ltW.
+  by rewrite midf_lt//= midf_lt//.
+rewrite -leNgt in ac.
+case: ifPn => [bd|].
+  rewrite (le_lt_trans ac)//= ?midf_lt//.
+  by rewrite (le_lt_trans _ bd)// midf_le// ltW.
+rewrite -leNgt => bd.
+by rewrite (le_lt_trans ac) midf_lt.
+Qed.
+
 Section absolute_continuity.
 Context {R : realType}.
 
@@ -1356,6 +1317,176 @@ Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
         trivIset `I_n (fun i => `](B i).1, (B i).2[%classic) &
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
     \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
+
+Definition abs_cont_order (a b : R) (f : R -> R) := forall e : {posnum R},
+  exists d : {posnum R}, forall n (B : nat -> R * R), (* B : 'I_n -> R * R *)
+    [/\ (forall i, (i < n)%N -> ((B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b])),
+        (forall i j : 'I_n, (i < j)%N -> (B i).2 <= (B j).1),
+        trivIset `I_n (fun i => `](B i).1, (B i).2[%classic) &
+        \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
+    \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
+
+From mathcomp Require Import perm fingroup.
+
+Lemma abs_contP (a b : R) (f : R -> R) :
+  abs_cont a b f <-> abs_cont_order a b f.
+Proof.
+split.
+  move=> h e; have {h}[d h] := h e.
+  exists d => n B [BS B21 tB] Bd.
+  exact: (h n B).
+move=> h e; have {h}[d h] := h e.
+exists d => n B [BS tB Bd].
+pose mylt i j := (i == j) || ((B i).2 <= (B j).1).
+pose reordered : seq nat := sort mylt (iota 0 n).
+pose g0 : nat -> nat := fun i => nth 0 reordered i.
+have g0n : forall i : 'I_n, (g0 i < n)%N.
+  move=> i.
+  rewrite /g0.
+  apply/(@all_nthP _ [pred x | x < n]%N).
+    apply/allP => x /=.
+    by rewrite mem_sort mem_iota add0n leq0n/=.
+  by rewrite size_sort size_iota.
+pose g : {ffun 'I_n -> 'I_n} := [ffun i => Ordinal (g0n i)].
+have g0_inj : {in gtn n &, injective g0}.
+  move=> /= i j.
+  rewrite !inE => ni nj.
+  rewrite /g0 /=.
+  rewrite /reordered.
+  have : uniq reordered by rewrite sort_uniq// iota_uniq.
+  move/uniqP => /(_ 0).
+  move=> /[apply].
+  rewrite !inE !size_sort !size_iota.
+  exact.
+have g_inj : injectiveb g.
+  apply/injectiveP => /= i j.
+  rewrite /g /=.
+  move/(congr1 val) => /=.
+  rewrite !ffunE.
+  move/g0_inj.
+  rewrite !inE => /(_ (ltn_ord i) (ltn_ord j)) ij.
+  by apply/val_inj.
+pose B'0 : 'I_ n -> R * R := B \o (fun x => g x).
+pose B' (i : nat) : R * R := match Bool.bool_dec (i < n)%N true with
+  | left H => (B'0 (@Ordinal n _ H))
+  | _ => B 0
+  end.
+have B'1 : forall i j : 'I_n, (i < j)%N -> (B' i).2 <= (B' j).1.
+  move=> i j ij.
+  rewrite /B'.
+  case: Bool.bool_dec => ni; last first.
+    by rewrite ltn_ord in ni.
+  case: Bool.bool_dec => nj; last first.
+    by rewrite ltn_ord in nj.
+  rewrite /B'0 /=.
+  suff: mylt (g0 i) (g0 j).
+    rewrite /mylt.
+    move=> /predU1P[|].
+      move/injectiveP in g_inj.
+      move/g0_inj.
+      rewrite !inE ni nj => /(_ erefl erefl) ji.
+      by rewrite ji ltnn in ij.
+    rewrite /g/= !ffunE/=.
+    exact.
+  have := @sorted_ltn_nth_in _ _ mylt.
+  apply => //.
+  - move=> x y z.
+    rewrite !mem_sort !mem_iota !add0n !leq0n/= => xn yn zn.
+    rewrite /mylt => /predU1P[->|yx].
+      move=> /predU1P[->|->].
+        by rewrite eqxx.
+      by rewrite orbT.
+    move=> /predU1P[?|xz].
+      subst z.
+      by rewrite yx orbT.
+    have [->//|yz/=] := eqVneq y z.
+    rewrite (le_trans yx)//.
+    rewrite (le_trans _ xz)//.
+    apply/ltW.
+    by have := (BS _ xn).1.
+  - apply: (@sort_sorted_in _ [pred x | x < n]%N).
+      move=> x y; rewrite !inE => xn yn.
+      rewrite /mylt.
+      have [xy//|/= xy] := eqVneq x y.
+      apply/orP.
+      apply: disjoint_itv_le.
+      by have := (BS _ xn).1.
+      by have := (BS _ yn).1.
+      move/trivIsetP in tB.
+      have := tB (Ordinal xn) (Ordinal yn).
+      by apply => //=.
+    by apply/allP => /= y; rewrite mem_iota leq0n add0n/=.
+  - by rewrite inE size_sort size_iota.
+  - by rewrite inE size_sort size_iota.
+pose g'' : {perm 'I_n} := Perm g_inj.
+have K : \sum_(k < n) (f (B k).2 - f (B k).1) = \sum_(k < n) (f (B' k).2 - f (B' k).1).
+  rewrite (reindex_onto g'' g''^-1%g)//=; last first.
+    move=> i _.
+    by rewrite permKV.
+  apply/eq_big.
+    move=> i.
+    by rewrite /= permK eqxx.
+  move=> i _.
+  rewrite /B'.
+  case: Bool.bool_dec => /=; last first.
+    by rewrite (ltn_ord i).
+  move=> ni.
+  rewrite /B'0/= /g''/=.
+  have <- : Perm g_inj i = g (Ordinal ni).
+    rewrite unlock/=.
+    rewrite (_ : Ordinal ni = i)//.
+    exact/val_inj.
+  done.
+rewrite K; apply: h; split => //.
+- move=> i ni.
+  split.
+  rewrite /B'.
+  case: Bool.bool_dec => //=.
+  move=> ni'.
+  rewrite /B'0/=.
+  apply: (BS _ _).1.
+  by rewrite ltn_ord.
+  rewrite /B'.
+  case: Bool.bool_dec => //=.
+  move=> ni'.
+  rewrite /B'0/=.
+  apply: (BS _ _).2.
+  by rewrite ltn_ord.
+- apply/trivIsetP => /= i j ni nj ij.
+  rewrite /B'.
+  case: Bool.bool_dec => //=.
+  move=> ni'.
+  rewrite /B'0/=.
+  case: Bool.bool_dec => //=.
+  move=> nj'.
+  rewrite /B'0/=.
+  move/trivIsetP : tB; apply => //=.
+  apply: contra ij => /eqP.
+  clear g''.
+  move: g_inj => /injectiveP g_inj H.
+  have /(_ _)/(congr1 val)/eqP := g_inj (Ordinal ni') (Ordinal nj').
+  apply.
+  exact/val_inj.
+- rewrite [ltLHS](_ : _ = \sum_(k < n) ((B k).2 - (B k).1)); last first.
+    rewrite [RHS](reindex_onto g'' g''^-1%g)//=; last first.
+      move=> i _.
+      by rewrite permKV.
+    apply/eq_big.
+      move=> i.
+      by rewrite /= permK eqxx.
+    move=> i _.
+    rewrite /B'.
+    case: Bool.bool_dec => /=; last first.
+      by rewrite (ltn_ord _).
+    move=> ni.
+    rewrite /B'0/= /g''/=.
+    have <- : Perm g_inj i = g (Ordinal ni).
+      rewrite unlock/=.
+      rewrite (_ : Ordinal ni = i)//.
+      exact/val_inj.
+    done.
+  done.
+Qed.
 
 (* lemma8 *)
 Lemma total_variation_AC a b (f : R -> R) : a < b ->
@@ -1999,7 +2130,9 @@ apply: (@lt_le_trans _ _ y) => //.
 rewrite -(sup1 y); apply: le_sup; last 2 first.
     by exists y.
   by split=> //; exists y.
-by rewrite sub1set inE; exists y.
+rewrite sub1set.
+rewrite inE.
+by exists y.
 Qed.
 
 Lemma not_subset1P {R : realType} (D : set R) (F : {fun D >-> [set: R]}) z :
@@ -2506,6 +2639,35 @@ Admitted.
 
 End lemma6.
 
+Lemma measure_setU1 {R : realType} (a : R) (U : set R) :
+  measurable U -> @lebesgue_measure R U = 0 ->
+  @lebesgue_measure R (U `|` [set a]) = 0.
+Proof.
+move=> mU mU0.
+have [aU|aU] := boolP (a \in U).
+  by rewrite setUidl// => x ->; exact/set_mem.
+rewrite measureU//=.
+  by rewrite mU0 lebesgue_measure_set1 adde0.
+rewrite -subset0 => x [/=] /[swap] ->.
+by move=> /mem_set; apply/negP.
+Qed.
+
+Definition set01 {R : realType} (b : bool) (x : R) : set R :=
+  if b then [set x] else set0.
+
+Lemma measure_bigsetU_set01 {R : realType} n (b : 'I_n -> bool) (x : 'I_n -> R) :
+  @lebesgue_measure _ (\big[setU/set0]_(i < n) set01 (b i) (x i)) = 0.
+Proof.
+move: n b x; elim => [|n ih] b x.
+  by rewrite big_ord0 measure0.
+rewrite big_ord_recr//=; case: (b ord_max) => /=.
+  rewrite measure_setU1//.
+  apply: bigsetU_measurable => // i _.
+  rewrite /set01.
+  by case: ifPn => //.
+by rewrite setU0.
+Qed.
+
 Section Banach_Zarecki.
 Context (R : realType).
 Context (a b : R) (ab : a < b).
@@ -2649,32 +2811,29 @@ Lemma Banach_Zarecki_nondecreasing :
   lusinN `[a, b] f ->
   abs_cont a b f.
 Proof.
-move=> cf nndf lf; apply: contrapT => /existsNP[e0] /forallNP fe0.
+move=> cf nndf lf.
+apply/abs_contP; apply: contrapT => /existsNP[e0] /forallNP fe0.
 have {fe0} : forall d : {posnum R},
     exists n, exists B : nat -> R * R,
       [/\ (forall i, (i < n)%N -> (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
+          (forall i j : 'I_n, (i < j)%N -> (B i).2 <= (B j).1), (* NEW *)
           trivIset `I_n (fun i => `](B i).1, (B i).2[%classic),
           \sum_(k < n) ((B k).2 - (B k).1) < d%:num &
           \sum_(k < n) (f (B k).2 - f (B k).1) >= e0%:num].
   move=> d; have {fe0} := fe0 d.
-  move=> /existsNP[n] /existsNP[B] /not_implyP[] [H1 H2 H3 H4].
+  move=> /existsNP[n] /existsNP[B] /not_implyP[] [H1 H2 H3 H4 H5].
   by exists n, B; split => //; rewrite leNgt; apply/negP.
 move=> /choice[n_0 ab_0].
 pose delta_0 (i : nat) : R := (2 ^+ i.+1)^-1.
 have d_geo n : delta_0 n = geometric 2^-1 2^-1 n.
-  rewrite /geometric /=.
-  rewrite /delta_0.
-  by rewrite -exprVn exprS.
+  by rewrite /geometric /= /delta_0 -exprVn exprS.
 have d_geo0 : forall k, (0 < k)%N -> (delta_0 k.-1 = geometric 1 (2 ^-1) k).
-  rewrite /geometric /=.
-  rewrite /delta_0.
-  move=> t t0.
-  rewrite prednK //.
-  by rewrite -exprVn mul1r.
+  rewrite /geometric /= /delta_0 => t t0.
+  by rewrite prednK// -exprVn mul1r.
 have delta_0_ge0 (i : nat) : 0 < (2 ^+ i.+1)^-1 :> R by rewrite invr_gt0 exprn_gt0.
 pose delta_ (i : nat) : {posnum R} := PosNum (delta_0_ge0 i).
 pose n_ i := n_0 (delta_ i).
-pose ab_  i := projT1 (cid (ab_0 (delta_ i))).
+pose ab_ i := projT1 (cid (ab_0 (delta_ i))).
 have ablt i t : (t < n_0 (delta_ i))%N -> (ab_ i t).1 < (ab_ i t).2.
   move=> tn0i.
   move: (projT2 (cid (ab_0 (delta_ i)))).
@@ -2685,10 +2844,14 @@ have absub i t : (t < n_ i)%N -> `](ab_ i t).1, (ab_ i t).2[ `<=` `[a, b].
   move: (projT2 (cid (ab_0 (delta_ i)))).
   move=> [+ _ _ _].
   by move/(_ t tn) => [_ +].
+(* NEW *)
+have ordered t : (forall i j : 'I_(n_ t), (i < j)%N -> (ab_ t i).2 <= (ab_ t j).1).
+  move: (projT2 (cid (ab_0 (delta_ t)))).
+  by case => _ + _ _ _ /=.
 have tab_ t : trivIset `I_(n_ t)
     (fun i => `](ab_ t i).1, (ab_ t i).2[%classic).
   move: (projT2 (cid (ab_0 (delta_ t)))).
-  by case => _ + _ _ /=.
+  by case => _ _ + _ _ /=.
 have Hc n k : (k < n_ n)%N -> {within `[(ab_ n k).1, (ab_ n k).2], continuous f}.
   move=> knn.
   move: cf.
@@ -2712,7 +2875,7 @@ have Hc n k : (k < n_ n)%N -> {within `[(ab_ n k).1, (ab_ n k).2], continuous f}
   apply: (le_trans xabnk).
   by have /= := (incl_itv_ub (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
       (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn)).
-have Hhomo n k :(k < n_ n)%N -> {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}. 
+have Hhomo n k :(k < n_ n)%N -> {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}.
   move=>knn x y xab yab.
   by apply: nndf; apply: (absub n k).
 have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
@@ -2900,88 +3063,267 @@ have mfA0 : mu (f @` A) = 0.
     by apply: (H3 _ _ _).2.
   + by apply: bigcapT_measurable => //.
   + exact: mA0.
+(* where we used to use get_nice_image_itv *)
 have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
-  rewrite image_bigcup.
-  have /= := (@bigcup_sup _ _ n [set j | (n <= j)%N] E_).
-  move/(_ (leqnn n)).
-  move/(@le_measure _ R _ mu) => /=.
-  rewrite !inE; move/(_ (mE n)).
-  have /= mEn : (((wlength idfun)^*)%mu).-cara.-measurable (\bigcup_(j in [set j | (n <= j)%N]) E_ j).
-    by apply: bigcup_measurable => k _ /=.
-  move/(_ mEn) => H.
-  apply: (@le_trans _ _ (mu (f @` E_ n))) => //.
-    rewrite image_E.
-    have nndf' : {in `]a, b[ &, {homo f : n m / n <= m}}.
-      move=> x y xab yab xy; apply: nndf => //.
-      - by move: x xab {xy}; exact/subset_itv_oo_cc.
-      - by move: y yab {xy}; exact/subset_itv_oo_cc.
-(*     have [m [fab]] := (get_nice_image_itv ab cf nndf' (ablt n) (absub n) (tab_ n)). *)
-(*     move=> [fabsub fablt tfab U2fab U2sum]. *)
-(*     rewrite completed_lebesgue_measureE. *)
-(*     rewrite (_: \big[setU/set0]_(i < n_0 (delta_ n)) (f @` `] (ab_ n i).1,  (ab_ n i).2[%classic) = *)
-(*           \big[setU/set0]_(i < m) ((fun i : nat => `](fab i).1, (fab i).2[%classic) i)); last first. *)
-(*       by rewrite U2fab. *)
-(*     rewrite U2sum. *)
-(*     by rewrite lee_fin e0_prop. *)
-(*   apply: le_measure => /=. *)
-(*       rewrite inE image_E. *)
-(*       apply: sub_caratheodory. *)
-(*       apply: bigsetU_measurable => /= k _. *)
-(*       exact: (mimf n k (ltn_ord k)). *)
-(*     rewrite inE. *)
-(*     apply: bigcup_measurable => m /= nm. *)
-(*     rewrite image_E. *)
-(*     apply: sub_caratheodory. *)
-(*     apply: bigsetU_measurable => /= k _. *)
-(*     exact: (mimf m k (ltn_ord k)). *)
-(*   move=> _ [x Enx] <-. *)
-(*   exists n => //=. *)
-(*   by exists x. *)
-(* have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0. *)
-(*   have ndF : {in `[a, b]%classic &, {homo F : n m / n <= m}}. *)
-(*     by move=> x y /[!inE] xab yab xy; exact: nndf. *)
-(*   have Gopen k : open (G_ k). *)
-(*     apply: bigcup_open => i _. *)
-(*     rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)). *)
-(*     by apply: bigcup_open => j _; exact: interval_open. *)
-(*   have := @measure_image_preimages_gt1_nondecreasing_fun R a b F ab ndF G_ Gopen. *)
-(*   by rewrite /= -/A -completed_lebesgue_measureE mfA0. *)
-(* have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E. *)
-(*   apply: lime_ge; last exact: nearW. *)
-(*   apply: ereal_nonincreasing_is_cvgn; apply/nonincreasing_seqP => n. *)
-(*   rewrite le_measure ?inE //=. *)
-(*   - by rewrite image_G; apply: sub_caratheodory; exact: bigcup_measurable. *)
-(*   - by rewrite image_G; apply: sub_caratheodory; exact: bigcup_measurable. *)
-(*   - apply: image_subset; apply: bigcup_sub => j /= mj x Ejx. *)
-(*     by exists j => //=; exact: leq_trans mj. *)
-(* suff: mu (\bigcap_k (f @` G_ k)) = lim (mu (F @` G_ n) @[n --> \oo]). *)
-(*   by move=> <-; apply/negP; rewrite -ltNge muFG0. *)
-(* apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=. *)
-(* - apply: (@le_lt_trans _ _ (mu `[F a, F b])); last first. *)
-(*     rewrite completed_lebesgue_measureE lebesgue_measure_itv//= lte_fin. *)
-(*     rewrite (lt_neqAle (f a)) nndf ?andbT. *)
-(*     by case: ifPn => //; rewrite -EFinB ltry. *)
-(*     by rewrite in_itv/= lexx/= ltW. *)
-(*     by rewrite in_itv/= lexx/= ltW. *)
-(*     exact: ltW. *)
-(*   rewrite le_measure//= ?inE. *)
-(*     apply: sub_caratheodory; rewrite image_G. *)
-(*     by apply: bigcup_measurable => p _; exact: mfE. *)
-(*     exact: sub_caratheodory. *)
-(*   move=> x/= [r [i _]]. *)
-(*   rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)). *)
-(*   move=> -[j jni]/= ijr <-{x}. *)
-(*   apply: continuous_nondecreasing_image_itvcc => //. *)
-(*   exact: ltW. *)
-(*   by exists r => //=; exact: (absub _ _ _ _ ijr). *)
-(* - move=> k; apply: sub_caratheodory; rewrite image_G. *)
-(*   by apply: bigcup_measurable => p _; exact: mfE. *)
-(* - apply: sub_caratheodory; apply: bigcap_measurable => p _. *)
-(*   by rewrite image_G; apply: bigcup_measurable => q _; exact: mfE. *)
-(* - move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_. *)
-(*   apply: bigcup_sub => i/= yi. *)
-(*   by apply: bigcup_sup => //=; rewrite (leq_trans xy). *)
-Admitted.
+  apply: (@le_trans _ _ (mu (f @` E_ n))); last first.
+    rewrite le_measure ?inE//=.
+    - exact: sub_caratheodory.
+    - apply: sub_caratheodory.
+      rewrite /G_ image_bigcup.
+      exact: bigcup_measurable.
+    - rewrite image_G.
+    - by move=> _/= [r Enr <-]; exists n => //=; exists r.
+  have : mu (f @` E_ n) = (\sum_(k < n_ n) (f (ab_ n k).2 - f (ab_ n k).1))%:E.
+    (* not in paper *)
+    transitivity (\sum_(k < n_ n) mu (f @` `](ab_ n k).1, (ab_ n k).2[%classic)).
+    (* /not in paper *)
+      rewrite [X in mu [set f x | x in X]] (_ : _ =
+          \bigcup_(k < n_ n) `](ab_ n k).1, (ab_ n k).2[%classic); last first.
+        by rewrite bigcup_mkord.
+      rewrite image_bigcup [X in mu X](_ : _ =
+        \big[setU/set0]_(i < n_ n) [set f x | x in `](ab_ n i).1, (ab_ n i).2[]); last first.
+        by rewrite bigcup_mkord.
+      have : forall i : 'I_(n_ n), exists b01,
+        f @` `](ab_ n i).1, (ab_ n i).2[ = set01 b01.1 (f (ab_ n i).1) `|`
+                                           `]f (ab_ n i).1, f (ab_ n i).2[ `|`
+                                           set01 b01.2 (f (ab_ n i).2).
+        move=> i.
+        have K1 : {within `[(ab_ n i).1, (ab_ n i).2], continuous f}.
+          apply: continuous_subspaceW cf => //.
+          apply: subset_neitv_oocc.
+            exact: (H3 _ _ _).1.
+          exact: (H3 _ _ _).2.
+        have K2 : {in `](ab_ n i).1, (ab_ n i).2[ &, {homo f : x y / (x <= y)%O}}.
+          exact: (Hhomo _ _ _).
+        have [b0 [b1 K3]] := continuous_nondecreasing_image_itvoo_itv (H3 _ _ (ltn_ord i)).1 K1 K2.
+        have K : f (ab_ n i).1 <= f (ab_ n i).2.
+          apply: nndf => //=.
+          (* (ab_ n i).1 \in `[a, b] *)
+          have /subset_neitv_oocc := (H3 _ _ (ltn_ord i)).2.
+          move/(_ (H3 _ _ (ltn_ord i)).1).
+          apply => /=.
+          by rewrite in_itv//= lexx ltW// (H3 _ _ (ltn_ord i)).1.
+          (* (ab_ n i).2 \in `[a, b] *)
+          have /subset_neitv_oocc := (H3 _ _ (ltn_ord i)).2.
+          move/(_ (H3 _ _ (ltn_ord i)).1).
+          apply => /=.
+          by rewrite in_itv//= lexx andbT ltW// (H3 _ _ (ltn_ord i)).1.
+          by apply: ltW; exact: (H3 _ _ _).1.
+        move: K; rewrite le_eqVlt => /predU1P[K|K].
+          move: b0 b1 K3 => [|] [|] /= ->.
+          exists (false, false) => //=.
+          by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp//=.
+          exists (true, false) => //=.
+          rewrite setU0 K [in RHS]set_itv_ge ?bnd_simp//= setU0.
+          by rewrite interval_set1.
+          exists (false, false) => //=.
+          by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp//=.
+          exists (false, false) => //=.
+          by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp//=.
+        move: b0 b1 K3 => [|] [|] /= ->.
+        exists (true, false) => /=.
+        by rewrite setU0 setU1itv//= bnd_simp.
+        exists (true, true) => /=.
+        rewrite setU1itv ?bnd_simp//=.
+        rewrite setUitv1 ?bnd_simp//=//.
+        exact/ltW.
+        exists (false, false) => /=.
+        by rewrite set0U setU0.
+        exists (false, true) => /=.
+        by rewrite set0U setUitv1 ?bnd_simp.
+      move=> /choice[endpoints Hendpoints].
+      under eq_bigr do rewrite Hendpoints//.
+      transitivity (mu (\big[setU/set0]_(i < n_ n) `](f (ab_ n i).1), (f (ab_ n i).2)[%classic)).
+        rewrite [X in mu X](_ : _ =
+          ((\big[setU/set0]_i set01 (endpoints i).1 (f (ab_ n i).1))
+            `|`
+           (\big[setU/set0]_i set01 (endpoints i).2 (f (ab_ n i).2))
+             `|`
+           (\big[setU/set0]_(i < n_ n) `](f (ab_ n i).1), (f (ab_ n i).2)[%classic))); last first.
+          rewrite !big_split/=.
+          by rewrite setUAC.
+        rewrite measureU//=; last 3 first.
+          apply: measurableU.
+            apply: bigsetU_measurable => i _.
+            rewrite /set01; case: ifPn => // _.
+            by apply: sub_caratheodory.
+          apply: bigsetU_measurable => i _.
+          rewrite /set01; case: ifPn => // _.
+          by apply: sub_caratheodory.
+          apply: bigsetU_measurable => i _.
+          by apply: sub_caratheodory.
+          rewrite -subset0 => x [[]].
+            move=> /mem_set /big_ord_setUP[i].
+            rewrite inE /set01; case: ifPn => //= i1 ->{x}.
+            move=> /mem_set /big_ord_setUP[j].
+            rewrite inE/= in_itv/=.
+            have [ij|ij|ij] := ltgtP i j.
+              have H : f (ab_ n i).1 <= f (ab_ n j).1.
+                rewrite nndf//.
+                apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+                by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+                apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
+                by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
+                rewrite (le_trans _ (ordered _ i j _))//.
+                rewrite ltW//.
+                by apply: ablt.
+              by rewrite ltNge H.
+              have H : f (ab_ n j).2 <= f (ab_ n i).1.
+                rewrite nndf//.
+                apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
+                by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
+                apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+                by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+                by rewrite (le_trans _ (ordered _ j i _)).
+              move=> /andP[_].
+              by rewrite ltNge H.
+              by rewrite ij ltxx.
+          move=> /mem_set /big_ord_setUP[i].
+          rewrite inE /set01; case: ifPn => //= i1 ->{x}.
+          move=> /mem_set /big_ord_setUP[j].
+          rewrite inE/= in_itv/=.
+          have [ij|ij|ij] := ltgtP i j.
+            have H : f (ab_ n i).2 <= f (ab_ n j).1.
+              rewrite nndf//.
+              apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+              by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+              apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
+              by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
+              by rewrite (le_trans _ (ordered _ i j _)).
+            by rewrite ltNge H.
+            rewrite !ltNge.
+            have : f (ab_ n j).2 <= f (ab_ n i).2.
+              rewrite nndf//.
+              apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
+              by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
+              apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+              by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+              have := (ordered _ j i ij) => /le_trans; apply.
+              apply/ltW.
+              exact: ablt.
+              move=> ->.
+            by rewrite andbF.
+            by rewrite ij ltxx andbF.
+          rewrite measureU0//=; last 3 first.
+            apply: bigsetU_measurable => i _.
+            by rewrite /set01; case: ifPn => // _; exact: sub_caratheodory.
+            apply: bigsetU_measurable => i _.
+            by rewrite /set01; case: ifPn => // _; exact: sub_caratheodory.
+            by apply: measure_bigsetU_set01.
+          rewrite [X in (X + _)%E](_ : _ = 0); last first.
+            by apply: measure_bigsetU_set01.
+          rewrite add0e.
+          done.
+        rewrite measure_semi_additive_ord//=; last 3 first.
+          by move=> k; apply: sub_caratheodory.
+          apply/trivIsetP => /= i j _ _.
+            rewrite neq_lt => /orP[ij|ij].
+            rewrite -subset0 => x []/=.
+            rewrite !in_itv/= => /andP[K1 K2] /andP[K3 K4].
+            have := lt_trans K3 K2.
+            apply/negP.
+            rewrite -leNgt.
+            rewrite nndf//.
+            apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+            by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+            apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
+            by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
+            by have := (ordered _ i j ij) => /le_trans; apply.
+          rewrite -subset0 => x []/=.
+          rewrite !in_itv/= => /andP[K1 K2] /andP[K3 K4].
+          have := lt_trans K1 K4.
+          apply/negP.
+          rewrite -leNgt.
+          rewrite nndf//.
+          apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
+          by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
+          apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+          by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+          by have := (ordered _ _ _ ij) => /le_trans; apply.
+          apply: sub_caratheodory.
+          by apply: bigsetU_measurable => i _.
+        apply: eq_bigr => i _.
+        have /(_ _ _)[| | |] := @continuous_nondecreasing_image_itvoo_itv _ (ab_ n i).1 (ab_ n i).2 f.
+          exact: (ablt _ _ (ltn_ord i)).
+          apply: continuous_subspaceW cf => //.
+          apply: subset_neitv_oocc.
+            exact: (ablt _ _ (ltn_ord i)).
+          exact: (H3 _ _ _).2.
+          exact: (Hhomo _ _ _).
+        move=> b0 [b2 H].
+        rewrite H/=.
+        rewrite [RHS]lebesgue_measure_itv//=.
+        rewrite lte_fin.
+        by rewrite [LHS]lebesgue_measure_itv//=.
+      rewrite -sumEFin.
+      apply/eq_bigr => i _.
+      have /(_ _ _)[| | |] := @continuous_nondecreasing_image_itvoo_itv _ (ab_ n i).1 (ab_ n i).2 f.
+        exact: (ablt _ _ (ltn_ord i)).
+        apply: continuous_subspaceW cf => //.
+        apply: subset_neitv_oocc.
+          exact: (ablt _ _ (ltn_ord i)).
+        exact: (H3 _ _ _).2.
+        exact: (Hhomo _ _ _).
+      move=> b0 [b1 H].
+      rewrite H/=.
+      rewrite [LHS]lebesgue_measure_itv// lte_fin /=.
+      rewrite lt_neqAle.
+      have [K1|K1] := eqVneq (f (ab_ n i).1) (f (ab_ n i).2).
+        by rewrite /= K1 subrr.
+      rewrite /= nndf//.
+      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+      apply/ltW.
+      exact: ablt.
+    move=> ->.
+    by rewrite lee_fin e0_prop.
+have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
+  have ndF : {in `[a, b]%classic &, {homo F : n m / n <= m}}.
+    by move=> x y /[!inE] xab yab xy; exact: nndf.
+  have Gopen k : open (G_ k).
+    apply: bigcup_open => i _.
+    rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
+    by apply: bigcup_open => j _; exact: interval_open.
+  have := @measure_image_preimages_gt1_nondecreasing_fun R a b F ab ndF G_ Gopen.
+  by rewrite /= -/A -completed_lebesgue_measureE mfA0.
+have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
+  apply: lime_ge; last exact: nearW.
+  apply: ereal_nonincreasing_is_cvgn; apply/nonincreasing_seqP => n.
+  rewrite le_measure ?inE //=.
+  - by rewrite image_G; apply: sub_caratheodory; exact: bigcup_measurable.
+  - by rewrite image_G; apply: sub_caratheodory; exact: bigcup_measurable.
+  - apply: image_subset; apply: bigcup_sub => j /= mj x Ejx.
+    by exists j => //=; exact: leq_trans mj.
+suff: mu (\bigcap_k (f @` G_ k)) = lim (mu (F @` G_ n) @[n --> \oo]).
+  by move=> <-; apply/negP; rewrite -ltNge muFG0.
+apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
+- apply: (@le_lt_trans _ _ (mu `[F a, F b])); last first.
+    rewrite completed_lebesgue_measureE lebesgue_measure_itv//= lte_fin.
+    rewrite (lt_neqAle (f a)) nndf ?andbT.
+    by case: ifPn => //; rewrite -EFinB ltry.
+    by rewrite in_itv/= lexx/= ltW.
+    by rewrite in_itv/= lexx/= ltW.
+    exact: ltW.
+  rewrite le_measure//= ?inE.
+    apply: sub_caratheodory; rewrite image_G.
+    by apply: bigcup_measurable => p _; exact: mfE.
+    exact: sub_caratheodory.
+  move=> x/= [r [i _]].
+  rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
+  move=> -[j jni]/= ijr <-{x}.
+  apply: continuous_nondecreasing_image_itvcc => //.
+  exact: ltW.
+  by exists r => //=; exact: (absub _ _ _ _ ijr).
+- move=> k; apply: sub_caratheodory; rewrite image_G.
+  by apply: bigcup_measurable => p _; exact: mfE.
+- apply: sub_caratheodory; apply: bigcap_measurable => p _.
+  by rewrite image_G; apply: bigcup_measurable => q _; exact: mfE.
+- move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_.
+  apply: bigcup_sub => i/= yi.
+  by apply: bigcup_sup => //=; rewrite (leq_trans xy).
+Unshelve. all: end_near. Qed.
 
 End Banach_Zarecki.
 
