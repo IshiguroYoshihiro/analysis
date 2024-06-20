@@ -706,6 +706,27 @@ Unshelve. all: by end_near. Qed.
 
 End PRme.
 
+Section measurable_squeeze.
+Context {R : realType}.
+
+Lemma measure_squeeze_measurable (B A C : set R) :
+  measurable A ->
+  measurable C ->
+  lebesgue_measure A = lebesgue_measure C ->
+  countable (C `\` A) ->
+  A `<=` B -> B `<=` C -> measurable B.
+Proof.
+move=> mA mC mAC cCA AB BC.
+rewrite -(setDUK AB).
+apply: measurableU => //.
+apply: countable_lebesgue_measurable.
+apply: sub_countable cCA.
+apply: subset_card_le.
+by apply: setSD.
+Qed.
+
+End measurable_squeeze.
+
 (* NB: work starts here *)
 
 
@@ -1748,10 +1769,12 @@ exists Uoo_trunc; split.
 - exact: sub_bigcap.
 - rewrite (_ : mue = lebesgue_measure)//.
   rewrite measureD//=; last 3 first.
-    apply: bigcap_measurable => ? ?.
-    by apply: open_measurable.
+    apply: bigcap_measurable.
+      by exists 0%N.
+    by move=> ? ?; apply: open_measurable.
   rewrite SB.
-  apply: bigcap_measurable => ? ?.
+  apply: bigcap_measurable; first by exists 0%N.
+  move=> ? ?.
   by apply: open_measurable.
   rewrite (@le_lt_trans _ _ (mue (U_ 0%N)))//.
   apply: le_outer_measure.
@@ -2148,6 +2171,8 @@ apply/existsNP; exists x; apply/existsNP; exists y.
 by apply/not_implyP; split => //; apply/not_implyP; split => //; exact/eqP.
 Qed.
 
+
+
 Section lemma2.
 Context {R : realType}.
 Variable a b : R.
@@ -2329,6 +2354,7 @@ Proof.
 
 Admitted.
 
+
 (* lemma2 (ii) *)
 Lemma delta_set_preimages_gt1_nondecreasing_fun Z :
   Z `<=` `]a, b[%classic -> Gdelta Z ->
@@ -2343,14 +2369,14 @@ set G_ := fun i => `]a, b[%classic `&` (G' i).
 have {oG'}oG i : open (G_ i).
   apply: openI => //.
   exact: interval_open.
-have {G'0}UG0 : \bigcap_i G_ i !=set0.
+have {G'0}IG0 : \bigcap_i G_ i !=set0.
   have [x G'x] := G'0.
   exists x.
   split.
     apply: G'ab.
     exact: G'x.
   exact: G'x.
-have UGab : \bigcap_i G_ i `<=` `]a, b[.
+have IGab : \bigcap_i G_ i `<=` `]a, b[.
   apply: subset_trans G'ab.
   apply: subset_bigcap => i _.
   exact: subIsetr.
@@ -2364,7 +2390,43 @@ have Gab_cc i : G_ i `<=` `[a, b].
     exact: subIsetl.
   exact: subset_itv_oo_cc.
 have [eq1 eq2] := (@lemma1 _ _ _ F nat G_ Gab_cc).
-
+apply: measure_squeeze_measurable eq1 eq2.
+- apply: measurableD.
+    apply: bigcap_measurable => // k _.
+    admit. (* countable union of open intervals *)
+  exact: is_borel_preimages_gt1_nondecreasing_fun.
+- admit. (* countable union of open intervals *)
+- rewrite measureD/=; last 2 first.
+        exact: is_borel_preimages_gt1_nondecreasing_fun.
+      apply: (@le_lt_trans _ _ (lebesgue_measure (`[F a, F b]%classic)) (* ? *)).
+        apply: le_measure.
+            admit. (* countable union of open intervals *)
+          rewrite inE.
+          done.
+        apply: (@subset_trans _ (F @` `[a, b]%classic)).
+          move=> y.
+          rewrite/bigcap/=.
+          move/(_ 0%N Logic.I) => [x G0x <-].
+          exists x => //.
+          exact: (Gab_cc 0%N).
+        move=> _ [x xab <-] /=.
+        rewrite in_itv/=.
+        (* ok *)
+        admit.
+      (* ok *)
+      rewrite lebesgue_measure_itv/=.
+      admit.
+    rewrite (_:lebesgue_measure (\bigcap_i (F @` (G_ i)) `&` preimages_gt1 F) = 0).
+      by rewrite sube0.
+    (* le_outer_measure? *)
+    admit.
+  admit. (* countable union of open intervals *)
+- rewrite setDD.
+  apply: (@sub_countable _ _ _ (preimages_gt1 F)); last first.
+    exact: is_countable_preimages_gt1_nondecreasing_fun.
+  apply: subset_card_le.
+  exact: subIsetr.
+Admitted.
 
 (* (* unprovable *) *)
 (* have bigcapFG : \bigcap_n (F @` (G_ n)) = \bigcap_n (F @` (G' n)). *)
