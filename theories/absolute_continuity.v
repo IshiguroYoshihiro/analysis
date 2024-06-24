@@ -491,111 +491,6 @@ Implicit Type (f : R -> R) (a b: R).
 
 Local Notation mu := (@lebesgue_measure R).
 
-Let closure_itvoo (a b : R) : a < b ->
-closure `]a, b[%classic = `[a, b]%classic.
-Proof.
-rewrite closure_limit_point.
-rewrite eqEsubset; split.
-
-
-(* have -> : `]a, b[ `|` limit_point `]a, b[%classic = limit_point `]a, b[%classic. *)
-(*   apply/setUidPr. *)
-(*   move=> x /=. *)
-(*   rewrite in_itv/=. *)
-(*   move/andP => [ax xb]. *)
-(*   move=> /= S. *)
-(*   rewrite nbhs_nearE => nearS. *)
-(*   near x^' => y. *)
-(*   exists y; split. *)
-(*       near: y. *)
-(*       exact: nbhs_dnbhs_neq. *)
-(*     rewrite in_itv/=. *)
-(*     apply/andP; split. *)
-      
-
-(*       near: y. *)
-(*       rewrite near_nbhs. *)
-(*       apply: nbhs_right_lt. *)
-(* rewrite setUS. *)
-(* rewrite eqEsubset. *)
-Abort.
-
-Lemma closure_itv (a b : R) (x y : bool) : a < b ->
-closure [set` (Interval (BSide x a) (BSide y b))] = `[a, b]%classic.
-Proof.
-move=> ab.
-rewrite eqEsubset; split.
-  rewrite set_itv_splitI.
-  move=> r.
-  move/closureI.
-  have -> : closure [set` Interval (BSide x a) +oo%O] = `[a, +oo[%classic.
-    case: x.
-      apply/esym.
-      apply/closure_id.
-      rewrite set_itv_c_infty.
-      exact: closed_ge.
-    rewrite set_itv_o_infty set_itv_c_infty.
-    by rewrite closure_gt.
-  have -> : closure [set` Interval -oo%O (BSide y b)] = `]-oo, b]%classic.
-    case: y.
-      rewrite set_itv_infty_o set_itv_infty_c.
-      by rewrite closure_lt.
-    apply/esym.
-    apply/closure_id.
-    rewrite set_itv_infty_c.
-    exact: closed_le.
-  move=> H.
-  by rewrite set_itv_splitI.
-have -> : `[a, b]%classic = closure `]a, b[%classic.
-  rewrite eqEsubset; split.
-    move=> r /=.
-    rewrite in_itv/=.
-    move/andP => [].
-    rewrite !le_eqVlt; move=> /predU1P[ar|ar] /predU1P[rb|rb].
-          by move: ab; rewrite ar -rb ltxx.
-        rewrite ar closure_limit_point; right.
-        apply/limit_pointP.
-        exists (fun n => r + (b - r) / (2 ^+ n.+1)); split.
-            admit.
-          move=> n.
-          rewrite neq_lt; apply/orP; right.
-          rewrite ltrDl.
-          rewrite divr_gt0 //.
-          by rewrite subr_gt0.
-        rewrite -{3}(addr0 r).
-        apply: cvgD; first exact: cvg_cst.
-        rewrite -(mulr0 (b - r)).
-        apply: cvgM; first exact: cvg_cst.
-        admit.
-      rewrite -rb closure_limit_point; right.
-      apply/limit_pointP.
-      exists (fun n => (r - (r - a) / (2 ^+ n.+1))); split.
-          admit.
-        move=> n.
-        rewrite neq_lt; apply/orP; left.
-        rewrite ltrBDl -ltrBDr subrr.
-        rewrite divr_gt0 //.
-        by rewrite subr_gt0.
-      rewrite -{3}(addr0 r).
-      apply: cvgD; first exact: cvg_cst.
-      rewrite -oppr0.
-      apply: cvgN.
-      rewrite -(mulr0 (r - a)).
-      apply: cvgM; first exact: cvg_cst.
-      admit.
-    rewrite closure_limit_point /=; left.
-    by rewrite in_itv/= ar rb.
-  rewrite (closure_id `[a, b]%classic).1; last exact: interval_closed.
-  apply: closure_subset.
-  exact: subset_itv_oo_cc.
-apply: closure_subset.
-move=> r /=.
-rewrite in_itv/=.
-move/andP => [ar rb].
-rewrite in_itv.
-by case: x => /=; rewrite ?ltW ?ar //=; case: y => /=; rewrite ?ltW ?rb /=.
-Abort.
-
 Lemma closure_neitv_oo a b : a < b ->
 closure `]a, b[%classic = `[a, b]%classic.
 Proof.
@@ -728,7 +623,6 @@ Qed.
 End measurable_squeeze.
 
 (* NB: work starts here *)
-
 
 Lemma measure_is_completeP {d} {T : measurableType d} {R : realType}
   (mu : {measure set T -> \bar R}) :
@@ -1584,7 +1478,10 @@ Lemma completed_lebesgue_measure_itv {R : realType} (i : interval R) :
   completed_lebesgue_measure ([set` i] : set R) =
   (if i.1 < i.2 then (i.2 : \bar R) - i.1 else 0)%E.
 Proof.
-Admitted.
+transitivity (lebesgue_measure [set` i]); last first.
+  by rewrite lebesgue_measure_itv.
+by rewrite completed_lebesgue_measureE.
+Qed.
 
 Lemma completed_lebesgue_measureT {R : realType} :
   (@completed_lebesgue_measure R) setT = +oo%E.
@@ -2351,9 +2248,7 @@ Abort.
 Lemma image_interval A : is_interval A -> exists s : nat -> set R,
   (forall i, is_interval (s i)) /\ F @` A = \bigcup_i (s i).
 Proof.
-
 Admitted.
-
 
 (* lemma2 (ii) *)
 Lemma delta_set_preimages_gt1_nondecreasing_fun Z :
@@ -2419,6 +2314,8 @@ apply: measure_squeeze_measurable eq1 eq2.
     rewrite (_:lebesgue_measure (\bigcap_i (F @` (G_ i)) `&` preimages_gt1 F) = 0).
       by rewrite sube0.
     (* le_outer_measure? *)
+    apply/eqP.
+    
     admit.
   admit. (* countable union of open intervals *)
 - rewrite setDD.
