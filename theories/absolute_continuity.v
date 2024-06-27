@@ -2393,15 +2393,47 @@ exact: itv_partition_nth_le.
 Unshelve. all:end_near. Qed.
 
 Lemma discontinuties_countable :
-  countable [set x | ~ {for x, continuous F}].
+  countable [set x | x \in `[a, b] /\ ~ {for x, continuous F}].
 Proof.
-set A : set R := [set x | _].
-pose elt_type := {x | A x}.
-have : forall a : elt_type, exists q : rat.rat,
-  lim (F x @[x --> (sval a)^'-]) < rat.ratr q < lim (F x @[x --> (sval a)^'+]).
-  move=> [c Ac].
+have [|] := leP b a.
+  rewrite le_eqVlt; move/orP => [/eqP ->|].
+    have [|] := pselect ({for a, continuous F}).
+      (* is set1 *)
+      admit.
+    (* is set0 *)
+    admit.
+  (* is set0 *)
   admit.
-move/choice => [f Hf].
+move=> ab.
+set A : set R := [set x | _].
+pose elt_type := set_type A.
+have eq6 : forall a : elt_type, exists m : nat,
+     m.+1%:R ^-1 < Fr (sval a) - Fl (sval a).
+  admit.
+(* (7) *)
+pose S m := [set x | x \in `]a, b[ /\ m.+1%:R ^-1 < Fr x - Fl x].
+have jumpfafb m : forall s : seq R, (forall i, (i < size s)%N -> nth b s i \in S m) -> path <%R a s ->
+     \sum_(0 <= i < size s) (Fr (nth b s i) - Fl (nth b s i)) < F b - F a.
+  move=> s Hs pas.
+  have : itv_partition a b (rcons s b).
+    split.
+      move: s Hs pas.
+      apply: last_ind => /=; first by rewrite ab.
+      move=> s ls IH H.
+      rewrite rcons_path => /andP [pas lasls].
+      rewrite !rcons_path pas lasls/=.
+      rewrite last_rcons.
+      have := nth_rcons b s ls (size s).
+      rewrite ltnn eq_refl.
+      move => <-.
+      have := H (size s).
+      rewrite size_rcons.
+      move/(_ (ltnSn (size s))).
+      rewrite inE/S/=.
+      admit.
+    admit.
+  admit.
+admit.
 Abort.
 
 Lemma image_interval A : is_interval A -> exists s : nat -> set R,
@@ -2696,7 +2728,6 @@ Admitted.
 (* apply: contrapT => nBy. *)
 (* apply: nFGy. *)
 (* apply: (eq1 y) => /=; by split. *)
-Admitted.
 
 Notation mu := (@lebesgue_measure R).
 
@@ -2833,7 +2864,7 @@ apply.
         apply: (Hab 0%N).
         exact: Hx.
       apply: sub_caratheodory.
-      apply: bigcap_measurable => k _.
+      apply: bigcapT_measurable => k.
       exact: open_measurable.
     admit.
   admit.
@@ -3329,7 +3360,7 @@ have mA0 : mu A = 0.
         under eq_bigr do rewrite d_geo.
         over.
     by apply: cvg_geometric_series.
-  - by apply: bigcap_measurable => ? _; exact: mG.
+  - by apply: bigcapT_measurable => ?; exact: mG.
   - move=> s k sk.
     rewrite /G_.
     rewrite subsetEset.
@@ -3602,7 +3633,7 @@ apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
   by exists r => //=; exact: (absub _ _ _ _ ijr).
 - move=> k; apply: sub_caratheodory; rewrite image_G.
   by apply: bigcup_measurable => p _; exact: mfE.
-- apply: sub_caratheodory; apply: bigcap_measurable => p _.
+- apply: sub_caratheodory; apply: bigcapT_measurable => p.
   by rewrite image_G; apply: bigcup_measurable => q _; exact: mfE.
 - move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_.
   apply: bigcup_sub => i/= yi.
