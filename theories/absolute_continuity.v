@@ -304,6 +304,20 @@ wlog -> : t / t = false.
   move/(_ false (Logic.eq_refl false)).
 Abort.
 
+Lemma near_at_right_in_itv :
+forall {R : realFieldType} [a b : R],
+{in `[a, b[,
+  forall y, \forall x \near y^'+, x \in `]a, b[}.
+Proof.
+Admitted.
+
+Lemma near_at_left_in_itv :
+forall {R : realFieldType} [a b : R],
+{in `]a, b],
+  forall y, \forall x \near y^'-, x \in `]a, b[}.
+Proof.
+Abort.
+
 Lemma continuous_in_nondecreasing_oo_cc (a b : R) (f : R -> R) : a < b ->
   {within `[a, b] , continuous f} ->
   {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
@@ -315,64 +329,38 @@ move=> r x.
 rewrite !in_itv/=.
 have faz z : a < z -> z <= b -> f a <= f z.
   move=> az zb.
-  move: (fxa).
-  move/cvg_lim => <- //.
-  rewrite limr_le //.
+  move : (fxa) => /cvg_lim => <- //; apply: limr_le.
     by apply: cvgP fxa.
   near=> y.
-  move: zb.
-  rewrite le_eqVlt.
-  move/predU1P => [-> |zb].
-    move: (fxb).
-    move/cvg_lim => <- //.
-    rewrite limr_ge //.
+  have yab : y \in `]a, b[ by rewrite in_itv/=; apply/andP.
+  move: zb; rewrite le_eqVlt; move/predU1P => [-> |zb].
+    move: (fxb) => /cvg_lim <- //; apply: limr_ge.
       by apply: cvgP fxb.
     near=> b0.
-    apply: ndf.
-     - by rewrite ?in_itv/=; apply/andP.
-     - by rewrite ?in_itv/=; apply/andP.
-     near: b0.
-     by apply: nbhs_left_ge.
+    have b0ab : b0 \in `]a, b[ by rewrite in_itv/=; apply/andP.
+    apply: ndf => //.
+    by near: b0; apply: nbhs_left_ge.
   apply: ndf => //.
-      rewrite in_itv /=.
-      by apply/andP.
-    by rewrite in_itv/= az.
-  near: y.
-  by apply: nbhs_right_le.
+    by rewrite in_itv/= az zb.
+  by near: y; apply: nbhs_right_le.
 have fzb z : a < z -> z < b -> f z <= f b.
   move=> az zb.
-  move: (fxb).
-  move/cvg_lim => <- //.
-  apply: limr_ge.
+  move: (fxb) => /cvg_lim <- //; apply: limr_ge.
     by apply: cvgP fxb.
   near=> y.
-  apply: ndf.
-  - by rewrite ?in_itv/=; apply/andP.
-  - by rewrite ?in_itv/=; apply/andP.
-  near: y.
-  by apply: nbhs_left_ge.
-move => /andP[].
-rewrite le_eqVlt.
-move=> /predU1P[<- |].
-  move=> _ /andP[_].
-  rewrite le_eqVlt.
-  move/predU1P => [-> _|xb].
-    by apply: faz => //.
-  rewrite le_eqVlt.
-  move/predU1P => [-> //| ax].
-  apply: faz => //.
-  by rewrite ltW.
-move=> ar.
-move=> _ /andP[_].
-rewrite le_eqVlt.
-move=> /predU1P[-> //|].
-  rewrite le_eqVlt.
-  move/predU1P => [-> //|rb].
+  have yab : y \in `]a, b[ by rewrite in_itv/=; apply/andP.
+  apply: ndf => //; first by rewrite ?in_itv/=; apply/andP.
+  by near: y; apply: nbhs_left_ge.
+move => /andP[]; rewrite le_eqVlt => /predU1P[<- |].
+  move=> _ /andP[_]; rewrite le_eqVlt => /predU1P[-> _|xb].
+    exact: faz.
+  rewrite le_eqVlt => /predU1P[-> //| ax].
+  by apply: faz; rewrite ?ltW.
+move=> ar _ /andP[_]; rewrite 2!le_eqVlt=> /predU1P[-> |xb] /predU1P[-> |rx]//.
   by apply: fzb.
-move=> xb rx.
-have ax : a < x by apply: lt_le_trans rx.
-have rb : r < b by apply: le_lt_trans xb.
-by apply: ndf => //; rewrite in_itv/= ?ar ?ax.
+have ax : a < x by apply: lt_trans rx.
+have rb : r < b by apply: lt_trans xb.
+by apply: ndf => //; rewrite ?ltW ?in_itv/= ?ar ?ax.
 Unshelve. all: by end_near. Qed.
 
 Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) : a < b ->
@@ -1151,12 +1139,12 @@ Proof.
 move=> B12 Bab i; rewrite leNgt; apply/negP => Bi1a.
 have := Bab i.
 move=> /(_ (((B i).1 + minr a (B i).2)/2)).
-rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_minr Bi1a B12.
+rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_min Bi1a B12.
 have : ((B i).1 + minr a (B i).2)%E / 2 < (B i).2.
-  by rewrite ltr_pdivrMr// mulr_natr mulr2n ltr_leD// le_minl lexx orbT.
+  by rewrite ltr_pdivrMr// mulr_natr mulr2n ltr_leD// ge_min lexx orbT.
 move=> /[swap] /[apply] /andP[+ _].
 rewrite ler_pdivlMr// mulr_natr mulr2n leNgt => /negP; apply.
-by rewrite ltr_leD// le_minl lexx.
+by rewrite ltr_leD// ge_min lexx.
 Qed.
 
 Lemma incl_itv_lb_nat a (b : itv_bound R) n (B : nat -> R * R) :
@@ -1181,13 +1169,13 @@ Proof.
 move=> B12 Bab i; rewrite leNgt; apply/negP => Bi2b.
 have := Bab i.
 move=> /(_ ((maxr (B i).1 b + (B i).2)/2)).
-rewrite /= !in_itv/= midf_lt//=; last by rewrite lt_maxl Bi2b B12.
+rewrite /= !in_itv/= midf_lt//=; last by rewrite gt_max Bi2b B12.
 rewrite andbT.
 have : (B i).1 < (maxr (B i).1 b + (B i).2)%E / 2.
-  by rewrite ltr_pdivlMr// mulr_natr mulr2n ler_ltD// le_maxr lexx.
+  by rewrite ltr_pdivlMr// mulr_natr mulr2n ler_ltD// le_max lexx.
 move=> /[swap] /[apply] /andP[_].
 rewrite ler_pdivrMr// mulr_natr mulr2n leNgt => /negP; apply.
-by rewrite ler_ltD// le_maxr lexx orbT.
+by rewrite ler_ltD// le_max lexx orbT.
 Qed.
 
 Lemma incl_itv_ub_nat (a : itv_bound R) b n (B : nat -> R * R) :
@@ -2407,8 +2395,7 @@ have [|] := leP b a.
 move=> ab.
 set A : set R := [set x | _].
 pose elt_type := set_type A.
-have eq6 : forall a : elt_type, exists m : nat,
-     m.+1%:R ^-1 < Fr (sval a) - Fl (sval a).
+have eq6 (x : elt_type) : exists m, m.+1%:R ^-1 < Fr (sval x) - Fl (sval x).
   admit.
 (* (7) *)
 pose S m := [set x | x \in `]a, b[ /\ m.+1%:R ^-1 < Fr x - Fl x].
@@ -2430,6 +2417,8 @@ have jumpfafb m : forall s : seq R, (forall i, (i < size s)%N -> nth b s i \in S
       rewrite size_rcons.
       move/(_ (ltnSn (size s))).
       rewrite inE/S/=.
+      move=> [+ _].
+      rewrite in_itv/=.
       admit.
     admit.
   admit.
