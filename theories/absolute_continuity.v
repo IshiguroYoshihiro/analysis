@@ -1753,7 +1753,30 @@ apply/existsNP; exists x; apply/existsNP; exists y.
 by apply/not_implyP; split => //; apply/not_implyP; split => //; exact/eqP.
 Qed.
 
+Definition discontinuity {R : realType} (f : R -> R) (r : R) :=
+  [/\ cvg (f x @[x --> r^'-]),
+      cvg (f x @[x --> r^'+]) &
+      lim (f x @[x --> r^'-]) != lim (f x @[x --> r^'+]) ].
 
+Lemma discontinuityP1 {R : realType} (f : R -> R) (r : R) :
+  discontinuity f r -> ~ {for r, continuous f}.
+Proof.
+rewrite /discontinuity => -[fl fr lr].
+move=> /left_right_continuousP [fl' fr'].
+have flr : f r = lim (f x @[x --> r^'-]) by apply/esym/cvg_lim.
+have frr : f r = lim (f x @[x --> r^'+]) by apply/esym/cvg_lim.
+move/cvg_ex : fl => [a fa].
+have H1 : f r = a by exact: (cvg_unique _ fl' fa).
+move/cvg_ex : fr => [b fb].
+have H2 : f r = b by exact: (cvg_unique _ fr' fb).
+by move: lr; rewrite -flr -frr eqxx.
+Qed.
+
+Lemma discontinuityP2 {R : realType} (f : R -> R) (r : R) :
+  ~ {for r, continuous f} ->
+  cvg (f x @[x --> r]) ->
+  discontinuity f r.
+Abort. (*TODO: prove *)
 
 Section image_interval.
 Context {R : realType}.
@@ -2058,23 +2081,50 @@ rewrite in_itv/=; apply/andP; split=> //.
 exact: itv_partition_nth_le.
 Unshelve. all:end_near. Qed.
 
-Lemma discontinuties_countable :
-  countable [set x | x \in `[a, b] /\ ~ {for x, continuous F}].
+Lemma nondecresing_at_left_at_right : {in `[a, b], forall r,
+  lim (F x @[x --> r^'-]) <= lim (F x @[x --> r^'+])}.
 Proof.
-have [|] := leP b a.
-  rewrite le_eqVlt; move/orP => [/eqP ->|].
-    have [|] := pselect ({for a, continuous F}).
-      (* is set1 *)
-      admit.
-    (* is set0 *)
-    admit.
-  (* is set0 *)
+move=> r rab.
+apply: limr_ge.
+  apply: nondecreasing_at_right_is_cvgr => //.
+  near=> s.
   admit.
-move=> ab.
+  near=> x.
+  exists (F r) => y /= [s srx <-{y}].
+  admit.
+near=> x.
+apply: limr_le.
+  apply: nondecreasing_at_left_is_cvgr => //.
+  admit.
+  admit.
+admit.
+Admitted.
+
+Lemma discontinuties_countable :
+  countable [set x | x \in `[a, b] /\ discontinuity F x].
+Proof.
+have [|ab] := leP b a.
+  rewrite le_eqVlt => /predU1P[->|ba].
+    set S := (X in countable X).
+    suff Sa : S `<=` [set a] by exact/finite_set_countable/(sub_finite_set Sa).
+    by move=> x; rewrite /S/= in_itv/= -eq_le => -[/eqP].
+  set S := (X in countable X).
+  rewrite (_ : S = set0)// -subset0 => x.
+  by rewrite /S/= in_itv/= => -[/andP[]] /le_trans /[apply]; rewrite leNgt ba.
 set A : set R := [set x | _].
 pose elt_type := set_type A.
 have eq6 (x : elt_type) : exists m, m.+1%:R ^-1 < Fr (sval x) - Fl (sval x).
-  admit.
+  have : discontinuity F (sval x) by case: x => /= r; rewrite inE /A/= => -[].
+  move=> [Fc Fd cd].
+  have FlFr : Fl (sval x) <= Fr (sval x).
+    apply: nondecresing_at_left_at_right.
+    by case: x {Fc Fd cd} => x/= /[1!inE] -[].
+  have {}FlFr : Fl (sval x) < Fr (sval x).
+    by rewrite lt_neqAle FlFr andbT.
+  exists (`|floor (Fr (sval x) - Fl (sval x))^-1|)%N.
+  rewrite invf_plt ?posrE ?subr_gt0//.
+  rewrite -natr1 natr_absz ger0_norm ?lt_succ_floor//.
+  by rewrite floor_ge0 invr_ge0 subr_ge0 ltW.
 (* (7) *)
 pose S m := [set x | x \in `]a, b[ /\ m.+1%:R ^-1 < Fr x - Fl x].
 have jumpfafb m : forall s : seq R, (forall i, (i < size s)%N -> nth b s i \in S m) -> path <%R a s ->
@@ -2100,6 +2150,17 @@ have jumpfafb m : forall s : seq R, (forall i, (i < size s)%N -> nth b s i \in S
       admit.
     admit.
   admit.
+have fin_S m : finite_set (S m).
+  apply: contrapT => /infinite_set_fset.
+  move=> /(_ (m * `|ceil (F b - F a)|)%N)[B BSm mFbFaB].
+  have := jumpfafb m B.
+  admit.
+(* (8) *)
+have AE : A = \bigcup_m S m.
+  admit.
+rewrite AE.
+apply: bigcup_countable => // m _.
+apply: finite_set_countable.
 admit.
 Abort.
 
