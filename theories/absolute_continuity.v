@@ -152,6 +152,30 @@ apply/seteqP; split => [x/=|x <-].
 by rewrite /= in_itv/= lexx.
 Qed.
 
+(* already in sequences.v as a Let *)
+Lemma near_eq_lim (R : realFieldType) (f g : nat -> \bar R) :
+  cvgn g -> {near \oo, f =1 g} -> limn f = limn g.
+Admitted.
+
+(* already in sequences.v as a Let *)
+Lemma lim_shift_cst (R : realFieldType) (u : (\bar R) ^nat) (l : \bar R) :
+    cvgn u -> (forall n, 0 <= u n)%E -> (-oo < l)%E ->
+  limn (fun x => l + u x) = l + limn u.
+Admitted.
+
+Lemma near_at_right_in_itv {R : realFieldType} [a b : R] :
+  {in `[a, b[, forall y, \forall x \near y^'+, x \in `]a, b[}.
+Proof.
+move=> x; rewrite in_itv/= => /andP[ax xb].
+near=> y; rewrite in_itv/=; apply/andP; split => //.
+by rewrite (le_lt_trans ax).
+Unshelve. all: by end_near. Qed.
+
+Lemma near_at_left_in_itv {R : realFieldType} [a b : R] :
+  {in `]a, b], forall y, \forall x \near y^'-, x \in `]a, b[}.
+Proof.
+Abort.
+
 Section move_to_realfun.
 Context {R : realType}.
 
@@ -319,20 +343,6 @@ Proof.
 case: b => t b.
 wlog -> : t / t = false.
   move/(_ false (Logic.eq_refl false)).
-Abort.
-
-Lemma near_at_right_in_itv :
-forall {R : realFieldType} [a b : R],
-{in `[a, b[,
-  forall y, \forall x \near y^'+, x \in `]a, b[}.
-Proof.
-Admitted.
-
-Lemma near_at_left_in_itv :
-forall {R : realFieldType} [a b : R],
-{in `]a, b],
-  forall y, \forall x \near y^'-, x \in `]a, b[}.
-Proof.
 Abort.
 
 Lemma continuous_in_nondecreasing_oo_cc (a b : R) (f : R -> R) : a < b ->
@@ -579,15 +589,6 @@ End image_of_itv.
 Section PRme.
 Context {R : realType}.
 
-Lemma near_eq_lim (*(R : realFieldType)*) (f g : nat -> \bar R) :
-  cvgn g -> {near \oo, f =1 g} -> limn f = limn g.
-Admitted.
-
-Lemma lim_shift_cst (*(R : realFieldType)*) (u : (\bar R) ^nat) (l : \bar R) :
-    cvgn u -> (forall n, 0 <= u n)%E -> (-oo < l)%E ->
-  limn (fun x => l + u x) = l + limn u.
-Admitted.
-
 Local Open Scope ereal_scope.
 Lemma nneseriesD1 (f : nat -> \bar R) n :
   (forall k, 0 <= f k) ->
@@ -595,7 +596,7 @@ Lemma nneseriesD1 (f : nat -> \bar R) n :
 Proof.
 move=> f0.
 rewrite -lim_shift_cst//.
-- apply: (@near_eq_lim _ (fun x => f n + _)).
+- apply: (@near_eq_lim _ _ (fun x => f n + _)).
   + apply: is_cvgeD => //.
     * rewrite ge0_adde_def// inE.
         by rewrite lim_cst.
@@ -641,10 +642,19 @@ End measurable_squeeze.
 Lemma nondecreasing_at_left_is_cvgr
   (R : realType) (f : R -> R) (a : R) :
   (\forall x \near a^'-, {in `]x, a[ &, {homo f : n m / n <= m}}) ->
-  (\forall x \near a^'-, has_ubound [set f x | x in `]x, a[]) ->
+  (\forall x \near a^'-, has_ubound [set f y | y in `]x, a[]) ->
   cvg (f x @[x --> a^'-]).
 Proof.
-Admitted.
+move=> ndf ubf; suff: cvg ((f \o -%R) x @[x --> (- a)^'+]).
+  move=> /cvg_ex[/= l fal].
+  by apply/cvg_ex; exists l; exact/cvg_at_leftNP.
+apply: @nonincreasing_at_right_is_cvgr.
+- rewrite at_rightN near_simpl; apply: filterS ndf => x ndf y z.
+  by rewrite -2!oppr_itvoo => yxa zxa yz; rewrite ndf// lerNr opprK.
+- rewrite at_rightN near_simpl; apply: filterS ubf => x [r ubf].
+  exists r => _/= [s sax <-]; rewrite ubf//=; exists (- s) => //.
+  by rewrite oppr_itvoo.
+Qed.
 
 (* NB: work starts here *)
 
@@ -921,7 +931,7 @@ rewrite -leNgt => bd.
 by rewrite (le_lt_trans ac) midf_lt.
 Qed.
 
-Section absolute_continuity.
+Section absolute_continuity_def.
 Context {R : realType}.
 
 Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
@@ -939,167 +949,129 @@ Definition abs_cont_order (a b : R) (f : R -> R) := forall e : {posnum R},
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
     \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
 
+End absolute_continuity_def.
+
+Section abs_contP.
+Context {R : realType}.
+
 From mathcomp Require Import perm fingroup.
 
-Lemma abs_contP (a b : R) (f : R -> R) :
-  abs_cont a b f <-> abs_cont_order a b f.
+Let lt_itv (B : (R * R)^nat) i j := (i == j) || ((B i).2 <= (B j).1).
+
+Lemma abs_contP (a b : R) (f : R -> R) : abs_cont a b f <-> abs_cont_order a b f.
 Proof.
-split.
-  move=> h e; have {h}[d h] := h e.
-  exists d => n B [BS B21 tB] Bd.
-  exact: (h n B).
-move=> h e; have {h}[d h] := h e.
-exists d => n B [BS tB Bd].
-pose mylt i j := (i == j) || ((B i).2 <= (B j).1).
-pose reordered : seq nat := sort mylt (iota 0 n).
-pose g0 : nat -> nat := fun i => nth 0 reordered i.
-have g0n : forall i : 'I_n, (g0 i < n)%N.
-  move=> i.
-  rewrite /g0.
+split=> [h e|h e].
+  have {h}[d h] := h e.
+  by exists d => n B [BS B21 tB] Bd; exact: (h n B).
+have {h}[d h] := h e; exists d => n B [BS tB Bd].
+pose ordered_indices : seq nat := sort (lt_itv B) (iota 0 n).
+pose g_nat : nat -> nat := nth 0 ordered_indices.
+have g_nat_ub (i : 'I_n) : (g_nat i < n)%N.
   apply/(@all_nthP _ [pred x | x < n]%N).
-    apply/allP => x /=.
-    by rewrite mem_sort mem_iota add0n leq0n/=.
+    by apply/allP => x /=; rewrite mem_sort mem_iota add0n leq0n.
   by rewrite size_sort size_iota.
-pose g : {ffun 'I_n -> 'I_n} := [ffun i => Ordinal (g0n i)].
-have g0_inj : {in gtn n &, injective g0}.
-  move=> /= i j.
-  rewrite !inE => ni nj.
-  rewrite /g0 /=.
-  rewrite /reordered.
-  have : uniq reordered by rewrite sort_uniq// iota_uniq.
-  move/uniqP => /(_ 0).
-  move=> /[apply].
+pose g : {ffun 'I_n -> 'I_n} := [ffun i => Ordinal (g_nat_ub i)].
+have g_nat_inj : {in gtn n &, injective g_nat}.
+  move=> /= i j /[!inE] ni nj.
+  rewrite /g_nat /= /ordered_indices.
+  have : uniq ordered_indices by rewrite sort_uniq// iota_uniq.
+  move/uniqP => /(_ 0) /[apply].
   rewrite !inE !size_sort !size_iota.
   exact.
 have g_inj : injectiveb g.
   apply/injectiveP => /= i j.
-  rewrite /g /=.
-  move/(congr1 val) => /=.
-  rewrite !ffunE.
-  move/g0_inj.
+  rewrite /g /= !ffunE.
+  move/(congr1 val)/g_nat_inj.
   rewrite !inE => /(_ (ltn_ord i) (ltn_ord j)) ij.
-  by apply/val_inj.
-pose B'0 : 'I_ n -> R * R := B \o (fun x => g x).
-pose B' (i : nat) : R * R := match Bool.bool_dec (i < n)%N true with
-  | left H => (B'0 (@Ordinal n _ H))
+  exact/val_inj.
+pose Bg : 'I_ n -> R * R := B \o (fun x => g x).
+pose Bg_nat (i : nat) : R * R := match Bool.bool_dec (i < n)%N true with
+  | left H => Bg (@Ordinal n _ H)
   | _ => B 0
   end.
-have B'1 : forall i j : 'I_n, (i < j)%N -> (B' i).2 <= (B' j).1.
-  move=> i j ij.
-  rewrite /B'.
-  case: Bool.bool_dec => ni; last first.
-    by rewrite ltn_ord in ni.
-  case: Bool.bool_dec => nj; last first.
-    by rewrite ltn_ord in nj.
-  rewrite /B'0 /=.
-  suff: mylt (g0 i) (g0 j).
-    rewrite /mylt.
-    move=> /predU1P[|].
+have nbBg_nat (i j : 'I_n ) : (i < j)%N -> (Bg_nat i).2 <= (Bg_nat j).1.
+  move=> ij.
+  rewrite /Bg_nat; case: Bool.bool_dec => [ni|]; last by rewrite ltn_ord.
+  case: Bool.bool_dec => [nj|]; last by rewrite ltn_ord.
+  rewrite /Bg /=.
+  suff: lt_itv B (g_nat i) (g_nat j).
+    rewrite /lt_itv => /predU1P[|].
       move/injectiveP in g_inj.
-      move/g0_inj.
+      move/g_nat_inj.
       rewrite !inE ni nj => /(_ erefl erefl) ji.
       by rewrite ji ltnn in ij.
-    rewrite /g/= !ffunE/=.
-    exact.
-  have := @sorted_ltn_nth_in _ _ mylt.
+    by rewrite /g/= !ffunE/=; exact.
+  have := @sorted_ltn_nth_in _ _ (lt_itv B).
   apply => //.
   - move=> x y z.
     rewrite !mem_sort !mem_iota !add0n !leq0n/= => xn yn zn.
-    rewrite /mylt => /predU1P[->|yx].
+    rewrite /lt_itv => /predU1P[->|yx].
       move=> /predU1P[->|->].
         by rewrite eqxx.
       by rewrite orbT.
-    move=> /predU1P[?|xz].
-      subst z.
+    move=> /predU1P[<-|xz].
       by rewrite yx orbT.
     have [->//|yz/=] := eqVneq y z.
-    rewrite (le_trans yx)//.
-    rewrite (le_trans _ xz)//.
-    apply/ltW.
-    by have := (BS _ xn).1.
+    rewrite (le_trans yx)// (le_trans _ xz)// ltW//.
+    exact: (BS _ xn).1.
   - apply: (@sort_sorted_in _ [pred x | x < n]%N).
       move=> x y; rewrite !inE => xn yn.
-      rewrite /mylt.
-      have [xy//|/= xy] := eqVneq x y.
-      apply/orP.
-      apply: disjoint_itv_le.
-      by have := (BS _ xn).1.
-      by have := (BS _ yn).1.
-      move/trivIsetP in tB.
-      have := tB (Ordinal xn) (Ordinal yn).
-      by apply => //=.
-    by apply/allP => /= y; rewrite mem_iota leq0n add0n/=.
+      rewrite /lt_itv; have [//|/= xy] := eqVneq x y.
+      apply/orP/disjoint_itv_le.
+      - exact: (BS _ xn).1.
+      - exact: (BS _ yn).1.
+      - by move/trivIsetP : tB => /(_ (Ordinal xn) (Ordinal yn)); exact.
+    by apply/allP => /= y; rewrite mem_iota leq0n.
   - by rewrite inE size_sort size_iota.
   - by rewrite inE size_sort size_iota.
-pose g'' : {perm 'I_n} := Perm g_inj.
-have K : \sum_(k < n) (f (B k).2 - f (B k).1) = \sum_(k < n) (f (B' k).2 - f (B' k).1).
-  rewrite (reindex_onto g'' g''^-1%g)//=; last first.
-    move=> i _.
-    by rewrite permKV.
+pose permg : {perm 'I_n} := Perm g_inj.
+have K : \sum_(k < n) (f (B k).2 - f (B k).1) = \sum_(k < n) (f (Bg_nat k).2 - f (Bg_nat k).1).
+  rewrite (reindex_onto permg permg^-1%g)//=; last by move=> i _; rewrite permKV.
   apply/eq_big.
-    move=> i.
-    by rewrite /= permK eqxx.
+    by move=> i; rewrite /= permK eqxx.
   move=> i _.
-  rewrite /B'.
-  case: Bool.bool_dec => /=; last first.
-    by rewrite (ltn_ord i).
+  rewrite /Bg_nat; case: Bool.bool_dec => /=; last by rewrite (ltn_ord i).
   move=> ni.
-  rewrite /B'0/= /g''/=.
-  have <- : Perm g_inj i = g (Ordinal ni).
-    rewrite unlock/=.
-    rewrite (_ : Ordinal ni = i)//.
-    exact/val_inj.
-  done.
+  rewrite /Bg/= /permg/=.
+  suff : Perm g_inj i = g (Ordinal ni) by move=> <-.
+  rewrite unlock/=.
+  rewrite (_ : Ordinal ni = i)//.
+  exact/val_inj.
 rewrite K; apply: h; split => //.
-- move=> i ni.
-  split.
-  rewrite /B'.
-  case: Bool.bool_dec => //=.
-  move=> ni'.
-  rewrite /B'0/=.
-  apply: (BS _ _).1.
-  by rewrite ltn_ord.
-  rewrite /B'.
-  case: Bool.bool_dec => //=.
-  move=> ni'.
-  rewrite /B'0/=.
-  apply: (BS _ _).2.
-  by rewrite ltn_ord.
+- move=> i ni; split.
+    rewrite /Bg_nat; case: Bool.bool_dec => //= ni'.
+    rewrite /Bg/=.
+    exact: (BS _ _).1.
+  rewrite /Bg_nat; case: Bool.bool_dec => //= ni'.
+  rewrite /Bg/=.
+  exact: (BS _ _).2.
 - apply/trivIsetP => /= i j ni nj ij.
-  rewrite /B'.
-  case: Bool.bool_dec => //=.
-  move=> ni'.
-  rewrite /B'0/=.
-  case: Bool.bool_dec => //=.
-  move=> nj'.
-  rewrite /B'0/=.
+  rewrite /Bg_nat; case: Bool.bool_dec => //= ni'.
+  rewrite /Bg/=; case: Bool.bool_dec => //= nj'.
   move/trivIsetP : tB; apply => //=.
   apply: contra ij => /eqP.
-  clear g''.
+  rewrite {permg}.
   move: g_inj => /injectiveP g_inj H.
   have /(_ _)/(congr1 val)/eqP := g_inj (Ordinal ni') (Ordinal nj').
   apply.
   exact/val_inj.
-- rewrite [ltLHS](_ : _ = \sum_(k < n) ((B k).2 - (B k).1)); last first.
-    rewrite [RHS](reindex_onto g'' g''^-1%g)//=; last first.
-      move=> i _.
-      by rewrite permKV.
-    apply/eq_big.
-      move=> i.
-      by rewrite /= permK eqxx.
-    move=> i _.
-    rewrite /B'.
-    case: Bool.bool_dec => /=; last first.
-      by rewrite (ltn_ord _).
-    move=> ni.
-    rewrite /B'0/= /g''/=.
-    have <- : Perm g_inj i = g (Ordinal ni).
-      rewrite unlock/=.
-      rewrite (_ : Ordinal ni = i)//.
-      exact/val_inj.
-    done.
-  done.
+- rewrite [ltLHS](_ : _ = \sum_(k < n) ((B k).2 - (B k).1))//.
+  rewrite [RHS](reindex_onto permg permg^-1%g)//=; last by move=> i _; rewrite permKV.
+  apply/eq_big.
+    by move=> i; rewrite /= permK eqxx.
+  move=> i _.
+  rewrite /Bg_nat; case: Bool.bool_dec => [ni|]; last by rewrite (ltn_ord _).
+  rewrite /Bg/= /permg/=.
+  suff : Perm g_inj i = g (Ordinal ni) by move=> <-.
+  rewrite unlock/=.
+  rewrite (_ : Ordinal ni = i)//.
+  exact/val_inj.
 Qed.
+
+End abs_contP.
+
+Section absolute_continuity_lemmas.
+Context {R : realType}.
 
 (* lemma8 *)
 Lemma total_variation_AC a b (f : R -> R) : a < b ->
@@ -1135,7 +1107,7 @@ rewrite addrAC subrr add0r -subr_ge0 -lee_fin EFinB fineK; last first.
 by rewrite leeBrDr// add0e total_variation_ge// ltW.
 Qed.
 
-End absolute_continuity.
+End absolute_continuity_lemmas.
 
 (*
 Section total_variation_lim.
@@ -2101,11 +2073,15 @@ Unshelve. all:end_near. Qed.
 Lemma nondecresing_at_left_at_right : {in `[a, b], forall r,
   lim (F x @[x --> r^'-]) <= lim (F x @[x --> r^'+])}.
 Proof.
-move=> r rab.
+move=> r; rewrite in_itv/= => /andP[ar rb].
 apply: limr_ge.
   apply: nondecreasing_at_right_is_cvgr => //.
-  near=> s.
-  admit.
+    near=> s => x y; rewrite !in_itv/= => /andP[rx xs] /andP[ry yx].
+    apply: ndF; rewrite !in_itv/=; apply/andP; split.
+    admit.
+    admit.
+    admit.
+    admit.
   near=> x.
   exists (F r) => y /= [s srx <-{y}].
   admit.
