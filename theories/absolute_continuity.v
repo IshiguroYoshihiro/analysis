@@ -24,6 +24,23 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+Section tmp.
+Context {R : numDomainType}.
+
+Lemma ltr_sum I (r : seq I) (F G : I -> R) :
+(0 < size r)%N ->
+(forall i, F i < G i) ->
+\sum_(i <- r) F i < \sum_(i <- r) G i.
+Proof.
+elim: r => // h [|a t] ih ? FG.
+by rewrite !big_cons !big_nil !addr0 FG.
+rewrite !big_cons ltrD//.
+have := ih erefl FG.
+by rewrite !big_cons.
+Qed.
+
+End tmp.
+
 (* TODO: PR *)
 Lemma in2_subset_itv d (T : porderType d) (P : T -> T -> Prop)
   (i j : interval T) :
@@ -2128,7 +2145,7 @@ have eq6 (x : elt_type) : exists m, m.+1%:R ^-1 < Fr (sval x) - Fl (sval x).
 (* (7) *)
 pose S m := [set x | x \in `]a, b[ /\ m.+1%:R ^-1 < Fr x - Fl x].
 have jumpfafb m : forall s : seq R, (forall i, (i < size s)%N -> nth b s i \in S m) -> path <%R a s ->
-     \sum_(0 <= i < size s) (Fr (nth b s i) - Fl (nth b s i)) < F b - F a.
+     \sum_(0 <= i < size s) (Fr (nth b s i) - Fl (nth b s i)) <= F b - F a.
   move=> s Hs pas.
   have : itv_partition a b (rcons s b).
     split.
@@ -2147,14 +2164,73 @@ have jumpfafb m : forall s : seq R, (forall i, (i < size s)%N -> nth b s i \in S
       rewrite inE/S/=.
       move=> [+ _].
       rewrite in_itv/=.
-      admit.
-    admit.
-  admit.
+      by move/andP => [].
+    by rewrite last_rcons.
+  move/nondecreasing_fun_path_le.
+  rewrite size_rcons.
+  rewrite (big_addn 0%N _ 1%N).
+  rewrite subn1/=.
+  rewrite big_nat/=.
+  under eq_bigr.
+    move=> i si.
+    rewrite addn1/=.
+    rewrite nth_rcons si.
+    over.
+  by rewrite -big_nat.
 have fin_S m : finite_set (S m).
   apply: contrapT => /infinite_set_fset.
-  move=> /(_ (m * `|ceil (F b - F a)|)%N)[B BSm mFbFaB].
-  have := jumpfafb m B.
-  admit.
+  move=> /(_ (m.+1 * `|ceil (F b - F a)|)%N)[B BSm mFbFaB].
+  set s := sort <=%R B.
+  have := jumpfafb m s.
+  have HsSm : forall i : nat, (i < size s)%N -> nth b s i \in S m.
+    move=> n nB.
+    rewrite inE.
+    apply: BSm.
+    apply/set_mem.
+    rewrite mem_setE.
+    rewrite -(@mem_sort _ <=%R).
+    exact: mem_nth.
+  move/(_ HsSm){HsSm}.
+  have Hpas : path <%R a s.
+    rewrite lt_path_sortedE.
+    apply/andP; split.
+      apply/allP => x.
+      rewrite mem_sort.
+      move/BSm => [+ _].
+      by rewrite in_itv/=; move/andP => [].
+    rewrite sort_lt_sorted.
+    exact: fset_uniq.
+  move/(_ Hpas){Hpas}.
+  rewrite leNgt.
+  move/negP; apply.
+  apply: (@le_lt_trans _ _`|ceil (F b - F a)|%:R).
+    rewrite natr_absz.
+    rewrite intr_norm.
+    rewrite ler_normr.
+    apply/orP; left.
+    exact: ceil_ge.
+  apply: (@le_lt_trans _ _ (m.+1%:R^-1 * #|` B|%:R)).
+    rewrite ler_pdivlMl.
+      rewrite -natrM.
+      by rewrite ler_nat.
+    done.
+  rewrite card_fset_sum1.
+  rewrite natr_sum.
+  rewrite mulr_sumr mulr1.
+  rewrite big_nth//.
+  rewrite size_sort.
+  rewrite !big_mkord.
+  apply: ltr_sum.
+    admit. (* case by F b = F a? *)
+  move=> k /= kB.
+  have : nth b s k \in S m.
+    apply: mem_set.
+    apply: BSm => /=.
+    rewrite -(@mem_sort _ <=%R).
+    apply: mem_nth.
+    by rewrite size_sort.
+  rewrite inE.
+  by rewrite /S/= => -[].
 (* (8) *)
 have AE : A = \bigcup_m S m.
   admit.
