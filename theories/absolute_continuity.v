@@ -2092,7 +2092,7 @@ rewrite in_itv/=; apply/andP; split=> //.
 exact: itv_partition_nth_le.
 Unshelve. all:end_near. Qed.
 
-Lemma nondecresing_at_left_at_right : {in `[a, b], forall r,
+Lemma nondecresing_at_left_at_right : {in `]a, b[, forall r,
   lim (F x @[x --> r^'-]) <= lim (F x @[x --> r^'+])}.
 Proof.
 move=> r; rewrite in_itv/= => /andP[ar rb].
@@ -2116,16 +2116,18 @@ admit.
 Admitted.
 
 Lemma discontinuties_countable :
-  countable [set x | x \in `[a, b] /\ discontinuity F x].
+  countable [set x | x \in `]a, b[ /\ discontinuity F x].
 Proof.
 have [|ab] := leP b a.
   rewrite le_eqVlt => /predU1P[->|ba].
     set S := (X in countable X).
     suff Sa : S `<=` [set a] by exact/finite_set_countable/(sub_finite_set Sa).
-    by move=> x; rewrite /S/= in_itv/= -eq_le => -[/eqP].
+    move=> x; rewrite /S/= in_itv/= => [[/andP[]]].
+    by move=> ax; rewrite ltNge ltW//.
   set S := (X in countable X).
   rewrite (_ : S = set0)// -subset0 => x.
-  by rewrite /S/= in_itv/= => -[/andP[]] /le_trans /[apply]; rewrite leNgt ba.
+  rewrite /S/= in_itv/= => -[/andP[]] /lt_trans /[apply].
+  by rewrite ltNge ltW//.
 set A : set R := [set x | _].
 pose elt_type := set_type A.
 have eq6 (x : elt_type) : exists m, m.+1%:R ^-1 < Fr (sval x) - Fl (sval x).
@@ -2236,15 +2238,62 @@ have fin_S m : finite_set (S m).
   by rewrite /S/= => -[].
 (* (8) *)
 have AE : A = \bigcup_m S m.
-  admit.
+  rewrite eqEsubset; split.
+    move=> x Ax.
+    have xinA := mem_set Ax.
+    pose z : elt_type := exist (fun x => x \in A) x xinA.
+    have [m Hz] := eq6 z.
+    exists m => //.
+    rewrite /S/=; split.
+      move: Ax.
+      by rewrite /A/= => -[].
+    exact: Hz.
+  move=> x [m _ []].
+  move=> /[dup]xab.
+  rewrite in_itv/= => /andP[ax xb] mx.
+  split.
+    exact: xab.
+  split.
+      apply: nondecreasing_at_left_is_cvgr; near=> r.
+        apply: (in2_subset_itv _ ndF).
+        apply: subset_itvW.
+          near: r.
+          exact: nbhs_left_ge.
+        by rewrite ltW.
+      exists (F x) => _/= [z zrx <-].
+      apply: ndF.
+          apply: subset_itvW zrx.
+            near: r.
+            exact: nbhs_left_ge.
+          by rewrite ltW.
+        by apply: subset_itv_oo_cc.
+      by move: zrx; rewrite in_itv/= => /andP[_ /ltW].
+    apply: nondecreasing_at_right_is_cvgr; near=> r.
+      apply: (in2_subset_itv _ ndF).
+      apply: subset_itvW.
+        by rewrite ltW.
+      near: r.
+      exact: nbhs_right_le.
+    exists (F x) => _/= [z zxr <-].
+    apply: ndF.
+        exact: subset_itv_oo_cc.
+      apply: subset_itvW zxr.
+        by rewrite ltW.
+      near: r.
+      exact: nbhs_right_le.
+    by move: zxr; rewrite in_itv/= => /andP[/ltW].
+  apply/negP; move=> /eqP H.
+  move: mx.
+  rewrite ltNge => /negP.
+  apply.
+  by rewrite /Fl H subrr.
 rewrite AE.
 apply: bigcup_countable => // m _.
-apply: finite_set_countable.
-admit.
-Abort.
+exact: finite_set_countable.
+Unshelve. all:end_near. Qed.
 
-Lemma image_interval A : is_interval A -> exists s : nat -> set R,
-  (forall i, is_interval (s i)) /\ F @` A = \bigcup_i (s i).
+Lemma image_interval : exists s : nat -> set R,
+  (forall i, is_interval (s i)) /\ F @` `]a, b[ = \bigcup_i (s i).
 Proof.
 Admitted.
 
