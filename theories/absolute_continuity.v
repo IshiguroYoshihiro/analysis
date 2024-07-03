@@ -1767,6 +1767,28 @@ Lemma discontinuityP2 {R : realType} (f : R -> R) (r : R) :
   discontinuity f r.
 Abort. (*TODO: prove *)
 
+Lemma infinite_set_fset_new {T : choiceType} (A : set T) (n : nat) :
+  infinite_set A ->
+    exists B : {fset T}, [/\ [set` B] `<=` A, B != fset0 & (#|` B| >= n)%N].
+Proof.
+elim/choicePpointed: T => T in A *; first by rewrite emptyE.
+move=> /infiniteP/ppcard_leP[f]; exists (fset_set [set f i | i in `I_n.+1]).
+  rewrite fset_setK//; last exact: finite_image.
+  split => //.
+  by apply: subset_trans (fun_image_sub f); apply: image_subset.
+  apply/eqP.
+  move/fsetP.
+  move=> /(_ (f ord0)) => /(_ n).
+  rewrite !inE.
+  rewrite -falseE => <-.
+  rewrite in_fset_set//.
+    rewrite inE/=.
+    by exists 0.
+  by apply: finite_image.
+rewrite fset_set_image// card_imfset//= fset_set_II/=.
+by rewrite card_imfset//= ?size_enum_ord//; apply: val_inj.
+Qed.
+
 Section image_interval.
 Context {R : realType}.
 Variables (a b : R).
@@ -2154,8 +2176,8 @@ have jumpfafb m : forall s : seq R, (forall i, (i < size s)%N -> nth b s i \in S
     over.
   by rewrite -big_nat.
 have fin_S m : finite_set (S m).
-  apply: contrapT => /infinite_set_fset.
-  move=> /(_ (m.+1 * `|ceil (F b - F a)|)%N)[B BSm mFbFaB].
+  apply: contrapT => /infinite_set_fset_new.
+  move=> /(_ (m.+1 * `|ceil (F b - F a)|)%N)[B [BSm B0 mFbFaB]].
   set s := sort <=%R B.
   have := jumpfafb m s.
   have HsSm : forall i : nat, (i < size s)%N -> nth b s i \in S m.
@@ -2197,8 +2219,13 @@ have fin_S m : finite_set (S m).
   rewrite size_sort.
   rewrite !big_mkord.
   apply: ltr_sum.
-    admit. (* case by F b = F a? *)
-  move=> k /= kB.
+    rewrite -cardfs_gt0 in B0.
+    rewrite !cardfE.
+    rewrite !cardfE in B0.
+    rewrite -has_predT.
+    apply/hasP.
+    by exists (Ordinal B0) => //.
+  rewrite /= => k.
   have : nth b s k \in S m.
     apply: mem_set.
     apply: BSm => /=.
