@@ -2280,20 +2280,49 @@ apply: limr_ge.
   apply: nondecreasing_at_right_is_cvgr => //.
     near=> s => x y; rewrite !in_itv/= => /andP[rx xs] /andP[ry yx].
     apply: ndF; rewrite !in_itv/=; apply/andP; split.
-    admit.
-    admit.
-    admit.
-    admit.
+    - by rewrite ltW// (lt_trans ar).
+    - by rewrite ltW// (lt_trans xs).
+    - by rewrite ltW// (lt_trans ar).
+    - by rewrite ltW// (lt_trans yx).
   near=> x.
   exists (F r) => y /= [s srx <-{y}].
-  admit.
+  rewrite ndF// ?in_itv/=.
+  by rewrite (ltW ar)/= (ltW rb).
+  move: srx; rewrite in_itv/= => /andP[rs sx].
+  rewrite (ltW (lt_trans ar rs))/=.
+  rewrite (le_trans (ltW sx))//.
+  near: x.
+  exact: nbhs_right_le.
+  by move: srx; rewrite in_itv/= => /andP[/ltW].
 near=> x.
 apply: limr_le.
   apply: nondecreasing_at_left_is_cvgr => //.
-  admit.
-  admit.
-admit.
-Admitted.
+    near=> s => u v; rewrite !in_itv/= => /andP[su ur] /andP[sv vr].
+    apply: ndF; rewrite !in_itv/=; apply/andP; split.
+    - by rewrite ltW// (le_lt_trans _ su)// ltW.
+    - by rewrite ltW// (lt_trans ur).
+    - rewrite ltW//.
+      rewrite (le_lt_trans _ sv)//.
+      by near: s; apply: nbhs_left_ge.
+    - by rewrite ltW// (lt_trans vr).
+  near=> y.
+  exists (F r) => _ /= [s srx <-].
+  rewrite ndF// ?in_itv/=.
+  move: srx; rewrite in_itv/= => /andP[ys sr].
+  rewrite (ltW (lt_trans sr rb))//= andbT.
+  by rewrite ltW// (lt_trans _ ys)//.
+  by rewrite (le_trans (ltW ar))//= ltW.
+  by move: srx; rewrite in_itv/= => /andP[_ /ltW].
+near=> y.
+rewrite ndF// ?in_itv/=.
+- apply/andP; split.
+    by near: y; apply: nbhs_left_ge.
+  by rewrite ltW// (lt_trans _ rb)//.
+- apply/andP; split.
+    by rewrite ltW// (lt_trans ar)//.
+  by rewrite ltW//.
+- rewrite (@le_trans _ _ r)//.
+Unshelve. all:end_near. Qed.
 
 Lemma discontinuties_countable :
   countable [set x | x \in `]a, b[ /\ discontinuity F x].
@@ -3061,10 +3090,10 @@ Qed.
 
 (* a wlog part in image_measure0_Lusin *)
 Lemma image_measure0_Lusin'
- (f : R -> R)
- (cf : {within `[a, b], continuous f})
- (ndf : {in `[a, b] &, {homo f : x y / x <= y}})
- (HZ : forall Z : set R,
+  (f : R -> R)
+  (cf : {within `[a, b], continuous f})
+  (ndf : {in `[a, b] &, {homo f : x y / x <= y}})
+  (HZ : forall Z : set R,
        Z `<=` `[a, b] -> compact Z -> mu Z = 0 -> mu [set f x | x in Z] = 0)
   (Z : set R)
   (Zab : Z `<=` `[a, b])
@@ -3082,7 +3111,9 @@ have mfZ : measurable (f @` Z).
   have set_fun_f : set_fun `[a, b] [set: R] f by [].
   pose Hf := isFun.Build R R `[a, b]%classic [set: R] f set_fun_f.
   pose F : {fun `[a, b] >-> [set: R]} := HB.pack f Hf.
-  (* have := @measurable_image_delta_set_nondecreasing_fun R a b F ab ndf _ _ Zab GdeltaZ. *)
+  simpl in F.
+  have := @measurable_image_delta_set_nondecreasing_fun R a b F ab ndf cf Z.
+  apply => //.
   admit. (* ?! *)
 have mfZ_gt0 : (0 < mu (f @` Z))%E.
   done.
