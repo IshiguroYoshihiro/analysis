@@ -3745,10 +3745,8 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     apply: bigcup_open => i _.
     rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
     by apply: bigcup_open => j _; exact: interval_open.
-  (* ? *)
-  admit.
-  (* have := @measure_image_preimages_gt1_nondecreasing_fun R a b F ab ndF G_ Gopen. *)
-  (* by rewrite /= -/A -completed_lebesgue_measureE mfA0. *)
+  have := @measure_image_nondecreasing_continuous_fun R a b F ab nndf cf G_ Gopen.
+  by rewrite /= -/A -completed_lebesgue_measureE mfA0.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
   apply: lime_ge; last exact: nearW.
   apply: ereal_nonincreasing_is_cvgn; apply/nonincreasing_seqP => n.
