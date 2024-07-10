@@ -2873,7 +2873,7 @@ Qed.
 
 Notation mu := (@lebesgue_measure R).
 
-Lemma measure_image_nondecreasing_continuous_fun (G : (set R)^nat) :
+Lemma measure_image_nondecreasing_fun (G : (set R)^nat) :
   (forall k, open (G k)) ->
   let Z := \bigcap_k (G k) in
   mu (F @` Z) = mu (\bigcap_k F @` G k).
@@ -3745,7 +3745,7 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     apply: bigcup_open => i _.
     rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
     by apply: bigcup_open => j _; exact: interval_open.
-  have := @measure_image_nondecreasing_continuous_fun R a b F ab nndf cf G_ Gopen.
+  have := @measure_image_nondecreasing_fun R a b F ab nndf cf G_ Gopen.
   by rewrite /= -/A -completed_lebesgue_measureE mfA0.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
   apply: lime_ge; last exact: nearW.
@@ -3782,7 +3782,7 @@ apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
 - move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_.
   apply: bigcup_sub => i/= yi.
   by apply: bigcup_sup => //=; rewrite (leq_trans xy).
-Unshelve. all: end_near. Admitted.
+Unshelve. all: end_near. Qed.
 
 End Banach_Zarecki.
 
