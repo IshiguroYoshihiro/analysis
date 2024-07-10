@@ -2645,7 +2645,19 @@ Lemma image_interval : exists s : nat -> set R,
   (forall i, is_interval (s i)) /\
   F @` `]a, b[ = \bigcup_i (s i).
 Proof.
-Admitted.
+have ndFoo: {in `]a, b[ &, {homo F : n m / n <= m}}.
+  move: ndF.
+  apply: in2_subset_itv.
+  exact: subset_itv_oo_cc.
+have [b0 [b1 FabE]] := continuous_nondecreasing_image_itvoo_itv ab cF ndFoo.
+exists (bigcup2 [set` Interval (BSide b0 (F a)) (BSide b1 (F b))] set0).
+split.
+  case => /=.
+    exact: interval_is_interval.
+  case => //.
+  by move=> ?.
+by rewrite FabE bigcup2E setU0.
+Qed.
 
 End image_interval_continuous.
 
