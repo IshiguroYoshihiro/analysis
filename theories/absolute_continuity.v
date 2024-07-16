@@ -41,6 +41,25 @@ Qed.
 
 End tmp.
 
+Lemma ball_is_interval (R : realType) (x e : R) :
+  0 < e ->
+  is_interval (ball (x : R^o) e).
+Proof.
+move=> e0.
+rewrite /ball/=.
+under eq_fun.
+  move=> y.
+  rewrite ltr_norml.
+  rewrite -ltrBrDl -[X in X && _]ltrBlDl.
+  over.
+move=> z0 z1/= /andP[_ H0r] /andP[H1l _] z /andP[].
+rewrite -lerN2 => zz0.
+rewrite -lerN2 => z1z.
+apply/andP; split.
+  exact: lt_le_trans z1z.
+exact: le_lt_trans H0r.
+Qed.
+
 (* open_bigcup_rat *)
 (* Lemma open_itv {R : realType} (S : set R) : *)
 (*   open S -> *)
@@ -847,25 +866,98 @@ End li.
 Section Gdelta.
 
 Definition Gdelta (R : topologicalType) (S : set R) :=
-  exists2 A_ : (set R)^nat, (forall i, open (A_ i)) & S = \bigcap_i (A_ i).
+  exists2 A_ : (set R)^nat,
+ (forall i, open (A_ i)) & S = \bigcap_i (A_ i).
+
+Lemma open_Gdelta (R : topologicalType) (S : set R) : open S -> Gdelta S.
+Proof.
+exists (bigcap2 S setT)=> [i |]; last by rewrite bigcap2E setIT.
+by rewrite /bigcap2; case: ifP => // _; case: ifP => // _; apply: openT.
+Qed.
+
+Lemma Gdelta_restriction_open (R : topologicalType) (S U : set R) :
+Gdelta S -> open U -> S `<=` U -> exists (s_ : (set R)^nat),
+  [/\ (forall n, s_ n `<=` U), (forall n, open (s_ n)) & S = \bigcap_i s_ i].
+Proof.
+move=> [s'_ os'_ US] oU SU.
+exists (fun n => (s'_ n) `&` U); split.
+    by move=> ?; apply: subIsetr.
+  by move=> ?; apply: openI.
+by rewrite bigcapIl// setIidl// -US.
+Qed.
+
+Definition Gdelta_restr (R :topologicalType) (S U : set R) 
+(GdeltaS : Gdelta S) (openU : open U) (SU : S `<=` U) :=
+sval (cid (Gdelta_restriction_open GdeltaS openU SU)).
+
+Arguments Gdelta_restr {R} S U.
+
+Lemma Gdelta_restrE (R : topologicalType) (S U : set R)
+(GdeltaS : Gdelta S) (openU : open U) (SU : S `<=` U) (n : nat) :
+  let S_ := sval (cid2 GdeltaS) in
+  Gdelta_restr S U GdeltaS openU SU n = U `&` (S_ n) .
+Proof.
+move=> S_.
+rewrite /S_.
+have := Gdelta_restriction_open GdeltaS openU SU.
+rewrite /Gdelta_restr.
+case: cid.
+Admitted.
+
+Lemma Gdelta_restriction_Gdelta (R : topologicalType) (S U : set R) :
+Gdelta S -> Gdelta U -> S `<=` U -> exists (s_ : (set R)^nat),
+  [/\ (forall n, s_ n `<=` U), (forall n, open (s_ n)) & S = \bigcap_i s_ i].
+Proof.
+move=> GdS [u'_ ou'_ UU] SU.
+have Su'_ n : S `<=` u'_ n.
+  admit.
+have Gdr n := Gdelta_restr S (u'_ n) GdS (ou'_ n) (Su'_ n).
+exists (fun n => Gdr n n).
+split.
+- move=> n.
+  move=> x.
+
+Lemma Gdelta_restrS (R : topologicalType) (U S : set R)
+(GdS : Gdelta S) (oU : open U) (SU : S `<=` U) :
+  forall n, Gdelta_restr GdS oU SU n `<=` U.
+Proof.
+move=> n.
+rewrite /Gdelta_restr.
+have := Gdelta_restriction_open GdS oU SU.
+case: cid.
+rewrite /=.
+move=> x.
+by move=> [].
+
 
 Context (R : realType).
 
-Lemma open_Gdelta (S : set R) : open S -> Gdelta S.
-Proof.
-exists (bigcap2 S setT) => [i|]; last by rewrite bigcap2E setIT.
-by rewrite /bigcap2; case: ifP => // _; case: ifP => // _; exact: openT.
-Qed.
-
 Lemma Gdelta_measurable (S : set R) : Gdelta S -> (@measurable _ R) S.
 Proof.
-by move=> [] B oB ->; apply: bigcapT_measurable => i; exact: open_measurable.
+move=> [] B oB ->; apply: bigcapT_measurable => i.
+exact: open_measurable.
 Qed.
 
-Lemma Gdelta_subspace (A : set R) (S : set (subspace A)) :
+Lemma Gdelta_subspace_open (A : set R) (S : set (subspace A)) :
+open A -> Gdelta S -> @Gdelta R (A `&` S).
+Proof.
+move=> oA [/= S_ oS_ US].
+exists (fun n => A `&` (S_ n)).
+  by move=> ?; rewrite open_setSI.
+by rewrite bigcapIr// US.
+Qed.
+
+Lemma Gdelta_subspace_Gdelta (A : set R) (S : set (subspace A)) :
 Gdelta A -> Gdelta S -> @Gdelta R S.
 Proof.
 move=> [A_ oA_ UA] [S_ oS_ US].
+exists (fun n => (S_ n) `&` (A_ n)) => //.
+move=> n.
+  apply: openI => //.
+
+  rewrite -(@open_setSI R^o A (S_ n)).
+  apply: oS_.
+rewrite -(open_setSI.
 Abort.
 
 End Gdelta.
@@ -2694,25 +2786,6 @@ move/(_ (itvI_ n)) => <-.
 exact: measurable_itv.
 Qed.
 
-Lemma ball_is_interval (x e : R) :
-  0 < e ->
-  is_interval (ball (x : R^o) e).
-Proof.
-move=> e0.
-rewrite /ball/=.
-under eq_fun.
-  move=> y.
-  rewrite ltr_norml.
-  rewrite -ltrBrDl -[X in X && _]ltrBlDl.
-  over.
-move=> z0 z1/= /andP[_ H0r] /andP[H1l _] z /andP[].
-rewrite -lerN2 => zz0.
-rewrite -lerN2 => z1z.
-apply/andP; split.
-  exact: lt_le_trans z1z.
-exact: le_lt_trans H0r.
-Qed.
-
 Lemma measurable_image_open_nondecreasing_fun Z :
   Z `<=` `]a, b[%classic -> open Z ->
   measurable (F @` Z).
@@ -2875,10 +2948,67 @@ Qed.
 Notation mu := (@lebesgue_measure R).
 
 Lemma measure_image_nondecreasing_fun (G : (set R)^nat) :
+  \bigcap_k (G k) `<=` `]a, b[ ->
   (forall k, open (G k)) ->
   let Z := \bigcap_k (G k) in
   mu (F @` Z) = mu (\bigcap_k F @` G k).
 Proof.
+have ndF' : {in `[a, b]%classic &, {homo F : n m / n <= m}}.
+  move=> x y.
+  rewrite !inE/=.
+  exact: ndF.
+move=> UGab oG.
+pose G' := (fun n => (G n) `&` `]a, b[).
+have G'ab k : G' k `<=` `[a, b].
+  apply: (@subset_trans _ `]a, b[%classic).
+    exact: subIsetr.
+  exact: subset_itv_oo_cc.
+have [HSl HSr] := lemma1 F G'ab.
+move=> Z.
+have ZE : Z = \bigcap_k G' k.
+  by rewrite bigcapIl// setIidl.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  apply: le_outer_measure.
+  rewrite ZE.
+  apply: (subset_trans HSr).
+  apply: subset_bigcap => /= i _.
+  apply: image_subset.
+  exact: subIsetl.
+rewrite [leLHS](_:_= mu (\bigcap_i [set F x | x in G' i] `\` preimages_gt1 F)); last first.
+  rewrite measureD /=; last 3 first.
+        apply: bigcap_measurable => // k _.
+        apply: measurable_image_open_nondecreasing_fun.
+          exact: subIsetr.
+        apply: openI => //.
+        exact: interval_open.
+      exact: is_borel_preimages_gt1_nondecreasing_fun => //.
+    apply: (@le_lt_trans _ _ (mu (F @` G' 0%N))).
+      apply: le_outer_measure.
+      exact: (@bigcap_inf _ _ _ setT).
+    apply: (@le_lt_trans _ _ (mu (F @` `]a, b[))).
+      apply: le_outer_measure.
+      apply: image_subset.
+      exact: subIsetr.
+    rewrite integral_continuous_nondecreasing_itv //; last first.
+      move: ndF.
+      apply: in2_subset_itv.
+      exact: subset_itv_oo_cc.
+    by rewrite -EFinB ltey.
+  rewrite [X in (_ - X)%E](_:_ = 0) ?sube0//.
+    apply/eqP; rewrite eq_le; apply/andP; split.
+
+
+      admit.
+    admit.
+  apply/eqP; rewrite eq_le; apply/andP; split => //.
+  rewrite [leRHS](_:_ = mu (preimages_gt1 F)); last first.
+    apply: esym.
+    rewrite countable_lebesgue_measure0//.
+    exact: is_countable_preimages_gt1_nondecreasing_fun.
+  apply: le_outer_measure.
+  exact: subIsetr.
+rewrite ZE.
+exact: le_outer_measure.
 Admitted.
 
 End lemma2iicontinuous.
