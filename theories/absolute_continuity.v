@@ -564,11 +564,11 @@ Qed.
 
 End move_to_realfun.
 
-Section image_of_itv.
-Context (R : realType).
-Implicit Type (f : R -> R) (a b: R).
+(* TODO: generalize for PR? *)
+Section closure_neitv.
 
-Local Notation mu := (@lebesgue_measure R).
+Context (R : realType).
+Implicit Type (a b: R).
 
 Lemma closure_neitv_oo a b : a < b ->
 closure `]a, b[%classic = `[a, b]%classic.
@@ -613,18 +613,57 @@ apply: closure_subset.
 exact: subset_itv_oo_co.
 Qed.
 
+Lemma closure_neitv_cc a b : a < b ->
+closure `[a, b]%classic = `[a, b]%classic.
+Proof.
+symmetry; apply/closure_id; rewrite -closure_neitv_oo//.
+exact: closed_closure.
+Qed.
+
 Lemma closure_neitv a b (x y : bool) : a < b ->
 closure [set` (Interval (BSide x a) (BSide y b))] = `[a, b]%classic.
 Proof.
 move=> ab.
 case: x; case: y.
 - exact: closure_neitv_co.
-- symmetry; apply/closure_id.
-  rewrite -closure_neitv_oo//.
-  exact: closed_closure.
+- exact: closure_neitv_cc.
 - exact: closure_neitv_oo.
 - exact: closure_neitv_oc.
 Qed.
+
+End closure_neitv.
+
+Lemma interior_set0 T : @interior T set0 = set0.
+Proof.
+rewrite eqEsubset; split => //.
+exact: interior_subset.
+Qed.
+
+Section interior_itv.
+Context (R : realType).
+Implicit Type (a b: R).
+
+Lemma interior_itv_oo a b :
+  interior `[a, b] = `]a, b[%classic.
+Proof.
+have [ba|ab] := (@ltrP R b a).
+  have nab x y : ~~ (BSide x a < BSide y b)%O.
+    by case: x; case: y; rewrite bnd_simp -?ltNge -?leNgt ?ltW.
+  by rewrite !set_itv_ge//; apply: interior_set0.
+rewrite interval_bounded_interior; last 3 first.
+      exact: interval_is_interval.
+    exact: has_lbound_itv.
+  exact: has_ubound_itv.
+by rewrite inf_itvcc ?sup_itvcc.
+Qed.
+
+End interior_itv.
+
+Section subset_neitv.
+Context (R : realType).
+Implicit Type (f : R -> R) (a b: R).
+
+Local Notation mu := (@lebesgue_measure R).
 
 Lemma subset_neitv_oocc a b c d : a < b ->
   `]a, b[ `<=` `[c, d] ->
@@ -638,7 +677,7 @@ apply: subset_trans.
 by rewrite closure_neitv_oo.
 Qed.
 
-End image_of_itv.
+End subset_neitv.
 
 Section PRme.
 Context {R : realType}.
@@ -3908,8 +3947,10 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     rewrite /E_.
     rewrite -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
     apply: bigcup_sub => j /= jni.
-(*    apply: (H3 _ _ _).2. *)
-    admit.
+    move : (absub i j jni).
+    rewrite open_subsetE.
+      by rewrite interior_itv_oo.
+    exact: interval_open.
   have := @measure_image_nondecreasing_fun R a b F ab nndf cf G_ Gab Gopen.
   by rewrite /= -/A -completed_lebesgue_measureE mfA0.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
@@ -3947,7 +3988,7 @@ apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
 - move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_.
   apply: bigcup_sub => i/= yi.
   by apply: bigcup_sup => //=; rewrite (leq_trans xy).
-Unshelve. all: end_near. Admitted. (* FIXME *)
+Unshelve. all: end_near. Qed.
 
 End Banach_Zarecki.
 
