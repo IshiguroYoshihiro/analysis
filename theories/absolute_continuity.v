@@ -916,8 +916,9 @@ exists (fun n => Gdr n n).
 split.
 - move=> n.
   move=> x.
+Abort.
 
-Lemma Gdelta_restrS (R : topologicalType) (U S : set R)
+(*Lemma Gdelta_restrS (R : topologicalType) (U S : set R)
 (GdS : Gdelta S) (oU : open U) (SU : S `<=` U) :
   forall n, Gdelta_restr GdS oU SU n `<=` U.
 Proof.
@@ -928,7 +929,7 @@ case: cid.
 rewrite /=.
 move=> x.
 by move=> [].
-
+*)
 
 Context (R : realType).
 
@@ -954,10 +955,10 @@ move=> [A_ oA_ UA] [S_ oS_ US].
 exists (fun n => (S_ n) `&` (A_ n)) => //.
 move=> n.
   apply: openI => //.
-
+(*
   rewrite -(@open_setSI R^o A (S_ n)).
   apply: oS_.
-rewrite -(open_setSI.
+rewrite -(open_setSI.*)
 Abort.
 
 End Gdelta.
@@ -3876,7 +3877,9 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     apply: bigcup_open => i _.
     rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
     by apply: bigcup_open => j _; exact: interval_open.
-  have := @measure_image_nondecreasing_fun R a b F ab nndf cf G_ Gopen.
+  have FIXME : \bigcap_k G_ k `<=` `]a, b[.
+    admit.
+  have := @measure_image_nondecreasing_fun R a b F ab nndf cf G_ FIXME Gopen.
   by rewrite /= -/A -completed_lebesgue_measureE mfA0.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
   apply: lime_ge; last exact: nearW.
@@ -3913,7 +3916,7 @@ apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
 - move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_.
   apply: bigcup_sub => i/= yi.
   by apply: bigcup_sup => //=; rewrite (leq_trans xy).
-Unshelve. all: end_near. Qed.
+Unshelve. all: end_near. Admitted. (* FIXME *)
 
 End Banach_Zarecki.
 
