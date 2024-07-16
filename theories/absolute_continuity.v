@@ -1748,8 +1748,10 @@ exists U_, Z; split.
           exact: subIsetl.
         by rewrite (le_lt_trans (mueS0E _))// ltry.
       + move=> i.
-        admit.
-      + admit.
+        apply: measurableD.
+          by apply: open_measurable.
+        admit. (* measurable E *)
+      + admit. (* measurable E *)
       + move=> m n mn.
         apply/subsetPset; apply: setSD => x H k h.
         apply: H => //.
@@ -1814,6 +1816,7 @@ Fail Lemma lusinN_total_variation a b f : abs_contN a b f ->
 
 Lemma abs_contN_dominates a b (f : cumulative R) : abs_contN a b f ->
   mu `<< lebesgue_stieltjes_measure f.
+Proof.
 Abort.
 
 Fail Lemma differentiable_lusinN a b f : {in `]a, b[%classic, differentiable f} ->
@@ -3120,51 +3123,6 @@ Qed.
   (*     admit. *)
   (*   by apply: sub_Rhullr. *)
 
-(* a wlog part in image_measure0_Lusin *)
-Lemma image_measure0_Lusin'
-  (f : R -> R)
-  (cf : {within `[a, b], continuous f})
-  (ndf : {in `[a, b] &, {homo f : x y / x <= y}})
-  (HZ : forall Z : set R,
-       Z `<=` `[a, b] -> compact Z -> mu Z = 0 -> mu [set f x | x in Z] = 0)
-  (Z : set R)
-  (Zab : Z `<=` `[a, b])
-  (mZ : (((wlength idfun)^*)%mu).-cara.-measurable Z)
-  (muZ0 : mu Z = 0)
-  (muFZ0 : (0%R < mu [set f x | x in Z])%E)
-  (GdeltaZ : Gdelta Z) : False.
-Proof.
-(* lemma *)
-have ndf' : {in `[a, b]%classic &, {homo f : n m / n <= m}}.
-  move=> x y.
-  rewrite !inE/= => xab yab.
-  exact: ndf.
-have mfZ : measurable (f @` Z).
-  have set_fun_f : set_fun `[a, b] [set: R] f by [].
-  pose Hf := isFun.Build R R `[a, b]%classic [set: R] f set_fun_f.
-  pose F : {fun `[a, b] >-> [set: R]} := HB.pack f Hf.
-  simpl in F.
-  have := @measurable_image_delta_set_nondecreasing_fun R a b F ab ndf cf Z.
-  apply => //.
-  admit. (* ?! *)
-have mfZ_gt0 : (0 < mu (f @` Z))%E.
-  done.
-have [K [cK KfZ muK]] : exists K, [/\ compact K, K `<=` f @` Z & (0 < mu K)%E].
-  have /= := lebesgue_regularity_inner mfZ.
-  admit.
-pose K1 := (f @^-1` K) `&` `[a, b].
-have cK1 : compact K1.
-  (* using continuity, continuous_compact? *)
-  admit.
-have K1ab : K1 `<=` `[a, b].
-  admit.
-have K1Z : K1 `<=` Z.
-  admit.
-have fK1K : f @` K1 = K.
-  admit.
-have := HZ K1 K1ab cK1.
-Admitted.
-
 (* lemma3 (converse) *)
 Lemma image_measure0_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -3178,13 +3136,42 @@ Proof.
 move=> cf ndf HZ; apply: contrapT.
 move=> /existsNP[Z]/not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
 move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
-have lmZ : lebesgue_measurability Z.
+wlog : Z Zab mZ muZ0 muFZ0 / Gdelta Z.
+  move=> wlg.
+  have [Z1 [gdZ1 mZ10 ZZ1]] : exists Z1, [/\ Gdelta Z1, mu Z1 = 0 & Z `<=` Z1].
+    admit.
+  have mFZ1 : (0 < (((wlength idfun)^*)%mu) (f @` Z1))%E.
+    admit.
+  apply: (wlg Z1) => //.
+  admit.
+  admit.
+move=> gdZ.
+have mFZ : measurable (f @` Z).
+  admit.
+have muF0_gt0 : (0 < mu (f @` Z))%E.
+  admit.
+have [K [cK KfZ muK]] : exists K, [/\ compact K, K `<=` f @` Z & (0 < mu K)%E].
+(*  have /= := lebesgue_regularity_inner mfZ.*)
+  admit.
+pose K1 := (f @^-1` K) `&` `[a, b].
+have cK1 : compact K1.
+  (* using continuity, continuous_compact? *)
+  admit.
+have K1ab : K1 `<=` `[a, b].
+  admit.
+have K1Z : K1 `<=` Z.
+  admit.
+have fK1K : f @` K1 = K.
+  admit.
+have := HZ K1 K1ab cK1.
+rewrite fK1K.
+(*have lmZ : lebesgue_measurability Z.
   move=> e e0.
   have [U [oU ZU /andP[muZU muUZe]]] := outer_regularity_outer0 Z e0.
   exists U; split => //.
-  rewrite -(@leeD2lE _ (((wlength idfun)^*)%mu (U `&` Z))); last first.
+  rewrite -(@leeD2lE _ (((wlength idfun)^* )%mu (U `&` Z))); last first.
     rewrite ge0_fin_numE; last exact: outer_measure_ge0.
-    apply: (@le_lt_trans _ _ (((wlength idfun)^*)%mu `[a, b]%classic)).
+    apply: (@le_lt_trans _ _ (((wlength idfun)^* )%mu `[a, b]%classic)).
       apply: le_outer_measure.
       by rewrite setIidr.
     rewrite [ltLHS](_:_= lebesgue_measure `[a, b]%classic); last by [].
@@ -3207,7 +3194,7 @@ apply.
   exact: open_measurable.
 - admit.
 - admit.
-- by exists H.
+- by exists H.*)
 Admitted.
 
 End lemma3.
@@ -3263,17 +3250,45 @@ Lemma Lusin_total_variation (f : R -> R) :
   lusinN `[a, b] (fun x => fine (total_variation a ^~ f x)).
 Proof.
 move=> cf bvf lf.
-have ndt := @total_variation_nondecreasing R a b f.
-have ct := total_variation_continuous ab cf bvf.
-apply: image_measure0_Lusin => //.
-apply: contrapT.
-move=> H.
+pose H := fun x => fine (total_variation a ^~ f x).
+have ndt : {in `[a, b] &, nondecreasing_fun H}.
+  move=> x y xab yab xy.
+  have axyf := @total_variation_nondecreasing R a b f _ _ xab yab xy.
+  rewrite /H fine_le//.
+  - apply/bounded_variationP => //.
+      by move: xab; rewrite in_itv/= => /andP[].
+    move: xab; rewrite in_itv/= => /andP[? ?].
+    by move: bvf; apply: bounded_variationl.
+  - apply/bounded_variationP => //.
+      by move: yab; rewrite in_itv/= => /andP[].
+    move: yab; rewrite in_itv/= => /andP[? ?].
+    by move: bvf; apply: bounded_variationl.
+have cH : {within `[a, b], continuous H}.
+  exact: total_variation_continuous.
+apply: contrapT => ababsurdo.
+have := image_measure0_Lusin ab cH ndt.
+move/contra_not => /(_ ababsurdo).
+move/existsNP => [Z /not_implyP [Zab /not_implyP[cZ /not_implyP[muZ0]]]].
+move/eqP; rewrite neq_lt ltNge measure_ge0/= => muHZ_gt0.
+have compactH : compact (H @` Z).
+  have := @continuous_compact _ _ H Z.
+  apply.
+    apply: continuous_subspaceW.
+      exact: Zab.
+    assumption.
+  exact: cZ.
+pose c : R := inf Z.
+pose d : R := sup Z.
+wlog : Z Zab cZ muZ0 muHZ_gt0 compactH c d / perfect_set Z.
+  admit.
+move=> perfectZ.
+
 pose TV := (fine \o (total_variation a)^~ f).
 have : exists n : nat, (0 < n)%N /\ exists Z_ : `I_ n -> interval R, trivIset setT (fun i => [set` (Z_ i)])
    /\ (0 < mu (TV @` (\bigcup_i [set` Z_ i])))%E
    /\ forall i, [/\ [set` Z_ i] `<=` `[a, b], compact [set` Z_ i] & mu [set` Z_ i] = 0].
   admit.
-move=> [n [] n0 [Z_]] [trivZ [Uz0]] /all_and3 [Zab cZ Z0].
+move=> [n [] n0 [Z_]] [trivZ [Uz0]] /all_and3 [Zab' cZ' Z0].
 pose UZ := \bigcup_i [set` Z_ i].
 have UZ_not_empty : UZ !=set0.
   admit.
@@ -4005,15 +4020,15 @@ Theorem Banach_Zarecki (f : R -> R) :
   abs_cont a b f.
 Proof.
 move=> cf bvf Lf.
-apply: total_variation_AC => //.
-apply: Banach_Zarecki_nondecreasing => //.
+apply: total_variation_AC => //. (* lemma 8 *)
+apply: Banach_Zarecki_nondecreasing => //. (* lemma 7 *)
 - exact: total_variation_continuous.
 - move=> x y; rewrite !in_itv /= => /andP[ax xb] /andP[ay yb] xy.
   apply: fine_le.
   + apply/(bounded_variationP _ ax); exact:(bounded_variationl _ xb).
   + apply/(bounded_variationP _ ay); exact:(bounded_variationl _ yb).
   + by apply: (@total_variation_nondecreasing _ _ b); rewrite ?in_itv /= ?ax ?ay.
-- exact: Lusin_total_variation.
+- exact: Lusin_total_variation. (* lemma 6 *)
 Qed.
 
 End banach_zarecki.
