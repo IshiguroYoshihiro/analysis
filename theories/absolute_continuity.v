@@ -875,6 +875,7 @@ exists (bigcap2 S setT)=> [i |]; last by rewrite bigcap2E setIT.
 by rewrite /bigcap2; case: ifP => // _; case: ifP => // _; apply: openT.
 Qed.
 
+(*
 Lemma Gdelta_restriction_open (R : topologicalType) (S U : set R) :
 Gdelta S -> open U -> S `<=` U -> exists (s_ : (set R)^nat),
   [/\ (forall n, s_ n `<=` U), (forall n, open (s_ n)) & S = \bigcap_i s_ i].
@@ -902,7 +903,7 @@ rewrite /S_.
 have := Gdelta_restriction_open GdeltaS openU SU.
 rewrite /Gdelta_restr.
 case: cid.
-Admitted.
+Abort.
 
 Lemma Gdelta_restriction_Gdelta (R : topologicalType) (S U : set R) :
 Gdelta S -> Gdelta U -> S `<=` U -> exists (s_ : (set R)^nat),
@@ -930,7 +931,7 @@ rewrite /=.
 move=> x.
 by move=> [].
 *)
-
+ *)
 Context (R : realType).
 
 Lemma Gdelta_measurable (S : set R) : Gdelta S -> (@measurable _ R) S.
@@ -2978,7 +2979,8 @@ Qed.
 Notation mu := (@lebesgue_measure R).
 
 Lemma measure_image_nondecreasing_fun (G : (set R)^nat) :
-  \bigcap_k (G k) `<=` `]a, b[ ->
+  (*  \bigcap_k (G k) `<=` `]a, b[ -> *)
+  (forall k, G k `<=` `]a, b[) ->
   (forall k, open (G k)) ->
   let Z := \bigcap_k (G k) in
   mu (F @` Z) = mu (\bigcap_k F @` G k).
@@ -2987,59 +2989,50 @@ have ndF' : {in `[a, b]%classic &, {homo F : n m / n <= m}}.
   move=> x y.
   rewrite !inE/=.
   exact: ndF.
-move=> UGab oG.
-pose G' := (fun n => (G n) `&` `]a, b[).
-have G'ab k : G' k `<=` `[a, b].
-  apply: (@subset_trans _ `]a, b[%classic).
-    exact: subIsetr.
+move=> Gab oG.
+have Gab' : forall k, G k `<=` `[a, b].
+  move=> k.
+  apply: (@subset_trans _ `]a, b[%classic) => //.
   exact: subset_itv_oo_cc.
-have [HSl HSr] := lemma1 F G'ab.
+have [HSl HSr] := lemma1 F Gab'.
 move=> Z.
-have ZE : Z = \bigcap_k G' k.
-  by rewrite bigcapIl// setIidl.
 apply/eqP; rewrite eq_le; apply/andP; split.
   apply: le_outer_measure.
-  rewrite ZE.
   apply: (subset_trans HSr).
   apply: subset_bigcap => /= i _.
-  apply: image_subset.
-  exact: subIsetl.
-rewrite [leLHS](_:_= mu (\bigcap_i [set F x | x in G' i] `\` preimages_gt1 F)); last first.
+  exact: image_subset.
+rewrite [leLHS](_:_= mu (\bigcap_i [set F x | x in G i] `\` preimages_gt1 F)); last first.
   rewrite measureD /=; last 3 first.
         apply: bigcap_measurable => // k _.
         apply: measurable_image_open_nondecreasing_fun.
-          exact: subIsetr.
-        apply: openI => //.
-        exact: interval_open.
+          exact: Gab.
+        exact: oG.
       exact: is_borel_preimages_gt1_nondecreasing_fun => //.
-    apply: (@le_lt_trans _ _ (mu (F @` G' 0%N))).
+    apply: (@le_lt_trans _ _ (mu (F @` G 0%N))).
       apply: le_outer_measure.
       exact: (@bigcap_inf _ _ _ setT).
     apply: (@le_lt_trans _ _ (mu (F @` `]a, b[))).
       apply: le_outer_measure.
       apply: image_subset.
-      exact: subIsetr.
+      exact: Gab.
     rewrite integral_continuous_nondecreasing_itv //; last first.
       move: ndF.
       apply: in2_subset_itv.
       exact: subset_itv_oo_cc.
     by rewrite -EFinB ltey.
   rewrite [X in (_ - X)%E](_:_ = 0) ?sube0//.
-    apply/eqP; rewrite eq_le; apply/andP; split.
-
-
-      admit.
-    admit.
-  apply/eqP; rewrite eq_le; apply/andP; split => //.
-  rewrite [leRHS](_:_ = mu (preimages_gt1 F)); last first.
-    apply: esym.
-    rewrite countable_lebesgue_measure0//.
-    exact: is_countable_preimages_gt1_nondecreasing_fun.
-  apply: le_outer_measure.
-  exact: subIsetr.
-rewrite ZE.
+  apply/eqP; rewrite eq_le; apply/andP; split.
+    rewrite [leRHS](_:_ = mu (preimages_gt1 F)); last first.
+      apply: esym.
+      rewrite countable_lebesgue_measure0//.
+      apply: is_countable_preimages_gt1_nondecreasing_fun.
+        exact: ab.
+      exact: ndF'.
+    apply: le_outer_measure.
+    exact: subIsetr.
+  exact: outer_measure_ge0.
 exact: le_outer_measure.
-Admitted.
+Qed.
 
 End lemma2iicontinuous.
 
@@ -3908,9 +3901,16 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     apply: bigcup_open => i _.
     rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
     by apply: bigcup_open => j _; exact: interval_open.
-  have FIXME : \bigcap_k G_ k `<=` `]a, b[.
+  have Gab : forall k : nat, G_ k `<=` `]a, b[.
+    move=> k.
+    rewrite /G_.
+    apply: bigcup_sub => i /= ki.
+    rewrite /E_.
+    rewrite -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
+    apply: bigcup_sub => j /= jni.
+(*    apply: (H3 _ _ _).2. *)
     admit.
-  have := @measure_image_nondecreasing_fun R a b F ab nndf cf G_ FIXME Gopen.
+  have := @measure_image_nondecreasing_fun R a b F ab nndf cf G_ Gab Gopen.
   by rewrite /= -/A -completed_lebesgue_measureE mfA0.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
   apply: lime_ge; last exact: nearW.
