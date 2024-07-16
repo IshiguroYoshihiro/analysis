@@ -3100,6 +3100,35 @@ have /= mZ : (wlength idfun)^*%mu.-cara.-measurable Z.
 exact: (lusinNf Z Zab mZ muZ0).
 Qed.
 
+Lemma lebesgue_measure_Gdelta_approx Z : (lebesgue_measure Z < +oo)%E ->
+  exists U : nat -> set R, [/\ (forall k, Z `<=` U k), (forall k, open (U k)) &
+  lebesgue_measure Z = lebesgue_measure (\bigcap_k U k)].
+Proof.
+move=> Zoo.
+pose delta0 k := 2^-1 ^+ k.+1 :> R.
+have delta_ge0 k : 0 < delta0 k.
+  admit.
+have mUfin : ereal_inf [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]]
+         \is a fin_num.
+  admit.
+have := fun k => (@exists2P _ _ _).1 (@lb_ereal_inf_adherent _ [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]] (delta0 k) (delta_ge0 k) mUfin).
+move/(@choice _ _ (fun k x => [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]] x /\
+     (x <
+      ereal_inf [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]] +
+      (delta0 k)%:E)%E)).
+move=> [e_] /all_and2[/= + einf].
+under [X in X -> _]eq_forall do rewrite exists2E.
+move=> /choice[U_].
+move=> /all_and2[/all_and2[oU ZU] mUe].
+exists U_; split => //.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  apply: le_outer_measure.
+  apply: sub_bigcap => n _.
+  exact: ZU.
+(* have := lebesgue_regularity_outer_inf.*)
+admit.
+Admitted.
+
   (* Lemma open_subset_itvoocc S : open S -> S `<=` `[a, b] -> S `<=` `]a, b[. *)
   (*   move=> oS Sab. *)
   (*   apply: (@subset_trans _ [set` Rhull S]). *)
@@ -3136,6 +3165,13 @@ Proof.
 move=> cf ndf HZ; apply: contrapT.
 move=> /existsNP[Z]/not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
 move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
+
+
+have := @lb_ereal_inf_adherent _ [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]].
+
+have := lebesgue_regularity_outer_inf Z.
+
+
 wlog : Z Zab mZ muZ0 muFZ0 / Gdelta Z.
   move=> wlg.
   have [Z1 [gdZ1 mZ10 ZZ1]] : exists Z1, [/\ Gdelta Z1, mu Z1 = 0 & Z `<=` Z1].
@@ -3350,6 +3386,12 @@ Local Notation mu := (@completed_lebesgue_measure R).
   mu (\bigcap_i (G_ i)) = \sum_(i \in setT) (mu (G_ i)).
 Proof.
 Abort.*)
+
+(* Remark: p.183 of J. Foran, Fundamentals of real analysis *)
+(* Lemma nondecreasing_set_seq_cvg (A_ : nat -> set R) :
+  (forall k, measurable (A_ k)) -> {homo A_ : n m /~ n <= m) ->
+    mu (\bigcap_i A_ i) = lim (mu (A_ i) @[i --> /oo]).
+*)
 
 (* Lemma fG_cvg (f : R -> R) (G_ : nat -> set R) (A : set R) *)
 (*  : mu (f @` G_ n) @[n --> \oo] --> mu (f @` A). *)
