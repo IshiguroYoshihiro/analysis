@@ -765,97 +765,155 @@ Qed.
 
 https://math.stackexchange.com/questions/2913728/complete-measures-and-complete-sigma-algebras*)
 
-Definition open_itv_cover {R : realType} (X : set R) :=
-  [set F : (set R)^nat |
-    (forall i, (is_interval (F i) /\ open (F i))) /\ X `<=` \bigcup_k (F k)].
+Definition is_itvoo (R : realType) (A : set R) := exists ab, A = `]ab.1, ab.2[%classic.
 
-Definition ocitv_cover {R : realType} (X : set R) :=
-  [set F : (set R)^nat |
-    (forall i, (ocitv (F i))) /\ X `<=` \bigcup_k (F k)].
+Definition open_itv_cover {R : realType} (X : set R) :=
+  [set F : (set R)^nat | (forall i, is_itvoo (F i)) /\ X `<=` \bigcup_k (F k)].
 
 (* wip *)
 Module li.
+
+Lemma cvg_geometric_eseries_half {R : archiFieldType} (r : R) (n : nat) :
+   eseries (fun k => (r / (2 ^ (k + n.+1))%:R)%:E) x @[x --> \oo] --> (r / 2 ^+ n)%:E.
+Proof.
+apply: cvg_EFin => //.
+  apply: nearW => //= x.
+  by rewrite /eseries/= sumEFin.
+rewrite [X in X @ _ --> _](_ : _ = (series (fun k : nat => (r / (2 ^ (k + n.+1))%:R)))); last first.
+  by apply/funext => x; rewrite /= /eseries/= sumEFin.
+exact: cvg_geometric_series_half.
+Qed.
+
 Section li.
 Context {R : realType}.
 
 Let l := (@wlength R idfun).
 
-Lemma pro20 (X : set R) :
-  (l^*)%mu X =
+Local Open Scope ereal_scope.
+
+(* proposition 20 in Li *)
+Lemma outer_open_itv_cover (X : set R) : (l^*)%mu X =
   ereal_inf [set \sum_(k <oo) l (A k) | A in open_itv_cover X]%E.
 Proof.
-case: (eqVneq ((l^*)%mu X) +oo%E).
-  move=> Xeqy; rewrite Xeqy; symmetry.
-  rewrite ereal_inf_pinfty.
-  move=> z /= [U_ oU_ sumU_].
-  apply/eqP; rewrite eq_le; apply/andP; split; first exact: leey.
-  rewrite -Xeqy -sumU_.
-  apply: (@le_trans _ _ ((l^*)%mu (\bigcup_i (U_ i)))).
-    apply: le_outer_measure.
-    by move: oU_ => [_ +].
-  (* ? *)
-  admit.
-rewrite -ltey => Xlty.
-rewrite /mu_ext.
-apply/eqP; rewrite eq_le; apply/andP; split; apply: le_ereal_inf.
-  admit.
-admit.
-Admitted.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  apply: le_ereal_inf => x /= [s].
+  rewrite /open_itv_cover/= => -[si Xs <-{x}].
+  have Hs i : is_itvoo (s i) := si i.
+  exists (fun i => `](sval (cid (Hs i))).1, (sval (cid (Hs i))).2]%classic).
+    split.
+      move=> i.
+      have [H|H] := ltP (sval (cid (Hs i))).1 (sval (cid (Hs i))).2.
+        apply/ocitvP; right.
+        eexists.
+          exact: H.
+        by [].
+      apply/ocitvP; left.
+      by rewrite set_itv_ge// -leNgt.
+    move/subset_trans : Xs; apply.
+    move=> A/= [n _ snA].
+    exists n => //.
+    have := Hs n.
+    move: snA.
+    case: cid => -[x y]/= ->/= Axy _.
+    exact: subset_itv_oo_oc Axy.
+  apply: eq_eseriesr => k _.
+  rewrite /l wlength_itv/=.
+  move: (Hs k).
+  case => /= -[a b]/= skab.
+  case: cid => /= -[x1 x2] ->.
+  by rewrite wlength_itv.
+have [|] := boolP ((l^* X)%mu \is a fin_num); last first.
+  rewrite ge0_fin_numE ?outer_measure_ge0// -leNgt leye_eq => /eqP ->.
+  exact: leey.
+move/lb_ereal_inf_adherent => H.
+apply/lee_addgt0Pr => /= e e0.
+have e20 : (0 < e / 2)%R by rewrite divr_gt0//.
+have [_ [/= J_ [mJ_ XJ_]] <- lJ_e] := H _ e20.
+rewrite -/((l^* X)%mu) in lJ_e.
+have I_proof n : exists2 J, J_ n `<=` J &
+  (is_itvoo J) /\ (l J <= l (J_ n) + (e / 2 ^+ n.+2)%:E)%E.
+  have [[a b] _ /= abJ] := mJ_ n.
+  exists `]a, b + e / 2^+n.+2[%classic.
+    rewrite -abJ.
+    move=> x/=; rewrite !in_itv/= => /andP[->/=].
+    move=> /le_lt_trans; apply.
+    by rewrite ltrDl divr_gt0.
+  split.
+    by exists (a, b + e / 2^+n.+2)%R.
+  have [ab|ba] := ltP a b.
+    rewrite /l -abJ !wlength_itv//= !lte_fin ifT; last by rewrite ltr_wpDr// divr_ge0// ltW.
+    by rewrite ab -!EFinD lee_fin addrAC.
+  rewrite -abJ [in leRHS]set_itv_ge ?bnd_simp -?leNgt// /l wlength0 add0r wlength_itv//=.
+  case: ifPn => [|_]; last first.
+    by rewrite lee_fin divr_ge0// ltW.
+  move=> abe.
+  by rewrite -EFinD addrAC lee_fin -[leRHS]add0r lerD2r subr_le0.
+pose I_ := fun n => sval (cid2 (I_proof n)).
+have H1 n : J_ n `<=` I_ n by rewrite /I_; case: cid2.
+have H2 n : is_itvoo (I_ n) by rewrite /I_; case: cid2 => ? ? [].
+have H3 n : (l (I_ n) <= l (J_ n) + (e / 2 ^+ n.+2)%:E)%E by rewrite /I_; case: cid2 => ? ? [].
+have XI_ : X `<=` \bigcup_k I_ k.
+  by move=> z Xz; have [n _ J_nz] := XJ_ _ Xz; exists n => //; exact: H1.
+apply: (@le_trans _ _ (\sum_(0 <= k <oo) (l (J_ k) + (e / 2 ^+ k.+2)%:E))%E).
+  apply: (@le_trans _ _ (\sum_(0 <= k <oo) (l (I_ k)))%E).
+    by apply: ereal_inf_lb => /=; exists I_.
+  exact: lee_nneseries.
+rewrite nneseriesD//; last first.
+  by move=> i _; rewrite lee_fin// divr_ge0// ltW.
+rewrite [in leRHS](splitr e) EFinD addeA leeD//.
+  exact/ltW.
+have := @cvg_geometric_eseries_half R (e) 1.
+rewrite expr1.
+rewrite (_ : (fun k : nat => (e / (2 ^ (k + 2))%:R)%:E) =
+             (fun k : nat => (e / (2 ^+ (k.+2))%:R)%:E)); last first.
+  by apply/funext => n; rewrite addn2 natrX.
+move/cvg_lim => <-//.
+apply: lee_nneseries => //.
+- by move=> ? _; rewrite lee_fin divr_ge0// ltW.
+- by move=> n _; rewrite lee_fin -natrX.
+Qed.
 
-Definition cmu := (@(*completed_*)lebesgue_measure R).
+Definition mu := (@lebesgue_measure R).
 
-Lemma pro211 (X : set R) :
-  ((l^*)%mu X < +oo)%E ->
-  forall e, 0 < e -> exists U, [/\ open U,
-    X `<=` U &
-    (cmu U <= (l^*)%mu X + e%:E)%E].
+(* proposition 21 1) in Li *)
+Lemma outer_open_approx (X : set R) : (l^* X)%mu < +oo ->
+  forall e, (0 < e)%R -> exists U, [/\ open U,
+    X `<=` U & mu U <= (l^* X)%mu + e%:E].
 Proof.
 move=> Xoo/= e e0.
-have := pro20 X.
-set ei := (X in _ = X -> _) => Xei.
-have : ei \is a fin_num.
-  rewrite ge0_fin_numE//; first by rewrite -Xei.
-  apply: lb_ereal_inf => _ [F _ <-].
-  by apply: nneseries_ge0 => n _; exact: wlength_ge0.
-move=> /lb_ereal_inf_adherent => /(_ _ e0)[_ /= [I_ HI_]] <-.
-rewrite -/ei -Xei {Xei ei} => I_X.
-exists (\bigcup_i (I_ i)); split.
-- by apply: bigcup_open => i _; have [] := HI_.1 i.
-- exact: HI_.2.
-- rewrite (le_trans _ (ltW I_X))//.
-  case: HI_ => HI_1 HI_2.
-  apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) cmu (I_ k))%E).
-    exact: outer_measure_sigma_subadditive.
-  apply: lee_nneseries => // n _.
-  have I_E : exists a b, I_ n = `]a, b[%classic.
-    exists (inf (I_ n)); exists (sup (I_ n)).
-    rewrite -(@RhullK _ (I_ n)); last first.
-      rewrite mem_set => //.
-      by move: (HI_1 n) => [].
-    (* by HI_1 *)
-    admit.
-  have [a [b ->]] := I_E.
-  apply: (@le_trans _ _ (cmu `]a, b])).
-    apply: le_outer_measure.
-    by apply/subset_itv_oo_oc.
-  rewrite /cmu lebesgue_measure_itv/=.
-  by rewrite /l wlength_itv/=.
-Admitted.
+have : exists2 I_, open_itv_cover X I_ &
+    \sum_(0 <= k <oo) l (I_ k) <= ((wlength idfun)^*)%mu X + e%:E.
+  have : (l^* X)%mu\is a fin_num by rewrite ge0_fin_numE// outer_measure_ge0.
+  rewrite outer_open_itv_cover.
+  move=> /lb_ereal_inf_adherent => /(_ _ e0)[x/= [I]] XI <-{x} Ie.
+  by exists I => //; exact/ltW.
+move=> [I_ XI_ sumI_].
+exists (\bigcup_i (I_ i)); split => //.
+- apply: bigcup_open => // i.
+  case: XI_ => H1 _2 _.
+  have [[a b] ->] := H1 i.
+  exact: interval_open.
+- by case: XI_.
+- rewrite (le_trans _ sumI_)//.
+  have := outer_measure_sigma_subadditive mu I_.
+  move=> /le_trans; apply.
+  apply: lee_nneseries => // i _.
+  case: XI_ => /(_ i)[[a b] -> _].
+  by rewrite /l wlength_itv -(@lebesgue_measure_itv R `]a, b[).
+Qed.
 
-Lemma pro212 (X : set R) :
-  ((l^*)%mu X < +oo)%E ->
+(* proposition 21 2) in Li *)
+Lemma outer_Gdelta (X : set R) : (l^* X)%mu < +oo ->
   exists G_ : (set R)^nat, [/\ (forall i, open (G_ i)),
     X `<=` \bigcap_i G_ i &
-    cmu (\bigcap_i G_ i) = ((wlength idfun)^*)%mu X].
+    mu (\bigcap_i G_ i) = ((wlength idfun)^*)%mu X].
 Proof.
 move=> Xoo.
-have inv0 (k : nat) : (0 < k.+1%:R^-1 :> R) by rewrite invr_gt0.
-pose U_ (k : nat) := projT1 (cid (pro211 Xoo (inv0 k))).
+have inv0 (k : nat) : (0 < k.+1%:R^-1 :> R)%R by rewrite invr_gt0.
+pose U_ (k : nat) := projT1 (cid (outer_open_approx Xoo (inv0 k))).
 have oU_ (k : nat) : open (U_ k) by rewrite /U_; case: cid => x /= [].
 have XU_ (k : nat) : X `<=` U_ k by rewrite /U_; case: cid => x /= [].
-have mUX (k : nat) :
-  (cmu (U_ k) <=
-   ((wlength idfun)^*)%mu X + k.+1%:R^-1%:E)%E.
+have mUX (k : nat) : mu (U_ k) <= ((wlength idfun)^*)%mu X + k.+1%:R^-1%:E.
   by rewrite /U_; case: cid => x /= [].
 pose G := \bigcap_k (U_ k).
 exists U_; split => //; first by apply: sub_bigcap.
@@ -869,13 +927,11 @@ apply/eqP; rewrite eq_le; apply/andP; split.
   rewrite leeD2l// lee_fin; apply: ltW.
   by near: k; exact: near_infty_natSinv_lt.
 rewrite [leRHS](_ : _ = ((wlength idfun)^*)%mu (\bigcap_i U_ i))//.
-apply: le_outer_measure.
-exact: sub_bigcap.
+by apply: le_outer_measure; exact: sub_bigcap.
 Unshelve. all: by end_near. Qed.
 
-Lemma cor22 (N : set R) :
-  cmu.-negligible N <->
-  (l^*)%mu N = 0.
+(* corollary 22 in Li *)
+Lemma negligible_outer (N : set R) : mu.-negligible N <-> (l^*)%mu N = 0.
 Proof.
 split.
   move=> [/= A [mA cmuA NA]].
@@ -883,19 +939,15 @@ split.
   rewrite (@le_trans _ _ (((wlength idfun)^*)%mu A))//.
     exact: le_outer_measure.
   move: cmuA.
-  rewrite /cmu/=.
+  rewrite /mu/=.
   rewrite /lebesgue_measure/=.
   rewrite /lebesgue_stieltjes_measure.
   by rewrite /measure_extension/= => ->.
 move=> N0.
-have := @pro212 N.
+have := @outer_Gdelta N.
 rewrite N0 ltry => /(_ isT)[G_ [oG_ NG_ mG_0]].
 exists (\bigcap_i G_ i); split => //=.
-apply: bigcapT_measurable => i.
-apply: open_measurable => //=.
-(*split.
-  exact: sigma_algebra_mu_ext.
-by move=> A mA; apply: sub_caratheodory; exact: sub_sigma_algebra.*)
+by apply: bigcapT_measurable => i; exact: open_measurable.
 Qed.
 
 End li.
@@ -1245,6 +1297,55 @@ Qed.
 
 End abs_contP.
 
+Section vitali_theorem2.
+Context {R : realType} (A : set R) (B : nat -> set R).
+Hypothesis B0 : forall i, (0 < (radius (B i))%:num)%R.
+Notation mu := (@lebesgue_measure R).
+Local Open Scope ereal_scope.
+
+Lemma vitali_theorem2 (F : set nat) :
+  (mu^* A)%mu < +oo%E -> vitali_cover A B F ->
+  forall e, e%:E > 0 -> exists G' : {fset nat}, [/\ [set` G'] `<=` F,
+    trivIset [set` G'] (closure \o B) &
+    (mu^* (A `\` \big[setU/set0]_(k <- G') closure (B k)))%mu < e%:E].
+Proof.
+move=> muAfin ABF e e0.
+have [O [oO AO OAoo]] :
+    exists O : set R, [/\ open O, A `<=` O & (mu O < (mu^* A)%mu + 1 < +oo)%E].
+  rewrite lte_fin in e0.
+  admit.
+pose F' := [set k | k \in F /\ B k `<=` O].
+have ABF' : vitali_cover A B F'.
+  case: ABF => Bball ABF; split => // r Ar d d0.
+  have [k [Vk Bkr Bkd]] := ABF _ Ar _ d0.
+  exists k; split => //; split.
+    exact/mem_set.
+  admit.
+have [G [cG GV' tB mAG0]] := vitali_theorem B0 ABF'.
+pose G' c := [set k | k \in F' /\ (radius (B k))%:num >= c]%R.
+have [c Hc] : exists c : {posnum R},
+    (mu (\bigcup_(k in G' c%:num) B k) > mu (\bigcup_(k in G) B k) - e%:E)%E.
+  admit.
+have G'c : finite_set (G' c%:num).
+  admit.
+exists (fset_set (G' c%:num)); split.
+- move=> /= k.
+  by rewrite in_fset_set// inE /G'/= inE => -[[/set_mem]].
+- apply: sub_trivIset tB => k/=.
+  rewrite in_fset_set// inE /G'/= inE => -[[/set_mem Fk BkO cBk]].
+  admit.
+- pose UG : set R := \big[setU/set0]_(k <- fset_set G) closure (B k).
+  apply: (@le_lt_trans _ _ (mu (A `\`UG) +
+       mu (UG `\` \big[setU/set0]_(k <- fset_set (G' c%:num)) closure (B k)))).
+    rewrite [in leLHS](@setDU _ _ UG); last 2 first.
+      rewrite /UG.
+      admit.
+      rewrite /UG.
+      admit.
+Abort.
+
+End vitali_theorem2.
+
 Section absolute_continuity_lemmas.
 Context {R : realType}.
 
@@ -1281,6 +1382,23 @@ rewrite addrAC subrr add0r -subr_ge0 -lee_fin EFinB fineK; last first.
   by apply/(bounded_variationr aBi1 _ BVf); rewrite (le_trans _ Bi2b)// ltW.
 by rewrite leeBrDr// add0e total_variation_ge// ltW.
 Qed.
+
+Lemma abs_cont_der0 a b (f : R -> R) : a < b ->
+  abs_cont a b f -> {ae @lebesgue_measure R, {in `[a, b], f^`() =1 cst 0}} ->
+  {in `[a, b], forall c, f c = f a}.
+Proof.
+move=> ab abf Df0 c cab.
+pose E := [set x | f^`() x = 0] `&` `[a, c].
+suff: forall e : R, 0 < e -> `|f c - f a| <= e * (c - a + 1).
+  move=> suf; move: cab; rewrite in_itv/= => /andP[ac _].
+  apply/eqP; rewrite -subr_eq0 -normr_eq0 eq_le normr_ge0 andbT.
+  apply/ler_addgt0Pl => /= e e0; rewrite addr0.
+  rewrite -(mulr1 e) -(@mulVf _ ((c - a + 1))); last first.
+    by rewrite gt_eqF// ltr_pwDr// subr_ge0.
+  by rewrite mulrA suf// divr_gt0// ltr_pwDr// subr_ge0.
+move=> _/posnumP[e]; have [d de] := abf e.
+
+Abort.
 
 End absolute_continuity_lemmas.
 
