@@ -3298,7 +3298,6 @@ have VE : \bigcap_i V_ i = \bigcap_i U_ i.
   exact: (HU k).
 rewrite -VE.
 apply: esym.
-
 have := (@nonincreasing_cvg_mu _ _ _ lebesgue_measure V_ V0oo mV mIV niV).
 move/cvg_lim => <- //.
 apply: cvg_lim => //.
@@ -3365,14 +3364,37 @@ have Hf : set_fun `[a, b] [set: R] f by [].
 pose F : {fun `[a, b] >-> [set: R]} := HB.pack f (isFun.Build _ _ _ _ f Hf).
 have ndF : {in `[a, b] &, {homo F : n m / n <= m}} by [].
 have cF : {within `[a, b], continuous F} by [].
-have Uab n : (fun n => (U_ n) `&` `[a, b]) n `<=` `[a, b].
-  exact: subIsetr.
-(*
-have : measure_image_nondecreasing_fun ab ndF cF Uab.
-have := @lb_ereal_inf_adherent _ [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]].
-
-have := lebesgue_regularity_outer_inf Z.
-*)
+have Uabab n : (fun n => (U_ n) `&` `]a, b[) n `<=` `]a, b[ by exact: subIsetr.
+have oUab n : open (U_ n `&` `]a, b[).
+  apply: openI => //.
+  exact: interval_open.
+pose Z1 := \bigcap_k (U_ k `&` `]a, b[).
+have H := measure_image_nondecreasing_fun ab ndF cF Uabab oUab.
+have mZ1 : measurable Z1.
+  apply: Gdelta_measurable.
+  by exists (fun n => U_ n `&` `]a, b[).
+have Z1oo : (lebesgue_measure Z1 < +oo)%E.
+  apply: (@le_lt_trans _ _ (lebesgue_measure `]a, b[)).
+    apply: le_outer_measure.
+    by rewrite /Z1 bigcapIl.
+  by rewrite lebesgue_measure_itv/= lte_fin ab -EFinB ltry.
+set e : R := fine ((lebesgue_measure (f @` Z1)) * 2^-1%:E).
+have e0 : 0 < e.
+  apply: fine_gt0.
+  apply/andP; split.
+    rewrite mule_gt0//.
+    apply: (@lt_le_trans _ _ (lebesgue_measure (f @` Z))).
+      exact: muFZ0.
+    apply: le_outer_measure.
+    apply: image_subset.
+    (* case : (Z `<=` `]a, b[) = true \/ (Z `<=` `]a, b[) = false. *)
+    admit.
+  apply: lte_mul_pinfty => //; last exact: ltry.
+  rewrite ge0_fin_numE => //.
+  admit.
+have [K [cK KZ1 /=ZKe]] := lebesgue_regularity_inner mZ1 Z1oo e0.
+(* how to get K1 such that
+   e < lebesgue_measure (Z1 `\` K) < lebesgue_measure Z1 ? *)
 Admitted.
 
 End lemma3.
