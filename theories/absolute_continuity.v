@@ -2851,20 +2851,8 @@ Unshelve. all: end_near. Qed.
 (* see lebesgue_measure_rat in lebesgue_measure.v *)
 Lemma is_borel_preimages_gt1_nondecreasing_fun : measurable (preimages_gt1 F). (*TODO: right measurable inferred? *)
 Proof.
-have /countable_bijP[N /pcard_eqP/bijPex [/= g bijg]] := is_countable_preimages_gt1_nondecreasing_fun.
-set h := 'pinv_(fun=> 0) (preimages_gt1 F) g.
-suff -> : preimages_gt1 F = \bigcup_(i in N) (set1 (h i)).
-  exact: bigcup_measurable.
-apply/seteqP; split.
-  move=> r Br.
-  exists (g r) => //.
-    apply: (set_bij_sub bijg).
-    by exists r.
-  rewrite /h pinvKV ?inE //.
-  exact: (set_bij_inj bijg).
-move=> _ [n Nn] /= ->.
-apply: (set_bij_sub (bijpinv_bij (fun=> 0) bijg)).
-by exists n.
+apply: countable_measurable.
+exact: is_countable_preimages_gt1_nondecreasing_fun.
 Qed.
 
 (* (* unprovable *) *)
