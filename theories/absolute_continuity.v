@@ -1297,6 +1297,13 @@ Qed.
 
 End abs_contP.
 
+Lemma lteD2rE {R : realDomainType} (x a b : \bar R) : x \is a fin_num -> (a + x < b + x)%E = (a < b)%E.
+Proof. by rewrite -!(addeC x); exact: lteD2lE. Qed.
+
+Lemma subset_bigcup2 {T I : Type} (P Q : set I) (F : I -> set T) : P `<=` Q ->
+  \bigcup_(i in P) F i `<=` \bigcup_(i in Q) F i.
+Proof. by move=> PQ x [i /PQ Qi Fix]; exists i. Qed.
+
 Section vitali_theorem2.
 Context {R : realType} (A : set R) (B : nat -> set R).
 Hypothesis B0 : forall i, (0 < (radius (B i))%:num)%R.
@@ -1304,44 +1311,122 @@ Notation mu := (@lebesgue_measure R).
 Local Open Scope ereal_scope.
 
 Lemma vitali_theorem2 (F : set nat) :
-  (mu^* A)%mu < +oo%E -> vitali_cover A B F ->
+  (mu A)%mu < +oo%E -> vitali_cover A B F ->
   forall e, e%:E > 0 -> exists G' : {fset nat}, [/\ [set` G'] `<=` F,
     trivIset [set` G'] (closure \o B) &
-    (mu^* (A `\` \big[setU/set0]_(k <- G') closure (B k)))%mu < e%:E].
+    ((wlength idfun)^* (A `\` \big[setU/set0]_(k <- G') closure (B k)))%mu < e%:E].
 Proof.
 move=> muAfin ABF e e0.
 have [O [oO AO OAoo]] :
-    exists O : set R, [/\ open O, A `<=` O & (mu O < (mu^* A)%mu + 1 < +oo)%E].
+    exists O : set R, [/\ open O, A `<=` O & (mu O < (mu A)%mu + 1 < +oo)%E].
   rewrite lte_fin in e0.
-  admit.
+  have lt012 : (0 < 1 / 2 :> R)%R.
+    by rewrite divr_gt0//.
+  have [O [oA AO OAe]] := @li.outer_open_approx R A muAfin _ lt012.
+  exists O; split => //.
+  apply/andP; split.
+    rewrite (le_lt_trans OAe)//.
+    rewrite lteD2lE ?ge0_fin_numE ?outer_measure_ge0// lte_fin.
+    by rewrite ltr_pdivrMr// mul1r ltr1n.
+  by rewrite lte_add_pinfty// ltry.
 pose F' := [set k | k \in F /\ B k `<=` O].
 have ABF' : vitali_cover A B F'.
-  case: ABF => Bball ABF; split => // r Ar d d0.
-  have [k [Vk Bkr Bkd]] := ABF _ Ar _ d0.
-  exists k; split => //; split.
-    exact/mem_set.
-  admit.
+  (* leb_fun_thm.pdf *)
+  case: ABF => Bball ABF.
+  split => //.
+  move=> x Ax r r0.
+  have [d xdO] : exists d : {posnum R}, ball x d%:num `<=` O.
+    have := open_subball oO (AO _ Ax).
+    move=> [/= d d0 dxO].
+    have d20 : (0 < d / 2)%R by rewrite divr_gt0.
+    exists (PosNum d20) => z xdz.
+    apply: dxO; last exact: xdz.
+    by rewrite /= sub0r normrN gtr0_norm// gtr_pMr// invf_lt1// ltr1n.
+    by [].
+  pose delta : R := minr r (d%:num / 2)%R.
+  have delta_gt0 : (0 < delta)%R by rewrite lt_min r0//= divr_gt0.
+  have [k [Vk Bkr Bkd]] := ABF _ Ax _ delta_gt0.
+  exists k => //; split => //.
+    split; first exact/mem_set.
+    apply: subset_trans xdO.
+    move=> /= z Bkz.
+    rewrite /ball/=.
+    rewrite -(addrKA (- cpoint (B k))).
+    rewrite (le_lt_trans (ler_normB _ _))//= -(addrC z).
+    rewrite (splitr d%:num) ltrD//.
+      rewrite distrC (lt_le_trans (is_ballP _ _))//.
+      by rewrite (le_trans (ltW Bkd))// ge_min lexx orbT.
+    rewrite distrC (lt_le_trans (is_ballP _ _))//.
+    by rewrite (le_trans (ltW Bkd))// ge_min lexx orbT.
+  by rewrite (lt_le_trans Bkd)// ge_min// lexx.
 have [G [cG GV' tB mAG0]] := vitali_theorem B0 ABF'.
-pose G' c := [set k | k \in F' /\ (radius (B k))%:num >= c]%R.
+pose G' c := [set k | k \in G /\ (radius (B k))%:num >= c]%R.
+have muBfin : mu (\bigcup_(k in G) closure(*rm closure*) (B k)) \is a fin_num.
+  rewrite ge0_fin_numE//.
+  rewrite (@le_lt_trans _ _ (mu O))//.
+  rewrite (@le_trans _ _ (mu (\bigcup_(k in G) B k)))//.
+    admit.
+  rewrite le_outer_measure//.
+  by apply: bigcup_sub => i /GV'[].
+  admit.
+pose G'_cplt c := [set k | k \in G /\ (radius (B k))%:num < c]%R.
 have [c Hc] : exists c : {posnum R},
-    (mu (\bigcup_(k in G' c%:num) B k) > mu (\bigcup_(k in G) B k) - e%:E)%E.
+    (mu (\bigcup_(k in G' c%:num) closure (B k)) >
+     mu (\bigcup_(k in G) closure (B k)) - e%:E)%E.
+  have : mu (\bigcup_(k in G' c) closure (B k)) @[c --> 0^'+] -->
+         mu (\bigcup_(k in G) closure (B k)).
+    admit.
+  rewrite -(fineK muBfin).
+  move=> /fine_cvgP[_].
+  move/cvgrPdist_lt => /=.
+  move/(_ e).
+  rewrite -(@lte_fin R) => /(_ e0)[c /= c0] H.
+  exists (PosNum c0).
   admit.
 have G'c : finite_set (G' c%:num).
-  admit.
+  admit. (* because balls in G' are pairwise disjoint,
+    have at least measure mu (B(0,c))>0, and
+    are contained in O of finite measure *)
+have {}Hc : (mu (\bigcup_(k in G) closure (B k) `\` \bigcup_(k in G' c%:num) closure (B k)) < e%:E)%E.
+  rewrite measureD//=.
+  - rewrite setIidr.
+      rewrite lteBlDr//; last first.
+        admit.
+      by rewrite -lteBlDl.
+    by apply: subset_bigcup2 => x [/set_mem].
+  - apply: bigcup_measurable => k Gk.
+    case: ABF => isB _.
+    rewrite (ballE (isB k)) closure_ball.
+    exact: measurable_closed_ball.
+  - apply: bigcup_measurable => k Gk.
+    case: ABF => isB _.
+    rewrite (ballE (isB k)) closure_ball.
+    exact: measurable_closed_ball.
+  - by rewrite -ge0_fin_numE.
 exists (fset_set (G' c%:num)); split.
 - move=> /= k.
-  by rewrite in_fset_set// inE /G'/= inE => -[[/set_mem]].
+  by rewrite in_fset_set// inE /G'/= => -[/set_mem] /GV'[/set_mem].
 - apply: sub_trivIset tB => k/=.
-  rewrite in_fset_set// inE /G'/= inE => -[[/set_mem Fk BkO cBk]].
-  admit.
-- pose UG : set R := \big[setU/set0]_(k <- fset_set G) closure (B k).
-  apply: (@le_lt_trans _ _ (mu (A `\`UG) +
-       mu (UG `\` \big[setU/set0]_(k <- fset_set (G' c%:num)) closure (B k)))).
-    rewrite [in leLHS](@setDU _ _ UG); last 2 first.
-      rewrite /UG.
-      admit.
-      rewrite /UG.
-      admit.
+  by rewrite in_fset_set// inE /G'/==> -[/set_mem].
+- pose UG : set R := \bigcup_(k in G) closure (B k).
+  apply: (@le_lt_trans _ _ ((wlength idfun)^*%mu (A `\`UG) +
+       mu (UG `\` \bigcup_(k in G' c%:num) closure (B k)))).
+    apply: (@le_trans _ _ (
+         (wlength idfun)^*%mu (A `&` (UG `\` \bigcup_(k in G' c%:num) closure (B k))) +
+         (wlength idfun)^*%mu (A `\` UG))).
+      apply: (le_trans _ (outer_measureU2 _ _ _)) => //=.
+      apply: le_outer_measure.
+      rewrite !(setDE A).
+      rewrite -setIUr.
+      apply: setIS.
+      rewrite setDE.
+      move=> x Hx.
+      have [UGx|UGx] := pselect (UG x).
+        left; split => //.
+        by rewrite bigsetU_fset_set in Hx.
+      by right.
+    by rewrite addeC leeD2l// le_outer_measure.
+  by rewrite -[(wlength idfun)^*%mu]/mu mAG0 add0e.
 Abort.
 
 End vitali_theorem2.
@@ -2433,7 +2518,7 @@ rewrite in_itv/=; apply/andP; split=> //.
 exact: itv_partition_nth_le.
 Unshelve. all:end_near. Qed.
 
-Lemma nondecresing_at_left_at_right : {in `]a, b[, forall r,
+Lemma nondecreasing_at_left_at_right : {in `]a, b[, forall r,
   lim (F x @[x --> r^'-]) <= lim (F x @[x --> r^'+])}.
 Proof.
 move=> r; rewrite in_itv/= => /andP[ar rb].
@@ -2504,7 +2589,7 @@ have eq6 (x : elt_type) : exists m, m.+1%:R ^-1 < Fr (sval x) - Fl (sval x).
   have : discontinuity F (sval x) by case: x => /= r; rewrite inE /A/= => -[].
   move=> [Fc Fd cd].
   have FlFr : Fl (sval x) <= Fr (sval x).
-    apply: nondecresing_at_left_at_right.
+    apply: nondecreasing_at_left_at_right.
     by case: x {Fc Fd cd} => x/= /[1!inE] -[].
   have {}FlFr : Fl (sval x) < Fr (sval x).
     by rewrite lt_neqAle FlFr andbT.
@@ -3216,28 +3301,30 @@ rewrite ger0_norm// invf_lt1//.
 exact: ltr1n.
 Qed.
 
-Lemma lebesgue_measure_Gdelta_approx Z : (lebesgue_measure Z < +oo)%E ->
+Let mu := (@lebesgue_measure R).
+
+Lemma lebesgue_measure_Gdelta_approx Z : (mu Z < +oo)%E ->
   exists U : nat -> set R, [/\ (forall k, Z `<=` U k), (forall k, open (U k)) &
-  lebesgue_measure Z = lebesgue_measure (\bigcap_k U k)].
+  mu Z = mu (\bigcap_k U k)].
 Proof.
 move=> Zoo.
 pose delta0 k := 2^-1 ^+ k :> R.
 have delta_ge0 k : 0 < delta0 k.
   apply: exprn_gt0.
   by rewrite invr_gt0.
-have mUfin : ereal_inf [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]]
-         \is a fin_num.
+have mUfin : ereal_inf [set mu U | U in [set U | open U /\ Z `<=` U]] \is a fin_num.
   by rewrite -lebesgue_regularity_outer_inf ge0_fin_numE.
-have := fun k => (@exists2P _ _ _).1 (@lb_ereal_inf_adherent _ [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]] (delta0 k) (delta_ge0 k) mUfin).
-move/(@choice _ _ (fun k x => [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]] x /\
-     (x <
-      ereal_inf [set lebesgue_measure U | U in [set U | open U /\ Z `<=` U]] +
+have := fun k => (@exists2P _ _ _).1
+    (@lb_ereal_inf_adherent _ [set mu U | U in [set U | open U /\ Z `<=` U]]
+      (delta0 k) (delta_ge0 k) mUfin).
+move/(@choice _ _ (fun k x => [set mu U | U in [set U | open U /\ Z `<=` U]] x /\
+     (x < ereal_inf [set mu U | U in [set U | open U /\ Z `<=` U]] +
       (delta0 k)%:E)%E)).
 move=> [e_] /all_and2[/= + einf].
 under [X in X -> _]eq_forall do rewrite exists2E.
 move=> /choice[U_].
 move=> /all_and2[/all_and2[oU ZU] mUe].
-pose V_ := (fun n => \bigcap_(i < n.+1) U_ i).
+pose V_ := fun n => \bigcap_(i < n.+1) U_ i.
 exists V_; split.
     move=> n.
     exact: sub_bigcap => i _.
@@ -3249,7 +3336,7 @@ rewrite [X in _ = _ X](_:_= \bigcap_i U_ i); last first.
     by apply: (Hx n.+1) => /=.
   move=> x Hx n _ k /= kn.
   exact: Hx.
-have V0oo : (lebesgue_measure (V_ 0%N) < +oo)%E.
+have V0oo : (mu (V_ 0%N) < +oo)%E.
   rewrite /V_ bigcap1.
   rewrite (mUe 0%N).
   apply: (lt_trans (einf 0%N)).
@@ -3286,25 +3373,25 @@ have VE : \bigcap_i V_ i = \bigcap_i U_ i.
   exact: (HU k).
 rewrite -VE.
 apply: esym.
-have := (@nonincreasing_cvg_mu _ _ _ lebesgue_measure V_ V0oo mV mIV niV).
-move/cvg_lim => <- //.
+have /cvg_lim VIV:= @nonincreasing_cvg_mu _ _ _ mu V_ V0oo mV mIV niV.
+rewrite -[LHS]VIV//.
 apply: cvg_lim => //.
-apply: (@squeeze_cvge _ _ _ _ (cst (lebesgue_measure Z)) _ (fun n => (lebesgue_measure Z + (delta0 n)%:E)%E)).
-    apply: nearW => n/=; apply/andP; split.
-      apply: le_outer_measure.
-      move=> x Zx k/= _.
-      exact: ZU.
-    apply: (@le_trans _ _ (lebesgue_measure (U_ n))).
-      apply: le_outer_measure.
-      by apply: bigcap_inf => /=.
-    by rewrite mUe lebesgue_regularity_outer_inf ltW.
-  exact: cvg_cst.
-rewrite -{2}(adde0 (_ Z)).
-apply: cvgeD.
-    exact: fin_num_adde_defl.
-  exact: cvg_cst.
-apply: cvg_EFin; first exact: nearW.
-apply: cvg_half.
+apply: (@squeeze_cvge _ _ _ _ (cst (mu Z)) _ (fun n => (mu Z + (delta0 n)%:E)%E)).
+- apply: nearW => n/=; apply/andP; split.
+    apply: le_outer_measure.
+    move=> x Zx k/= _.
+    exact: ZU.
+  apply: (@le_trans _ _ (mu (U_ n))).
+    apply: le_outer_measure.
+    by apply: bigcap_inf => /=.
+  by rewrite mUe /mu lebesgue_regularity_outer_inf ltW.
+- exact: cvg_cst.
+- rewrite -{2}(adde0 (_ Z)).
+  apply: cvgeD.
+  + exact: fin_num_adde_defl.
+  + exact: cvg_cst.
+  + apply: cvg_EFin; first exact: nearW.
+    exact: cvg_half.
 Qed.
 
   (* Lemma open_subset_itvoocc S : open S -> S `<=` `[a, b] -> S `<=` `]a, b[. *)
