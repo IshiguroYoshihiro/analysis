@@ -1684,6 +1684,114 @@ apply/eqP; rewrite eq_le; apply/andP; split.
   by exists U.
 Qed.
 
+Lemma outer_regularity_outer0_near (E A : set R) :
+ open A ->
+ E `<=` A ->
+ (mu E < mu A)%E ->
+ \forall e \near 0^'+,
+  exists U : set R, [/\ open U, E `<=` U, U `<=` A & (mu E <= mu U <= mu E + e%:E)%E].
+Proof.
+move=> oA EA mEA.
+near=> e.
+have [->|] := eqVneq (mu E) +oo%E.
+  exists A; split => //.
+  rewrite leey andbT.
+Abort.
+(*
+-set_itv_infty_infty lebesgue_measure_itv.
+rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
+  admit.
+rewrite -ltey -ge0_fin_numE; last exact: outer_measure_ge0.
+move=> /[dup] mEfin => /lb_ereal_inf_adherent.
+set infE := ereal_inf _.
+have e20 : 0 < e / 2 by rewrite divr_gt0.
+move=> /(_ _ e20)[x [/= Q EQ <- muEoo]].
+have [/= T [QT TA TQ]] : exists T : nat -> set R,
+    [/\ (forall k, Q k `<=` interior (T k)),
+       (forall k, T k `<=` A) &
+    (forall k, mu (T k) <= mu (Q k) + (e / (2 ^+ k.+2))%:E)%E].
+  have mQfin k : mu (Q k) \is a fin_num.
+    rewrite ge0_fin_numE//.
+    apply: (@le_lt_trans _ _ (\sum_(0 <= k <oo) wlength idfun (Q k)))%E.
+      rewrite /mu/= /lebesgue_stieltjes_measure/= /measure_extension/=.
+      rewrite measurable_mu_extE /=; last by move: EQ => [+ _]; exact.
+      by rewrite (nneseriesD1 k) // leeDl// nneseries_ge0.
+    by rewrite (lt_le_trans muEoo)// leey.
+  have /choice[T /= TH] : forall k, exists T : set R,
+      [/\ open T, (Q k) `<=` T, T `<=` A & (mu (T `\` Q k) < (e / 2 ^+ k.+2)%:E)%E].
+    move=> k.
+    have /ocitvP[->|] : ocitv (Q k) by move: EQ => /cover_measurable/(_ k).
+      by exists set0; split=> //; rewrite setD0 measure0 exprS lte_fin divr_gt0.
+    move=> [[Qkl Qkr] lr] ->.
+    exists `]Qkl, Qkr + (e / 2 ^+ k.+3) [%classic; split => //=.
+    - exact: interval_open.
+    - move=> y/=; rewrite !in_itv/= => /andP[-> yQkr].
+      by rewrite (le_lt_trans yQkr)// ltrDl// divr_gt0.
+    - rewrite (_ : _ `\` _ = `]Qkr, Qkr + e / 2 ^+ k.+3[%classic); last first.
+        apply/seteqP; split => [y|y]/=.
+          rewrite !in_itv/= => -[/andP[-> yQKr /negP]].
+            by rewrite -ltNge => -> /=.
+          rewrite !in_itv/= => /andP[H1 ->].
+          rewrite andbT (lt_trans lr)//=; split => //.
+          by apply/negP; rewrite -ltNge.
+      rewrite lebesgue_measure_itv/= lte_fin ltrDl// divr_gt0//.
+      rewrite -EFinD addrAC subrr add0r lte_fin.
+      by rewrite ltr_pM2l// -!exprVn exprSr ltr_pdivrMr// ltr_pMr// ltr1n.
+  exists T => k.
+    have [oTk QkTk _] := TH k.
+    by apply: (subset_trans QkTk); rewrite -open_subsetE.
+  rewrite -lee_subel_addl//.
+  have [_ QkTk /ltW] := TH k.
+  apply: le_trans.
+  rewrite lee_subel_addl; last first.
+    rewrite ge0_fin_numE//.
+    have [_ _] := TH k => /lt_le_trans; apply.
+    by rewrite leey.
+  by rewrite -[in leLHS](setDKU QkTk) (le_trans (outer_measureU2 _ _ _))//= addeC.
+pose U := \bigcup_k interior (T k).
+have EU : E `<=` U.
+  case: EQ => _ /subset_trans; apply.
+  by apply: subset_bigcup => k _; exact: QT.
+exists U; split => //.
+- by apply: bigcup_open => i _; exact: open_interior. (* NB: should be interior_open *)
+- apply/andP; split; first exact: le_outer_measure.
+  rewrite (splitr e) EFinD addeA.
+  apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (Q k) + (e / 2)%:E)%E); last first.
+    rewrite leeD2r// ltW//.
+    rewrite (le_lt_trans _ muEoo)// le_eqVlt; apply/orP; left; apply/eqP.
+    apply: eq_eseriesr => k _.
+    rewrite /mu/= /lebesgue_stieltjes_measure/= /measure_extension/=.
+    by rewrite measurable_mu_extE//; case: EQ.
+  apply: (@le_trans _ _ (\big[+%R/0%R]_(0 <= k <oo) mu (T k))).
+    apply: (@le_trans _ _ (mu (\bigcup_k (T k)))).
+      apply: le_outer_measure; apply: subset_bigcup => k _.
+      exact: interior_subset.
+    exact: outer_measure_sigma_subadditive.
+  apply: le_trans; last first.
+    by apply: epsilon_trick => //; rewrite ltW.
+  apply: lee_nneseries => // k _//.
+  rewrite -mulrA (_ : _ / _ = 1 / (2 ^+ k.+2))%R; last first.
+    by rewrite -invfM// natrX -exprS mul1r.
+  by rewrite mul1r; exact: TQ.
+Qed.
+
+Lemma lebesgue_regularity_outer_inf_restr (A E : set R) :
+  E `<=` A -> (mu E < mu A)%E ->
+  mu E = ereal_inf [set mu U | U in [set U | [/\ open U, E `<=` U & U `<=` A]]].
+Proof.
+move=> EA.
+apply/eqP; rewrite eq_le; apply/andP; split.
+- apply: lb_ereal_inf => /= r /= [B [oB EB BA] <-{r}].
+  apply: le_ereal_inf => _ /= [] S_ BS_ <-; exists S_ => //.
+  move: BS_ => [mS_ BS_].
+  by split; [exact: mS_|exact: (subset_trans EB)].
+- apply/lee_addgt0Pr => /= e e0.
+  have [U [oU EU /andP[UE UEe]]] := outer_regularity_outer0 E e0.
+  apply: ereal_inf_le => /=.
+  exists (mu U) => //.
+  exists U => //;split => //.
+Qed.
+*)
 End lebesgue_regularity_outer_inf.
 
 Section lebesgue_measurable.
@@ -3372,7 +3480,6 @@ have VE : \bigcap_i V_ i = \bigcap_i U_ i.
   exact: (HU k).
 rewrite -VE.
 apply: esym.
-
 have /cvg_lim VIV:= @nonincreasing_cvg_mu _ _ _ lebesgue_measure V_ V0oo mV mIV niV.
 rewrite -[LHS]VIV//.
 apply: cvg_lim => //.
@@ -3507,6 +3614,7 @@ have e0 : 0 < e.
       exists ('pinv_(fun=> 0) [set` `]f a, f b[] F y).
         split.
           move=> n _.
+          
           admit.
         admit.
       admit.
