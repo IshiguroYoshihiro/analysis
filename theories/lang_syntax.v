@@ -17,8 +17,8 @@ From mathcomp Require Import lra.
 (*   APLAS 2023                                                               *)
 (*                                                                            *)
 (* beta distribution specialized to nat                                       *)
-(*            beta_pdf == probability density function                        *)
-(*                Beta == probability measure                                 *)
+(*            beta_pdf == probability density function for beta               *)
+(*                Beta == beta probability measure                            *)
 (*                                                                            *)
 (*                 typ == syntax for types of data structures                 *)
 (* measurable_of_typ t == the measurable type corresponding to type t         *)
@@ -248,11 +248,11 @@ Proof.
 by move=> x y ? ?; rewrite -[in RHS](@invrK _ y) lef_pV2// posrE invr_gt0.
 Qed.
 
-Section change_of_variables.
+Section change_of_variables1.
 Context {R : realType}.
 Let mu := (@lebesgue_measure R).
 
-Lemma integral0B_helper (G : R -> R) (r : R) :
+Lemma integral0B1_helper (G : R -> R) (r : R) :
   (0 < r)%R ->
   locally_integrable [set: R] G ->
   {in `[0%R, r], continuous G} ->
@@ -271,7 +271,7 @@ move=> r0 locG cG iG; split.
 - exact: parameterized_integral_cvg_at_left.
 Qed.
 
-Lemma integral0B_helper2 (G : R -> R) (r : R) :
+Lemma integral0B1_helper2 (G : R -> R) (r : R) :
   (0 < r <= 1)%R ->
   locally_integrable [set: R] G ->
   {in `[0%R, r], continuous G} ->
@@ -298,6 +298,7 @@ move=> /andP[r0 r1] locG cG iG intG F; split.
       rewrite /F opprB addrCA subrr addr0.
       exact: suf.
     suff : F x @[x --> (1 - r)^'+] --> r^'- by [].
+        (* F x @[x --> (1 - r)^'+] --> (F (1 - r)%R)^'- *)
     rewrite /F.
     move=> A.
     rewrite /nbhs/= /at_left /at_right/= /preimage/= /within/=.
@@ -321,7 +322,7 @@ move=> /andP[r0 r1] locG cG iG intG F; split.
   exact: (@parameterized_integral_cvg_left R 0%R r G r0).
 Qed.
 
-Lemma integral0B (G : R -> R) (r : R) :
+Lemma integral0B1 (G : R -> R) (r : R) :
   (0 < r <= 1)%R ->
   locally_integrable [set: R] G ->
   {in `[0%R, r], continuous G} ->
@@ -335,7 +336,7 @@ pose F (x : R) := (1 - x)%R.
 rewrite (@within_continuous_FTC2 _ _ intG); last 4 first.
   - exact: r0.
   - exact/continuous_subspace_itv.
-  - exact: integral0B_helper.
+  - exact: integral0B1_helper.
   - move=> x x0r.
     apply: (@continuous_FTC1 R G (BLeft 0%R) _ _ _ _ _).2 => //=.
       by move: x0r; rewrite in_itv/= => /andP[]; rewrite lte_fin.
@@ -349,7 +350,7 @@ rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )//=; last 4 first.
     apply: cG.
     rewrite !in_itv/= subr_ge0 x1/=.
     by move: rx; rewrite !lerBlDr addrC.
-  - by apply: integral0B_helper2 => //; rewrite r0.
+  - by apply: integral0B1_helper2 => //; rewrite r0.
   - move=> x; rewrite in_itv/= => /andP[rx1 x1].
     rewrite derive1_comp//; last first.
       apply/derivableN.
@@ -383,7 +384,7 @@ rewrite opprB addrCA subrr addr0.
 by rewrite addrC.
 Qed.
 
-Lemma Rintegral0B (G : R -> R) (r : R) :
+Lemma Rintegral0B1 (G : R -> R) (r : R) :
   (0 < r <= 1)%R ->
   locally_integrable [set: R] G ->
   {in `[0%R, r], continuous G} ->
@@ -393,10 +394,286 @@ Lemma Rintegral0B (G : R -> R) (r : R) :
 Proof.
 move=> r01 locG cG iG.
 rewrite [in LHS]/Rintegral.
-by rewrite integral0B.
+by rewrite integral0B1.
 Qed.
 
+End change_of_variables1.
+
+Module change_of_variables.
+Section change_of_variables.
+Context {R : realType}.
+Let mu := (@lebesgue_measure R).
+
+Lemma integral0B_helper (G : R -> R) (F : R -> R) (a b : R) (J : interval R) : (a < b)%R -> open [set` J] ->
+  `[F b, F a] `<=` [set` J] ->
+  locally_integrable [set: R] G ->
+  {in J, continuous G} ->
+  (forall y, (mu.-integrable `[F b, y] (EFin \o G))) ->
+  {in `[a, b] &, {homo F : x y /~ (x < y)%R}} ->
+  derivable_oo_continuous_bnd (parameterized_integral mu (F b) ^~ G) (F b) (F a).
+Proof.
+move=> ab oJ FbFaJ.
+move=> locG cG iG dF; split.
+- move=> x /[!in_itv]/= /andP[x0 xr].
+  apply: (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).1 => //=.
+  apply: cG.
+  apply: FbFaJ => /=.
+  rewrite in_itv/=.
+  by rewrite (ltW x0)/= ltW.
+- apply: cvg_at_right_filter.
+  rewrite {2}/parameterized_integral.
+  rewrite set_interval.set_itv1 Rintegral_set1.
+  apply: (parameterized_integral_cvg_left (b := F a)) => //.
+  by apply: dF => //; rewrite in_itv/= lexx (ltW ab).
+- apply: parameterized_integral_cvg_at_left => //.
+  by apply: dF => //; rewrite in_itv/= lexx (ltW ab).
+Qed.
+
+Lemma decreasing_nonincreasing (F : R -> R) (J : interval R) :
+  {in J &, {homo F : x y /~ (x < y)%R}} ->
+  {in J &, {homo F : x y /~ (x <= y)%R}}.
+Proof.
+move=> dF.
+move=> x y x01 y01.
+by rewrite le_eqVlt => /predU1P[->//|/dF] => /(_ x01 y01)/ltW.
+Qed.
+
+Lemma integral0B_helper2 (G : R -> R) (F : R -> R) (a b : R) (J : interval R) : (a < b)%R -> open [set` J] ->
+  `[F b, F a] `<=` [set` J] ->
+  locally_integrable [set: R] G ->
+  {in J, continuous G} ->
+  (forall r, mu.-integrable `[F b, r] (EFin \o G)) ->
+(* F hypo *)
+  {in `[a, b] &, {homo F : x y /~ (x < y)%R}} ->
+  {in `[a, b], forall x, derivable F x 1} ->
+  {in `[a, b], continuous F} ->
+(* /F hypo *)
+  let intG := parameterized_integral mu (F b) ^~ G in
+  derivable_oo_continuous_bnd ((-%R \o intG) \o F) a b.
+Proof.
+move=> ab oJ FbFaJ locG cG iG dF derivableF cF intG.
+have niF : {in `[a, b] &, {homo F : x y /~ (x <= y)%R}}.
+  exact: decreasing_nonincreasing.
+have cF' : {within `[a, b], continuous F}.
+  by apply: derivable_within_continuous.
+split.
++ move=> /= x; rewrite in_itv/= => /andP[rx x1].
+  apply/derivable1_diffP.
+  apply: differentiable_comp => //.
+    apply/derivable1_diffP.
+    apply: derivableF.
+    by rewrite !in_itv/= (ltW rx) (ltW x1).
+  apply: differentiableN => //.
+  apply/derivable1_diffP.
+  apply: (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).1 => //=.
+    rewrite lte_fin.
+    by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW x1) ?(ltW ab) ?(ltW rx).
+  apply: cG.
+  apply: FbFaJ => /=.
+  rewrite in_itv/=.
+  apply/andP; split.
+    apply/ltW.
+    by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW x1) ?(ltW ab) ?(ltW rx).
+  apply/ltW.
+  by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW x1) ?(ltW ab) ?(ltW rx).
++ apply: cvgN.
+  move/continuous_within_itvP : cF' => /(_ ab)[cF' [F1 F0]].
+  have tmp : (F b < F a)%R.
+    by apply: dF => //; rewrite in_itv/= ?lexx (ltW ab).
+  have ciG : {within `[F b, F a], continuous (parameterized_integral lebesgue_measure (F b))^~ G}.
+    apply: parameterized_integral_continuous.
+      by apply: dF; rewrite ?in_itv/= ?lexx// ?(ltW ab)//.
+    exact: iG.
+  move/continuous_within_itvP : ciG => /(_ tmp)[].
+  rewrite -/intG -/(intG (F a)) -/(intG (F b)) => H1 [H2 H3].
+  apply/cvgrPdist_le => /= e e0.
+  move/cvgrPdist_le : H3 => /(_ e e0) H3.
+  case: H3 => f /= f0 H3.
+
+  have := cF a.
+  rewrite /continuous_at.
+  rewrite in_itv/= lexx (ltW ab) => /(_ isT).
+  move=> /cvgrPdist_lt => /(_ _ f0) cFa.
+
+  red in cFa.
+  red in cFa.
+  simpl in cFa.
+  red in cFa.
+  simpl in cFa.
+  red in cFa.
+  simpl in cFa.
+  case: cFa => x /= x0 cFa.
+
+  near=> t.
+  have atb : (a <= t <= b)%R.
+    apply/andP; split.
+      by rewrite //.
+    near: t.
+    by apply: nbhs_right_le.
+  apply: H3; last first.
+    by apply: dF => //; rewrite in_itv/= ?lexx ?(ltW ab)//.
+  rewrite /ball_/=.
+  apply: cFa.
+  rewrite /ball_ /=.
+  rewrite ltr0_norm// ?subr_lt0// opprB.
+  near: t.
+  by apply: nbhs_right_ltDr.
++ apply: cvgN.
+  (* intG (F x) @[x --> 1^'-] --> intG (F 1%R) *)
+  apply: (cvg_comp (G := nbhs (F b))).
+    move/continuous_within_itvP : cF' => /(_ ab)[cF' [F1 F0]].
+    exact: F0.
+  rewrite /intG.
+  rewrite [in X in _ `=>` X]/parameterized_integral.
+  rewrite set_interval.set_itv1 Rintegral_set1.
+  apply: (@parameterized_integral_cvg_left R _ (F a)) => //.
+  by apply: dF; rewrite ?in_itv/= ?lexx// ?(ltW ab)//.
+Unshelve. all: by end_near. Qed.
+
+Lemma integral0B (G : R -> R) (F : R -> R) (a b : R) (J : interval R) : (a < b)%R -> open [set` J] ->
+  `[F b, F a] `<=` [set` J] ->
+  locally_integrable [set: R] G ->
+  {in [set` J], continuous G} ->
+  (forall y, (lebesgue_measure.-integrable `[F b, y] (EFin \o G))) ->
+  (* F hypos *)
+  {in `[a, b] &, {homo F : x y /~ (x < y)%R}} ->
+  {in `[a, b], forall x, derivable F x 1} ->
+  {in `[a, b], continuous F} ->
+  {in `[a, b], continuous F^`()} ->
+  (* /F hypos *)
+  \int[mu]_(x in `[F b, F a]) (G x)%:E =
+  \int[mu]_(x in `[a, b]) (- G (F x) * F^`() x)%:E.
+Proof.
+move=> ab oJ FbFaJ locG cG iG dF derivableF cF cdF.
+pose intG x := parameterized_integral mu (F b) x G.
+have niF : {in `[a, b] &, {homo F : x y /~ (x <= y)%R}}.
+  by apply: decreasing_nonincreasing.
+have cF' : {within (`[a, b]%classic : set R), continuous F}.
+ apply: derivable_within_continuous.
+ exact: derivableF.
+rewrite (@within_continuous_FTC2 _ _ intG); last 4 first.
+  - apply: dF.
+      by rewrite in_itv/= lexx (ltW ab).
+      by rewrite in_itv/= lexx (ltW ab).
+      exact: ab.
+  - apply/continuous_subspace_itv.
+    apply: (set_interval.in1_subset_itv FbFaJ).
+    by move=> x xJ; apply: cG; rewrite inE/=.
+  - apply: integral0B_helper => //.
+        exact: oJ.
+      assumption.
+    by move=> x xJ; apply: cG; rewrite inE.
+  - move=> x x0r.
+    apply: (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).2 => //=.
+      by move: x0r; rewrite in_itv/= lte_fin => /andP[].
+    apply: cG => //.
+    rewrite inE.
+    apply: FbFaJ.
+    move: x0r.
+    exact: subset_itv_oo_cc.
+rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )/=; last 4 first.
+  - assumption.
+  - apply/continuous_subspace_itv => x; rewrite in_itv/= => /andP[rx x1].
+    under eq_fun do rewrite mulNr.
+    apply: cvgN.
+    apply: continuousM => //=; last first.
+      by apply: cdF; rewrite !in_itv/= rx x1.
+    apply: continuous_comp => /=.
+      apply: cF.
+      by rewrite in_itv/= rx x1.
+    apply: cG.
+    rewrite inE.
+    apply: FbFaJ => /=.
+    rewrite !in_itv/=.
+    apply/andP; split.
+      by apply: niF => //=; rewrite in_itv/= ?lexx ?rx ?x1 ?(ltW ab)//.
+    by apply: niF => //=; rewrite in_itv/= ?lexx ?rx ?x1 ?(ltW ab)//.
+  - apply: integral0B_helper2 => //.
+    exact: oJ.
+    exact: FbFaJ.
+    move=> x xJ.
+    by apply: cG; rewrite inE.
+  - move=> x; rewrite in_itv/= => /andP[rx1 x1].
+    rewrite derive1_comp//; last 2 first.
+      apply: derivableF => //.
+      by rewrite in_itv/= (ltW rx1) (ltW x1).
+      apply/derivableN.
+      have := (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).1.
+      apply => //=.
+        rewrite lte_fin.
+        by apply: dF => //=; rewrite !in_itv/= ?ler01 ?lexx// ?(ltW ab)// (ltW rx1) (ltW x1).
+      apply: cG.
+      rewrite inE.
+      apply: FbFaJ => /=.
+      rewrite in_itv/=.
+      apply/andP; split.
+        apply/ltW.
+        by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1)//.
+      apply/ltW.
+      by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1)//.
+    rewrite derive1E deriveN//; last first.
+      apply : (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).1 => //=.
+        rewrite lte_fin.
+        by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1)//.
+      apply: cG.
+      rewrite inE.
+      apply: FbFaJ => /=.
+      rewrite in_itv/=.
+      apply/andP; split.
+        apply/ltW.
+        by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1).
+      apply/ltW.
+      by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1).
+    rewrite mulNr.
+    rewrite (_ : 'D_1 intG (F x) = G (F x)); last first.
+      rewrite -derive1E.
+      have := (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).2.
+      apply => //=.
+        rewrite lte_fin.
+        by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1)//.
+      apply: cG.
+      rewrite inE.
+      apply: FbFaJ => /=.
+      rewrite in_itv.
+      apply/andP; split.
+        apply/ltW.
+        by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1).
+      apply/ltW.
+      by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1).
+    by rewrite mulNr.
+by rewrite opprK addrC.
+Qed.
 End change_of_variables.
+End change_of_variables.
+
+Section change_of_variables1_newproof.
+Context {R : realType}.
+Let mu := (@lebesgue_measure R).
+
+Lemma integral0B1_newproof (G : R -> R) (r : R) :
+  (0 < r <= 1)%R ->
+  locally_integrable [set: R] G ->
+  {in `[0%R, r], continuous G} ->
+  (forall r, lebesgue_measure.-integrable `[0%R, r] (EFin \o G)) ->
+  (\int[mu]_(x in `[0%R, r]) (G x)%:E =
+  \int[mu]_(x in `[(1 - r)%R, 1%R]) (G (1 - x))%:E).
+Proof.
+move=> r01 locG cG iG.
+have := @change_of_variables.integral0B R G (fun x => 1 - x)%R (1 - r)%R 1%R `](-1), 2[%R.
+rewrite subrr opprB addrCA subrr addr0.
+move=> ->//.
+- apply: eq_integral => x xr.
+  by rewrite derive1E deriveB// -derive1E derive1_cst sub0r mulrN derive_idfun mulr1 opprK.
+- rewrite ltrBlDl ltrDr.
+  by case/andP : r01.
+- exact: interval_open.
+- admit.
+- admit.
+- move=> a b.
+  admit.
+Abort.
+
+End change_of_variables1_newproof.
 
 Local Close Scope ereal_scope.
 
@@ -476,7 +753,7 @@ rewrite (@continuous_FTC2 _ _ (fun x : R => ((1 - x) ^+ n.+1 / - n.+1%:R))%R)//=
   by rewrite derive_onemXn mulrA mulVf// mul1r.
 Qed.
 
-Lemma integral_onemXn_rmme {R : realType} (n : nat) :
+(*Lemma integral_onemXn_rmme {R : realType} (n : nat) :
   fine (\int[lebesgue_measure]_(x in `[0%R, 1%R]) (`1-x ^+ n)%:E) = n.+1%:R^-1 :> R.
 Proof.
 rewrite (@continuous_FTC2 _ _ (fun x : R => ((1 - x) ^+ n.+1 / - n.+1%:R))%R)//=.
@@ -487,7 +764,7 @@ rewrite (@continuous_FTC2 _ _ (fun x : R => ((1 - x) ^+ n.+1 / - n.+1%:R))%R)//=
 - move=> x x01.
   rewrite derive1Mr//; last  exact: onemXn_derivable.
   by rewrite derive_onemXn mulrA mulVf// mul1r.
-Qed.
+Qed.*)
 
 (* we define a function to help formalizing the beta distribution *)
 Section XnMonemXn.
@@ -642,12 +919,12 @@ Notation mu := (@lebesgue_measure R).
 
 Definition int_ubeta_pdf (a b : nat) : R := (\int[mu]_x (ubeta_pdf a b x))%R.
 
-Lemma int_ubeta_pdfTE_rmme (a b : nat) :
+(*Lemma int_ubeta_pdfTE_rmme (a b : nat) :
   int_ubeta_pdf a b =
   fine (\int[mu]_(t in `[0%R, 1%R]) (XnMonemXn a.-1 b.-1 t)%:E) :> R.
 Proof.
 by rewrite -[LHS]Rintegral_mkcond.
-Qed.
+Qed.*)
 
 Lemma int_ubeta_pdf0 (b : nat) : (0 < b)%N ->
   int_ubeta_pdf 0 b = b%:R ^-1:> R.
@@ -670,7 +947,7 @@ Qed.
 Lemma int_ubeta_pdf_sym (a b : nat) : int_ubeta_pdf a b = int_ubeta_pdf b a :> R.
 Proof.
 rewrite -[LHS]Rintegral_mkcond.
-rewrite Rintegral0B//=; last 4 first.
+rewrite Rintegral0B1//=; last 4 first.
   by rewrite ltr01 lexx.
   split.
   - exact: measurable_fun_XnMonemXn.
