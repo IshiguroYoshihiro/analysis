@@ -77,30 +77,6 @@ Proof. Admitted.
 
 End left_continuousW.
 
-Section factD.
-
-Let factD' n m : (n`! * m`! <= (n + m).+1`!)%N.
-Proof.
-Admitted.
-
-Lemma factD n m : (n`! * m.-1`! <= (n + m)`!)%N.
-Proof.
-Admitted.
-
-End factD.
-
-Lemma leq_prod2 (x y n m : nat) : (n <= x)%N -> (m <= y)%N ->
-  (\prod_(m <= i < y) i * \prod_(n <= i < x) i <= \prod_(n + m <= i < x + y) i)%N.
-Proof.
-Admitted.
-
-Lemma leq_fact2 (x y n m : nat) : (n <= x) %N -> (m <= y)%N ->
-  (x`! * y`! * ((n + m).+1)`! <= n`! * m`! * ((x + y).+1)`!)%N.
-Proof.
-Admitted.
-
-Local Notation mu := lebesgue_measure.
-
 Lemma exprn_derivable {R : realType} (n : nat) (x : R):
   derivable ((@GRing.exp R) ^~ n) x 1.
 Proof.
