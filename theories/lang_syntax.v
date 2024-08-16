@@ -539,7 +539,7 @@ Lemma integral0B (G : R -> R) (F : R -> R) (a b : R) (J : interval R) : (a < b)%
   (forall y, (lebesgue_measure.-integrable `[F b, y] (EFin \o G))) ->
   (* F hypos *)
   {in `[a, b] &, {homo F : x y /~ (x < y)%R}} ->
-  {in `[a, b], forall x, derivable F x 1} ->
+  {in `[a, b], forall x, derivable F x 1} (* TODO: should be open? *)->
   {in `[a, b], continuous F} ->
   {in `[a, b], continuous F^`()} ->
   (* /F hypos *)
