@@ -401,6 +401,34 @@ Qed.
 End change_of_variables1.
 End integral0B1.
 
+Local Close Scope ereal_scope.
+Lemma cvg_comp_filter {R : realType} (f g : R -> R) (r l : R) :
+  continuous f ->
+  (f \o g) x @[x --> r] --> l ->
+  f x @[x --> g r] --> l.
+Proof.
+move=> cf fgrl.
+apply/cvgrPdist_le => /= e e0.
+have e20 : 0 < e / 2 by rewrite divr_gt0.
+move/cvgrPdist_le : fgrl => /(_ _ e20) fgrl.
+have := cf (g r).
+move=> /cvgrPdist_le => /(_ _ e20)[x x0]H.
+exists (minr x (e/2)).
+  by rewrite lt_min x0.
+move=> z.
+rewrite /ball_ /= => grze.
+rewrite -[X in X - _](subrK (f (g r))).
+rewrite -(addrA _ _ (- f z)).
+apply: (le_trans (ler_normD _ _)).
+rewrite (splitr e) lerD//.
+  case: fgrl => d /= d0 K.
+  apply: K.
+  by rewrite /ball_/= subrr normr0.
+apply: H => /=.
+by rewrite (lt_le_trans grze)// ge_min lexx.
+Qed.
+Local Open Scope ereal_scope.
+
 Module change_of_variables.
 Section change_of_variables.
 Context {R : realType}.
@@ -645,15 +673,111 @@ rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )/=; last 4 first.
     by rewrite mulNr.
 by rewrite opprK addrC.
 Qed.
+
+Lemma mem_intervalN (a b : R) (x : R) :
+  (x \in `[a, b]%classic) = ((- x)%R \in `[(- b)%R, (- a)%R]%classic).
+Proof.
+by apply/idP/idP; rewrite !inE/= !in_itv/= !lerN2 andbC.
+Qed.
+
+Lemma mem_intervalN' (a b : R) (x : R) :
+  (x \in `[a, b]) = ((- x)%R \in `[(- b)%R, (- a)%R]).
+Proof.
+by apply/idP/idP; rewrite !in_itv/= !lerN2 andbC.
+Qed.
+
+Lemma locally_integrable (F : R -> R) :
+  locally_integrable setT F ->
+  locally_integrable setT (F \o -%R).
+Proof.
+move=> [mF _ locF]; split => //.
+exact: measurableT_comp.
+exact: openT.
+move=> K KA cK.
+rewrite /=.
+Abort.
+
+Lemma integralNN (F : R -> R) (a b : R) : (a < b)%R ->
+  locally_integrable [set: R] F ->
+  \int[mu]_(x in `[(- b)%R, (- a)%R]) ((F \o -%R) x)%:E = \int[mu]_(x in `[a, b]) (F x)%:E.
+Proof.
+move=> ab locF.
+rewrite (@integral0B _ _ _ _ `]-oo, +oo[%R)//=.
+apply: eq_integral => x xab.
+by rewrite derive1E deriveN// mulrN mulNr !opprK derive_idfun mulr1.
+by rewrite set_interval.set_itvE; exact: openT.
+admit.
+move=> x _.
+apply: continuous_comp => //.
+exact: continuousN.
+admit.
+move=> y.
+admit.
+move=> x y xab yab yx.
+by rewrite ltrN2.
+move=> x xab.
+exact: continuousN.
+move=> x xab.
+rewrite [X in continuous_at x X](_ : _ = cst (-1)%R :> (R -> R)); last first.
+  apply/funext => y/=.
+  by rewrite derive1E deriveN// derive_idfun.
+exact: cvg_cst.
+Abort.
+
+Lemma integral0B_increasing (G : R -> R) (F : R -> R) (a b : R) (J : interval R) :
+  (a < b)%R -> open [set` J] ->
+  `[F a, F b] `<=` [set` J] ->
+  locally_integrable [set: R] G ->
+  {in [set` J], continuous G} ->
+  (forall y, (lebesgue_measure.-integrable `[F a, y] (EFin \o G))) ->
+  (* F hypos *)
+  {in `[a, b] &, {homo F : x y / (x < y)%R}} ->
+  {in `[a, b], forall x, derivable F x 1} (* TODO: should be open? *)->
+  {in `[a, b], continuous F} ->
+  {in `[a, b], continuous F^`()} ->
+  (* /F hypos *)
+  \int[mu]_(x in `[F a, F b]) (G x)%:E =
+  \int[mu]_(x in `[a, b]) (G (F x) * F^`() x)%:E.
+Proof.
+move=> ab oJ FaFbJ locG cG intG incF derF cF cdF.
+transitivity (\int[mu]_(x in `[a, b]) (- (G \o -%R) (- F x) * (- F)^`() x)%:E); last first.
+  apply: eq_integral => x xab.
+  rewrite derive1E deriveN//; last first.
+    by apply: derF; rewrite inE in xab.
+  by rewrite mulrN mulNr opprK derive1E/= opprK.
+rewrite -(@integral0B _ _ _ _ J).
+(*rewrite integralNN//.
+by apply: incF => //; rewrite !in_itv/= (ltW ab) lexx.*) admit.
+exact: ab.
+assumption.
+move=> x/=.
+rewrite mem_intervalN' !opprK.
+move=> /FaFbJ/=.
+admit.
+admit.
+admit.
+admit.
+move=> x y xab yab yx.
+by rewrite ltrN2 incF//.
+move=> x xab.
+by apply/derivableN/derF.
+move=> x xab/=.
+admit.
+admit.
+Abort.
+
 End change_of_variables.
 End change_of_variables.
+
+Module ishiguro.
+Section continuous_change_of_variables.
 
 (* TODO: PR *)
-Lemma nbhs_left_ltBl {R : numFieldType} (x : R) e:
+Lemma nbhs_left_ltBl {R : numFieldType} (x : R) e :
   (0 < e)%R -> \forall y \near x^'-, (x - y < e)%R.
+Proof.
 Admitted.
 
-Section continuous_change_of_variables.
 Context {R : realType}.
 Notation mu := lebesgue_measure.
 Local Open Scope ereal_scope.
@@ -1013,7 +1137,6 @@ Section change_of_variables1_newproof.
 Context {R : realType}.
 Let mu := (@lebesgue_measure R).
 
-(* add and change assumption of continuous range of G *)
 Lemma integral0B1_newproof (G : R -> R) (r : R) :
   (0 < r <= 1)%R ->
   locally_integrable [set: R] G ->
@@ -1022,6 +1145,9 @@ Lemma integral0B1_newproof (G : R -> R) (r : R) :
   (\int[mu]_(x in `[0%R, r]) (G x)%:E =
   \int[mu]_(x in `[(1 - r)%R, 1%R]) (G (1 - x))%:E).
 Proof.
+(*move=> /andP[r0 r1] locG cG iG.
+have := @change_of_variables.integral0B _ G (fun x => 1 - x)%R (1 - r)%R 1%R `](- 1)%R, 2%R[.
+rewrite ltrBlDl ltrDr => /(_ r0).*)
 move=> r01 locG cG iG.
 have := @lt0_continuous_change_of_variables R (fun x => 1 - x)%R G (cst (- 1)%R) (1 - r) 1%R.
 rewrite opprB subrr addrCA subrr addr0.
@@ -1033,10 +1159,73 @@ move=> ->//.
   by case/andP : r01.
 - by move=> ? ?; apply: ltrN10.
 - by move=> ? ?; apply: cst_continuous.
-- admit.
+- split => /=.
+  + move=> x xr1.
+    by apply: derivableB => //.
+  + apply: cvg_at_right_filter.
+    rewrite opprB addrCA addrA addrK.
+    apply: (@cvg_comp_filter _ _ (fun x => 1 - x)%R)=> //=.
+      move=> x.
+      apply: continuousB => //.
+      exact: cvg_cst.
+    under eq_fun do rewrite opprD addrA subrr add0r opprK.
+    apply: cvg_id.
+    apply: cvg_at_left_filter.
+    apply: cvgB => //.
+    exact: cvg_cst.
 - move=> x _.
   by rewrite derive1E deriveB//= derive_idfun -derive1E derive1_cst sub0r.
-Abort.
+Qed.
+
+End change_of_variables1_newproof.
+
+End ishiguro.
+
+Local Open Scope ereal_scope.
+
+Section change_of_variables1_newproof.
+Context {R : realType}.
+Let mu := (@lebesgue_measure R).
+
+Lemma integral0B1_newproof (G : R -> R) (r : R) :
+  (0 < r <= 1)%R ->
+  locally_integrable [set: R] G ->
+  {in `[0%R, r], continuous G} ->
+  (forall r, lebesgue_measure.-integrable `[0%R, r] (EFin \o G)) ->
+  (\int[mu]_(x in `[0%R, r]) (G x)%:E =
+  \int[mu]_(x in `[(1 - r)%R, 1%R]) (G (1 - x))%:E).
+Proof.
+move=> /andP[r0 r1] locG cG iG.
+have := @change_of_variables.integral0B _ G (fun x => 1 - x)%R (1 - r)%R 1%R `](- 1)%R, 2%R[.
+rewrite ltrBlDl ltrDr => /(_ r0).
+(*move=> r01 locG cG iG.
+have := @lt0_continuous_change_of_variables R (fun x => 1 - x)%R G (cst (- 1)%R) (1 - r) 1%R.
+rewrite opprB subrr addrCA subrr addr0.
+move=> ->//.
+- apply: eq_integral => x xr.
+  rewrite !fctE.
+  by rewrite opprK mulr1.
+- rewrite ltrBlDl ltrDr.
+  by case/andP : r01.
+- by move=> ? ?; apply: ltrN10.
+- by move=> ? ?; apply: cst_continuous.
+- split => /=.
+  + move=> x xr1.
+    by apply: derivableB => //.
+  + apply: cvg_at_right_filter.
+    rewrite opprB addrCA addrA addrK.
+    apply: (@cvg_comp_filter _ _ (fun x => 1 - x)%R)=> //=.
+      move=> x.
+      apply: continuousB => //.
+      exact: cvg_cst.
+    under eq_fun do rewrite opprD addrA subrr add0r opprK.
+    apply: cvg_id.
+    apply: cvg_at_left_filter.
+    apply: cvgB => //.
+    exact: cvg_cst.
+- move=> x _.
+  by rewrite derive1E deriveB//= derive_idfun -derive1E derive1_cst sub0r.
+Qed.*) Abort.
 
 End change_of_variables1_newproof.
 
