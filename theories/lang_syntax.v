@@ -648,7 +648,10 @@ Qed.
 End change_of_variables.
 End change_of_variables.
 
-
+(* TODO: PR *)
+Lemma nbhs_left_ltBl {R : numFieldType} (x : R) e:
+  (0 < e)%R -> \forall y \near x^'-, (x - y < e)%R.
+Admitted.
 
 Section continuous_change_of_variables.
 Context {R : realType}.
@@ -833,8 +836,8 @@ have cGFa : (G \o F) x @[x --> a^'+] --> (G \o F) a.
   have atb : t \in `]a, b[ by rewrite in_itv/=; apply/andP.
   (* with monotonicity of F, F a < F t *)
   apply: GFa; last first.
-  move: (FxFaFb t atb).
-  by rewrite in_itv/= => /andP[].
+    move: (FxFaFb t atb).
+    by rewrite in_itv/= => /andP[].
   (* t can be enough to close to a *)
   apply: cFa.
   rewrite /ball_ /=.
@@ -844,9 +847,29 @@ have cGFa : (G \o F) x @[x --> a^'+] --> (G \o F) a.
 have cGFb : (G \o F) x @[x --> b^'-] --> (G \o F) b.
   (* same as above *)
   move/continuous_within_itvP : cG => /(_ FaFb)[incG [_ GFb]].
-  apply/cvgrPdist_le => /= d d0.
-  move/cvgrPdist_le : GFb => /(_ d d0) [d' /= d'0 GFb].
-  admit.
+  apply/cvgrPdist_le => /= e e0.
+  move/cvgrPdist_le : GFb => /(_ e e0) [d' /= d'0 GFb].
+  move/cvgrPdist_lt : (cF b) => /(_ _ d'0) cFb.
+  have [d'' /= d''0 {cFb}cFb] : within `[a, b] (nbhs b)
+              (fun t : subspace `[a, b] => (normr (F b - F t) < d')%R).
+    red in cFb.
+    red in cFb.
+    simpl in cFb.
+    red in cFb.
+    simpl in cFb.
+    red in cFb.
+    move: cFb.
+    by rewrite ifT; last by rewrite inE/= in_itv/= lexx/= ltW.
+  near=> t.
+  have atb : t \in `]a, b[ by rewrite in_itv/=; apply/andP.
+  apply: GFb; last first.
+    move: (FxFaFb t atb).
+    by rewrite in_itv/= => /andP[].
+  apply: cFb.
+  rewrite /ball_ /=.
+  rewrite gtr0_norm// ?subr_gt0//.
+  near: t; apply: nbhs_left_ltBl => //.
+  exact: subset_itv_oo_cc.
 have ch : {within `[a, b], continuous h}.
   apply/(continuous_within_itvP _ ab); split; last split.
       move=> /= x xab.
@@ -873,7 +896,35 @@ have dcbH : derivable_oo_continuous_bnd H a b.
     apply: dPG.
     have [? ? ?] := dcbF.
     exact: FxFaFb.
-  - admit.
+  - have := (derivable_oo_continuous_bnd_within dcbPG).
+    move=> /(continuous_within_itvP _ FaFb)[incPG [PGFa _]].
+(*
+
+  apply/cvgrPdist_le => /= e e0.
+  move/cvgrPdist_le : GFb => /(_ e e0) [d' /= d'0 GFb].
+  move/cvgrPdist_lt : (cF b) => /(_ _ d'0) cFb.
+  have [d'' /= d''0 {cFb}cFb] : within `[a, b] (nbhs b)
+              (fun t : subspace `[a, b] => (normr (F b - F t) < d')%R).
+    red in cFb.
+    red in cFb.
+    simpl in cFb.
+    red in cFb.
+    simpl in cFb.
+    red in cFb.
+    move: cFb.
+    by rewrite ifT; last by rewrite inE/= in_itv/= lexx/= ltW.
+  near=> t.
+  have atb : t \in `]a, b[ by rewrite in_itv/=; apply/andP.
+  apply: GFb; last first.
+    move: (FxFaFb t atb).
+    by rewrite in_itv/= => /andP[].
+  apply: cFb.
+  rewrite /ball_ /=.
+  rewrite gtr0_norm// ?subr_gt0//.
+  near: t; apply: nbhs_left_ltBl => //.
+  exact: subset_itv_oo_cc.
+*)    
+admit.
 (*
     have [_ + _] := dcbPG.
     exact. *)
