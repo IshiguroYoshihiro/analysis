@@ -776,12 +776,16 @@ Section continuous_change_of_variables.
 Lemma nbhs_left_ltBl {R : numFieldType} (x : R) e :
   (0 < e)%R -> \forall y \near x^'-, (x - y < e)%R.
 Proof.
-Admitted.
+move=> e0.
+near=> y; rewrite -ltrBrDl ltrNl opprB; near: y.
+apply: nbhs_left_gt.
+by rewrite ltrBlDr ltrDl.
+Unshelve. all: by end_near. Qed.
 
 Context {R : realType}.
 Notation mu := lebesgue_measure.
 Local Open Scope ereal_scope.
-Implicit Types (F G f : R -> R) (a b : R). 
+Implicit Types (F G f : R -> R) (a b : R).
 
 Lemma gt0_continuous_change_of_variables F G f a b :
     (a < b)%R ->
