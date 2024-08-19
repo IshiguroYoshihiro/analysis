@@ -273,7 +273,10 @@ Lemma integral0B1_helper (G : R -> R) (r : R) :
 Proof.
 move=> r0 locG cG iG; split.
 - move=> x /[!in_itv]/= /andP[x0 xr].
-  apply: (@continuous_FTC1 R G (BLeft 0%R) _ _ _ _ _).1 => //=.
+  apply: (@continuous_FTC1_closed R G 0%R x r xr _ _ _).1 => //=.
+    move: locG.
+    rewrite -{1}(patch_setT (cst 0%R) G).
+    exact: locally_integrableS.
   by apply: cG; rewrite in_itv/= (ltW x0) (ltW xr).
 - apply: cvg_at_right_filter.
   rewrite {2}/parameterized_integral.
@@ -298,8 +301,13 @@ move=> /andP[r0 r1] locG cG iG intG F; split.
   apply: differentiable_comp => //.
   apply: differentiableN => //.
   apply/derivable1_diffP.
-  apply: (@continuous_FTC1 R G (BLeft 0%R) _ _ _ _ _).1 => //=.
-    by rewrite lte_fin subr_gt0.
+  apply: (@continuous_FTC1 R G (BLeft 0%R) _ r _ _ _ _ _).1 => //=.
+    rewrite /F.
+    by rewrite ltrBlDl -ltrBlDr.
+    move: locG.
+    rewrite -{1}(patch_setT (cst 0%R) G).
+    exact: locally_integrableS.
+    by rewrite lte_fin /F subr_gt0.
   apply: cG.
   rewrite in_itv/= subr_ge0 (ltW x1)/= lerBlDr.
   by move: rx; rewrite ltrBlDl => /ltW.
@@ -350,7 +358,11 @@ rewrite (@within_continuous_FTC2 _ _ intG); last 4 first.
   - exact/continuous_subspace_itv.
   - exact: integral0B1_helper.
   - move=> x x0r.
-    apply: (@continuous_FTC1 R G (BLeft 0%R) _ _ _ _ _).2 => //=.
+    apply: (@continuous_FTC1 R G (BLeft 0%R) _ r _ _ _ _ _).2 => //=.
+      by move: x0r; rewrite in_itv/= => /andP[].
+      move: locG.
+      rewrite -{1}(patch_setT (cst 0%R) G).
+      exact: locally_integrableS.
       by move: x0r; rewrite in_itv/= => /andP[]; rewrite lte_fin.
     apply: cG => //.
     exact: subset_itv_oo_cc x0r.
@@ -366,7 +378,11 @@ rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )//=; last 4 first.
   - move=> x; rewrite in_itv/= => /andP[rx1 x1].
     rewrite derive1_comp//; last first.
       apply/derivableN.
-      apply: (@continuous_FTC1 R G (BLeft 0%R) _ _ _ _ _).1 => //=.
+      apply: (@continuous_FTC1 R G (BLeft 0%R) _ r _ _ _ _ _).1 => //=.
+        by rewrite /F ltrBlDl -ltrBlDr.
+        move: locG.
+        rewrite -{1}(patch_setT (cst 0%R) G).
+        exact: locally_integrableS.
         by rewrite lte_fin /F subr_gt0.
       apply: cG.
       rewrite /F in_itv/= subr_ge0 (ltW x1)/=.
@@ -377,7 +393,11 @@ rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )//=; last 4 first.
       by rewrite -derive1E derive1_cst sub0r derive_idfun.
     rewrite mulrN1 derive1E -deriveN//; last first.
       apply/derivableN.
-      apply : (@continuous_FTC1 R G (BLeft 0%R) _ _ _ _ _).1 => //=.
+      apply: (@continuous_FTC1 R G (BLeft 0%R) _ r _ _ _ _ _).1 => //=.
+        by rewrite /F ltrBlDl -ltrBlDr.
+        move: locG.
+        rewrite -{1}(patch_setT (cst 0%R) G).
+        exact: locally_integrableS.
         by rewrite lte_fin /F subr_gt0.
       apply: cG.
       rewrite /F in_itv/= subr_ge0 (ltW x1)/= lerBDl.
@@ -386,7 +406,11 @@ rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )//=; last 4 first.
       rewrite fctE//=.
       by under eq_fun do rewrite opprK.
     rewrite -derive1E.
-    apply: (@continuous_FTC1 R G (BLeft 0%R) _ _ _ _ _).2 => //=.
+    apply: (@continuous_FTC1 R G (BLeft 0%R) _ r _ _ _ _ _).2 => //=.
+      by rewrite /F ltrBlDl -ltrBlDr.
+      move: locG.
+      rewrite -{1}(patch_setT (cst 0%R) G).
+      exact: locally_integrableS.
       by rewrite lte_fin /F subr_gt0.
     apply: cG.
     rewrite in_itv /F/= subr_ge0 (ltW x1)/= lerBlDl.
@@ -454,7 +478,10 @@ Lemma integral0B_helper (G : R -> R) (F : R -> R) (a b : R) : (a < b)%R ->
 Proof.
 move=> ab locG cG iG dF; split.
 - move=> x /[!in_itv]/= /andP[x0 xr].
-  apply: (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).1 => //=.
+  apply: (@continuous_FTC1 R G (BLeft (F b)) x (F a) _ _ _ _ _).1 => //=.
+    move: locG.
+    rewrite -{1}(patch_setT (cst 0%R) G).
+    exact: locally_integrableS.
   apply: cG.
   rewrite in_itv/=.
   by rewrite (ltW x0)/= ltW.
@@ -502,7 +529,11 @@ split.
     by rewrite !in_itv/= (ltW rx) (ltW x1).
   apply: differentiableN => //.
   apply/derivable1_diffP.
-  apply: (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).1 => //=.
+  apply: (@continuous_FTC1 R G (BLeft (F b)) (F x) (F a) _ _ _ _ _).1 => //=.
+    by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW x1) ?(ltW ab) ?(ltW rx).
+    move: locG.
+    rewrite -{1}(patch_setT (cst 0%R) G).
+    exact: locally_integrableS.
     rewrite lte_fin.
     by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW x1) ?(ltW ab) ?(ltW rx).
   apply: cG.
@@ -595,7 +626,11 @@ rewrite (@within_continuous_FTC2 _ _ intG); last 4 first.
     assumption.
   - by apply: integral0B_helper => //.
   - move=> x x0r.
-    apply: (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).2 => //=.
+    apply: (@continuous_FTC1 R G (BLeft (F b)) x (F a) _ _ _ _ _).2 => //=.
+      by move: x0r; rewrite in_itv/= => /andP[].
+      move: locG.
+      rewrite -{1}(patch_setT (cst 0%R) G).
+      exact: locally_integrableS.
       by move: x0r; rewrite in_itv/= lte_fin => /andP[].
     apply: cG => //.
     move: x0r.
@@ -621,8 +656,12 @@ rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )/=; last 4 first.
       apply: derivableF => //.
       by rewrite in_itv/= (ltW rx1) (ltW x1).
       apply/derivableN.
-      have := (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).1.
+      have := (@continuous_FTC1 R G (BLeft (F b)) (F x) (F a) _ _ _ _ _).1.
       apply => //=.
+        by apply: dF => //=; rewrite !in_itv/= ?ler01 ?lexx// ?(ltW ab)// (ltW rx1) (ltW x1).
+        move: locG.
+        rewrite -{1}(patch_setT (cst 0%R) G).
+        exact: locally_integrableS.
         rewrite lte_fin.
         by apply: dF => //=; rewrite !in_itv/= ?ler01 ?lexx// ?(ltW ab)// (ltW rx1) (ltW x1).
       apply: cG.
@@ -633,9 +672,13 @@ rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )/=; last 4 first.
       apply/ltW.
       by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1)//.
     rewrite derive1E deriveN//; last first.
-      apply : (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).1 => //=.
+      apply: (@continuous_FTC1 R G (BLeft (F b)) (F x) (F a) _ _ _ _ _).1 => //.
+        by apply: dF => //=; rewrite !in_itv/= ?ler01 ?lexx// ?(ltW ab)// (ltW rx1) (ltW x1).
+        move: locG.
+        rewrite -{1}(patch_setT (cst 0%R) G).
+        exact: locally_integrableS.
         rewrite lte_fin.
-        by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1)//.
+        by apply: dF => //=; rewrite !in_itv/= ?ler01 ?lexx// ?(ltW ab)// (ltW rx1) (ltW x1).
       apply: cG.
       rewrite in_itv/=.
       apply/andP; split.
@@ -646,10 +689,13 @@ rewrite (@within_continuous_FTC2 _ _ (-%R \o intG \o F) )/=; last 4 first.
     rewrite mulNr.
     rewrite (_ : 'D_1 intG (F x) = G (F x)); last first.
       rewrite -derive1E.
-      have := (@continuous_FTC1 R G (BLeft (F b)) _ _ _ _ _).2.
-      apply => //=.
+      apply: (@continuous_FTC1 R G (BLeft (F b)) (F x) (F a) _ _ _ _ _).2 => //.
+        by apply: dF => //=; rewrite !in_itv/= ?ler01 ?lexx// ?(ltW ab)// (ltW rx1) (ltW x1).
+        move: locG.
+        rewrite -{1}(patch_setT (cst 0%R) G).
+        exact: locally_integrableS.
         rewrite lte_fin.
-        by apply: dF => //; rewrite !in_itv/= ?lexx// ?(ltW ab) ?(ltW rx1) ?(ltW x1)//.
+        by apply: dF => //=; rewrite !in_itv/= ?ler01 ?lexx// ?(ltW ab)// (ltW rx1) (ltW x1).
       apply: cG.
       rewrite in_itv.
       apply/andP; split.
@@ -835,20 +881,23 @@ have intGFb : mu.-integrable `[(F a), (F b)] (EFin \o G).
   exact: segment_compact.
 have intGFb_restr : mu.-integrable `[(F a), (F b)] (EFin \o (G \_ `[F a, F b])).
   by rewrite -restrict_comp//= -integrable_restrict//= setIid.
-have intGy : forall y, mu.-integrable `[(F a), y] (EFin \o G \_ `[(F a), (F b)]).
-  move=> y.
-  case Fay : ((F b) < y)%R; rewrite -restrict_comp //-integrable_restrict//=.
+have intGy : mu.-integrable `[(F a), (F b)] (EFin \o G \_ `[(F a), (F b)]).
+  rewrite -restrict_comp //-integrable_restrict//=.
+  rewrite setIid.
+  apply: continuous_compact_integrable => //.
+  exact: segment_compact.
+(*have intGy : forall y, (y < F b)%R -> mu.-integrable `[y, (F b)] (EFin \o G \_ `[(F a), (F b)]).
+  move=> y yFb.
+  have [Fay|Fay] := leP y (F a); rewrite -restrict_comp //-integrable_restrict//=.
     rewrite setIidr//.
-    by apply: set_interval.subset_itvl; rewrite bnd_simp ltW.
+    by apply: set_interval.subset_itvr; rewrite bnd_simp.
   rewrite setIidl; last first.
-    apply: set_interval.subset_itvl; rewrite bnd_simp.
-    by move/negbT : Fay; rewrite -leNgt.
+    by apply: set_interval.subset_itvr; rewrite bnd_simp ltW.
   apply: continuous_compact_integrable => //.
     exact: segment_compact.
   move: cG.
   apply: continuous_subspaceW.
-  apply: set_interval.subset_itvl; rewrite bnd_simp.
-  by move/negbT : Fay; rewrite -leNgt.
+  by apply: set_interval.subset_itvr; rewrite bnd_simp ltW.*)
 have locG : locally_integrable setT (G \_`[F a, F b]).
   apply: integrable_locally; first exact: openT.
   rewrite -restrict_comp// -integrable_restrict//= setTI.
@@ -904,7 +953,15 @@ have dcbPG : derivable_oo_continuous_bnd PG (F a) (F b).
   split.
   - move=> x xFaFb.
     rewrite /=.
-    by have [+ _]:= (continuous_FTC1 intGy locG (itv_fact x xFaFb) (cG_restr x xFaFb)).
+    have xFb : (x < F b)%R.
+      by move: xFaFb; rewrite in_itv/= => /andP[].
+    have locG' : locally_integrable [set: R] ((G \_ `[(F a), (F b)]) \_ `[(F a), F b]).
+      by rewrite -patch_setI setIidl//.
+    have := continuous_FTC1 xFb intGy locG'.
+    simpl.
+    rewrite lte_fin.
+    move: (xFaFb); rewrite in_itv/= => /andP[-> _] /(_ isT).
+    by move=> /(_ (cG_restr x xFaFb))[+ _].
   - move: intGFb_restr.
     move/(parameterized_integral_continuous FaFb).
     by move/(continuous_within_itvP _ FaFb) => [_ [+ _]].
@@ -912,7 +969,15 @@ have dcbPG : derivable_oo_continuous_bnd PG (F a) (F b).
 have dPGE : {in `](F a), (F b)[, PG^`() =1 G}.
   (* FTC1 *)
   move=> x xFaFb.
-  have [_ ->]:= (continuous_FTC1 intGy locG (itv_fact x xFaFb) (cG_restr x xFaFb)).
+  have xFb : (x < F b)%R.
+    by move: xFaFb; rewrite in_itv/= => /andP[].
+  have locG' : locally_integrable [set: R] ((G \_ `[(F a), (F b)]) \_ `[(F a), F b]).
+    by rewrite -patch_setI setIidl//.
+  have := continuous_FTC1 xFb intGy locG'.
+  simpl.
+  rewrite lte_fin.
+  move: (xFaFb); rewrite in_itv/= => /andP[-> _] /(_ isT).
+  move=> /(_ (cG_restr x xFaFb))[_ ->].
   rewrite /restrict ifT// inE/=.
   exact: subset_itv_oo_cc.
 move/continuous_within_itvP : (cG) => /(_ FaFb)[incG [GFa GFb]].
@@ -1026,10 +1091,10 @@ rewrite (@within_continuous_FTC2 _ f F); last 4 first.
     have ax : (a < x)%R by move: xab; rewrite in_itv/=; move=> /andP[].
     have cfx : {for x, continuous f}.
       admit.
-    by have [] := continuous_FTC1 intf locf ax cfx.
+(*    by have [] := continuous_FTC1 intf locf ax cfx.
   + apply: cvg_at_right_filter.
     rewrite (_: parameterized_integral mu a a f = 0%R); last first.
-      rewrite /parameterized_integral set_interval.set_itv1.
+      rewrite /parameterized_integral set_interval.set_itv1.*)
 Abort.
 
 
@@ -1151,9 +1216,9 @@ Lemma integral0B1_newproof (G : R -> R) (r : R) :
   \int[mu]_(x in `[(1 - r)%R, 1%R]) (G (1 - x))%:E).
 Proof.
 move=> /andP[r0 r1] locG cG iG.
-have := @change_of_variables.integral0B _ G (fun x => 1 - x)%R (1 - r)%R 1%R `](- 1)%R, 2%R[.
+(*have := @change_of_variables.integral0B _ G (fun x => 1 - x)%R (1 - r)%R 1%R `](- 1)%R, 2%R[.
 rewrite ltrBlDl ltrDr => /(_ r0).
-(*move=> r01 locG cG iG.
+move=> r01 locG cG iG.
 have := @lt0_continuous_change_of_variables R (fun x => 1 - x)%R G (cst (- 1)%R) (1 - r) 1%R.
 rewrite opprB subrr addrCA subrr addr0.
 move=> ->//.
