@@ -73,6 +73,17 @@ Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 
+(* TODO: PR *)
+(* naming, ltBl? ltDl? *)
+Lemma nbhs_left_ltBl {R : numFieldType} (x : R) e :
+  (0 < e)%R -> \forall y \near x^'-, (x - y < e)%R.
+Proof.
+move=> e0.
+near=> y; rewrite -ltrBrDl ltrNl opprB; near: y.
+apply: nbhs_left_gt.
+by rewrite ltrBlDr ltrDl.
+Unshelve. all: by end_near. Qed.
+
 Section integration_by_partsR.
 Context {R : realType}.
 Notation mu := lebesgue_measure.
@@ -772,17 +783,6 @@ End change_of_variables.
 Module ishiguro.
 Section continuous_change_of_variables.
 
-(* TODO: PR *)
-(* naming, ltBl? ltDl? *)
-Lemma nbhs_left_ltBl {R : numFieldType} (x : R) e :
-  (0 < e)%R -> \forall y \near x^'-, (x - y < e)%R.
-Proof.
-move=> e0.
-near=> y; rewrite -ltrBrDl ltrNl opprB; near: y.
-apply: nbhs_left_gt.
-by rewrite ltrBlDr ltrDl.
-Unshelve. all: by end_near. Qed.
-
 Context {R : realType}.
 Notation mu := lebesgue_measure.
 Local Open Scope ereal_scope.
@@ -985,55 +985,74 @@ rewrite (within_continuous_FTC2 FaFb cG dcbPG dPGE).
 by rewrite (within_continuous_FTC2 ab ch dcbH dHE).
 Unshelve. all: end_near. Qed.
 
-Lemma lt0_continuous_change_of_variables F G f a b :
+(*
+Lemma change_of_variablesN (f : R -> R) (D : set R) :
+  measurable D -> mu.-integrable D (EFin \o f) ->
+  \int[mu]_(x in D) (f x)%:E = \int[mu]_(x in [set -%R x | x in D]) (f (- x)%R)%:E.
+Proof.
+Admitted.
+*)
+
+Lemma continuous_change_of_variablesN (f : R -> R) a b :
+  (a < b)%R ->
+  {within `[a, b], continuous f} ->
+  \int[mu]_(x in `[a, b]) (f x)%:E = \int[mu]_(x in `[-%R b, -%R a]) ((f \o -%R) x)%:E.
+Proof.
+move=> ab cf.
+pose F := fun x => parameterized_integral mu a x f.
+rewrite (@within_continuous_FTC2 _ f F); last 4 first.
+- exact: ab.
+- exact: cf.
+- split.
+  + move=> x xab.
+    have intf : forall y : R, mu.-integrable `[a, y] (EFin \o f).
+      admit.
+    have locf : locally_integrable [set: R] f.
+      admit.
+    have ax : (a < x)%R by move: xab; rewrite in_itv/=; move=> /andP[].
+    have cfx : {for x, continuous f}.
+      admit.
+    by have [] := continuous_FTC1 intf locf ax cfx.
+  + apply: cvg_at_right_filter.
+    rewrite (_: parameterized_integral mu a a f = 0%R); last first.
+      rewrite /parameterized_integral set_interval.set_itv1.
+Abort.
+
+
+
+Lemma lt0_continuous_change_of_variables F G a b :
     (a < b)%R ->
-    {in `[a, b], forall x, (f x < 0)%R} ->
-    {in `[a, b], continuous f} ->
+    {in `[a, b]&, {homo F : x y / (y < x)%R}} ->
+    {within `[a, b], continuous F^`()} ->
     derivable_oo_continuous_bnd F a b ->
-    {in `]a, b[, F^`() =1 f} ->
-    {in `[F b, F a], continuous G} ->
-\int[mu]_(x in `[F b, F a]) (G x)%:E = \int[mu]_(x in `[a, b]) (((G \o F) * (- f)) x)%:E.
+    {within `[F b, F a], continuous G} ->
+\int[mu]_(x in `[F b, F a]) (G x)%:E = \int[mu]_(x in `[a, b]) (((G \o F) * - (F^`() : R -> R)) x)%:E.
 Proof.
 set nF : R -> R := (- F)%R.
-set nf : R -> R := (- f)%R.
+set f : R -> R := (F^`())%R.
 set Gn : R -> R := fun x => G (- x)%R.
-move=> ab flt0 cf dcbF dFf cG.
+move=> ab decrF cf dcbF cG.
 have FbFa : (F b < F a)%R.
   admit.
-have cF : {within `[a, b], continuous F} by exact: derivable_oo_continuous_bnd_within.
-transitivity (\int[mu]_(x in `[(nF a), (nF b)]) (Gn x)%:E).
+have incrnF : {in `[a, b]&, {homo nF : x y / (x < y)%R}}.
   admit.
-transitivity (\int[mu]_(x in `[a, b]) (((Gn \o nF) * nf) x)%:E); last first.
+have cnF : {within `[a, b], continuous nF^`()}.
   admit.
-(*
-apply: gt0_continuous_change_of_variables.
-- exact: ab.
-- move=> x xab.
-  rewrite oppr_gt0.
-  apply: flt0.
-  exact: subset_itv_oo_cc.
-- move: cf.
+have dcbnF : derivable_oo_continuous_bnd nF a b.
   admit.
-- split => /=.
-  + move=> x xab.
-    apply: derivableN.
-    by have [+ _ _] := dcbF; apply.
-  + apply: cvgN.
-    by have [_ + _] := dcbF.
-  + apply: cvgN.
-    by have [_ _ +] := dcbF.
-- move=> x xab.
-  rewrite derive1E.
-  rewrite deriveN; last by have [+ _ _] := dcbF; apply.
-  apply/f_equal.
-  rewrite -derive1E.
-  exact: dFf.
-- move=> x.
-  apply: continuous_comp.
-    (* issues: oppr_continuous *)
-    admit.
+have cGn : {within `[nF a, nF b], continuous Gn}.
   admit.
-*)
+transitivity (- \int[mu]_(x in `[(nF a), (nF b)]) (Gn x)%:E).
+  
+  admit.
+transitivity (- \int[mu]_(x in `[a, b]) (((Gn \o nF) * nF^`()) x)%:E); last first.
+  admit.
+congr (- _).
+apply: (gt0_continuous_change_of_variables ab).
+- exact: incrnF.
+- exact: cnF.
+- exact: dcbnF.
+- exact: cGn.
 Admitted.
 
 End continuous_change_of_variables.
@@ -1068,6 +1087,7 @@ Proof.
 have := @change_of_variables.integral0B _ G (fun x => 1 - x)%R (1 - r)%R 1%R `](- 1)%R, 2%R[.
 rewrite ltrBlDl ltrDr => /(_ r0).*)
 move=> r01 locG cG iG.
+(*
 have := @lt0_continuous_change_of_variables R (fun x => 1 - x)%R G (cst (- 1)%R) (1 - r) 1%R.
 rewrite opprB subrr addrCA subrr addr0.
 move=> ->//.
@@ -1095,6 +1115,8 @@ move=> ->//.
 - move=> x _.
   by rewrite derive1E deriveB//= derive_idfun -derive1E derive1_cst sub0r.
 Qed.
+*)
+Admitted.
 
 End change_of_variables1_newproof.
 
