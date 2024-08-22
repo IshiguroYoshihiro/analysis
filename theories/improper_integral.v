@@ -6,6 +6,8 @@ From mathcomp Require Import functions cardinality fsbigop.
 Require Import signed reals ereal topology normedtype sequences esum exp.
 Require Import measure lebesgue_measure numfun lebesgue_integral itv.
 Require Import realfun derive.
+Require Import trigo.
+
 
 From mathcomp Require Import ring lra.
 
@@ -249,3 +251,19 @@ rewrite -In /I /Gamma.
 Admitted.
 
 End Gamma.
+
+Section Gauss_integration.
+Context {R : realType}.
+
+Local Import Num.
+
+Definition gauss := (fun x : R => expR (- (x ^ 2)))%R.
+
+(* ref: https://www.phys.uconn.edu/~rozman/Courses/P2400_17S/downloads/gaussian-integral.pdf *)
+Lemma gauss_integration : (\int[mu]_x (gauss x))%R = sqrt pi / 2.
+Proof.
+
+(* cos_atan *)
+Admitted.
+
+End Gauss_integration.
