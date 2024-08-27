@@ -63,6 +63,7 @@ Corollary within_continuous_FTC2 f F a b : (a < b)%R ->
   (\int[mu]_(x in `[a, b]) (f x)%:E = (F b)%:E - (F a)%:E)%E.
 Proof. Admitted.
 
+
 End FTC2.
 
 (*============================================================================*)
@@ -96,21 +97,101 @@ Lemma ge0_nondecreasing_set_cvg_integral {R : realType}
   (S : nat -> set R) (f : R -> \bar R) :
    {homo S : n m / (n <= m)%N >-> (n <= m)%O} ->
   (forall i, measurable (S i)) ->
+  measurable (\bigcup_i S i) ->
   measurable_fun (\bigcup_i S i) f ->
   (forall x, (\bigcup_i S i) x -> 0 <= f x) ->
   ereal_sup [set (\int[lebesgue_measure]_(x in (S i)) f x) | i in [set: nat] ] =
      \int[lebesgue_measure]_(x in \bigcup_i S i) f x.
 Proof.
-move=> nndS mS mf f0.
+move=> nndS mS mUS mf f0.
+apply/esym.
+have : \int[lebesgue_measure]_(x in S i) f x @[i --> \oo] -->
+   ereal_sup [set \int[lebesgue_measure]_(x in S i) f x | i in [set: nat]].
+  apply: (@ereal_nondecreasing_cvgn _ (fun i => \int[lebesgue_measure]_(x in S i) f x)).
+  apply/nondecreasing_seqP => n.
+  apply: ge0_subset_integral => /=.
+          exact: mS.
+        exact: mS.
+      apply: measurable_funS mf.
+        exact: mUS.
+      exact: bigcup_sup.
+    move=> x Snx.
+    apply: f0.
+    by exists n.+1.
+  rewrite -subsetEset.
+  exact: nndS.
+move/cvg_lim => <- //.
+apply/esym.
+under eq_fun do rewrite integral_mkcond/=.
+rewrite -monotone_convergence//=; last 3 first.
+      move=> n.
+      apply/(measurable_restrictT f) => //.
+      apply: measurable_funS mf => //.
+      exact: bigcup_sup.
+    move=> n x _.
+    apply: erestrict_ge0 => {}x Snx.
+    apply: f0.
+    by exists n.
+  move=> x _.
+  apply/nondecreasing_seqP => n.
+    apply: restrict_lee => //.
+    move=> {}x Snx.
+    apply: f0.
+    by exists n.+1.
+  rewrite -subsetEset.
+  exact: nndS.
+rewrite [RHS]integral_mkcond/=.
+apply: eq_integral => /=.
+rewrite /g_sigma_algebraType/ocitv_type => x _.
+transitivity (ereal_sup (range (fun x0 : nat => (f \_ (S x0)) x))).
+  apply/cvg_lim => //.
+  apply: ereal_nondecreasing_cvgn.
+  apply/nondecreasing_seqP => n.
+  apply: restrict_lee.
+    move=> {}x Snx.
+    apply: f0.
+    by exists n.+1.
+  rewrite -subsetEset.
+  exact: nndS.
 apply/eqP; rewrite eq_le; apply/andP; split.
-  apply: ub_ereal_sup.
-  move=> /= _ [n _ <-].
-  apply: ge0_subset_integral => //.
-      exact: mS.
-    apply: bigcup_measurable.
-    by move=> k _; apply: mS.
+- apply: ub_ereal_sup.
+  move=> _/= [n _ <-].
+  apply: restrict_lee => //.
   exact: bigcup_sup.
+- rewrite patchE.
+  case: ifP.
+    rewrite inE.
+    move=> [n _ Snx].
+    apply: ereal_sup_le.
+    exists ((f \_ (S n)) x) => //.
+    rewrite patchE ifT=> //.
+    by rewrite inE.
+  move/negbT/negP.
+  rewrite inE /bigcup/=.
+  move/forallPNP => nSx.
+  apply/ereal_sup_le.
+  exists point => //.
+  exists 0%R => //.
+  rewrite patchE ifF//.
+  apply/negbTE.
+  apply/negP.
+  rewrite inE.
+  exact: nSx.
+Qed.
 
+Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
+  (forall x, 0 <= f x)%R ->
+  (F x)%:E @[x --> +oo%R] --> l ->
+  (* {within `[a, +oo[, continuous f} *)
+  f x @[x --> a^'+] --> f a ->
+  (forall x, (a < x)%R -> {for x, continuous f}) ->
+  (* derivable_oo_continuous_bnd F a +oo *)
+  (forall x, (a < x)%R -> derivable f x 1) ->
+  {in `]a, +oo[, F^`() =1 f} ->
+  (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l - (F a)%:E)%E.
+Proof.
+move=> f_ge0 + fa cf df dFE.
+case: l; last 2 first.
 Admitted.
 
 Section Gamma.
@@ -149,8 +230,9 @@ have <- : lim ((\int[mu]_(x in `[0%R, n.+1%:R]) (expR (- x))%:E) @[n --> \oo]) =
           apply: (le_trans (Rceil_ge _)).
           rewrite RceilE zn ltW// -natr1.
           apply: ltr_pwDr => //.
-          admit.
+          by rewrite natz.
         by move=> /= x [n _]/=; rewrite !in_itv/= => /andP[->].
+      (* applying improper_integral *)
       rewrite -ge0_nondecreasing_set_cvg_integral//; last 3 first.
           apply/nondecreasing_seqP => n.
           rewrite subsetEset => x/=.
@@ -230,7 +312,7 @@ rewrite oppe0.
 rewrite (@cvg_shiftS _ (fun n => (expR (1 *- n))%:E)).
 apply: cvg_EFin; first by apply/nearW.
 exact: cvg_expR.
-Admitted.
+Qed.
 
 Let I_rec n : I n.+1 = n.+1%:R%:E * I n.
 (* using integration by parts *)
@@ -255,14 +337,76 @@ End Gamma.
 Section Gauss_integration.
 Context {R : realType}.
 
+Lemma Rintegral_ge0 D (f : R -> R ) :
+ (forall x, D x -> (0 <= f x)%R) -> (0 <= \int[lebesgue_measure]_(x in D) f x)%R.
+Proof.
+move=> f0.
+rewrite fine_ge0//.
+exact: integral_ge0.
+Qed.
+
+Lemma Rintegral_even D (f : R -> R) :
+  (D = -%R @` D) ->
+  (forall x, f x = f (- x)%R) ->
+  (\int[lebesgue_measure]_(x in D) f x =
+     \int[lebesgue_measure]_(x in [set x | D x /\ (0 <= x)%R]) f x)%R.
+Proof.
+Admitted.
+
 Local Import Num.
 
 Definition gauss := (fun x : R => expR (- (x ^ 2)))%R.
+Let mu := @lebesgue_measure R.
+Let Ig := (\int[mu]_(x in `[0%R, +oo[) gauss x)%R.
+
+Let J (x : R) := (\int[mu]_(y in `[0%R, +oo[)
+  (fun y => expR (- (x ^+ 2 * (1 + y ^+ 2))) / (1 + y ^+ 2)) y)%R.
 
 (* ref: https://www.phys.uconn.edu/~rozman/Courses/P2400_17S/downloads/gaussian-integral.pdf *)
-Lemma gauss_integration : (\int[mu]_x (gauss x))%R = sqrt pi / 2.
+Lemma gauss_integration : (\int[mu]_x (gauss x))%R = sqrt pi.
 Proof.
+have -> : (\int[mu]_x gauss x)%R = (2 * Ig)%R.
+  rewrite Rintegral_even/=; last 2 first.
+      admit.
+    admit.
+  admit.
+rewrite -[RHS](@divfK _ 2)//.
+rewrite [LHS]mulrC.
+congr (_ * 2)%R.
+have gauss_ge0 (x : R) : (0 <= gauss x)%R by exact: expR_ge0.
+have J0 : atan x @[x --> +oo%R] --> J 0.
+  admit.
+have Joo : J x @[x --> +oo%R] --> 0%R.
+  admit.
+have dJ : J^`() =1 (fun x => (- 2) * expR (- x ^+ 2))%R.
+  admit.
+rewrite -[LHS]ger0_norm; last exact: Rintegral_ge0.
+rewrite -[LHS]sqrtr_sqr.
+rewrite -(@ger0_norm _ 2)// -(@sqrtr_sqr _ 2)//.
+rewrite -sqrtrV//.
+rewrite -[RHS]sqrtrM; last exact: pi_ge0.
+apply/eqP.
+rewrite eqr_sqrt; last 2 first.
+    apply: exprn_ge0.
+    exact: Rintegral_ge0.
+  apply: divr_ge0; first exact: pi_ge0.
+  exact: exprn_ge0.
+rewrite [X in _ / X]expr2.
+rewrite invfM => //.
+rewrite mulrA.
+apply/eqP.
+transitivity (J 0 / 2)%R; last first.
+  congr (_ / 2)%R.
+  rewrite /J.
+  under eq_Rintegral do rewrite expr0n/= mul0r oppr0 expR0.
+  have datan : {in `]0%R, +oo[, (@atan R)^`() =1 (fun x => 1 / (1%R + (x ^+ 2)%R)%E)}.
+    move=> x _.
+    
+  rewrite within_pinfty_continuous_FTC2.
 
+  
+rewrite -(_: 
+ewrite 
 (* cos_atan *)
 Admitted.
 
