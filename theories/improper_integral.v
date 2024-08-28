@@ -69,6 +69,26 @@ End FTC2.
 (*============================================================================*)
 (* from lang_syntax.v in branch prob_lang_axiom by affeldt-aist *)
 (* https://github.com/affeldt-aist/analysis/tree/prob_lang_axiom *)
+Section continuous_change_of_variables.
+Context {R : realType}.
+Let mu := (@lebesgue_measure R).
+
+Lemma lt0_continuous_change_of_variables (F G : R -> R)
+   ( a b : R) :
+    (a < b)%R ->
+    {in `[a, b]&, {homo F : x y / (y < x)%R}} ->
+    {within `[a, b], continuous F^`()} ->
+    derivable_oo_continuous_bnd F a b ->
+    {within `[F b, F a], continuous G} ->
+\int[mu]_(x in `[F b, F a]) (G x)%:E = \int[mu]_(x in `[a, b]) (((G \o F) * - (F^`() : R -> R)) x)%:E.
+Proof.
+Admitted.
+
+End continuous_change_of_variables.
+
+(*============================================================================*)
+(* from lang_syntax.v in branch prob_lang_axiom by IshiguroYoshihiro *)
+(* https://github.com/IshiguroYoshihiro/analysis/tree/prob_lang_axiom *)
 Section left_continuousW.
 
 Notation left_continuous f :=
@@ -179,8 +199,48 @@ apply/eqP; rewrite eq_le; apply/andP; split.
   exact: nSx.
 Qed.
 
+Lemma le0_nondecreasing_set_cvg_integral {R : realType}
+  (S : nat -> set R) (f : R -> \bar R) :
+   {homo S : n m / (n <= m)%N >-> (n <= m)%O} ->
+  (forall i, measurable (S i)) ->
+  measurable (\bigcup_i S i) ->
+  measurable_fun (\bigcup_i S i) f ->
+  (forall x, (\bigcup_i S i) x -> f x <= 0) ->
+  ereal_sup [set (\int[lebesgue_measure]_(x in (S i)) f x) | i in [set: nat] ] =
+     \int[lebesgue_measure]_(x in \bigcup_i S i) f x.
+Proof.
+move=> incrS mS mUS mf f0.
+transitivity (- ereal_sup [set \int[lebesgue_measure]_(x in S i) (fun x => - f x) x | i in [set: nat]]).
+  apply/eqP; rewrite eq_le; apply/andP; split.
+    admit.
+  admit.
+transitivity (- \int[lebesgue_measure]_(x in \bigcup_i S i) (fun x => - f x) x); last first.
+  admit.
+congr (- _).
+apply: ge0_nondecreasing_set_cvg_integral => //.
+  exact: emeasurable_funN.
+move=> x Sx.
+rewrite leeNr oppe0.
+exact: f0.
+Admitted.
+
 Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
   (forall x, (a < x)%R -> 0 <= f x)%R ->
+  (F x)%:E @[x --> +oo%R] --> l ->
+  (* {within `[a, +oo[, continuous f} *)
+  f x @[x --> a^'+] --> f a ->
+  (forall x, (a < x)%R -> {for x, continuous f}) ->
+  (* derivable_oo_continuous_bnd F a +oo *)
+  (forall x, (a < x)%R -> derivable f x 1) ->
+  {in `]a, +oo[, F^`() =1 f} ->
+  (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l - (F a)%:E)%E.
+Proof.
+move=> f_ge0 + fa cf df dFE.
+case: l; last 2 first.
+Admitted.
+
+Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
+  (forall x, (a < x)%R -> f x <= 0)%R ->
   (F x)%:E @[x --> +oo%R] --> l ->
   (* {within `[a, +oo[, continuous f} *)
   f x @[x --> a^'+] --> f a ->
@@ -444,7 +504,7 @@ have J0 : (atan x)%:E @[x --> +oo%R] --> (J 0)%:E.
   admit.
 have Joo : J x @[x --> +oo%R] --> 0%R.
   admit.
-have dJ : J^`() =1 (fun x => (- 2) * expR (- x ^+ 2))%R.
+have dJ : {in `]0%R, +oo[, J^`() =1 (fun x => (- 2) * Ig)%R}.
   admit.
 rewrite -[LHS]ger0_norm; last exact: Rintegral_ge0.
 rewrite -[LHS]sqrtr_sqr.
@@ -501,19 +561,36 @@ transitivity (J 0 / 2)%R; last first.
     by apply: derivableV; rewrite //lt0r_neq0// addr_gt0// exprn_gt0.
   - rewrite atan0 sube0.
     move: J0; move/cvg_lim => <- //.
-    apply/eqP; rewrite eq_le; apply/andP; split.
-      apply: lime_le.
-        apply: nondecreasing_is_cvge.
-        move=> x y.
-        rewrite le_eqVlt => /predU1P[-> //|xy].
-        apply: ltW.
-        exact: increasing_atan.
-      apply: nearW => x.
-      apply: ltW.
-      exact: atan_ltpi2.
-    rewrite [leLHS](_:_ = lim (((pi / 2) - x ^-1)%:E @[x --> +oo%R])).
-    admit.
+    apply/cvg_lim => //.
+    apply: cvg_EFin.
+      exact: nearW.
+    exact: atan_pinfty_pi2.
+apply: (@mulIf _ (- 2)%R) => //.
+rewrite !mulrN divfK//.
+apply/esym.
+(* lemma? *)
+have EFinK (x : R) : x = fine (EFin x) by [].
+rewrite -[LHS]add0r [LHS]EFinK.
+rewrite [RHS]EFinK.
+congr (fine _).
+have eJoo : (J x)%:E @[x --> +oo%R] --> 0%:E.
+  apply: cvg_EFin => //.
+  exact: nearW.
+rewrite EFinB.
+rewrite -(le0_within_pinfty_continuous_FTC2 _ eJoo _ _ _ dJ); last 4 first.
+- move=> x x0.
+  rewrite -mulN1r -mulrA mulN1r.
+  rewrite lerNl oppr0 pmulr_rge0//.
+  exact: Rintegral_ge0.
+- exact: cvg_cst.
+- by move=> x x0; apply: cvg_cst.
+- by move=> x x0; apply: derivable_cst.
+under eq_integral.
+  move=> x _.
+  rewrite -mulN1r -mulrA mulN1r.
+  rewrite (_: _%:E = (- (cst (2 * Ig))%R x).
 
+xxx
 (*
     have cvg_pi2x: ((@pi R) / 2 - x^-1)%:E @[x --> +oo%R] --> (pi / 2)%:E.
       apply: cvg_EFin.
