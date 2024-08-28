@@ -180,7 +180,7 @@ apply/eqP; rewrite eq_le; apply/andP; split.
 Qed.
 
 Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
-  (forall x, 0 <= f x)%R ->
+  (forall x, (a < x)%R -> 0 <= f x)%R ->
   (F x)%:E @[x --> +oo%R] --> l ->
   (* {within `[a, +oo[, continuous f} *)
   f x @[x --> a^'+] --> f a ->
@@ -232,17 +232,18 @@ have <- : lim ((\int[mu]_(x in `[0%R, n.+1%:R]) (expR (- x))%:E) @[n --> \oo]) =
           apply: ltr_pwDr => //.
           by rewrite natz.
         by move=> /= x [n _]/=; rewrite !in_itv/= => /andP[->].
-      (* applying improper_integral *)
+      (* applying improper integral *)
       rewrite -ge0_nondecreasing_set_cvg_integral//; last 3 first.
-          apply/nondecreasing_seqP => n.
-          rewrite subsetEset => x/=.
-          rewrite !in_itv/= => /andP[-> xnS]/=.
-          apply: (le_trans xnS).
-          by rewrite ler_nat.
-        apply: measurable_funTS.
-        apply: (measurable_comp measurableT) => //.
-        exact: (measurable_comp measurableT).
-      by move=> ? _; apply: expR_ge0.
+            exact: bigcupT_measurable.
+          apply: measurable_funTS.
+          apply: (measurable_comp measurableT) => //.
+          exact: (measurable_comp measurableT).
+        by move=> ? _; apply: expR_ge0.
+      apply/nondecreasing_seqP => n.
+      rewrite subsetEset => x/=.
+      rewrite !in_itv/= => /andP[-> xnS]/=.
+      apply: (le_trans xnS).
+      by rewrite ler_nat.
     apply: ub_ereal_sup.
     move=> _/= [n _ <-].
     apply: ge0_subset_integral => //; last 2 first.
@@ -337,6 +338,7 @@ End Gamma.
 Section Gauss_integration.
 Context {R : realType}.
 
+(* TODO: PR *)
 Lemma Rintegral_ge0 D (f : R -> R ) :
  (forall x, D x -> (0 <= f x)%R) -> (0 <= \int[lebesgue_measure]_(x in D) f x)%R.
 Proof.
@@ -352,6 +354,70 @@ Lemma Rintegral_even D (f : R -> R) :
      \int[lebesgue_measure]_(x in [set x | D x /\ (0 <= x)%R]) f x)%R.
 Proof.
 Admitted.
+
+(* TODO: PR *)
+Lemma increasing_atan : {homo (@atan R) : x y / (x < y)%R}.
+Proof.
+move=> x y xy.
+rewrite -subr_gt0.
+have datan z : z \in `]x, y[ -> is_derive z 1%R atan (1 + z ^+ 2)^-1.
+  move=> _; exact: is_derive1_atan.
+have catan : {within `[x, y], continuous atan}.
+  apply: derivable_within_continuous => z _.
+  exact: ex_derive.
+have := (MVT xy datan catan).
+move=> [] c.
+case : (@eqVneq _ c 0%R) => [-> _| c0 _] ->.
+  by rewrite expr0n/= addr0 invr1 mul1r subr_gt0.
+rewrite pmulr_lgt0; last by rewrite subr_gt0.
+rewrite invr_gt0.
+apply: addr_gt0 => //.
+rewrite expr2.
+move : c0.
+case : (ltP 0%R c) => [c0 nc0|]; first exact: mulr_gt0.
+rewrite le_eqVlt => /predU1P[->/negP//|c0 _].
+by rewrite nmulr_rgt0.
+Qed.
+
+(* TODO: PR *)
+Lemma atan_pinfty_pi2 : (@atan R) x @[x --> +oo%R] --> pi / 2.
+Proof.
+rewrite (_: pi / 2 = sup (range atan)); last first.
+  apply/eqP; rewrite eq_le; apply/andP; split.
+  - have -> : (@pi R / 2)%R = sup `[0%R, pi / 2[%classic.
+      rewrite real_interval.sup_itv// bnd_simp.
+      by have /andP[] := pihalf_02 R.
+    apply: le_sup; last 2 first.
+        exists 0%R.
+        rewrite /= in_itv/= lexx/=.
+        by have /andP[] := pihalf_02 R.
+      split.
+        by exists 0%R; exists 0%R => //; rewrite atan0.
+      exists (pi / 2)%R.
+      move=> _ [x _ <-].
+      by rewrite ltW// atan_ltpi2.
+    move=> x/=.
+    rewrite in_itv/= => /andP[x0 xpi2].
+    apply/downP.
+    exists (atan (tan x)) => /=.
+      by exists (tan x).
+    rewrite tanK//.
+    rewrite in_itv/= xpi2 andbT.
+    apply: lt_le_trans x0.
+    rewrite ltrNl oppr0.
+    by have /andP[] := pihalf_02 R.
+  - apply: sup_le_ub.
+      by exists 0%R; exists 0%R => //; apply: atan0.
+    move=> _ /= [x _ <-].
+    by apply: ltW; apply: atan_ltpi2.
+apply: nondecreasing_cvgr.
+move=> x y.
+rewrite le_eqVlt => /predU1P[-> //|xy].
+  by apply: ltW; apply: increasing_atan.
+exists (pi / 2)%R.
+move=> _ /= [x _ <-].
+by apply: ltW; apply: atan_ltpi2.
+Qed.
 
 Local Import Num.
 
@@ -374,7 +440,7 @@ rewrite -[RHS](@divfK _ 2)//.
 rewrite [LHS]mulrC.
 congr (_ * 2)%R.
 have gauss_ge0 (x : R) : (0 <= gauss x)%R by exact: expR_ge0.
-have J0 : atan x @[x --> +oo%R] --> J 0.
+have J0 : (atan x)%:E @[x --> +oo%R] --> (J 0)%:E.
   admit.
 have Joo : J x @[x --> +oo%R] --> 0%R.
   admit.
@@ -401,12 +467,69 @@ transitivity (J 0 / 2)%R; last first.
   under eq_Rintegral do rewrite expr0n/= mul0r oppr0 expR0.
   have datan : {in `]0%R, +oo[, (@atan R)^`() =1 (fun x => 1 / (1%R + (x ^+ 2)%R)%E)}.
     move=> x _.
-    
-  rewrite within_pinfty_continuous_FTC2.
+    rewrite derive1E.
+    apply: derive_val.
+    rewrite div1r.
+    exact: is_derive1_atan.
+  rewrite (_:(pi / 2) = fine ((pi / 2)%:E)); last by [].
+  congr (fine _).
+  rewrite (ge0_within_pinfty_continuous_FTC2 _ J0 _ _ _ datan); last 4 first.
+  - move=> x x0.
+    apply: divr_ge0 => //.
+    rewrite addr_ge0//.
+    apply: exprn_ge0.
+    exact: ltW.
+  - rewrite div1r.
+    apply/cvgVP => //.
+    rewrite invrK.
+    under eq_cvg do rewrite /=div1r invrK.
+    apply: cvgD; first exact: cvg_cst.
+    rewrite expr2.
+    under eq_cvg do rewrite expr2.
+    by apply: cvgM; apply: cvg_at_right_filter; apply: cvg_id.
+  - move=> x x0.
+    apply/cvgVP.
+      by rewrite div1r invr_neq0// lt0r_neq0// addr_gt0// exprn_gt0.
+    under eq_cvg do rewrite /=div1r invrK.
+    rewrite div1r invrK.
+    apply: cvgD; first exact: cvg_cst.
+    rewrite expr2.
+    under eq_cvg do rewrite expr2.
+    by apply: cvgM; apply: cvg_id.
+  - move=> x x0.
+    under eq_fun do rewrite div1r.
+    by apply: derivableV; rewrite //lt0r_neq0// addr_gt0// exprn_gt0.
+  - rewrite atan0 sube0.
+    move: J0; move/cvg_lim => <- //.
+    apply/eqP; rewrite eq_le; apply/andP; split.
+      apply: lime_le.
+        apply: nondecreasing_is_cvge.
+        move=> x y.
+        rewrite le_eqVlt => /predU1P[-> //|xy].
+        apply: ltW.
+        exact: increasing_atan.
+      apply: nearW => x.
+      apply: ltW.
+      exact: atan_ltpi2.
+    rewrite [leLHS](_:_ = lim (((pi / 2) - x ^-1)%:E @[x --> +oo%R])).
+    admit.
 
-  
-rewrite -(_: 
-ewrite 
+(*
+    have cvg_pi2x: ((@pi R) / 2 - x^-1)%:E @[x --> +oo%R] --> (pi / 2)%:E.
+      apply: cvg_EFin.
+        exact: nearW.
+      rewrite -[X in _ --> X]subr0.
+      apply: cvgB; first exact: cvg_cst.
+      apply/cvgrVy.
+        near=> a.
+        rewrite invr_gt0.
+        near: a.
+        exact: nbhs_pinfty_gt.
+      under eq_cvg do rewrite /=invrK.
+      exact: cvg_id.
+*)
+    
+      
 (* cos_atan *)
 Admitted.
 
