@@ -206,7 +206,7 @@ Lemma le0_nondecreasing_set_cvg_integral {R : realType}
   measurable (\bigcup_i S i) ->
   measurable_fun (\bigcup_i S i) f ->
   (forall x, (\bigcup_i S i) x -> f x <= 0) ->
-  ereal_sup [set (\int[lebesgue_measure]_(x in (S i)) f x) | i in [set: nat] ] =
+  ereal_inf [set (\int[lebesgue_measure]_(x in (S i)) f x) | i in [set: nat] ] =
      \int[lebesgue_measure]_(x in \bigcup_i S i) f x.
 Proof.
 move=> incrS mS mUS mf f0.
@@ -479,9 +479,36 @@ move=> _ /= [x _ <-].
 by apply: ltW; apply: atan_ltpi2.
 Qed.
 
+(* TODO: PR *)
+Lemma locally_integrable_cst (x : R) :
+  locally_integrable setT (cst x).
+Proof.
+split.
+- exact: measurable_cst.
+- exact: openT.
+- move=> K _ cK.
+  under eq_integral.
+    move=> z zK/=.
+    rewrite (_:(normr x)%:E = cst (normr x)%:E z); last by [].
+    over.
+  rewrite integral_cst/=; last exact: compact_measurable.
+  apply: lte_mul_pinfty => //.
+  exact: compact_finite_measure.
+Qed.
+
+Lemma normr_EFin (x : R) :
+  `|x%:E| = (normr x)%:E.
+Proof.
+have [x0|x0] := (leP 0%R x).
+  rewrite gee0_abs; last by rewrite lee_fin.
+  by move/normr_idP in x0; rewrite x0.
+rewrite lte0_abs; last by rewrite lte_fin.
+by rewrite ltr0_norm.
+Qed.
+
 Local Import Num.
 
-Definition gauss := (fun x : R => expR (- (x ^ 2)))%R.
+Definition gauss := (fun x : R => expR (- (x ^+ 2)))%R.
 Let mu := @lebesgue_measure R.
 Let Ig := (\int[mu]_(x in `[0%R, +oo[) gauss x)%R.
 
@@ -504,7 +531,7 @@ have J0 : (atan x)%:E @[x --> +oo%R] --> (J 0)%:E.
   admit.
 have Joo : J x @[x --> +oo%R] --> 0%R.
   admit.
-have dJ : {in `]0%R, +oo[, J^`() =1 (fun x => (- 2) * Ig)%R}.
+have dJ : {in `]0%R, +oo[, J^`() =1 (fun x => (- 2) * Ig * (gauss x))%R}.
   admit.
 rewrite -[LHS]ger0_norm; last exact: Rintegral_ge0.
 rewrite -[LHS]sqrtr_sqr.
@@ -566,7 +593,7 @@ transitivity (J 0 / 2)%R; last first.
       exact: nearW.
     exact: atan_pinfty_pi2.
 apply: (@mulIf _ (- 2)%R) => //.
-rewrite !mulrN divfK//.
+rewrite [RHS]mulrN divfK// mulrC.
 apply/esym.
 (* lemma? *)
 have EFinK (x : R) : x = fine (EFin x) by [].
@@ -577,36 +604,97 @@ have eJoo : (J x)%:E @[x --> +oo%R] --> 0%:E.
   apply: cvg_EFin => //.
   exact: nearW.
 rewrite EFinB.
+have cdJ x : {for x, continuous (fun x1 : R => (-2 * Ig * gauss x1)%R)}.
+  apply: continuousM; first exact: cvg_cst.
+  apply: (@continuous_comp _ _ _ (fun x : R => (- (x ^+ 2))%R) expR).
+    apply: continuousN.
+    exact: exprn_continuous.
+  exact: continuous_expR.
 rewrite -(le0_within_pinfty_continuous_FTC2 _ eJoo _ _ _ dJ); last 4 first.
 - move=> x x0.
-  rewrite -mulN1r -mulrA mulN1r.
+  rewrite -mulN1r -!mulrA mulN1r.
   rewrite lerNl oppr0 pmulr_rge0//.
+  apply: mulr_ge0 => //.
   exact: Rintegral_ge0.
-- exact: cvg_cst.
-- by move=> x x0; apply: cvg_cst.
-- by move=> x x0; apply: derivable_cst.
-under eq_integral.
-  move=> x _.
-  rewrite -mulN1r -mulrA mulN1r.
-  rewrite (_: _%:E = (- (cst (2 * Ig))%R x).
-
-xxx
-(*
-    have cvg_pi2x: ((@pi R) / 2 - x^-1)%:E @[x --> +oo%R] --> (pi / 2)%:E.
-      apply: cvg_EFin.
-        exact: nearW.
-      rewrite -[X in _ --> X]subr0.
-      apply: cvgB; first exact: cvg_cst.
-      apply/cvgrVy.
-        near=> a.
-        rewrite invr_gt0.
-        near: a.
-        exact: nbhs_pinfty_gt.
-      under eq_cvg do rewrite /=invrK.
-      exact: cvg_id.
-*)
-    
-      
+- apply: cvg_at_right_filter; exact: cdJ.
+- move=> x _; exact: cdJ.
+- by move=> x x0.
+rewrite [X in \int[mu]_(_ in X) _](_:`[0%R, +oo[%classic = \bigcup_n `[0%R, n%:R]%classic); last first.
+  rewrite eqEsubset; split.
+    move=> x/=.
+    rewrite in_itv/= => /andP[x0 _].
+    have := isint_Rceil x.
+    move/RintP => [z cxz].
+    have : Rceil x \is a int_num.
+      rewrite archimedean.Num.Theory.intrEceil.
+      by rewrite archimedean.Num.Theory.intrKceil.
+    rewrite archimedean.Num.Theory.intrEge0; last exact: Rceil_ge0.
+    move/archimedean.Num.Theory.natrP => {z cxz}[n cxn].
+    exists n => //=.
+    by rewrite in_itv/= x0 -cxn Rceil_ge.
+  move=> x [n _]/=.
+  by rewrite !in_itv/= andbT => /andP[].
+(* change_of_variables for `[0%R, +oo[ *)
+rewrite -(@le0_nondecreasing_set_cvg_integral _ (fun n => `[0%R, n%:R]%classic)); last 5 first.
+- admit.
+- admit.
+- admit.
+- admit.
+- admit.
+have incr_int :
+  {homo (fun n =>
+          \int[lebesgue_measure]_(x in `[0%R, n%:R]) (-2 * Ig * gauss x)%:E) : n m /
+   (n <= m)%N >-> m <= n}.
+  move=> n m nm.
+  under eq_integral do rewrite EFinM.
+  under [leRHS]eq_integral do rewrite EFinM.
+  have intIg k : lebesgue_measure.-integrable `[0%R, k%:R]%classic (cst Ig%:E).
+    apply/integrableP; split; first exact: measurable_cst.
+    have [_ _] := locally_integrable_cst Ig.
+    move/(_ `[0%R, k%:R]%classic).
+    have sub0kT : `[0%R, k%:R] `<=` [set: R] by []; move/(_ sub0kT) => {sub0kT}.
+    move/(_ (@segment_compact _ _ _)).
+    by under eq_integral do rewrite -normr_EFin; move=> /=.
+  have intgauss k : lebesgue_measure.-integrable `[0%R, k%:R]%classic (fun x => (gauss x)%:E).
+    apply/integrableP; split.
+      apply: measurable_funTS => /=.
+      apply: measurableT_comp => //.
+      apply: measurableT_comp => //.
+      exact: measurableT_comp.
+    apply: (@le_lt_trans _ _ (\int[lebesgue_measure]_(x in `[0%R, k%:R]) 1%R%:E)); last first.
+      rewrite integral_cst//= lebesgue_measure_itv.
+      case: ifP => /= => _.
+        by rewrite mul1e -EFinD subr0 ltey.
+      by rewrite mule0.
+    apply: ge0_le_integral => //=.
+      apply: measurableT_comp => //.
+      apply: measurableT_comp => //.
+      apply: measurableT_comp => //.
+      exact: measurableT_comp.
+    move=> x _.
+    rewrite lee_fin.
+    move/normr_idP : (gauss_ge0 x) => ->.
+    rewrite (_:1 = gauss 0)%R; last by rewrite /gauss expr0n/= oppr0 expR0.
+    rewrite ler_expR.
+    rewrite lerN2 expr0n/=.
+    exact: sqr_ge0.
+  rewrite !integralZl//=.
+  rewrite !mulNr EFinN !mulNe.
+  rewrite leeN2.
+  rewrite lee_pmul//.
+      by rewrite lee_fin mulr_ge0// Rintegral_ge0.
+    by rewrite integral_ge0// => ? _; rewrite lee_fin.
+  apply: ge0_subset_integral => //=; last 2 first.
+      move=> ? _; exact: gauss_ge0.
+    by apply: set_interval.subset_itvl; rewrite bnd_simp ler_nat.
+  apply: measurableT_comp => //.
+  apply: measurableT_comp => //.
+  exact: measurableT_comp.
+have /cvg_lim <- // := ereal_nonincreasing_cvgn incr_int.
+apply/cvg_lim => //.
+under eq_cvg.
+  move=> n.
+(* apply change of variables before applying FTC2 *)
 (* cos_atan *)
 Admitted.
 
