@@ -473,7 +473,7 @@ split => Hlim.
 Abort.
 
 (* TODO: rename *)
-Lemma increasing_atan : {homo (@atan R) : x y / (x < y)%R}.
+Lemma homo_lt_atan : {homo (@atan R) : x y / (x < y)%R}.
 Proof.
 move=> x y xy.
 rewrite -subr_gt0.
@@ -501,7 +501,7 @@ Proof.
 move=> x y.
 rewrite le_eqVlt => /predU1P[-> //|xy].
 apply: ltW.
-exact: increasing_atan.
+exact: homo_lt_atan.
 Qed.
 
 (* TODO: PR *)
@@ -591,6 +591,8 @@ have incr_pi2n : {homo (fun n => ((@pi R) / 2 - n.+1%:R^-1)%:E) : n m / (n <= m)
 have EFinK (x : R) : x = fine (EFin x) by [].
 have itv_pinftyE : [set x : R| True /\ (0 <= x)%R] = `[0%R, +oo[%classic.
   by rewrite eqEsubset; split => x//=; rewrite andB in_itv/= andbT.
+have fin_num_int_V1sqrx n :  \int[lebesgue_measure]_(x in `[0%R, n%:R]) (1 / (1%R + (x ^+ 2)%R)%E)%:E \is a fin_num.
+  admit.
 have itv0ybig :`[0%R, +oo[%classic = \bigcup_n `[0%R, (@GRing.natmul R 1%R n)]%classic.
   rewrite eqEsubset; split.
     move=> x/=.
@@ -780,7 +782,11 @@ have J0 : (atan x)%:E @[x --> +oo%R] --> (J 0)%:E.
         rewrite lee_fin div1r invr_le1//; last exact: unitf_gt0.
         rewrite lerDl.
         exact: sqr_ge0.
-      admit.
+      move=> _ [_ [n _ <-] <-].
+      exists n => //.
+      rewrite fineK//.
+      (* lemma *)
+      exact: fin_num_int_V1sqrx.
     rewrite !ereal_sup_EFin; last 4 first.
     - admit.
     - admit.
@@ -836,10 +842,11 @@ have J0 : (atan x)%:E @[x --> +oo%R] --> (J 0)%:E.
   apply: cvg_EFin; last exact: atan_pinfty_pi2.
   near=> x.
   rewrite ge0_fin_numE; last first.
-    by rewrite lee_fin -atan0 ltW// increasing_atan.
+    by rewrite lee_fin -atan0 ltW// homo_lt_atan.
   apply: (@lt_trans _ _ (pi / 2)%:E); last exact: ltey.
   by rewrite lte_fin atan_ltpi2.
 have Joo : J x @[x --> +oo%R] --> 0%R.
+  (* dominated_convergence *)
   admit.
 have dJ : {in `]0%R, +oo[, J^`() =1 (fun x => (- 2) * Ig * (gauss x))%R}.
   admit.
