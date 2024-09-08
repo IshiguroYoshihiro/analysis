@@ -224,6 +224,77 @@ rewrite leeNr oppe0.
 exact: f0.
 Admitted.
 
+Let ge0_Rceil_nat {R : realType} (x : R) : (0 <= x)%R ->
+  exists n, n%:R = Rceil x.
+Proof.
+move=> x0.
+have := isint_Rceil x.
+  move/RintP => [z cxz].
+have : Rceil x \is a int_num.
+  rewrite archimedean.Num.Theory.intrEceil.
+  by rewrite archimedean.Num.Theory.intrKceil.
+rewrite archimedean.Num.Theory.intrEge0; last exact: Rceil_ge0.
+move/archimedean.Num.Theory.natrP => {z cxz}[n cxn].
+by exists n.
+Qed.
+
+Let itvaybig {R : realType} (a : R) :
+  `[a%R, +oo[%classic = \bigcup_n `[a%R, a + (@GRing.natmul R 1%R n)]%classic.
+Proof.
+suff H0 : `[0%R, +oo[%classic = \bigcup_n `[0%R, (@GRing.natmul R 1%R n)]%classic.
+  case: (leP a 0%R) => a0.
+    rewrite (@set_interval.itv_bndbnd_setU _ _ _ (BLeft 0%R)); last 2 first.
+        by rewrite bnd_simp.
+      by rewrite bnd_simp.
+    rewrite H0//.
+    rewrite eqEsubset; split => x.
+    - move=> [/=|[n _/=]]; rewrite in_itv/=; move/andP.
+      - move=>[ax x0].
+        have Na_ge0 : (0 <= @GRing.opp R a)%R by rewrite oppr_ge0.
+        have [n na] := ge0_Rceil_nat Na_ge0.
+        exists n => //=; rewrite in_itv/= ax/=.
+        rewrite ltW//; apply: (lt_le_trans x0).
+        by rewrite addrC -(opprK a) subr_ge0 na Rceil_ge.
+      move=> [x0 xn].
+      have : (0 <= (n%:R) - a)%R.
+        rewrite subr_ge0.
+        exact: (le_trans a0).
+      move/ge0_Rceil_nat => [m mna].
+      exists m => //=; rewrite in_itv/=; apply/andP; split.
+        exact: (le_trans a0).
+      rewrite mna -lerBlDl.
+      apply: (@le_trans _ _ (n%:R - a)%R); first exact: lerB.
+      exact: Rceil_ge.
+    move=> [n _]/=.
+    rewrite in_itv/= => /andP[ax xan].
+    case: (ltP x 0%R).
+      by move=> x0; left; rewrite in_itv/= ax x0.
+    move=> x0.
+    have := le_trans x0 xan.
+    move/ge0_Rceil_nat => [m man].
+    right.
+    exists m => //=.
+    rewrite in_itv/= x0/= man.
+    apply: (le_trans xan).
+    exact: Rceil_ge.
+  rewrite eqEsubset; split => x/=.
+    rewrite in_itv/= => /andP[ax _].
+    have /ltW := lt_le_trans a0 ax.
+    move/ge0_Rceil_nat => [n nx].
+    exists n => //=; rewrite in_itv/= nx ax/= ltW//.
+    apply: (ltr_pwDl a0).
+    exact: Rceil_ge.
+  by move=> [? _]/=; rewrite !in_itv/= => /andP[-> _].
+rewrite eqEsubset; split.
+  move=> x/=.
+  rewrite in_itv/= => /andP[x0 _].
+  have [n nx] := ge0_Rceil_nat x0.
+  exists n => //=.
+  by rewrite in_itv/= x0 nx Rceil_ge.
+move=> x [n _]/=.
+by rewrite !in_itv/= andbT => /andP[].
+Qed.
+
 Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
   (forall x, (a < x)%R -> 0 <= f x)%R ->
   (F x)%:E @[x --> +oo%R] --> l ->
@@ -235,10 +306,9 @@ Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \ba
   {in `]a, +oo[, F^`() =1 f} ->
   (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l - (F a)%:E)%E.
 Proof.
-move=> f_ge0 + fa cf df dFE.
-case: l; last 2 first.
-- move/cvgey_ge => fy.
-  
+move=> f_ge0 Fxl fa cf df dFE.
+rewrite itvaybig.
+rewrite -ge0_nondecreasing_set_cvg_integral.
 Admitted.
 
 Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
@@ -397,7 +467,6 @@ Admitted.
 
 End Gamma.
 
-
 (* PR? *)
 Lemma eq_set_integral {d} {T : measurableType d} {R : realType}
     {mu : measure T R} {D E : set T} (f : T -> \bar R) :
@@ -430,6 +499,17 @@ transitivity (\int[mu]_(x in D `&` E) f x).
       by rewrite -{1}(setCK E) -setDE -setDUr setvU setDT.
     rewrite [X in _ + X]null_set_integral; last 3 first.
 Abort.
+
+(* PR? *)
+Lemma normr_EFin {R : realType} (x : R) :
+  `|x%:E| = (normr x)%:E.
+Proof.
+have [x0|x0] := (leP 0%R x).
+  rewrite gee0_abs; last by rewrite lee_fin.
+  by move/normr_idP in x0; rewrite x0.
+rewrite lte0_abs; last by rewrite lte_fin.
+by rewrite ltr0_norm.
+Qed.
 
 Section Gauss_integration.
 Context {R : realType}.
@@ -558,17 +638,11 @@ split.
   exact: compact_finite_measure.
 Qed.
 
-Lemma normr_EFin (x : R) :
-  `|x%:E| = (normr x)%:E.
-Proof.
-have [x0|x0] := (leP 0%R x).
-  rewrite gee0_abs; last by rewrite lee_fin.
-  by move/normr_idP in x0; rewrite x0.
-rewrite lte0_abs; last by rewrite lte_fin.
-by rewrite ltr0_norm.
-Qed.
-
 Local Import Num.
+
+(* for lemmas only for integral yet *)
+Let EFinK (x : R) : x = fine (EFin x).
+Proof. by []. Qed.
 
 Definition gauss := (fun x : R => expR (- (x ^+ 2)))%R.
 Let mu := @lebesgue_measure R.
@@ -577,37 +651,65 @@ Let Ig := (\int[mu]_(x in `[0%R, +oo[) gauss x)%R.
 Let J (x : R) := (\int[mu]_(y in `[0%R, +oo[)
   (fun y => expR (- (x ^+ 2 * (1 + y ^+ 2))) / (1 + y ^+ 2)) y)%R.
 
+Let dJ0 (x : R) := (1 / (1 + x ^+ 2))%R.
+
+Let zeroE : 0%R = @GRing.natmul R 1%R 0%N.
+Proof. by []. Qed.
+Let oneE : 1%R = @GRing.natmul R 1%R 1%N.
+Proof. by []. Qed.
+
+(* for lower bound of  *)
+Let pi2n := fun n => ((@pi R) / 2 - n.+1%:R^-1)%:E.
+
+Let incr_pi2n :
+ {homo pi2n : n m / (n <= m)%N >-> n <= m}.
+Proof.
+apply/nondecreasing_seqP => n.
+rewrite lee_fin.
+apply: lerB => //.
+by rewrite ler_pV2; rewrite ?ler_nat// inE// unitfE lt0r_neq0/=.
+Qed.
+
+Let itv_pinftyE : [set x : R| True /\ (0 <= x)%R] = `[0%R, +oo[%classic.
+Proof. by rewrite eqEsubset; split => x//=; rewrite andB in_itv/= andbT. Qed.
+
+Let oneDsqrx (x : R) := (1%R + (x ^+ 2)%R)%E.
+
+Let gt0_oneDsqrx x : (0 < oneDsqrx x)%R.
+Proof. by apply: ltr_wpDr => //; apply: sqr_ge0. Qed.
+
+Let gt1_oneDsqrx x : (1%R <= oneDsqrx x)%R.
+Proof. by rewrite lerDl; apply: sqr_ge0. Qed.
+
+Let lt1_oneDsqrx x : (oneDsqrx\^-1 x <= 1%R)%R.
+Proof. by rewrite invr_le1//; apply: unitf_gt0. Qed.
+
+Let cVoneDsqrx : continuous (oneDsqrx\^-1)%R.
+Proof.
+move=> x.
+apply: cvgV; first exact: lt0r_neq0.
+apply: cvgD => //=; first exact: cvg_cst.
+exact: sqr_continuous.
+Qed.
+
+Let fin_num_int_V1sqrx n : \int[@lebesgue_measure R]_(x in `[0%R, n%:R]) (oneDsqrx\^-1 x)%:E \is a fin_num.
+Proof.
+have int1_lty : \int[@lebesgue_measure R]_(_ in `[0%R, n%:R]) 1 < +oo.
+  rewrite integral_cst//= mul1e lebesgue_measure_itv.
+  by case: ifP => //= _; rewrite oppr0 adde0 ltey.
+rewrite ge0_fin_numE; last first.
+  by apply: integral_ge0 => x _; rewrite lee_fin invr_ge0 ltW.
+apply: le_lt_trans int1_lty.
+apply: ge0_le_integral => //=.
+- by move=> x _; rewrite lee_fin invr_ge0 ltW.
+- apply: measurableT_comp => //; apply: measurable_funTS.
+  exact: continuous_measurable_fun.
+- by move=> x _; rewrite lee_fin; move: (lt1_oneDsqrx x).
+Qed.
+
 (* ref: https://www.phys.uconn.edu/~rozman/Courses/P2400_17S/downloads/gaussian-integral.pdf *)
 Lemma gauss_integration : (\int[mu]_x (gauss x))%R = sqrt pi.
 Proof.
-(* for lemmas only for integral yet *)
-have zeroE : 0%R = @GRing.natmul R 1%R 0%N by [].
-have oneE : 1%R = @GRing.natmul R 1%R 1%N by [].
-have incr_pi2n : {homo (fun n => ((@pi R) / 2 - n.+1%:R^-1)%:E) : n m / (n <= m)%N >-> n <= m}.
- apply/nondecreasing_seqP => n.
-  rewrite lee_fin.
-  apply: lerB => //.
-  by rewrite ler_pV2; rewrite ?ler_nat// inE// unitfE lt0r_neq0/=.
-have EFinK (x : R) : x = fine (EFin x) by [].
-have itv_pinftyE : [set x : R| True /\ (0 <= x)%R] = `[0%R, +oo[%classic.
-  by rewrite eqEsubset; split => x//=; rewrite andB in_itv/= andbT.
-have fin_num_int_V1sqrx n :  \int[lebesgue_measure]_(x in `[0%R, n%:R]) (1 / (1%R + (x ^+ 2)%R)%E)%:E \is a fin_num.
-  admit.
-have itv0ybig :`[0%R, +oo[%classic = \bigcup_n `[0%R, (@GRing.natmul R 1%R n)]%classic.
-  rewrite eqEsubset; split.
-    move=> x/=.
-    rewrite in_itv/= => /andP[x0 _].
-    have := isint_Rceil x.
-    move/RintP => [z cxz].
-    have : Rceil x \is a int_num.
-      rewrite archimedean.Num.Theory.intrEceil.
-      by rewrite archimedean.Num.Theory.intrKceil.
-    rewrite archimedean.Num.Theory.intrEge0; last exact: Rceil_ge0.
-    move/archimedean.Num.Theory.natrP => {z cxz}[n cxn].
-    exists n => //=.
-    by rewrite in_itv/= x0 -cxn Rceil_ge.
-  move=> x [n _]/=.
-  by rewrite !in_itv/= andbT => /andP[].
 have -> : (\int[mu]_x gauss x)%R = (Ig * 2)%R.
   rewrite Rintegral_even/=; last 2 first.
       rewrite eqEsubset; split => x//=.
@@ -619,14 +721,6 @@ have -> : (\int[mu]_x gauss x)%R = (Ig * 2)%R.
 rewrite -[RHS](@divfK _ 2)//.
 congr (_ * 2)%R.
 have gauss_ge0 (x : R) : (0 <= gauss x)%R by exact: expR_ge0.
-have cV1sqrx : continuous (fun x : R => (1 + x ^+ 2)^-1)%R.
-  move=> x.
-  apply: cvgV.
-    apply: lt0r_neq0.
-    apply: ltr_pwDl => //.
-    exact: sqr_ge0.
-  apply: cvgD => //=; first exact: cvg_cst.
-  exact: sqr_continuous.
 have J0 : (atan x)%:E @[x --> +oo%R] --> (J 0)%:E.
   rewrite (_: J 0 = pi / 2)%R; last first.
     rewrite /J.
@@ -756,39 +850,12 @@ have J0 : (atan x)%:E @[x --> +oo%R] --> (J 0)%:E.
         move=> _ [n _ <-].
         exists (\int[lebesgue_measure]_(x in `[0%R, n%:R]) (1 / (1%R + (x ^+ 2)%R)%E))%R => //.
         rewrite fineK//.
-        rewrite ge0_fin_numE; last first.
-          apply: integral_ge0 => x _.
-          by rewrite lee_fin div1r invr_ge0 addr_ge0// sqr_ge0.
-        apply: (@le_lt_trans _ _ n%:R%:E); last by rewrite ltey.
-        rewrite (_:n%:R%:E = 1 * lebesgue_measure `[0%R, n%:R]); last first.
-          rewrite mul1e lebesgue_measure_itv/= lte_fin.
-          case: n.
-            by rewrite ltxx.
-          move=> n.
-          by rewrite {1}zeroE ltr_nat/= oppr0 adde0.
-        rewrite -integral_cst/=; last exact: measurable_itv.
-        apply: le_integral => //=.
-            apply: continuous_compact_integrable; first exact: segment_compact.
-            apply: continuous_subspaceT.
-            by under [X in continuous X]eq_fun do rewrite div1r.
-          apply/integrableP; split; first exact: measurable_cst.
-          have [_ _] := locally_integrable_cst 1%R.
-          move/(_ `[0%R, n%:R]%classic (@subsetT _ _) (@segment_compact _ _ _)).
-          by under eq_integral do rewrite -normr_EFin.
-        move=> x _.
-        have Hgt0 : (0 < (1%R + (x ^+ 2)%R)%E)%R.
-          rewrite ltr_pwDl//.
-          exact: sqr_ge0.
-        rewrite lee_fin div1r invr_le1//; last exact: unitf_gt0.
-        rewrite lerDl.
-        exact: sqr_ge0.
       move=> _ [_ [n _ <-] <-].
       exists n => //.
       rewrite fineK//.
-      (* lemma *)
-      exact: fin_num_int_V1sqrx.
     rewrite !ereal_sup_EFin; last 4 first.
-    - admit.
+    - 
+admit.
     - admit.
     - admit.
     - admit.
