@@ -348,6 +348,7 @@ rewrite -ge0_nondecreasing_set_cvg_integral//; last 4 first.
 apply/eqP; rewrite eq_le; apply/andP; split.
 - admit.
 - admit.
+
 Admitted.
 
 Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
@@ -506,7 +507,7 @@ Admitted.
 
 End Gamma.
 
-(* PR? *)
+(* not used *)
 Lemma eq_set_integral {d} {T : measurableType d} {R : realType}
     {mu : measure T R} {D E : set T} (f : T -> \bar R) :
   measurable D -> measurable E ->
@@ -562,12 +563,14 @@ rewrite fine_ge0//.
 exact: integral_ge0.
 Qed.
 
-Lemma Rintegral_even D (f : R -> R) :
+Lemma Rintegral_even (D : set R) (f : R -> R) :
   (D = -%R @` D) ->
   (forall x, f x = f (- x)%R) ->
   (\int[lebesgue_measure]_(x in D) f x =
      2 * \int[lebesgue_measure]_(x in [set x | D x /\ (0 <= x)%R]) f x)%R.
 Proof.
+pose Dp := [set x : R | (x \in D) /\ (0 <= x)%R].
+
 Admitted.
 
 (* TODO: rename *)
@@ -1077,6 +1080,7 @@ rewrite ge0_fin_numE; last first. by rewrite lee_fin -atan0 nondecreasing_atan.
 apply: (@lt_trans _ _ (pi / 2)%:E); last exact: ltey.
 by rewrite lte_fin atan_ltpi2.
 Unshelve. end_near. Qed.
+
 Let mJ r : measurable_fun setT (fun y : R =>
         (expR (- (r ^+ 2 * (1%R + (y ^+ 2)%R)%E)) / (1%R + (y ^+ 2)%R)%E)%:E).
 Proof.
@@ -1191,6 +1195,8 @@ under eq_Rintegral => y _.
   rewrite deriveN// deriveM//.
   rewrite -derive1E derive1_cst scaler0 add0r (deriveX 1%R)//.
   rewrite (@derive_val _ _ _ _ _ _ _ (is_derive_id x 1%R)).
+  rewrite expr1.
+  rewrite [X in _ *: (_ * X)%R]mulr_algr.
   admit.
 Admitted.
 
