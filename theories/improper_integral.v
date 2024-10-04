@@ -136,6 +136,8 @@ apply: nbhs_pinfty_ge.
 exact: num_real.
 Unshelve. end_near. Qed.
 
+Section within_continuous_FTC2_pinfty.
+
 Lemma ge0_nondecreasing_set_cvg_integral {R : realType}
   (S : nat -> set R) (f : R -> \bar R) :
    {homo S : n m / (n <= m)%N >-> (n <= m)%O} ->
@@ -245,9 +247,9 @@ apply: ge0_nondecreasing_set_cvg_integral => //.
 move=> x Sx.
 rewrite leeNr oppe0.
 exact: f0.
-Admitted.
+Abort.
 
-Let ge0_Rceil_nat {R : realType} (x : R) : (0 <= x)%R ->
+Lemma ge0_Rceil_nat {R : realType} (x : R) : (0 <= x)%R ->
   exists n, n%:R = Rceil x.
 Proof.
 move=> x0.
@@ -261,7 +263,8 @@ move/archimedean.Num.Theory.natrP => {z cxz}[n cxn].
 by exists n.
 Qed.
 
-Let itvaybig {R : realType} (a : R) :
+(* same as real_interval.itv_bnd_inftyEbigcup *)
+Lemma itvaybig {R : realType} (a : R) :
   `[a%R, +oo[%classic = \bigcup_n `[a%R, a + (@GRing.natmul R 1%R n)]%classic.
 Proof.
 suff H0 : `[0%R, +oo[%classic = \bigcup_n `[0%R, (@GRing.natmul R 1%R n)]%classic.
@@ -316,11 +319,93 @@ rewrite eqEsubset; split.
   by rewrite in_itv/= x0 nx Rceil_ge.
 move=> x [n _]/=.
 by rewrite !in_itv/= andbT => /andP[].
+Abort.
+
+Local Import real_interval.
+
+Lemma increasing_telescope_sume_infty_fin_num
+  (R : realType) (n : nat) (f : nat -> R) :
+  limn (EFin \o f) \is a fin_num ->
+  {homo f : x y / (x <= y)%N >-> (x <= y)%R} ->
+  (\sum_(n <= k <oo) ((f k.+1)%:E - (f k)%:E) = limn (EFin \o f) - (f n)%:E)%E.
+Proof.
+move=> fin_limf nondecf.
+apply/cvg_lim => //.
+have -> : limn (EFin \o f) - (f n)%:E =
+    ereal_sup (range (fun n0 => \sum_(n <= k < n0) ((f k.+1)%:E - (f k)%:E)%E)).
+  apply/eqP; rewrite sube_eq//; last exact: fin_num_adde_defl.
+  apply/eqP.
+  transitivity (ereal_sup (range (EFin \o f))); last first.
+    apply/eqP.
+    rewrite eq_le; apply/andP; split.
+      apply: ub_ereal_sup => /= _ [k _ <-].
+      have [kn|nk] := leqP k n.
+        rewrite -[leLHS]add0e.
+        apply: leeD; last first.
+          rewrite lee_fin.
+          exact: nondecf.
+        apply: ereal_sup_le.
+        exists ((f n.+1)%:E + (- f n)%:E).
+          exists n.+1%N => //.
+          by rewrite big_nat1.
+        rewrite EFinN sube_ge0 ?lee_fin; last by apply/orP; left.
+        exact: nondecf.
+      rewrite -leeBlDr//.
+      apply: ereal_sup_le.
+      exists ((f k)%:E - (f n)%:E) => //.
+      exists k => //.
+      rewrite (@telescope_sume _ _ _ (EFin \o f))//.
+      by rewrite ltnW.
+    rewrite -leeBrDr//.
+    apply: ub_ereal_sup => /= _ [k _ <-].
+    have [kn|nk] := leqP k n.
+      rewrite big_nat big_pred0; last first.
+        move=> m.
+        apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
+        apply/negP.
+        by rewrite leq_gtF.
+      rewrite EFinN sube_ge0; last by apply/orP; left.
+      apply: ereal_sup_le.
+      by exists (f n)%:E.
+    rewrite (@telescope_sume _ _ _ (EFin \o f))//; last by rewrite ltnW.
+    rewrite EFinN leeB//.
+    apply: ereal_sup_le.
+    by exists ((f k)%:E).
+  apply/cvg_lim => //.
+  apply: ereal_nondecreasing_cvgn.
+  by move=> a b ab; rewrite lee_fin; apply: nondecf.
+apply: ereal_nondecreasing_cvgn.
+apply/nondecreasing_seqP => m.
+rewrite -subre_ge0; last first.
+  apply/sum_fin_numP => /= ?  _.
+  by rewrite -EFinD.
+have [nm|mn|->]:= ltngtP n m; last 2 first.
+    rewrite !big_nat !big_pred0//.
+      move=> k.
+      apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
+      apply/negP.
+      by rewrite ltn_geF// ltnW.
+    move=> k.
+    apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
+    apply/negP.
+    by rewrite ltn_geF// ltnW.
+  rewrite big_nat1 big_nat big_pred0; last first.
+    move=> k.
+    apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
+    by rewrite ltnn.
+  rewrite sube0 subre_ge0// lee_fin.
+  exact: nondecf.
+rewrite big_nat_recr//=; last by rewrite ltnW.
+rewrite [X in 0 <= X - _]addeC addeK; last first.
+  apply/sum_fin_numP => /= ?  _.
+  by rewrite -EFinD.
+rewrite -EFinD lee_fin subr_ge0.
+exact: nondecf.
 Qed.
 
-Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
+Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) :
   (forall x, (a <= x)%R -> 0 <= f x)%R ->
-  (F x)%:E @[x --> +oo%R] --> l ->
+  F x @[x --> +oo%R] --> l ->
   (* {within `[a, +oo[, continuous f} *)
   f x @[x --> a^'+] --> f a ->
   (forall x, (a < x)%R -> {for x, continuous f}) ->
@@ -328,27 +413,67 @@ Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \ba
   (forall x, (a < x)%R -> derivable F x 1) ->
   F x @[x --> a^'+] --> F a ->
   {in `]a, +oo[, F^`() =1 f} ->
-  (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l - (F a)%:E)%E.
+  (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l%:E - (F a)%:E)%E.
 Proof.
 move=> f_ge0 Fxl fa cf dF Fa dFE.
-rewrite itvaybig.
-rewrite -ge0_nondecreasing_set_cvg_integral//; last 4 first.
-- apply/nondecreasing_seqP => n; rewrite subsetEset.
-  by apply: set_interval.subset_itvl; rewrite bnd_simp lerD// ler_nat.
-- exact: bigcup_measurable.
-- rewrite -itvaybig.
+rewrite -integral_itv_obnd_cbnd; last first.
+  apply: open_continuous_measurable_fun.
+    exact: interval_open.
+  move=> x; rewrite inE/= in_itv/= => /andP[ax _].
+  exact: cf.
+rewrite itv_bnd_infty_bigcup.
+rewrite seqDU_bigcup_eq.
+rewrite ge0_integral_bigcup//=; last 3 first.
+- move=> k.
+  apply: measurableD => //.
+  exact: bigsetU_measurable.
+- rewrite -seqDU_bigcup_eq.
+  rewrite -itv_bnd_infty_bigcup.
   apply: measurableT_comp => //.
-  apply: subspace_continuous_measurable_fun => //.
-(*
-  by rewrite continuous_within_cyitvP.
-*)
-  admit.
-- move=> x; rewrite -itvaybig/= in_itv/= => /andP[xa _]; rewrite lee_fin.
+  apply: open_continuous_measurable_fun => //.
+    exact: interval_open.
+  move=> x; rewrite inE/= in_itv/= => /andP[ax _].
+  exact: cf.
+- move=> x.
+  rewrite -seqDU_bigcup_eq.
+  rewrite -itv_bnd_infty_bigcup.
+  rewrite /= in_itv/= => /andP[/ltW ax _].
+  rewrite lee_fin.
   exact: f_ge0.
-apply/eqP; rewrite eq_le; apply/andP; split.
+transitivity (\big[+%R/0%R]_(0 <= i <oo)
+  ((F (a + i.+1%:R))%:E - (F (a + i%:R))%:E)).
+ transitivity (\big[+%R/0%R]_(0 <= i <oo) \int[lebesgue_measure]_(x in
+         seqDU (fun k : nat => `]a, (a + k%:R)]%classic) i.+1) (f x)%:E).
+    apply/cvg_lim => //.
+     rewrite -cvg_shiftS.
+under eq_cvg.
+  move=> k /=.
+  rewrite (big_cat_nat _ _ _ (leqnSn 0%N))//=.
+  rewrite big_nat1/= /seqDU addr0 set_itvoc0 set0D integral_set0 add0r.
+  rewrite big_add1 succnK.
+  over.
+admit.
+  apply: eq_eseriesr => n _.
+  rewrite (_: seqDU (fun k : nat => `]a, (a + k%:R)]%classic) n.+1 = `](a + n%:R), (a + n.+1%:R)]%classic).
+rewrite integral_itv_obnd_cbnd; last first.
+  admit.
+have dFEn : {in `]a + n%:R, a + n.+1%:R[, F^`() =1 f}.
+  admit.
+rewrite (within_continuous_FTC2 _ _ _ dFEn)//.
 - admit.
 - admit.
-
+- admit.
+rewrite /seqDU.
+admit.
+rewrite increasing_telescope_sume_infty_fin_num; last 2 first.
+    admit.
+  admit.
+rewrite addr0 EFinN; congr (_ - _).
+apply/cvg_lim => //.
+have -> : l%:E = ereal_sup (range (fun n => (F (a + n%:R))%:E)).
+  admit.
+apply: ereal_nondecreasing_cvgn.
+admit.
 Admitted.
 
 Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
@@ -365,6 +490,9 @@ Proof.
 move=> f_ge0 + fa cf df dFE.
 case: l; last 2 first.
 Admitted.
+
+End within_continuous_FTC2_pinfty.
+
 
 Section Gamma.
 Context {R : realType}.
@@ -720,11 +848,9 @@ apply: (@le_lt_trans _ _ (\int[mu]_(x in `[0%R, +oo[) (expR (- x))%:E)).
       exact: measurableT_comp.
     by move=> x _; rewrite lee_fin; exact: expR_ge0.
   by apply: set_interval.subset_itvr; rewrite bnd_simp.
-have cvgr_NexpR : - (@expR R (- x))%:E @[x --> +oo%R] --> 0.
-  rewrite -oppe0.
-  apply: cvgeN.
-  apply: cvg_EFin.
-    by apply: nearW => x; rewrite fin_numElt ltNye ltey.
+have cvgr_NexpR : -%R (@expR R (- x)) @[x --> +oo%R] --> 0%R.
+  rewrite -oppr0.
+  apply: cvgN.
   exact: cvgr_expR.
 rewrite (ge0_within_pinfty_continuous_FTC2 _ cvgr_NexpR); last 6 first.
 - by move=> x x0; rewrite expR_ge0.
@@ -838,10 +964,7 @@ Let J0E :
 Proof.
 rewrite /J expr0n/=.
 under eq_integral do rewrite mul0r oppr0 expR0 div1r.
-have eatan_pinfty_pi2 : (@atan R x)%:E @[x --> +oo%R] --> (pi / 2)%:E.
-  apply: cvg_EFin; last exact: atan_pinfty_pi2.
-    by apply: nearW => x; rewrite fin_numElt ltry ltNyr.
-rewrite (ge0_within_pinfty_continuous_FTC2 _ eatan_pinfty_pi2)/=; last 6 first.
+rewrite (ge0_within_pinfty_continuous_FTC2 _ atan_pinfty_pi2)/=; last 6 first.
 - by move=> x _; rewrite invr_ge0 ltW// gt0_oneDsqrx.
 - by apply: cvg_at_right_filter; apply: cVoneDsqrx.
 - by move=> x x0; apply: cVoneDsqrx.
@@ -1196,7 +1319,6 @@ under eq_Rintegral => y _.
   rewrite -derive1E derive1_cst scaler0 add0r (deriveX 1%R)//.
   rewrite (@derive_val _ _ _ _ _ _ _ (is_derive_id x 1%R)).
   rewrite expr1.
-  rewrite [X in _ *: (_ * X)%R]mulr_algr.
   admit.
 Admitted.
 
