@@ -331,55 +331,13 @@ Lemma increasing_telescope_sume_infty_fin_num
 Proof.
 move=> fin_limf nondecf.
 apply/cvg_lim => //.
-have -> : limn (EFin \o f) - (f n)%:E =
-    ereal_sup (range (fun n0 => \sum_(n <= k < n0) ((f k.+1)%:E - (f k)%:E)%E)).
-  apply/eqP; rewrite sube_eq//; last exact: fin_num_adde_defl.
-  apply/eqP.
-  transitivity (ereal_sup (range (EFin \o f))); last first.
-    apply/eqP.
-    rewrite eq_le; apply/andP; split.
-      apply: ub_ereal_sup => /= _ [k _ <-].
-      have [kn|nk] := leqP k n.
-        rewrite -[leLHS]add0e.
-        apply: leeD; last first.
-          rewrite lee_fin.
-          exact: nondecf.
-        apply: ereal_sup_le.
-        exists ((f n.+1)%:E + (- f n)%:E).
-          exists n.+1%N => //.
-          by rewrite big_nat1.
-        rewrite EFinN sube_ge0 ?lee_fin; last by apply/orP; left.
-        exact: nondecf.
-      rewrite -leeBlDr//.
-      apply: ereal_sup_le.
-      exists ((f k)%:E - (f n)%:E) => //.
-      exists k => //.
-      rewrite (@telescope_sume _ _ _ (EFin \o f))//.
-      by rewrite ltnW.
-    rewrite -leeBrDr//.
-    apply: ub_ereal_sup => /= _ [k _ <-].
-    have [kn|nk] := leqP k n.
-      rewrite big_nat big_pred0; last first.
-        move=> m.
-        apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
-        apply/negP.
-        by rewrite leq_gtF.
-      rewrite EFinN sube_ge0; last by apply/orP; left.
-      apply: ereal_sup_le.
-      by exists (f n)%:E.
-    rewrite (@telescope_sume _ _ _ (EFin \o f))//; last by rewrite ltnW.
-    rewrite EFinN leeB//.
-    apply: ereal_sup_le.
-    by exists ((f k)%:E).
-  apply/cvg_lim => //.
-  apply: ereal_nondecreasing_cvgn.
-  by move=> a b ab; rewrite lee_fin; apply: nondecf.
-apply: ereal_nondecreasing_cvgn.
-apply/nondecreasing_seqP => m.
+  have incr_sumf: {homo (fun i : nat => (\sum_(n <= k < i) ((f k.+1)%:E - (f k)%:E)%E)%R) : n0 m / 
+   (n0 <= m)%N >-> n0 <= m}.
+    apply/nondecreasing_seqP => m.
 rewrite -subre_ge0; last first.
   apply/sum_fin_numP => /= ?  _.
   by rewrite -EFinD.
-have [nm|mn|->]:= ltngtP n m; last 2 first.
+have [nm|mn]:= ltnP m n; last 2 first.
     rewrite !big_nat !big_pred0//.
       move=> k.
       apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
@@ -389,18 +347,33 @@ have [nm|mn|->]:= ltngtP n m; last 2 first.
     apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
     apply/negP.
     by rewrite ltn_geF// ltnW.
-  rewrite big_nat1 big_nat big_pred0; last first.
-    move=> k.
-    apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
-    by rewrite ltnn.
-  rewrite sube0 subre_ge0// lee_fin.
-  exact: nondecf.
-rewrite big_nat_recr//=; last by rewrite ltnW.
-rewrite [X in 0 <= X - _]addeC addeK; last first.
-  apply/sum_fin_numP => /= ?  _.
-  by rewrite -EFinD.
-rewrite -EFinD lee_fin subr_ge0.
-exact: nondecf.
+rewrite !telescope_sume//; last exact: leqW.
+by rewrite oppeB// addeCA subeK// addeC sube_ge0// lee_fin nondecf.
+have -> : limn (EFin \o f) - (f n)%:E =
+    ereal_sup (range (fun n0 => \sum_(n <= k < n0) ((f k.+1)%:E - (f k)%:E)%E)).
+  transitivity (limn (((EFin \o f) \- (cst (f n)%:E)))).
+    apply/esym.
+    apply/cvg_lim => //.
+    apply: cvgeB.
+        exact: fin_num_adde_defl.
+      apply: ereal_nondecreasing_is_cvgn.
+      by move=> x y xy; rewrite lee_fin; apply: nondecf.
+    apply: cvg_EFin.
+      by apply: nearW => x.
+    exact: cvg_cst.
+  have := (@ereal_nondecreasing_cvgn _ (fun i =>  (\sum_(n <= k < i) ((f k.+1)%:E - (f k)%:E)%E)%R)).
+
+  move/(_ incr_sumf).
+  rewrite -(cvg_restrict n (EFin \o f \- cst (f n)%:E)).
+  move/cvg_lim => <-//.
+  apply: congr_lim.
+  apply/funext => k/=.
+  case: ifP => //.
+  move/negbT.
+  rewrite -ltnNge => nk.
+  under eq_bigr do rewrite EFinN.
+  by rewrite telescope_sume// ltnW.
+exact: ereal_nondecreasing_cvgn.
 Qed.
 
 Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) :
@@ -1319,6 +1292,7 @@ under eq_Rintegral => y _.
   rewrite -derive1E derive1_cst scaler0 add0r (deriveX 1%R)//.
   rewrite (@derive_val _ _ _ _ _ _ _ (is_derive_id x 1%R)).
   rewrite expr1.
+  
   admit.
 Admitted.
 
