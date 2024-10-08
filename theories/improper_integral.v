@@ -70,133 +70,79 @@ Admitted.
 (*============================================================================*)
 (* my works begin here *)
 
-Lemma cvgn_expR {R : realType} :
-  @expR R (1%R *- n) @[n --> \oo] --> 0%R.
+Lemma cvgr_expR {R : realType} : (@expR R (- x)) @[x --> +oo%R] --> 0%R.
+Proof.
+apply/cvgrPdist_le => e e0; near=> x.
+rewrite sub0r normrN ger0_norm; last exact: expR_ge0.
+rewrite expRN -[leRHS]invrK lef_pV2 ?posrE ?expR_gt0 ?invr_gt0//.
+rewrite (le_trans _ (expR_ge1Dx _))// -lerBlDl.
+by near: x; apply: nbhs_pinfty_ge; exact: num_real.
+Unshelve. end_near. Qed.
+
+Lemma cvgn_expR {R : realType} : @expR R (1%R *- n) @[n --> \oo] --> 0%R.
 Proof.
 under eq_cvg do rewrite -mulNrn -mulr_natr expRM_natr.
 apply: cvg_expr.
-rewrite expRN ger0_norm.
-  rewrite invf_lt1 => //.
-    by rewrite expR_gt1.
-  by rewrite expR_gt0.
-by rewrite invr_ge0 expR_ge0.
+by rewrite expRN ger0_norm ?invr_ge0 ?expR_ge0// invf_lt1 ?expR_gt1 ?expR_gt0.
 Qed.
 
-Lemma cvgr_expR {R: realType} :
-  (@expR R (- x)) @[x --> +oo%R] --> 0%R.
-Proof.
-apply/cvgrPdist_le => e e0.
-near=> x.
-rewrite sub0r normrN ger0_norm; last exact: expR_ge0.
-rewrite expRN -[leRHS]invrK lef_pV2; last 2 first.
-    by rewrite posrE; apply: expR_gt0.
-  by rewrite posrE invr_gt0.
-apply: le_trans (expR_ge1Dx _) => //.
-rewrite -lerBlDl.
-near: x.
-apply: nbhs_pinfty_ge.
-exact: num_real.
-Unshelve. end_near. Qed.
-
 Section within_continuous_FTC2_pinfty.
+Notation mu := lebesgue_measure.
 
 Lemma ge0_nondecreasing_set_cvg_integral {R : realType}
-  (S : nat -> set R) (f : R -> \bar R) :
-   {homo S : n m / (n <= m)%N >-> (n <= m)%O} ->
+  (S : (set R)^nat) (f : R -> \bar R) :
+  {homo S : n m / (n <= m)%N >-> (n <= m)%O} ->
   (forall i, measurable (S i)) ->
-  measurable (\bigcup_i S i) ->
   measurable_fun (\bigcup_i S i) f ->
   (forall x, (\bigcup_i S i) x -> 0 <= f x) ->
-  ereal_sup [set (\int[lebesgue_measure]_(x in (S i)) f x) | i in [set: nat] ] =
-     \int[lebesgue_measure]_(x in \bigcup_i S i) f x.
+  ereal_sup (range (fun i => \int[mu]_(x in (S i)) f x)) =
+  \int[mu]_(x in \bigcup_i S i) f x.
 Proof.
-move=> nndS mS mUS mf f0.
-apply/esym.
-have : \int[lebesgue_measure]_(x in S i) f x @[i --> \oo] -->
-   ereal_sup [set \int[lebesgue_measure]_(x in S i) f x | i in [set: nat]].
-  apply: (@ereal_nondecreasing_cvgn _ (fun i => \int[lebesgue_measure]_(x in S i) f x)).
-  apply/nondecreasing_seqP => n.
-  apply: ge0_subset_integral => /=.
-          exact: mS.
-        exact: mS.
-      apply: measurable_funS mf.
-        exact: mUS.
-      exact: bigcup_sup.
-    move=> x Snx.
-    apply: f0.
-    by exists n.+1.
-  rewrite -subsetEset.
-  exact: nndS.
-move/cvg_lim => <- //.
-apply/esym.
+move=> nndS mS mf f0.
+have /cvg_lim <- // : \int[mu]_(x in S i) f x @[i --> \oo] -->
+    ereal_sup (range (fun i => \int[mu]_(x in S i) f x)).
+  apply/ereal_nondecreasing_cvgn/nondecreasing_seqP => n.
+  apply: ge0_subset_integral => //=; [exact: mS|exact: mS| | |].
+  - by apply: measurable_funS mf; [exact: bigcup_measurable|exact: bigcup_sup].
+  - by move=> x Snx; rewrite f0//=; exists n.+1.
+  - by rewrite -subsetEset; exact: nndS.
 under eq_fun do rewrite integral_mkcond/=.
-rewrite -monotone_convergence//=; last 3 first.
-      move=> n.
-      apply/(measurable_restrictT f) => //.
-      apply: measurable_funS mf => //.
-      exact: bigcup_sup.
-    move=> n x _.
-    apply: erestrict_ge0 => {}x Snx.
-    apply: f0.
-    by exists n.
-  move=> x _.
-  apply/nondecreasing_seqP => n.
-    apply: restrict_lee => //.
-    move=> {}x Snx.
-    apply: f0.
-    by exists n.+1.
-  rewrite -subsetEset.
-  exact: nndS.
+rewrite -/mu -monotone_convergence//=; last 3 first.
+- move=> n; apply/(measurable_restrictT f) => //.
+  by apply: measurable_funS mf; [exact: bigcup_measurable|exact: bigcup_sup].
+- by move=> n x _; apply: erestrict_ge0 => {}x Snx; apply: f0; exists n.
+- move=> x _; apply/nondecreasing_seqP => n; apply: restrict_lee => //.
+    by move=> {}x Snx; apply: f0; exists n.+1.
+  by rewrite -subsetEset; exact: nndS.
 rewrite [RHS]integral_mkcond/=.
-apply: eq_integral => /=.
-rewrite /g_sigma_algebraType/ocitv_type => x _.
-transitivity (ereal_sup (range (fun x0 : nat => (f \_ (S x0)) x))).
+apply: eq_integral => /=; rewrite /g_sigma_algebraType/ocitv_type => x _.
+transitivity (ereal_sup (range (fun n => (f \_ (S n)) x))).
   apply/cvg_lim => //.
-  apply: ereal_nondecreasing_cvgn.
-  apply/nondecreasing_seqP => n.
-  apply: restrict_lee.
-    move=> {}x Snx.
-    apply: f0.
-    by exists n.+1.
-  rewrite -subsetEset.
-  exact: nndS.
+  apply/ereal_nondecreasing_cvgn/nondecreasing_seqP => n; apply: restrict_lee.
+    by move=> {}x Snx; apply: f0; exists n.+1.
+  by rewrite -subsetEset; exact: nndS.
 apply/eqP; rewrite eq_le; apply/andP; split.
-- apply: ub_ereal_sup.
-  move=> _/= [n _ <-].
-  apply: restrict_lee => //.
-  exact: bigcup_sup.
-- rewrite patchE.
-  case: ifP.
-    rewrite inE.
-    move=> [n _ Snx].
-    apply: ereal_sup_le.
-    exists ((f \_ (S n)) x) => //.
-    rewrite patchE ifT=> //.
-    by rewrite inE.
-  move/negbT/negP.
-  rewrite inE /bigcup/=.
-  move/forallPNP => nSx.
-  apply/ereal_sup_le.
-  exists point => //.
-  exists 0%R => //.
-  rewrite patchE ifF//.
-  apply/negbTE.
-  apply/negP.
-  rewrite inE.
-  exact: nSx.
+- apply: ub_ereal_sup => _/= [n _ <-].
+  by apply: restrict_lee => //; exact: bigcup_sup.
+- rewrite patchE; case: ifPn=> [|/negP].
+    rewrite inE => -[n _ Snx].
+    apply: ereal_sup_le; exists (f \_ (S n) x) => //.
+    by rewrite patchE mem_set.
+  rewrite inE -[X in X -> _]/((~` _) x) setC_bigcup => nSx.
+  apply/ereal_sup_le; exists point => //=; exists 0%R => //.
+  by rewrite patchE memNset//; exact: nSx.
 Qed.
 
 Lemma le0_nondecreasing_set_cvg_integral {R : realType}
   (S : nat -> set R) (f : R -> \bar R) :
    {homo S : n m / (n <= m)%N >-> (n <= m)%O} ->
   (forall i, measurable (S i)) ->
-  measurable (\bigcup_i S i) ->
   measurable_fun (\bigcup_i S i) f ->
   (forall x, (\bigcup_i S i) x -> f x <= 0) ->
   ereal_inf [set (\int[lebesgue_measure]_(x in (S i)) f x) | i in [set: nat] ] =
      \int[lebesgue_measure]_(x in \bigcup_i S i) f x.
 Proof.
-move=> incrS mS mUS mf f0.
+move=> incrS mS mf f0.
 transitivity (- ereal_sup [set \int[lebesgue_measure]_(x in S i) (fun x => - f x) x | i in [set: nat]]).
   apply/eqP; rewrite eq_le; apply/andP; split.
     admit.
@@ -589,8 +535,7 @@ have <- : lim ((\int[mu]_(x in `[0%R, n.+1%:R]) (expR (- x))%:E) @[n --> \oo]) =
           by rewrite natz.
         by move=> /= x [n _]/=; rewrite !in_itv/= => /andP[->].
       (* applying improper integral *)
-      rewrite -ge0_nondecreasing_set_cvg_integral//; last 3 first.
-            exact: bigcupT_measurable.
+      rewrite -ge0_nondecreasing_set_cvg_integral//; last 2 first.
           apply: measurable_funTS.
           apply: (measurable_comp measurableT) => //.
           exact: (measurable_comp measurableT).
@@ -622,7 +567,7 @@ have <- : lim ((\int[mu]_(x in `[0%R, n.+1%:R]) (expR (- x))%:E) @[n --> \oo]) =
 rewrite -{1}(@add0e _ 1).
 apply/cvg_lim => //.
 under eq_cvg => n.
-  rewrite (@within_continuous_FTC2 _ (fun x => expR (- x)) (fun x => - expR (- x))%R 0%R n.+1%:R)//; last 3 first.
+  rewrite (@continuous_FTC2 _ (fun x => expR (- x)) (fun x => - expR (- x))%R 0%R n.+1%:R)//; last 3 first.
   - rewrite expRN1.
     apply: continuous_subspaceT.
     move=> x.
