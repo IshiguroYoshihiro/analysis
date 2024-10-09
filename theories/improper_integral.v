@@ -701,11 +701,120 @@ Admitted.
 
 End integration_by_substitution.
 
+Section Rceil_lemma.
+Context {R : realType}.
+
+Lemma ler_RceilD (x y : R) :
+  (Rceil (x + y) <= Rceil x + Rceil y)%R.
+Proof.
+Admitted.
+
+End Rceil_lemma.
+
+Section integral_bigsetU.
+Local Open Scope ereal_scope.
+Context d (T : measurableType d) (R : realType)
+        (mu : {measure set T -> \bar R}).
+
+Lemma integral_bigsetU_EFin (I : eqType) (F : I -> set T) (f : T -> R)
+    (s : seq I) :
+  (forall n : I, d.-measurable (F n)) ->
+  uniq s ->
+  trivIset [set` s] F ->
+  let D := \big[setU/set0]_(i <- s) F i in
+  measurable_fun D (EFin \o f) ->
+  \int[mu]_(x in D) (f x)%:E = (\sum_(i <- s) (\int[mu]_(x in F i) (f x)%:E)).
+Proof.
+move=> mF; elim: s => [|h t ih] us tF D mf.
+  by rewrite /D 2!big_nil integral_set0.
+rewrite /D big_cons integral_setU_EFin//.
+- rewrite big_cons ih//.
+  + by move: us => /= /andP[].
+  + by apply: sub_trivIset tF => /= i /= it; rewrite inE it orbT.
+  + apply: measurable_funS mf => //; first exact: bigsetU_measurable.
+    by rewrite /D big_cons; exact: subsetUr.
+- exact: bigsetU_measurable.
+- by move/EFin_measurable_fun : mf; rewrite /D big_cons.
+- apply/eqP; rewrite big_distrr/= big_seq big1// => i it.
+  move/trivIsetP : tF; apply => //=; rewrite ?mem_head//.
+  + by rewrite inE it orbT.
+  + by apply/eqP => hi; move: us => /=; rewrite hi it.
+Qed.
+
+End integral_bigsetU.
+
+From mathcomp Require Import archimedean.
+
+Section itv_bnd_infty_bigcup_shiftn.
+
+Lemma itv_bnd_infty_bigcup_shiftn (R : realType) b (x : R) (n : nat):
+  [set` Interval (BSide b x) +oo%O] =
+  \bigcup_i [set` Interval (BSide b x) (BLeft (x + (i + n)%:R))].
+Proof.
+apply/seteqP; split=> y; rewrite /= !in_itv/= andbT; last first.
+  by move=> [k _ /=]; move: b => [|] /=; rewrite in_itv/= => /andP[//] /ltW.
+move=> xy; exists (`|Num.ceil (y - x)|)%N => //=. Admitted.
+(* rewrite in_itv/= xy/= -lerBlDl.
+apply: (@le_trans _ _ (`|Num.ceil (y - x)|)%N%:R); last by rewrite natrD lerDl.
+rewrite !natr_absz/= ger0_norm -?ceil_ge0 ?ceil_ge//; last first.
+rewrite (lt_le_trans (ltrN10 R))// subr_ge0.
+by case: b xy => //= /ltW.
+Qed.
+*)
+
+Lemma itv_bnd_infty_bigcup_shiftS (R : realType) b (x : R):
+  [set` Interval (BSide b x) +oo%O] =
+  \bigcup_i [set` Interval (BSide b x) (BLeft (x + i.+1%:R))].
+Proof.
+under eq_bigcupr do rewrite -addn1.
+exact: itv_bnd_infty_bigcup_shiftn.
+Qed.
+
 Section improper_integration_by_substitution.
 Local Open Scope ereal_scope.
 Context {R : realType}.
 Notation mu := lebesgue_measure.
 Implicit Types (F G f : R -> R) (a b : R).
+
+Lemma decreasing_fun_itv_infty_bnd_bigcup F (x : R) :
+  {in `[x, +oo[ &, {homo F : x y /~ (x < y)%R}} ->
+  F x @[x --> +oo%R] --> -oo%R ->
+  `]-oo, F x]%classic = \bigcup_i `](F (x + i.+1%:R)%R), F x]%classic.
+(*  [set` Interval -oo%O (BSide b (F x))] =
+  \bigcup_i [set` Interval (BLeft (F (x + i%:R)%R)) (BSide b (F x))].
+*)
+Proof.
+move=> decrF nyF.
+rewrite real_interval.itv_infty_bnd_bigcup.
+rewrite eqEsubset; split.
+  move=> y/= [n _]/=.
+  rewrite in_itv/= => /andP[Fxny yFx].
+  have [i iFxn] : exists i, (F (x + i.+1%:R) < F x - n%:R)%R.
+    move/cvgrNy_lt : nyF.
+    move/(_ (F x - n%:R)%R) => [z [zreal zFxn]].
+    exists `| Num.ceil (z - x) |%N.
+    apply: zFxn.
+    rewrite -ltrBlDl.
+    rewrite (le_lt_trans (Num.Theory.le_ceil _))//.
+      exact: num_real.
+    rewrite (le_lt_trans (ler_norm _))//.
+    rewrite -natr1.
+    rewrite -intr_norm.
+    by rewrite ltrDl.
+  exists i => //=.
+  rewrite in_itv/=; apply/andP; split => //.
+  exact: lt_le_trans Fxny.
+move=> z/= [n _ /=].
+rewrite in_itv/= => /andP[Fxnz zFx].
+exists `| Num.ceil (F (x + n.+1%:R)%R - F x)%R |%N.+1 => //=.
+rewrite in_itv/= zFx andbT.
+rewrite lerBlDr -lerBlDl.
+rewrite (le_trans _ (abs_ceil_ge _))//.
+rewrite ler_normr; apply/orP; right.
+rewrite opprB.
+apply: lerB => //.
+by rewrite ltW.
+Qed.
 
 Lemma integration_by_substitution_decreasing_opinfty F G a :
   {in `[a, +oo[ &, {homo F : x y /~ (x < y)%R}} ->
@@ -718,22 +827,78 @@ Lemma integration_by_substitution_decreasing_opinfty F G a :
   (* {within `]-oo, F a[, continuous G *)
   {in `]-oo, F a[, continuous G} ->
   (G x @[x --> (F a)^'-] --> G (F a)) ->
-  (F x)%:E @[x --> +oo%R] --> -oo%E ->
+  F x @[x --> +oo%R] --> -oo%R ->
   \int[mu]_(x in `]-oo, F a]) (G x)%:E =
   \int[mu]_(x in `[a, +oo[) (((G \o F) * - F^`()) x)%:E.
 Proof.
 move=> decrF cdF /cvg_ex[/= dFa cdFa] /cvg_ex[/= dFoo cdFoo].
 move=> cFa dF cG cGFa Fny.
 transitivity (limn (fun n => \int[mu]_(x in `[F (a + n%:R)%R, F a]) (G x)%:E)).
-rewrite real_interval.itv_infty_bnd_bigcup.
-rewrite seqDU_bigcup_eq.
-rewrite monotone_convergence.
-trivIset_seqDU.
-  rewrite -
-  apply/esym.
-  admit.
-transitivity (limn (fun n => \int[mu]_(x in `[a, (a + n%:R)%R]) (((G \o F) * - F^`()) x)%:E)); last first.
-  admit.
+  rewrite (decreasing_fun_itv_infty_bnd_bigcup decrF Fny).
+  rewrite seqDU_bigcup_eq.
+  rewrite integral_bigcup/=; last 3 first.
+        exact: trivIset_seqDU.
+      move=> n.
+      admit.
+    admit. (* ? *)
+  apply: congr_lim.
+  apply/funext => n.
+  rewrite -integral_bigsetU_EFin//=; last 4 first.
+  - admit.
+  - admit.
+  - admit.
+  - rewrite big_mkord.
+    rewrite -bigsetU_seqDU.
+    apply: (measurable_funS (measurable_itv `]-oo, F a])).
+      admit.
+    admit.
+  rewrite -integral_itv_obnd_cbnd; last first.
+    admit.
+  congr (integral _).
+  rewrite big_mkord -bigsetU_seqDU.
+  rewrite -(bigcup_mkord n (fun k => `](F (a + k.+1%:R)), (F a)]%classic)).
+  rewrite eqEsubset; split.
+    move=> x [k /= kn].
+    rewrite !in_itv/= => /andP[FaSkx ->].
+    rewrite andbT.
+    rewrite (le_lt_trans _ FaSkx)//.
+    move: kn.
+    rewrite leq_eqVlt => /orP[/eqP -> //|Skn].
+    apply/ltW; apply: decrF.
+        admit.
+      admit.
+    by rewrite ler_ltD// ltr_nat.
+  case: n; first by rewrite addr0 set_interval.set_itvoc0.
+  move=> n.
+  by apply: (@bigcup_sup _ _ n) => /=.
+transitivity (limn (fun n => \int[mu]_(x in `[a, (a + n%:R)%R[) (((G \o F) * - F^`()) x)%:E)); last first.
+  rewrite itv_bnd_infty_bigcup_shiftS.
+  rewrite seqDU_bigcup_eq.
+  rewrite integral_bigcup/=; last 3 first.
+  - admit.
+  - admit.
+  - admit. (* ? *)
+  apply: congr_lim.
+  apply/funext => n.
+  rewrite -integral_bigsetU_EFin/=; last 4 first.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  congr (integral _).
+  rewrite big_mkord -bigsetU_seqDU.
+  rewrite -(bigcup_mkord n (fun k => `[a, (a + k.+1%:R)[%classic)).
+  rewrite eqEsubset; split.
+    case: n; first by rewrite addr0 set_interval.set_itvco0.
+    move=> n.
+    by apply: (@bigcup_sup _ _ n) => /=.
+  move=> x [k /= kn].
+  rewrite !in_itv/= => /andP[-> xaSk]/=.
+  rewrite (lt_le_trans xaSk)//.
+  move: kn.
+  rewrite leq_eqVlt => /orP[/eqP -> //|Skn].
+  apply/ltW.
+  by rewrite ler_ltD// ltr_nat.
 apply: congr_lim.
 apply/funext; case; first by rewrite addr0 !set_interval.set_itv1 !integral_set1.
 move=> n.
