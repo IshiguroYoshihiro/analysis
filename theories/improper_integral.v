@@ -70,7 +70,48 @@ Admitted.
 (*============================================================================*)
 (* my works begin here *)
 
-Lemma cvgr_expR {R : realType} : (@expR R (- x)) @[x --> +oo%R] --> 0%R.
+(* TODO: PR *)
+Lemma lt_atan {R : realType} : {homo (@atan R) : x y / (x < y)%R}.
+Proof.
+move=> x y xy; rewrite -subr_gt0.
+have datan z : z \in `]x, y[ -> is_derive z 1%R atan (1 + z ^+ 2)^-1.
+  by move=> _; exact: is_derive1_atan.
+have catan : {within `[x, y], continuous atan}.
+  by apply: derivable_within_continuous => z _; exact: ex_derive.
+have [c] := MVT xy datan catan.
+have [-> _ ->|c0 _ ->] := eqVneq c 0%R.
+  by rewrite expr0n/= addr0 invr1 mul1r subr_gt0.
+by rewrite mulr_gt0 ?subr_gt0// invr_gt0 addr_gt0// exprn_even_gt0.
+Qed.
+
+Lemma nondecreasing_atan {R : realType} : {homo @atan R : x y / (x <= y)%R}.
+Proof.
+by move=> x y; rewrite le_eqVlt => /predU1P[-> //|xy]; exact/ltW/lt_atan.
+Qed.
+
+(* TODO: PR *)
+Lemma atan_pinfty_pi2 {R : realType} : (@atan R) x @[x --> +oo%R] --> pi / 2.
+Proof.
+rewrite (_: pi / 2 = sup (range atan)).
+  apply: (nondecreasing_cvgr nondecreasing_atan); exists (pi / 2)%R.
+  by move=> _ /= [x _ <-]; exact/ltW/atan_ltpi2.
+apply/eqP; rewrite eq_le; apply/andP; split; last first.
+  apply: sup_le_ub.
+    by exists 0%R, 0%R => //; exact: atan0.
+  by move=> _ /= [x _ <-]; exact/ltW/atan_ltpi2.
+have -> : pi / 2 = sup `[0%R, pi / 2[%classic :> R.
+  by rewrite real_interval.sup_itv// bnd_simp divr_gt0// pi_gt0.
+apply: le_sup; last 2 first.
+- by exists 0%R; rewrite /= in_itv/= lexx/= divr_gt0// pi_gt0.
+- split; first by exists 0%R, 0%R => //; rewrite atan0.
+  by exists (pi / 2)%R => _ [x _ <-]; exact/ltW/atan_ltpi2.
+move=> x/= /[!in_itv]/= /andP[x0 xpi2].
+apply/downP; exists (atan (tan x)) => /=; first by exists (tan x).
+rewrite tanK// in_itv/= xpi2 andbT (lt_le_trans _ x0)//.
+by rewrite ltrNl oppr0 divr_gt0// pi_gt0.
+Qed.
+
+Lemma cvgr_expR {R : realType} : @expR R (- x) @[x --> +oo%R] --> 0%R.
 Proof.
 apply/cvgrPdist_le => e e0; near=> x.
 rewrite sub0r normrN ger0_norm; last exact: expR_ge0.
@@ -873,7 +914,7 @@ transitivity (limn (fun n => \int[mu]_(x in `[F (a + n%:R)%R, F a]) (G x)%:E)).
   - exact: (@sub_trivIset _ _ _ [set: nat]).
   - apply/EFin_measurable_fun.
     rewrite big_mkord.
-      rewrite -bigsetU_seqDU.
+    rewrite -bigsetU_seqDU.
     apply: (measurable_funS _ (@bigsetU_bigcup _ (fun k =>`]F (a + k.+1%:R)%R, _]%classic) _)).
       exact: bigcup_measurable.
     exact/measurable_fun_bigcup.
@@ -888,7 +929,7 @@ transitivity (limn (fun n => \int[mu]_(x in `[F (a + n%:R)%R, F a]) (G x)%:E)).
     by rewrite -(@big_mkord _ _ _ _ xpredT (seqDU (fun i => `](F (a + i.+1%:R)), (F a)]%classic))).
   rewrite -integral_itv_obnd_cbnd; last first.
     case: n => //.
-    rewrite addr0 set_interval.set_itvoc0; apply: measurable_fun_set0.
+    by rewrite addr0 set_interval.set_itvoc0; apply: measurable_fun_set0.
   congr (integral _).
   rewrite big_mkord -bigsetU_seqDU.
   rewrite -(bigcup_mkord n (fun k => `](F (a + k.+1%:R)), (F a)]%classic)).
@@ -898,13 +939,10 @@ transitivity (limn (fun n => \int[mu]_(x in `[F (a + n%:R)%R, F a]) (G x)%:E)).
     rewrite andbT.
     rewrite (le_lt_trans _ FaSkx)//.
     move: kn.
-    rewrite leq_eqVlt => /orP[/eqP -> //|Skn].
-    apply/ltW.
-    apply: decrF; rewrite ?in_itv/= ?andbT ?ltW ?ltrDl ?ler_ltD ?ltr_nat//.
-    rewrite (_:0%R = 0%:R)// ltr_nat.
-    exact: ltn_trans Skn.
-  case: n; first by rewrite addr0 set_interval.set_itvoc0.
-  move=> n.
+    rewrite leq_eqVlt => /predU1P[-> //|Skn].
+    apply/ltW/decrF; rewrite ?in_itv/= ?andbT ?ltW ?ltrDl ?ler_ltD ?ltr_nat//.
+    by rewrite ltr0n (leq_trans _ Skn).
+  case: n => [|n]; first by rewrite addr0 set_interval.set_itvoc0.
   by apply: (@bigcup_sup _ _ n) => /=.
 transitivity (limn (fun n => \int[mu]_(x in `[a, (a + n%:R)%R[) (((G \o F) * - F^`()) x)%:E)); last first.
   rewrite itv_bnd_infty_bigcup_shiftS.
@@ -928,11 +966,11 @@ transitivity (limn (fun n => \int[mu]_(x in `[a, (a + n%:R)%R[) (((G \o F) * - F
       apply: limr_le.
         admit.
       near=> h.
-      have : h != 0%R.
-        near: h.
-        exact: nbhs_dnbhs_neq.
+      have : h != 0%R by near: h; exact: nbhs_dnbhs_neq.
       rewrite neq_lt => /orP[h0|h0].
-      + admit.
+      + rewrite nmulr_rle0 ?invr_lt0// subr_ge0.
+        (* pbm: h + x can be strictly smaller than a and thus decrF does not apply *)
+        admit.
       + admit.
   - exact: trivIset_seqDU.
   apply: congr_lim.
@@ -957,11 +995,10 @@ transitivity (limn (fun n => \int[mu]_(x in `[a, (a + n%:R)%R[) (((G \o F) * - F
   apply/ltW.
   by rewrite ler_ltD// ltr_nat.
 apply: congr_lim.
-apply/funext; case; last admit.
-xxx
-
-move=> n.
-apply: integration_by_substitution_decreasing.
+apply/funext => -[|n].
+  by rewrite addr0 set_itv1 integral_set1 set_itv_ge -?leNgt ?lexx// integral_set0.
+rewrite integration_by_substitution_decreasing.
+- by rewrite integral_itv_bndo_bndc.
 - by rewrite ltrDl.
 - move=> x y /=; rewrite !in_itv/= => /andP[ax _] /andP[ay _] yx.
   by apply: decrF; rewrite //in_itv/= ?ax ?ay.
@@ -999,7 +1036,7 @@ apply: integration_by_substitution_decreasing.
     * by rewrite in_itv/= lexx.
     * by rewrite ltr_pwDr.
   + exact: cGFa.
-Qed.
+Admitted.
 
 Lemma integration_by_substitution_decreasing_opinfty F G a :
   {in `[a, +oo[ &, {homo F : x y /~ (x < y)%R}} ->
@@ -1085,9 +1122,11 @@ transitivity (limn (fun n => \int[mu]_(x in `[a, (a + n%:R)%R[) (((G \o F) * - F
   apply/ltW.
   by rewrite ler_ltD// ltr_nat.
 apply: congr_lim.
-apply/funext; case; first by rewrite addr0 !set_interval.set_itv1 !integral_set1.
-move=> n.
-apply: integration_by_substitution_decreasing.
+apply/funext => -[|n].
+  by rewrite addr0 set_itv1 integral_set1 set_itv_ge -?leNgt ?lexx// integral_set0.
+rewrite integration_by_substitution_decreasing.
+- rewrite integral_itv_bndo_bndc//.
+  admit.
 - by rewrite ltrDl.
 - move=> x y /=; rewrite !in_itv/= => /andP[ax _] /andP[ay _] yx.
   by apply: decrF; rewrite //in_itv/= ?ax ?ay.
@@ -1161,7 +1200,10 @@ rewrite ge0_integral_setU//=; last 2 first.
   rewrite set1I ifF//.
   admit.
 rewrite integral_set1 add0e.
-rewrite 
+Abort.
+
+End Rintegral_lemmas.
+
 Section Gauss_integration.
 Context {R : realType}.
 
@@ -1187,13 +1229,14 @@ wlog: D / ~ D 0%R.
   have ND00 : ~ (D `\ 0%R) 0%R by move=> /= [_]; exact.
   have [|] := EM (D 0%R); last first.
     have -> : D = D `\ 0%R.
+(*
       rewrite eqEsubset; split => x.
         move=> Dx/=; split => //.
           move=> x0.
           apply: (ND00).
           rewrite -x0/=; split => //.
-          move=> 
-        rewrite /=; move/and_comm.
+          admit.
+        by rewrite /=; move/and_comm => -[].
         rewrite  -implypN.
         
         move/(_ (@Logic.eq_refl R 0%R)).
@@ -1213,77 +1256,8 @@ set Dp := [set x : R | D x /\ (0 < x)%R].
 set Dn := [set x : R | D x /\ (x < 0)%R].
 have sepD : D = Dp `|` Dn.
   rewrite eqEsubset; split => [x Dx|x].
-  case : ltP x 0.
+  case : ltP x 0.*)
 Admitted.
-
-(* TODO: rename *)
-Lemma homo_lt_atan : {homo (@atan R) : x y / (x < y)%R}.
-Proof.
-move=> x y xy.
-rewrite -subr_gt0.
-have datan z : z \in `]x, y[ -> is_derive z 1%R atan (1 + z ^+ 2)^-1.
-  move=> _; exact: is_derive1_atan.
-have catan : {within `[x, y], continuous atan}.
-  apply: derivable_within_continuous => z _.
-  exact: ex_derive.
-have := (MVT xy datan catan).
-move=> [] c.
-case : (@eqVneq _ c 0%R) => [-> _| c0 _] ->.
-  by rewrite expr0n/= addr0 invr1 mul1r subr_gt0.
-rewrite pmulr_lgt0; last by rewrite subr_gt0.
-rewrite invr_gt0.
-apply: addr_gt0 => //.
-rewrite expr2.
-move : c0.
-case : (ltP 0%R c) => [c0 nc0|]; first exact: mulr_gt0.
-rewrite le_eqVlt => /predU1P[->/negP//|c0 _].
-by rewrite nmulr_rgt0.
-Qed.
-
-Lemma nondecreasing_atan : {homo @atan R : x y / (x <= y)%R}.
-Proof.
-move=> x y.
-rewrite le_eqVlt => /predU1P[-> //|xy].
-apply: ltW.
-exact: homo_lt_atan.
-Qed.
-
-(* TODO: PR *)
-Lemma atan_pinfty_pi2 : (@atan R) x @[x --> +oo%R] --> pi / 2.
-Proof.
-rewrite (_: pi / 2 = sup (range atan)); last first.
-  apply/eqP; rewrite eq_le; apply/andP; split.
-  - have -> : (@pi R / 2)%R = sup `[0%R, pi / 2[%classic.
-      rewrite real_interval.sup_itv// bnd_simp.
-      exact: lt_le_trans (pihalf_ge1 _).
-    apply: le_sup; last 2 first.
-        exists 0%R.
-        rewrite /= in_itv/= lexx/=.
-        exact: lt_le_trans (pihalf_ge1 _).
-      split.
-        by exists 0%R; exists 0%R => //; rewrite atan0.
-      exists (pi / 2)%R.
-      move=> _ [x _ <-].
-      by rewrite ltW// atan_ltpi2.
-    move=> x/=.
-    rewrite in_itv/= => /andP[x0 xpi2].
-    apply/downP.
-    exists (atan (tan x)) => /=.
-      by exists (tan x).
-    rewrite tanK//.
-    rewrite in_itv/= xpi2 andbT.
-    apply: lt_le_trans x0.
-    rewrite ltrNl oppr0.
-    exact: lt_le_trans (pihalf_ge1 _).
-  - apply: sup_le_ub.
-      by exists 0%R; exists 0%R => //; apply: atan0.
-    move=> _ /= [x _ <-].
-    by apply: ltW; apply: atan_ltpi2.
-apply: (nondecreasing_cvgr nondecreasing_atan).
-exists (pi / 2)%R.
-move=> _ /= [x _ <-].
-by apply: ltW; apply: atan_ltpi2.
-Qed.
 
 (* TODO: PR *)
 Lemma locally_integrable_cst (x : R) :
@@ -1839,13 +1813,15 @@ under eq_Rintegral => y _.
 Admitted.
 
 (* ref: https://www.phys.uconn.edu/~rozman/Courses/P2400_17S/downloads/gaussian-integral.pdf *)
-Lemma gauss_integration : (\int[mu]_x (gauss x))%R = sqrt pi.
+Lemma gauss_integration : (\int[mu]_x (gauss x))%R = Num.sqrt pi.
 Proof.
 have -> : (\int[mu]_x gauss x)%R = (Ig * 2)%R.
-  rewrite Rintegral_even/=; last 2 first.
-      rewrite eqEsubset; split => x//=.
-      by move=> _; exists (- x)%R => //; rewrite opprK.
-    move=> x.
+  rewrite Rintegral_even/=; last 4 first.
+  - admit.
+  - admit.
+  - rewrite eqEsubset; split => x//=.
+    by move=> _; exists (- x)%R => //; rewrite opprK.
+  - move=> x.
     by rewrite /gauss sqrrN.
   rewrite [RHS]mulrC; congr (2%R * _)%R.
   by rewrite [X in (\int[_]_(_ in X) _)%R](_:_= `[0%R, +oo[%classic).
@@ -1905,7 +1881,7 @@ rewrite expr2 mulrA [RHS]EFinM.
 rewrite EFinM EFinN !mulNe.
 congr (- (_ * _)).
 rewrite fineK//.
-Qed.
+Admitted.
 
 (*
 rewrite itv0ybig.
