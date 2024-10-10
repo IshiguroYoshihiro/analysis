@@ -258,7 +258,7 @@ move=> ab cf.
     move/continuous_within_itvP : cf => /(_ ab) [cf _ _].
     rewrite (_ : f = (f \o -%R) \o -%R); last first.
       by apply/funext => y; rewrite /= opprK.
-    apply: continuous_comp; first exact: (@opp_continuous _ R^o).
+    apply: continuous_comp; first exact: (@opp_continuous R^o).
     by apply: cf; rewrite -oppr_itvoo opprK.
   + move/continuous_within_itvP : cf => /(_ ab) [_ _ cf].
     apply/cvg_at_rightNP.
@@ -1370,7 +1370,7 @@ apply: ae_eq_integral => //.
   exact: beta_prob_dom.
 - apply: emeasurable_funM => //=; apply/measurableT_comp => //=.
   by apply/measurable_funTS; exact: measurable_beta_pdf.
-- apply: ae_eq_mul2l => /=.
+- apply: ae_eqe_mul2l => /=.
   rewrite Radon_NikodymE//=; first exact: beta_prob_dom.
   move=> ?.
   case: cid => /= h [h1 h2 h3].

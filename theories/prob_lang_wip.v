@@ -176,7 +176,7 @@ apply: ae_eq_integral => //=.
     exact: measurable_fun_f1.
   apply/measurable_funTS/measurableT_comp => //.
   exact: measurable_gauss_pdf.
-- apply: ae_eq_mul2l => /=.
+- apply: ae_eqe_mul2l => //=.
   rewrite Radon_NikodymE//=.
     exact: gauss01_dom.
   move=> gauss01_dom'.
