@@ -236,65 +236,30 @@ let
 
         meta = {
           description = "Analysis library compatible with Mathematical Components";
-          maintainers = [ lib.maintainers.cohencyril ];
-          license = lib.licenses.cecill-c;
+          maintainers = [ maintainers.cohencyril ];
+          license     = licenses.cecill-c;
         };
 
-        passthru = lib.mapAttrs (package: deps: mathcomp_ package) packages;
+        passthru = genAttrs packages mathcomp_;
       });
-      # split packages didn't exist before 0.6, so bulding nothing in that case
-      patched-derivation1 = derivation.overrideAttrs (
-        o:
-        lib.optionalAttrs
-          (
-            o.pname != null
-            && o.pname != "mathcomp-analysis"
-            && o.version != null
-            && o.version != "dev"
-            && lib.versions.isLt "0.6" o.version
-          )
-          {
-            preBuild = "";
-            buildPhase = "echo doing nothing";
-            installPhase = "echo doing nothing";
-          }
-      );
-      patched-derivation2 = patched-derivation1.overrideAttrs (
-        o:
-        lib.optionalAttrs (
-          o.pname != null
-          && o.pname == "mathcomp-analysis"
-          && o.version != null
-          && o.version != "dev"
-          && lib.versions.isLt "0.6" o.version
-        ) { preBuild = ""; }
-      );
-      # only packages classical and analysis existed before 1.7, so bulding nothing in that case
-      patched-derivation3 = patched-derivation2.overrideAttrs (
-        o:
-        lib.optionalAttrs
-          (
-            o.pname != null
-            && o.pname != "mathcomp-classical"
-            && o.pname != "mathcomp-analysis"
-            && o.version != null
-            && o.version != "dev"
-            && lib.versions.isLt "1.7" o.version
-          )
-          {
-            preBuild = "";
-            buildPhase = "echo doing nothing";
-            installPhase = "echo doing nothing";
-          }
-      );
-      patched-derivation = patched-derivation3.overrideAttrs (
-        o:
-        lib.optionalAttrs (o.version != null && (o.version == "dev" || lib.versions.isGe "0.3.4" o.version))
-          {
-            propagatedBuildInputs = o.propagatedBuildInputs ++ [ hierarchy-builder ];
-          }
-      );
-    in
-    patched-derivation;
+    # split packages didn't exist before 0.6, so bulding nothing in that case
+    patched-derivation1 = derivation.overrideAttrs (o:
+      optionalAttrs (o.pname != null && o.pname != "mathcomp-analysis" &&
+         o.version != null && o.version != "dev" && versions.isLt "0.6" o.version)
+      { preBuild = ""; buildPhase = "echo doing nothing"; installPhase = "echo doing nothing"; }
+    );
+    patched-derivation2 = patched-derivation1.overrideAttrs (o:
+      optionalAttrs (o.pname != null && o.pname == "mathcomp-analysis" &&
+         o.version != null && o.version != "dev" && versions.isLt "0.6" o.version)
+      { preBuild = ""; }
+    );
+    patched-derivation = patched-derivation2.overrideAttrs (o:
+      optionalAttrs (o.version != null
+        && (o.version == "dev" || versions.isGe "0.3.4" o.version))
+      {
+        propagatedBuildInputs = o.propagatedBuildInputs ++ [ hierarchy-builder ];
+      }
+    );
+    in patched-derivation;
 in
 mathcomp_ (if single then "single" else "analysis")
