@@ -913,17 +913,17 @@ have mGFNF' i : measurable_fun `[a, (a + i.+1%:R)[ ((G \o F) * - F^`())%R.
 transitivity (limn (fun n => \int[mu]_(x in `[F (a + n%:R)%R, F a]) (G x)%:E)).
   rewrite (decreasing_fun_itv_infty_bnd_bigcup decrF Fny).
   rewrite seqDU_bigcup_eq.
-  rewrite ge0_integral_bigcup/=; last 4 first.
-  - move=> n.
-    apply: measurableD => //.
-    exact: bigsetU_measurable.
-  - rewrite -seqDU_bigcup_eq.
-    apply/EFin_measurable_fun.
-    exact/measurable_fun_bigcup.
+  rewrite ge0_integral_bigcup/=; first last.
+  - exact: trivIset_seqDU.
   - rewrite -seqDU_bigcup_eq.
     move=> x [n _ /=]; rewrite in_itv/= => /andP[_ xFa].
     exact: G0.
-  - exact: trivIset_seqDU.
+  - rewrite -seqDU_bigcup_eq.
+    apply/EFin_measurable_fun.
+    exact/measurable_fun_bigcup.
+  - move=> n.
+    apply: measurableD => //.
+    exact: bigsetU_measurable.
   apply: congr_lim.
   apply/funext => n.
   rewrite -ge0_integral_bigsetU//=; last 5 first.
@@ -1004,6 +1004,7 @@ transitivity (limn (fun n => \int[mu]_(x in `]a, (a + n%:R)%R[) (((G \o F) * - F
         under eq_fun do rewrite scaleR1.
         exact.
       near=> h.
+  (* lemma? *)
       have : h != 0%R by near: h; exact: nbhs_dnbhs_neq.
       rewrite neq_lt => /orP[h0|h0].
       + rewrite nmulr_rle0 ?invr_lt0// subr_ge0.
@@ -1104,6 +1105,25 @@ rewrite integration_by_substitution_decreasing.
   + exact: cGFa.
 Unshelve. end_near. Qed.
 
+(*
+Lemma ge0_integration_by_substitution_increasing_opinfty F G a :
+  {in `[a, +oo[ &, {homo F : x y /~ (x < y)%R}} ->
+  {in `]a, +oo[, continuous F^`()} ->
+  cvg (F^`() x @[x --> a^'+]) ->
+  cvg (F^`() x @[x --> +oo%R]) ->
+  (* derivable_oo_continuous_bnd F a +oo *)
+  F x @[x  --> a^'+] --> F a ->
+  {in `]a, +oo[, forall x, derivable F x 1%R} ->
+  (* {within `]-oo, F a[, continuous G *)
+  {in `]-oo, F a[, continuous G} ->
+  (G x @[x --> (F a)^'-] --> G (F a)) ->
+  F x @[x --> +oo%R] --> -oo%R ->
+  {in `]-oo, F a], forall x, (0 <= G x)%R} ->
+  \int[mu]_(x in `]-oo, F a]) (G x)%:E =
+  \int[mu]_(x in `[a, +oo[) (((G \o F) * - F^`()) x)%:E.
+Proof.
+Admitted.
+*)
 Lemma integration_by_substitution_decreasing_opinfty_old F G a :
   {in `[a, +oo[ &, {homo F : x y /~ (x < y)%R}} ->
   {in `]a, +oo[, continuous F^`()} ->
@@ -1235,6 +1255,31 @@ Abort.
 End improper_integration_by_substitution.
 
 Section Rintegral_lemmas.
+
+Lemma RintegralZl d (T : measurableType d) (R : realType)
+  (mu : measure T R) (D : set T) :
+  d.-measurable D ->
+  forall (f : T -> R), mu.-integrable D (EFin \o f) ->
+  forall r, (\int[mu]_(x in D) (r * f x) = r * \int[mu]_(x in D) f x)%R.
+Proof.
+move=> mD f intf r.
+rewrite (_:r = fine r%:E)//.
+rewrite -fineM//; last exact: integral_fune_fin_num.
+congr (fine _).
+under eq_integral do rewrite EFinM.
+exact: integralZl.
+Qed.
+
+Lemma RintegralZr d (T : measurableType d) (R : realType)
+  (mu : measure T R) (D : set T) :
+  d.-measurable D ->
+  forall (f : T -> R), mu.-integrable D (EFin \o f) ->
+  forall r, (\int[mu]_(x in D) (f x * r) = \int[mu]_(x in D) f x * r)%R.
+Proof.
+move=> mD f intf r.
+by rewrite mulrC -RintegralZl//; under eq_Rintegral do rewrite mulrC.
+Qed.
+
 Context {R : realType}.
 Let mu := @lebesgue_measure R.
 
@@ -1864,14 +1909,65 @@ rewrite ler_expR -ler_sqrt; last exact: sqr_ge0.
 by rewrite sqrtr_sqr ger0_norm.
 Unshelve. end_near. Qed.
 
+Import numFieldNormedType.Exports.
+
+
 Let dJ : {in `]0%R, +oo[, J^`() =1 (fun x => (- 2) * Ig * (gauss x))%R}.
 Proof.
 move=> x; rewrite in_itv/= => /andP[x0 _].
-have -> : J ^`() x = (\int[mu]_(y in `[0%R, +oo[)
+transitivity (\int[mu]_(y in `[0%R, +oo[)
     (fun y0 : R => (fun x => expR (- (x ^+ 2 * (1%R + (y0 ^+ 2)%R)%E))
          / (1%R + (y0 ^+ 2)%R)%E)^`() x) y)%R.
 (* interchange integration and derivation *)
 (* by lebesgue differentiaton theorem? *)
+(* FTC1 *)
+  transitivity  (\int[mu]_(y in `[0, +oo[)
+      (((-%R (fun x1 : R => expR (- (x1 ^+ 2 * (1%R + (y ^+ 2)%R)%E)) / (1%R + (y ^+ 2)%R)%E)^`())
+      \o -%R) * (- (-%R^`() )))%R
+        x)%R; last first.
+    apply: eq_Rintegral.
+    move=> z z0.
+    rewrite !fctE/=.
+    have := (@derive_val _ _ _ _ _ _ _ (is_deriveNid x 1%R)).
+    rewrite -derive1E => ->.
+    rewrite opprK mulr1.
+    rewrite !derive1E.
+    rewrite !deriveMr; last 2 first.
+        admit.
+      admit.
+    rewrite -mulrN.
+    congr (_ * _)%R.
+    rewrite -!derive1E/=.
+    rewrite derive1_comp; last 2 first. 
+        admit.
+      admit.
+    rewrite [RHS]derive1_comp; last 2 first.
+        admit.
+      admit.
+    rewrite -mulrN.
+    congr (_ * _)%R.
+      congr expR^`().
+      congr (- (_ * _))%R.
+      rewrite !expr2.
+      by rewrite mulrN mulNr opprK.
+    rewrite !derive1E.
+    rewrite !deriveN; last 2 first.
+        admit.
+      admit.
+    congr -%R.
+    rewrite !deriveMr/=; last 2 first.
+        admit.
+      admit.
+    rewrite -mulrN.
+    congr (_ * _)%R.
+    rewrite !exp_derive.
+    rewrite /GRing.scale/= !mulr1 -mulrN.
+    by rewrite opprK.
+(*
+  rewrite /Rintegral.
+  rewrite -(@ge0_integration_by_substitution_decreasing_opinfty _ -%R).
+  rewrite continuous_FTC1.
+*)
   admit.
 under eq_Rintegral => y _.
   rewrite derive1E deriveM//=.
@@ -1883,8 +1979,20 @@ under eq_Rintegral => y _.
   rewrite -derive1E derive1_cst scaler0 add0r (deriveX 1%R)//.
   rewrite (@derive_val _ _ _ _ _ _ _ (is_derive_id x 1%R)).
   rewrite expr1.
-  
+  rewrite /GRing.scale/= mulr1.
+  rewrite /GRing.natmul/= oneE -mulrSr.
+  rewrite mulrCA mulrN mulrA -mulrN.
+  rewrite !mulrA divfK; last first.
+    admit.
+  over.
+rewrite /=.
+rewrite RintegralZr//; last first.
   admit.
+rewrite mulrC.
+  admit.
+
+xxx
+
 Admitted.
 
 (* ref: https://www.phys.uconn.edu/~rozman/Courses/P2400_17S/downloads/gaussian-integral.pdf *)
