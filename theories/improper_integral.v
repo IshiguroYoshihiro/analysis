@@ -765,8 +765,6 @@ End integral_bigsetU.
 
 From mathcomp Require Import archimedean.
 
-Section itv_bnd_infty_bigcup_shiftn.
-
 Lemma itv_bnd_infty_bigcup_shiftn (R : realType) b (x : R) (n : nat):
   [set` Interval (BSide b x) +oo%O] =
   \bigcup_i [set` Interval (BSide b x) (BLeft (x + (i + n)%:R))].
@@ -1534,6 +1532,450 @@ Admitted.
 
 End Rintegral_lemmas.
 
+Reserved Notation "'d1 f" (at level 10, f at next level, format "''d1'  f").
+Reserved Notation "'d2 f" (at level 10, f at next level, format "''d2'  f").
+
+Section partial.
+Local Open Scope ring_scope.
+Context {R : realType} {T : Type}.
+Variable (f : R -> T -> R).
+
+Definition partial1 y : R -> R := (f ^~ y)^`().
+
+End partial.
+Notation "'d1 f" := (partial1 f).
+
+Section mv_to_realfun.
+Context {R : realType}.
+
+Lemma cvg_dnbhsP (f : R -> R) (p l : R) :
+  f x @[x --> p^'] --> l <->
+  (forall u : R^nat, (forall n, u n != p) /\ (u n @[n --> \oo] --> p) ->
+    f (u n) @[n --> \oo] --> l).
+Proof.
+split=> [/cvgrPdist_le fpl u [up /cvgrPdist_lt uyp]|H]; last first.
+  apply: cvg_at_right_left_dnbhs.
+  - by apply/cvg_at_rightP => u [pu uyp]; apply: H; split => // n; rewrite gt_eqF.
+  - by apply/cvg_at_leftP => u [pu uyp]; apply: H; split => // n; rewrite lt_eqF.
+apply/cvgrPdist_le => e e0.
+have [r /= r0 {}fpl] := fpl _ e0.
+have [n _ {}uyp] := uyp _ r0.
+near=> t; apply: fpl => //=.
+apply: uyp.
+by near: t; exists n.
+Unshelve. all: end_near. Qed.
+
+Lemma cvgr_sub0 T {F : set_system T} {FF : Filter F} (f : T -> R) (k : R) :
+  (fun x => f x - k)%R @ F --> 0%R <-> f @ F --> k.
+Proof.
+split=> [|fFk]; first exact: cvg_zero.
+by rewrite -(@subrr _ k)//; apply: cvgB => //; exact: cvg_cst.
+Qed.
+
+End mv_to_realfun.
+
+Lemma RintegralD d {T : measurableType d} {R : realType}
+  (mu : measure T R) (D : set T) (f1 f2 : T -> R) : measurable D ->
+  mu.-integrable D (EFin \o f1) ->
+  mu.-integrable D (EFin \o f2) ->
+  (\int[mu]_(x in D) (f1 x + f2 x))%R =
+  (\int[mu]_(x in D) f1 x + \int[mu]_(x in D) f2 x)%R.
+Proof.
+move=> mD if1 if2.
+by rewrite /Rintegral integralD_EFin// fineD//; exact: integral_fune_fin_num.
+Qed.
+
+Lemma RintegralB d {T : measurableType d} {R : realType}
+  (mu : measure T R) (D : set T) (f1 f2 : T -> R) : measurable D ->
+  mu.-integrable D (EFin \o f1) ->
+  mu.-integrable D (EFin \o f2) ->
+  (\int[mu]_(x in D) (f1 x - f2 x))%R =
+  (\int[mu]_(x in D) f1 x - \int[mu]_(x in D) f2 x)%R.
+Proof.
+move=> mD if1 if2.
+by rewrite /Rintegral integralB_EFin// fineB//; exact: integral_fune_fin_num.
+Qed.
+
+Require Import set_interval.
+
+Module Leibniz.
+(* without ae predicates *)
+Section leibniz.
+Local Open Scope ring_scope.
+Context {R : realType} d {Y : measurableType d}.
+Variable mu : {measure set Y -> \bar R}.
+Variable f : R -> Y -> R.
+
+Variable c : R.
+Variable e : R.
+Hypothesis e0 : (0 < e)%R.
+
+Let I : set R := `](c - e), (c + e)[.
+Let Ic : I c.
+Proof. by rewrite /I/= in_itv/= ltrBlDr ltrDl e0. Qed.
+
+Variable A  : set Y.
+Hypothesis mA : measurable A.
+Hypothesis muA0 : mu A = 0.
+
+(* hypo (1) *)
+Hypothesis intf : forall x, I x -> mu.-integrable setT (EFin \o f x).
+
+(* hypo (2) *)
+Hypothesis derf1 : forall x y, I x -> (~` A) y ->
+  derivable (f ^~ y) x 1.
+
+(* hypo (3) *)
+Variable G : Y -> R.
+Hypothesis G_ge0 : forall y, 0 <= G y.
+Hypothesis intG : mu.-integrable setT (EFin \o G).
+Hypothesis G_ub :
+  forall x y, I x -> (~` A) y -> `|'d1 f y x| <= G y.
+
+Let F x' := \int[mu]_(y in ~` A) f x' y.
+
+Lemma differentiation_under_derivable x : I x -> derivable F^`() x 1.
+Proof.
+move=> Ix.
+rewrite /derivable.
+Admitted.
+
+Lemma differentiation_under_integral a : I a ->
+  F^`() a = \int[mu]_(y in ~` A) ('d1 f y) a.
+Proof.
+move=> Ia.
+rewrite /derive1.
+suff: h^-1 *: (F (h + a)%E - F a) @[h --> 0^'] --> \int[mu]_(y in ~` A) ('d1 f) y a.
+  by move/cvg_lim => ->.
+apply/cvg_dnbhsP => t [t_neq0 t_cvg0].
+suff: forall x_, (forall n : nat, x_ n != a) ->
+    (x_ n @[n --> \oo] --> a) -> (forall n, I (x_ n)) ->
+    (x_ n - a)^-1 *: (F (x_ n)%E - F a) @[n --> \oo] --> \int[mu]_(y in ~` A) ('d1 f) y a.
+  move=> suf.
+  apply/cvgrPdist_le => /= r r0.
+  have [rho rho0 H] := near_in_itv Ia.
+  move/cvgr_dist_lt : (t_cvg0) => /(_ _ rho0)[P _ t_cvg0'].
+  near \oo => N.
+  pose x (k : nat) : R := a + t (N + k)%N.
+  have L1 : (forall n : nat, x n != a).
+    move=> n.
+    by rewrite /x addrC eq_sym -subr_eq subrr eq_sym t_neq0.
+  have L2 : x n @[n --> \oo] --> a.
+    rewrite /x.
+    apply: cvg_zero.
+    set h := (X in X x @[x --> \oo] --> _).
+    have -> : h = (fun n => t (n + N)%N).
+      apply/funext => n.
+      by rewrite addnC /h (addrC a) addrK.
+    by rewrite cvg_shiftn.
+  have L3 : (forall n : nat, I (x n)).
+    move=> n; apply/set_mem; rewrite inE.
+    apply: H => /=.
+    rewrite /x opprD addrA subrr.
+    apply: t_cvg0' => //=.
+    suff: (P <= N)%N by move/leq_trans => ->//; rewrite leq_addr.
+    by near: N; exists P.
+  have := suf x L1 L2 L3.
+  move=> /cvgrPdist_le/(_ _ r0)[n _ /=] suf'.
+  near=> M.
+  have nM : (n <= M - N)%N.
+    rewrite leq_subRL.
+      by near: M; exists (N + n).
+    by near: M; exists N.
+  have := suf' _ nM.
+  rewrite /x subnKC.
+    by rewrite (addrC a) addrK.
+  by near: M; exists N.
+move=> {t t_neq0 t_cvg0} x_ x_neqa x_cvga Ix_.
+pose g_ n y : R := (f (x_ n) y - f a y) / (x_ n - a).
+have mg_ : (forall n : nat, measurable_fun (~` A) (fun y => (g_ n y)%:E)).
+  move=> n.
+  apply/EFin_measurable_fun.
+  rewrite /g_.
+  apply: measurable_funM => //.
+  apply: measurable_funB.
+    have /integrableP[+ _] := intf (Ix_ n).
+    by move/EFin_measurable_fun/measurable_funS; exact.
+  have /integrableP[+ _] := intf Ia.
+  move/EFin_measurable_fun.
+  exact: measurable_funS.
+have intg : forall n, mu.-integrable (~` A) (EFin \o g_ n).
+  move=> m.
+  rewrite /g_.
+  rewrite /comp/=.
+  under eq_fun do rewrite EFinM.
+  apply: integrableMl => //.
+    exact: measurableC.
+    under eq_fun do rewrite EFinB.
+    apply: integrableB.
+    exact: measurableC.
+    have := intf (Ix_ m).
+    apply: integrableS => //.
+    exact: measurableC.
+    have := intf Ia.
+    apply: integrableS => //.
+    exact: measurableC.
+    red.
+    near=> M.
+    red.
+    simpl.
+    move=> x Ax.
+    near: M.
+    exact: nbhs_pinfty_ge.
+have mG : mu.-integrable (~` A) (EFin \o G).
+  apply: integrableS intG => //.
+  exact: measurableC.
+have H1 : forall y, (~` A) y -> (g_ n y)%:E @[n --> \oo] --> (('d1 f) y a)%:E.
+  move=> y Ay.
+  rewrite /g_.
+  apply/fine_cvgP; split.
+    by apply: nearW.
+  rewrite /comp/=.
+  have := derf1 Ia Ay.
+  move=> /cvg_ex[/= l].
+  move=> tmp.
+  have d1fyal : ('d1 f) y a = l.
+    apply/cvg_lim => //.
+    rewrite /GRing.scale/= in tmp.
+    move: tmp.
+    by under eq_fun do rewrite mulr1.
+  have H : (forall n : nat, x_ n - a != 0) /\ x_ n - a @[n --> \oo] --> 0.
+    split.
+      move=> x.
+      by rewrite subr_eq0.
+    by apply/cvgr_sub0.
+  move: tmp => /cvg_dnbhsP/(_ _ H).
+  rewrite /GRing.scale/=.
+  under [in X in X -> _]eq_fun do rewrite mulr1 subrK.
+  move=> HH.
+  suff : (f (x_ x) y - f a y) / (x_ x - a) @[x --> \oo] --> ('d1 f) y a by [].
+  rewrite d1fyal.
+  by under eq_fun do rewrite mulrC.
+have H2 : forall (x : Y) (n : nat), (~` A) x -> (`|(g_ n x)%:E| <= (EFin \o G) x)%E.
+  move=> y n Ay.
+  rewrite /g_.
+  have [axn|axn|<-] := ltgtP a (x_ n); last first.
+  + by rewrite subrr mul0r abse0 lee_fin.
+  + have L1 : (forall x, x \in `](x_ n), a[ -> is_derive x 1 (f^~ y) (('d1 f) y x)).
+      move=> x xax_n.
+      apply: DeriveDef.
+        apply: derf1 => //.
+        apply: set_interval.subset_itvSoo xax_n.
+          rewrite bnd_simp.
+          have := Ix_ n.
+          by rewrite /I/= in_itv/= => /andP[/ltW].
+        rewrite bnd_simp.
+        have := Ia.
+        by rewrite /I/= in_itv/= => /andP[_ /ltW].
+      by rewrite /partial1 derive1E.
+    have L2 : {within `[(x_ n), a], continuous (f^~ y)}.
+      have : {within I, continuous (f^~ y)}.
+        apply: derivable_within_continuous => /= r Ir.
+        apply: derf1.
+        by apply/set_mem; rewrite inE.
+        done.
+      apply: continuous_subspaceW.
+        apply: set_interval.subset_itvSoo.
+          rewrite bnd_simp.
+          have := Ix_ n.
+          by rewrite /I/= in_itv/= => /andP[].
+        rewrite bnd_simp.
+        have := Ia.
+        by rewrite /I/= in_itv/= => /andP[_].
+    have [C caxn] := @MVT _ (f^~ y) (('d1 f) y) _ _ axn L1 L2.
+    rewrite normr_EFin normrM distrC => ->.
+    rewrite normrM -mulrA distrC normfV divff// ?normr_eq0 ?subr_eq0//.
+    rewrite mulr1.
+    rewrite lee_fin G_ub//.
+    rewrite /I/=.
+    apply: set_interval.subset_itvSoo caxn.
+      rewrite bnd_simp.
+      have := Ix_ n.
+      by rewrite /I/= in_itv/= => /andP[/ltW].
+    rewrite bnd_simp.
+    have := Ia.
+    by rewrite /I/= in_itv/= => /andP[_ /ltW].
+  + have L1 : (forall x, x \in `]a, (x_ n)[ -> is_derive x 1 (f^~ y) (('d1 f) y x)).
+      move=> x xax_n.
+      apply: DeriveDef.
+        apply: derf1 => //.
+        apply: set_interval.subset_itvSoo xax_n.
+          rewrite bnd_simp.
+          have := Ia.
+          by rewrite /I/= in_itv/= => /andP[/ltW].
+        have := Ix_ n.
+        by rewrite /I/= in_itv/= => /andP[_ /ltW].
+      by rewrite /partial1 derive1E.
+    have L2 : {within `[a, (x_ n)], continuous (f^~ y)}.
+      have : {within I, continuous (f^~ y)}.
+        apply: derivable_within_continuous => /= r Ir.
+        apply: derf1.
+        by apply/set_mem; rewrite inE.
+        done.
+      apply: continuous_subspaceW.
+        apply: set_interval.subset_itvSoo.
+          rewrite bnd_simp.
+          have := Ia.
+          by rewrite /I/= in_itv/= => /andP[].
+        rewrite bnd_simp.
+        have := Ix_ n.
+        by rewrite /I/= in_itv/= => /andP[_].
+    have [C caxn] := @MVT _ (f^~ y) (('d1 f) y) _ _ axn L1 L2.
+    move=> ->.
+    rewrite -mulrA.
+    rewrite divff// ?subr_eq0//.
+    rewrite mulr1.
+    rewrite lee_fin G_ub//.
+    rewrite /I/=.
+    apply: set_interval.subset_itvSoo caxn.
+      rewrite bnd_simp.
+      move: Ia.
+      by rewrite /I/= in_itv/= => /andP[/ltW + _].
+    rewrite bnd_simp.
+    have := Ix_ n.
+    by rewrite /I/= in_itv/= => /andP[_ /ltW].
+have mCA : measurable (~` A).
+  exact: measurableC.
+have mdf : measurable_fun (~` A) (fun y : Y => (('d1 f) y a)%:E).
+  apply: emeasurable_fun_cvg H1 => m.
+  by apply: mg_.
+have [K1 K2 K3] := @dominated_convergence _ _ _ mu _ mCA
+  (fun n y => (g_ n y)%:E) _ (EFin \o G) mg_ mdf (aeW _ H1) mG (aeW _ H2).
+rewrite /= in K2.
+rewrite /= in K3.
+rewrite [X in X @ _ --> _](_ : _ = (fun h => \int[mu]_(z in ~` A) g_ h z)); last first.
+  apply/funext => m.
+  rewrite /F.
+  rewrite -RintegralB; last 3 first.
+    by [].
+    have := intf (Ix_ m).
+    by apply: integrableS.
+    have := intf Ia.
+    by apply: integrableS.
+  rewrite -[LHS]RintegralZl; last 2 first.
+    by [].
+    rewrite /comp.
+    under eq_fun do rewrite EFinB.
+    apply: integrableB => //.
+    have := intf (Ix_ m).
+    apply: integrableS => //.
+    have := intf Ia.
+    by apply: integrableS => //.
+  apply: eq_Rintegral => y _.
+  rewrite mulrC.
+  by rewrite /g_.
+apply/cvgr_sub0.
+rewrite (_ : (fun x => \int[mu]_(z in ~` A) g_ x z - \int[mu]_(y in ~` A) ('d1 f y a)) =
+    (fun x => \int[mu]_(z in ~` A) (g_ x z - ('d1 f) z a)))%R; last first.
+  apply/funext => n.
+  by rewrite RintegralB//.
+apply: norm_cvg0.
+have {}K2 : (\int[mu]_(x in ~` A) (normr (g_ n x - ('d1 f) x a))) @[n --> \oo] --> 0.
+  rewrite /Rintegral.
+  by apply/fine_cvg => //.
+apply: (@squeeze_cvgr _ _ _ _ (cst 0) _ _ _ _ _ K2) => //.
+  apply/nearW => n.
+  rewrite /=.
+  rewrite normr_ge0/=.
+  apply: le_normr_integral => //.
+  rewrite /comp.
+  under eq_fun do rewrite EFinB.
+  apply: integrableB => //.
+  by apply: intg.
+exact: cvg_cst.
+Unshelve. all: end_near. Qed.
+
+End leibniz.
+End Leibniz.
+
+Check Leibniz.differentiation_under_integral.
+
+Section leibniz.
+Local Open Scope ring_scope.
+Context {R : realType} d {Y : measurableType d}.
+Variable mu : {measure set Y -> \bar R}.
+Variable A : set R.
+Hypothesis openA : open A.
+Variable f : R -> Y -> R.
+Variable theta : Y -> R.
+Variable B : set Y.
+Hypothesis mB : measurable B.
+
+Hypothesis inttheta : mu.-integrable [set: Y] (EFin \o theta).
+
+Hypothesis intf : forall x, A x -> mu.-integrable [set: Y] (EFin \o (f x)).
+Hypothesis derf1 :
+  {ae mu, forall y, B y -> forall x, A x -> derivable (f ^~ y) x 1}.
+Hypothesis theta_ub :
+  forall x, A x -> forall y, `|'d1 f y x| <= theta y.
+(* ref: https://planetmath.org/differentiationundertheintegralsign *)
+
+Let F x' := \int[mu]_(y in B) f x' y.
+
+Lemma differentiation_under_integrable x : A x ->
+  derivable F^`() x 1.
+Proof.
+Admitted.
+
+(* ref: https://www.math.wustl.edu/~sk/math4121.02-12-2021.pdf *)
+Lemma differentiation_under_integral x : A x ->
+  F^`() x = \int[mu]_(y in B) ('d1 f y) x.
+Proof.
+move=> Xx.
+pose t : nat -> R^o := fun n => x + n.+1%:R^-1.
+  (* t convergences towards x and t k != x for all k *)
+have txF :
+    (t k - x)^-1 * (F (t k) - F x) @[k --> \oo] --> \int[mu]_(y in B) ('d1 f) y x.
+  pose f_ k x y := (t k - x)^-1 * (f (t k) y - f x y).
+  have M1 k : (t k - x)^-1 * (F (t k) - F x) = \int[mu]_(y in B) f_ k x y.
+    rewrite /F.
+    rewrite /f_.
+    rewrite RintegralZl//=; last first.
+      admit.
+    congr *%R.
+    admit.
+  have M2 y : f_ k x y @[k --> \oo] --> 'd1 f y x.
+    rewrite /f_.
+    suff: k.+1%:R^-1 * (f (x + k.+1%:R^-1)%E y - f x y) @[k --> \oo] -->
+      ('d1 f) y x.
+      move=> suf.
+      admit.
+    rewrite /partial1.
+    have : derivable (f^~ y) x 1.
+      admit.
+    rewrite /derivable => /cvg_ex[/= l fxyl].
+    rewrite (_ : _ x = l); last first.
+      apply/cvg_lim => //=.
+      admit.
+    move/cvg_dnbhsP : fxyl => /(_ (t \- cst x)).
+    admit.
+  have H1 : (forall n : nat, measurable_fun B (fun y : Y => (f_ n x y)%:E)).
+    admit.
+  have H2 : measurable_fun B (EFin \o ('d1 f)^~ x).
+    admit.
+  have H3 : {ae mu, forall y : Y,
+      B y -> (f_ n x y)%:E @[n --> \oo] --> (EFin \o ('d1 f)^~ x) y}.
+    admit.
+  have H4 : mu.-integrable B (EFin \o theta).
+    admit.
+  have H5 : {ae mu, forall (y : Y) (n : nat), B y ->
+    (`|(f_ n x y)%:E| <= (EFin \o theta) y)%E}.
+    admit. (* using the MVT *)
+  have [K1 K2 K3] := @dominated_convergence _ _ _ mu B mB
+    (fun k y => (f_ k x y)%:E) (EFin \o (fun y => 'd1 f y x)) (EFin \o theta) H1 H2 H3 H4 H5.
+  rewrite /= in K3.
+  rewrite /= in K2.
+  suff: \int[mu]_(y in B) f_ k x y @[k --> \oo] --> \int[mu]_(y in B) ('d1 f) y x.
+    by under eq_fun do rewrite -M1.
+  admit.
+rewrite /F.
+rewrite /derive1.
+apply/cvg_lim => //=.
+admit.
+Admitted.
+
+End leibniz.
+
 Section Gauss_integration.
 Context {R : realType}.
 
@@ -2147,16 +2589,72 @@ Lemma ge0_integrable_comp_continuous_increasing (f g : R -> R)
 Proof.
 Admitted.
 
+Import Num.Theory.
+
 Let dJE : {in `]0%R, +oo[, J^`() =1 (fun x => (- 2) * Ig * (gauss x))%R}.
 Proof.
 move=> x; rewrite in_itv/= => /andP[x0 _].
-pose d_dx_dJ x0 y0 :=(dJ^~ y0)^`() x0.
+pose d_dx_dJ x0 y0 : R := (dJ^~ y0)^`() x0.
 rewrite /J.
 (* interchange integration and derivation *)
 (* by lebesgue differentiaton theorem? *)
 (* FTC1 *)
 transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
-  admit.
+  pose NdJ_dx (x y : R) : R := -%R (fun y => (dJ^~ y)^`() x) y.
+  rewrite (@differentiation_under_integral R _ _ (@lebesgue_measure R) _ openT dJ
+      (fun y => (Num.sqrt (expR 1))^-1 * expR (- y ^+ 2)))%R; last 5 first.
+    rewrite /=.
+    admit.
+    move=> x1 ?.
+    rewrite /=.
+    admit.
+    admit.
+    move=> x' ? /= y.
+    have d1tmp : 'd1 dJ y x' = (oneDsqrx y * - 2 * x' * dJ x' y)%R.
+      rewrite /partial1 /dJ/=.
+      rewrite (@derive1_comp _ (fun z => - z ^+ 2)%R
+                (fun z => expR (z * oneDsqrx y) / oneDsqrx y))//=.
+      rewrite !derive1E deriveN// exp_derive//= expr1.
+      rewrite deriveMr//=.
+      rewrite -derive1E derive1_comp//=.
+      rewrite !derive1E/=.
+      rewrite deriveMr//= derive_id mulr1.
+      admit.
+    rewrite {}d1tmp {}/dJ/=.
+    rewrite [leLHS](_ : _ = 2 * normr x' * (expR (- x' ^+ 2 * oneDsqrx y)))%R; last first.
+      admit.
+    admit.
+    done.
+  apply: eq_Rintegral => x1; rewrite inE/= in_itv/= andbT => x10.
+  rewrite /dJ /partial1/=.
+  rewrite (@derive1_comp _ (fun x => - x ^+ 2)%R
+            (fun y => expR (y * oneDsqrx x1) / oneDsqrx x1))//.
+  rewrite !derive1E.
+  rewrite deriveMr//=.
+  rewrite deriveN//=.
+  rewrite exp_derive//= expr1.
+  rewrite -derive1E derive1_comp//=.
+  rewrite !derive1E.
+  rewrite deriveMr//=.
+  rewrite (mulrCA _ (oneDsqrx x1)).
+  rewrite !mulrA.
+  rewrite mulVf// ?mul1r; last first.
+    by rewrite gt_eqF// ltr_pwDl// sqr_ge0.
+  rewrite derive_id mulr1.
+  rewrite /d_dx_dJ /dJ.
+  rewrite (@derive1_comp _ (fun x => - x ^+ 2)%R
+            (fun y => expR (y * oneDsqrx x1) / oneDsqrx x1))//.
+  rewrite !derive1E.
+  rewrite deriveN//= exp_derive expr1.
+  rewrite deriveMr//=.
+  rewrite -[in RHS]derive1E derive1_comp//=.
+  rewrite ![in RHS]derive1E.
+  rewrite deriveMr//= derive_id mulr1.
+  rewrite (mulrCA _ _ (oneDsqrx x1)).
+  rewrite mulVf ?mulr1; last first.
+    by rewrite gt_eqF// ltr_pwDl// sqr_ge0.
+  done.
+  done.
 have substE : \int[mu]_(y in `[0%R, +oo[) (expR (- x ^+ 2 * oneDsqrx y))%:E =
   \int[mu]_(y in `[0%R, +oo[)
                     ((((fun z => expR (- x ^+ 2) / x * expR (- z ^+ 2)) \o
