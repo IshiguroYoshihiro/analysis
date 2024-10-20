@@ -2067,35 +2067,189 @@ rewrite ler_expR -ler_sqrt; last exact: sqr_ge0.
 by rewrite sqrtr_sqr ger0_norm.
 Unshelve. end_near. Qed.
 
+Local Import set_interval.
+(* TODO: PR *)
+Lemma continuous_within_itvcyP (* R : realType *) (a : R) (f : R -> R) :
+  {within `[a, +oo[, continuous f} <->
+  {in `]a, +oo[, continuous f} /\ f x @[x --> a^'+] --> f a.
+Proof.
+split=> [af|].
+  have aa : a \in `[a, +oo[ by rewrite !in_itv/= lexx.
+  split; [|apply/cvgrPdist_lt => eps eps_gt0 /=].
+  - suff : {in `]a, +oo[%classic, continuous f}.
+      by move=> P c W; apply: P; rewrite inE.
+    rewrite -continuous_open_subspace; last exact: interval_open.
+    move: af; apply/continuous_subspaceW.
+    by move=> ?/=; rewrite !in_itv/= !andbT; exact: ltW.
+  - move/continuous_withinNx/cvgrPdist_lt/(_ _ eps_gt0) : (af a).
+    rewrite /dnbhs/= near_withinE near_simpl /prop_near1/nbhs/=.
+    rewrite -nbhs_subspace_in// /within/= near_simpl.
+    apply: filter_app; exists 2%R => //= c ca1 + ac.
+    by apply; rewrite ?gt_eqF ?in_itv/= ?ltW.
+move=> [cf fa].
+apply/subspace_continuousP => x /andP[].
+rewrite bnd_simp/= le_eqVlt => /predU1P[<-{x}|ax] _.
+- apply/cvgrPdist_lt => eps eps_gt0/=.
+  move/cvgrPdist_lt/(_ _ eps_gt0) : fa.
+  rewrite /at_right !near_withinE.
+  apply: filter_app; exists 1%R => //= c c1a + ac.
+  rewrite in_itv/= andbT le_eqVlt in ac.
+  by case/predU1P : ac => [->|/[swap]/[apply]//]; rewrite subrr normr0.
+  have xaoo : x \in `]a, +oo[ by rewrite in_itv/= andbT.
+  rewrite within_interior; first exact: cf.
+  suff : `]a, +oo[ `<=` interior `[a, +oo[ by exact.
+  rewrite -open_subsetE; last exact: interval_open.
+  by move=> ?/=; rewrite !in_itv/= !andbT; exact: ltW.
+Qed.
+
+(* TODO: PR *)
+Lemma continuous_within_itvycP (* R : realType *) (b : R) (f : R -> R) :
+  {within `]-oo, b], continuous f} <->
+  {in `]-oo, b[, continuous f} /\ f x @[x --> b^'-] --> f b.
+Proof.
+split=> [bf|].
+  have bb : b \in `]-oo, b] by rewrite !in_itv/= lexx.
+  split; [|apply/cvgrPdist_lt => eps eps_gt0 /=].
+  - suff : {in `]-oo, b[%classic, continuous f}.
+      by move=> P c W; apply: P; rewrite inE.
+    rewrite -continuous_open_subspace; last exact: interval_open.
+    move: bf; apply/continuous_subspaceW.
+    by move=> ?/=; rewrite !in_itv/=; exact: ltW.
+  - move/continuous_withinNx/cvgrPdist_lt/(_ _ eps_gt0) : (bf b).
+    rewrite /dnbhs/= near_withinE near_simpl /prop_near1/nbhs/=.
+    rewrite -nbhs_subspace_in// /within/= near_simpl.
+    apply: filter_app; exists 1%R => //= c cb1 + bc.
+    by apply; rewrite ?lt_eqF ?in_itv/= ?ltW.
+move=> [cf fb].
+apply/subspace_continuousP => x /andP[_].
+rewrite bnd_simp/= le_eqVlt=> /predU1P[->{x}|xb].
+- apply/cvgrPdist_lt => eps eps_gt0/=.
+  move/cvgrPdist_lt/(_ _ eps_gt0) : fb.
+  rewrite /at_right !near_withinE.
+  apply: filter_app; exists 1%R => //= c c1b + cb.
+  rewrite in_itv/= le_eqVlt in cb.
+  by case/predU1P : cb => [->|/[swap]/[apply]//]; rewrite subrr normr0.
+  have xb_i : x \in `]-oo, b[ by rewrite in_itv/=.
+  rewrite within_interior; first exact: cf.
+  suff : `]-oo, b[ `<=` interior `]-oo, b] by exact.
+  rewrite -open_subsetE; last exact: interval_open.
+  by move=> ?/=; rewrite !in_itv/=; exact: ltW.
+Qed.
+
+Lemma ge0_integrable_comp_continuous_increasing (f g : R -> R)
+ (l : R) (ir : itv_bound R) :
+  let i := Interval (BLeft l) ir in
+  {within [set` i], continuous f} ->
+  {in [set` i], {homo f : x y / (x < y)%R}} ->
+  {in [set` i], forall x, (0 <= g x)%R} ->
+  mu.-integrable [set` i] (EFin \o g) ->
+  mu.-integrable [set` i] (EFin \o (g \o f)).
+Proof.
+Admitted.
+
 Let dJE : {in `]0%R, +oo[, J^`() =1 (fun x => (- 2) * Ig * (gauss x))%R}.
 Proof.
 move=> x; rewrite in_itv/= => /andP[x0 _].
-transitivity (\int[mu]_(y in `[0%R, +oo[) (dJ^~ y)^`() x)%R.
+pose d_dx_dJ x0 y0 :=(dJ^~ y0)^`() x0.
+rewrite /J.
 (* interchange integration and derivation *)
 (* by lebesgue differentiaton theorem? *)
 (* FTC1 *)
-pose NdJ_dx (x y : R) := (-%R (fun y => (dJ^~ y)^`() x) y).
+transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
   admit.
-(*
-under eq_Rintegral => y _.
-  rewrite derive1E deriveM//=.
-  rewrite -!derive1E derive1_cst scaler0 add0r.
-  rewrite derive1_comp//.
-  rewrite !derive1E.
-  have /funeqP /(_ (- x ^+ 2 * (oneDsqrx y))%R) -> := derive_expR R.
-  rewrite deriveN// deriveM//.
-  rewrite -derive1E derive1_cst scaler0 add0r (deriveX 1%R)//.
-  rewrite (@derive_val _ _ _ _ _ _ _ (is_derive_id x 1%R)).
-  rewrite expr1.
-  rewrite /GRing.scale/= mulr1.
-  rewrite /GRing.natmul/= oneE -mulrSr.
-  rewrite mulrCA mulrN mulrA -mulrN.
-  rewrite !mulrA divfK; last first.
+have substE : \int[mu]_(y in `[0%R, +oo[) (expR (- x ^+ 2 * oneDsqrx y))%:E =
+  \int[mu]_(y in `[0%R, +oo[)
+                    ((((fun z => expR (- x ^+ 2) / x * expR (- z ^+ 2)) \o
+                    (fun z => x * z)) * (fun z => x * z)^`()) y)%:E.
+  apply: eq_integral => y _.
+  rewrite !fctE derive1E.
+  rewrite derive_val /GRing.scale/= mulr1.
+  rewrite mulrAC divfK//; last by rewrite gt_eqF.
+  by rewrite mulrDr mulr1 mulNr -exprMn expRD.
+transitivity (-2 * x * \int[mu]_(y in `[0, +oo[) (expR ((- x ^+ 2) * oneDsqrx y)))%R.
+  rewrite /Rintegral (_:-2 * x = fine (-2 * x)%:E)%R//.
+  rewrite -fineM; last 2 first.
+  - rewrite le0_fin_numE ?ltNyr//.
+    rewrite lee_fin.
+    by rewrite mulr_le0_ge0// ltW.
+  - rewrite ge0_fin_numE; last first.
+      admit.
+    rewrite substE.
+    rewrite -ge0_integration_by_substitution_increasing_opinfty; first last.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
+    rewrite mulr0.
+    rewrite (@itv_bndbnd_setU _ _ _ (BLeft 1%R))//; last by rewrite bnd_simp.
+    rewrite ge0_integral_setU//=; first last.
+    - admit.
+    - admit.
+    - admit.
+    under eq_integral do rewrite EFinM.
+    rewrite ge0_integralZl//; first last.
+    - admit.
+    - move=> ? _; exact: expR_ge0.
+    - admit.
+    apply: lte_add_pinfty.
+    apply: lte_mul_pinfty.
+    - admit.
+    - admit.
     admit.
-  over.
-*)
-rewrite mulrC.
+    apply: (@le_lt_trans _ _ Ig%:E).
+      admit.
+    exact: ltry.
+  rewrite mulNr EFinN mulNe.
+  rewrite -ge0_integralZl//; first last.
+  - admit.
+  - admit.
+  - admit.
+  rewrite -integral_ge0N; last first.
+    admit.
+  congr fine.
+  apply: eq_integral=> y; rewrite inE/= in_itv/= => y0.
+  rewrite /d_dx_dJ derive1E.
+  rewrite /dJ; under eq_fun do (rewrite mulrC); rewrite deriveZ/=; last exact: ex_derive.
+  rewrite -derive1E derive1_comp; first last.
+  - admit.
+  - admit.
+  rewrite derive1E derive_val.
+  rewrite mulrC /GRing.scale/= mulrA.
+  under eq_fun do (rewrite mulrC); rewrite derive1E deriveZ/=; last exact: ex_derive.
+  rewrite mulrA mulVf ?mul1r; last rewrite gt_eqF//.
+  rewrite deriveN// mulNr; congr (- _%:E).
+  rewrite exp_derive expr1.
+  by rewrite /GRing.scale/= mulr1.
+rewrite /Rintegral substE.
+rewrite -ge0_integration_by_substitution_increasing_opinfty//; first last.
+- admit.
+- admit.
+- admit.
+- admit.
+- admit.
+- admit.
+- admit.
+- admit.
+- admit.
+rewrite mulr0.
+under eq_integral do rewrite EFinM.
+rewrite ge0_integralZl//=; first last.
+- admit.
+- admit.
+- admit.
+rewrite fineM/=; first last.
+- admit.
+- admit.
+rewrite -!mulrA.
+rewrite [X in (-2 * X)%R]mulrCA !mulrA mulfK; last first.
   admit.
+by rewrite mulrAC.
 Admitted.
 
 (* ref: https://www.phys.uconn.edu/~rozman/Courses/P2400_17S/downloads/gaussian-integral.pdf *)
