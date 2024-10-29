@@ -1,13 +1,13 @@
 Require Import String.
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval.
-From mathcomp Require Import mathcomp_extra boolp classical_sets.
-From mathcomp Require Import functions cardinality fsbigop.
-Require Import signed reals ereal topology normedtype sequences esum exp.
-Require Import measure lebesgue_measure numfun lebesgue_integral itv.
-Require Import realfun derive.
-Require Import trigo.
-Require Import ftc.
+From mathcomp Require Import archimedean.
+From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
+From mathcomp Require Import cardinality fsbigop.
+From mathcomp Require Import signed reals ereal.
+From mathcomp Require Import topology normedtype sequences esum exp.
+From mathcomp Require Import measure lebesgue_measure numfun lebesgue_integral.
+From mathcomp Require Import itv realfun derive trigo ftc.
 
 From mathcomp Require Import ring lra.
 
@@ -27,6 +27,153 @@ Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 
+(* PR? *)
+Lemma normr_EFin {R : realType} (x : R) :
+  `|x%:E| = (normr x)%:E.
+Proof.
+have [x0|x0] := (leP 0%R x).
+  rewrite gee0_abs; last by rewrite lee_fin.
+  by move/normr_idP in x0; rewrite x0.
+rewrite lte0_abs; last by rewrite lte_fin.
+by rewrite ltr0_norm.
+Qed.
+
+Section Rceil_lemma.
+Context {R : realType}.
+
+Lemma ler_RceilD (x y : R) :
+  (Rceil (x + y) <= Rceil x + Rceil y)%R.
+Proof.
+Abort.
+
+End Rceil_lemma.
+
+Lemma ge0_Rceil_nat {R : realType} (x : R) : (0 <= x)%R ->
+  exists n, n%:R = Rceil x.
+Proof.
+move=> x0.
+have := isint_Rceil x.
+  move/RintP => [z cxz].
+have : Rceil x \is a int_num.
+  rewrite Num.Theory.intrEceil.
+  by rewrite Num.Theory.intrKceil.
+rewrite Num.Theory.intrEge0; last exact: Rceil_ge0.
+move/Num.Theory.natrP => {z cxz}[n cxn].
+by exists n.
+Qed.
+
+(* NB: similar to real_interval.itv_bnd_inftyEbigcup *)
+Lemma itvaybig {R : realType} (a : R) :
+  `[a%R, +oo[%classic = \bigcup_n `[a%R, a + (@GRing.natmul R 1%R n)]%classic.
+Proof.
+suff H0 : `[0%R, +oo[%classic = \bigcup_n `[0%R, (@GRing.natmul R 1%R n)]%classic.
+  case: (leP a 0%R) => a0.
+    rewrite (@set_interval.itv_bndbnd_setU _ _ _ (BLeft 0%R)); last 2 first.
+        by rewrite bnd_simp.
+      by rewrite bnd_simp.
+    rewrite H0//.
+    rewrite eqEsubset; split => x.
+    - move=> [/=|[n _/=]]; rewrite in_itv/=; move/andP.
+      - move=>[ax x0].
+        have Na_ge0 : (0 <= @GRing.opp R a)%R by rewrite oppr_ge0.
+        have [n na] := ge0_Rceil_nat Na_ge0.
+        exists n => //=; rewrite in_itv/= ax/=.
+        rewrite ltW//; apply: (lt_le_trans x0).
+        by rewrite addrC -(opprK a) subr_ge0 na Rceil_ge.
+      move=> [x0 xn].
+      have : (0 <= (n%:R) - a)%R.
+        rewrite subr_ge0.
+        exact: (le_trans a0).
+      move/ge0_Rceil_nat => [m mna].
+      exists m => //=; rewrite in_itv/=; apply/andP; split.
+        exact: (le_trans a0).
+      rewrite mna -lerBlDl.
+      apply: (@le_trans _ _ (n%:R - a)%R); first exact: lerB.
+      exact: Rceil_ge.
+    move=> [n _]/=.
+    rewrite in_itv/= => /andP[ax xan].
+    case: (ltP x 0%R).
+      by move=> x0; left; rewrite in_itv/= ax x0.
+    move=> x0.
+    have := le_trans x0 xan.
+    move/ge0_Rceil_nat => [m man].
+    right.
+    exists m => //=.
+    rewrite in_itv/= x0/= man.
+    apply: (le_trans xan).
+    exact: Rceil_ge.
+  rewrite eqEsubset; split => x/=.
+    rewrite in_itv/= => /andP[ax _].
+    have /ltW := lt_le_trans a0 ax.
+    move/ge0_Rceil_nat => [n nx].
+    exists n => //=; rewrite in_itv/= nx ax/= ltW//.
+    apply: (ltr_pwDl a0).
+    exact: Rceil_ge.
+  by move=> [? _]/=; rewrite !in_itv/= => /andP[-> _].
+rewrite eqEsubset; split.
+  move=> x/=.
+  rewrite in_itv/= => /andP[x0 _].
+  have [n nx] := ge0_Rceil_nat x0.
+  exists n => //=.
+  by rewrite in_itv/= x0 nx Rceil_ge.
+move=> x [n _]/=.
+by rewrite !in_itv/= andbT => /andP[].
+Abort.
+
+Lemma seqDUE {R : realType} (k : nat) (a : R) :
+  seqDU (fun k0 => `]a, (a + k0%:R)%R]%classic) k = `](a + k.-1%:R), (a + k%:R)%R]%classic.
+Proof.
+rewrite seqDU_seqD/seqD.
+  case: k; first by rewrite addr0.
+  move=> n.
+  rewrite eqEsubset; split => x/=.
+  - move=> [].
+    rewrite !in_itv/= => /andP[-> ->].
+    by move/negP; rewrite negb_and /= real_ltNge//= => ->.
+  - rewrite !in_itv/= => /andP[anx xaSn]; split.
+    + rewrite xaSn andbT.
+      apply: le_lt_trans anx => //.
+      by rewrite lerDl ler0n.
+    + apply/negP; rewrite negb_and; apply/orP; right.
+      by rewrite -real_ltNge//=.
+apply/nondecreasing_seqP => n.
+rewrite subsetEset => x/=; rewrite !in_itv/=.
+move/andP => [-> xan]/=.
+apply: (le_trans xan).
+by rewrite lerD// ler_nat.
+Qed.
+
+Section integral_bigsetU.
+Local Open Scope ereal_scope.
+Context d (T : measurableType d) (R : realType)
+        (mu : {measure set T -> \bar R}).
+
+Lemma integral_bigsetU_EFin (I : eqType) (F : I -> set T) (f : T -> R)
+    (s : seq I) :
+  (forall n : I, d.-measurable (F n)) ->
+  uniq s ->
+  trivIset [set` s] F ->
+  let D := \big[setU/set0]_(i <- s) F i in
+  measurable_fun D (EFin \o f) ->
+  \int[mu]_(x in D) (f x)%:E = (\sum_(i <- s) (\int[mu]_(x in F i) (f x)%:E)).
+Proof.
+move=> mF; elim: s => [|h t ih] us tF D mf.
+  by rewrite /D 2!big_nil integral_set0.
+rewrite /D big_cons integral_setU_EFin//.
+- rewrite big_cons ih//.
+  + by move: us => /= /andP[].
+  + by apply: sub_trivIset tF => /= i /= it; rewrite inE it orbT.
+  + apply: measurable_funS mf => //; first exact: bigsetU_measurable.
+    by rewrite /D big_cons; exact: subsetUr.
+- exact: bigsetU_measurable.
+- by move/measurable_EFinP : mf; rewrite /D big_cons.
+- apply/eqP; rewrite big_distrr/= big_seq big1// => i it.
+  move/trivIsetP : tF; apply => //=; rewrite ?mem_head//.
+  + by rewrite inE it orbT.
+  + by apply/eqP => hi; move: us => /=; rewrite hi it.
+Qed.
+
+End integral_bigsetU.
 
 (*============================================================================*)
 (* from lang_syntax.v in branch prob_lang_axiom by affeldt-aist *)
@@ -62,24 +209,59 @@ Proof. by move=> cf x; exact/cvg_at_left_filter/cf. Qed.
 
 End left_continuousW.
 
+Section mv_to_realfun.
+Context {R : realType}.
+
+Lemma cvg_dnbhsP (f : R -> R) (p l : R) :
+  f x @[x --> p^'] --> l <->
+  (forall u : R^nat, (forall n, u n != p) /\ (u n @[n --> \oo] --> p) ->
+    f (u n) @[n --> \oo] --> l).
+Proof.
+split=> [/cvgrPdist_le fpl u [up /cvgrPdist_lt uyp]|H]; last first.
+  apply: cvg_at_right_left_dnbhs.
+  - by apply/cvg_at_rightP => u [pu uyp]; apply: H; split => // n; rewrite gt_eqF.
+  - by apply/cvg_at_leftP => u [pu uyp]; apply: H; split => // n; rewrite lt_eqF.
+apply/cvgrPdist_le => e e0.
+have [r /= r0 {}fpl] := fpl _ e0.
+have [n _ {}uyp] := uyp _ r0.
+near=> t; apply: fpl => //=.
+apply: uyp.
+by near: t; exists n.
+Unshelve. all: end_near. Qed.
+
+Lemma cvgr_sub0 T {F : set_system T} {FF : Filter F} (f : T -> R) (k : R) :
+  (fun x => f x - k)%R @ F --> 0%R <-> f @ F --> k.
+Proof.
+split=> [|fFk]; first exact: cvg_zero.
+by rewrite -(@subrr _ k)//; apply: cvgB => //; exact: cvg_cst.
+Qed.
+
+End mv_to_realfun.
+
+Lemma RintegralD d {T : measurableType d} {R : realType}
+  (mu : measure T R) (D : set T) (f1 f2 : T -> R) : measurable D ->
+  mu.-integrable D (EFin \o f1) ->
+  mu.-integrable D (EFin \o f2) ->
+  (\int[mu]_(x in D) (f1 x + f2 x))%R =
+  (\int[mu]_(x in D) f1 x + \int[mu]_(x in D) f2 x)%R.
+Proof.
+move=> mD if1 if2.
+by rewrite /Rintegral integralD_EFin// fineD//; exact: integral_fune_fin_num.
+Qed.
+
+Lemma RintegralB d {T : measurableType d} {R : realType}
+  (mu : measure T R) (D : set T) (f1 f2 : T -> R) : measurable D ->
+  mu.-integrable D (EFin \o f1) ->
+  mu.-integrable D (EFin \o f2) ->
+  (\int[mu]_(x in D) (f1 x - f2 x))%R =
+  (\int[mu]_(x in D) f1 x - \int[mu]_(x in D) f2 x)%R.
+Proof.
+move=> mD if1 if2.
+by rewrite /Rintegral integralB_EFin// fineB//; exact: integral_fune_fin_num.
+Qed.
+
 (*============================================================================*)
 (* my works begin here *)
-
-Lemma cvgr_expR {R : realType} : @expR R (- x) @[x --> +oo%R] --> 0%R.
-Proof.
-apply/cvgrPdist_le => e e0; near=> x.
-rewrite sub0r normrN ger0_norm; last exact: expR_ge0.
-rewrite expRN -[leRHS]invrK lef_pV2 ?posrE ?expR_gt0 ?invr_gt0//.
-rewrite (le_trans _ (expR_ge1Dx _))// -lerBlDl.
-by near: x; apply: nbhs_pinfty_ge; exact: num_real.
-Unshelve. end_near. Qed.
-
-Lemma cvgn_expR {R : realType} : @expR R (1%R *- n) @[n --> \oo] --> 0%R.
-Proof.
-under eq_cvg do rewrite -mulNrn -mulr_natr expRM_natr.
-apply: cvg_expr.
-by rewrite expRN ger0_norm ?invr_ge0 ?expR_ge0// invf_lt1 ?expR_gt1 ?expR_gt0.
-Qed.
 
 Section within_continuous_FTC2_pinfty.
 Notation mu := lebesgue_measure.
@@ -152,78 +334,6 @@ rewrite leeNr oppe0.
 exact: f0.
 Abort.
 
-Lemma ge0_Rceil_nat {R : realType} (x : R) : (0 <= x)%R ->
-  exists n, n%:R = Rceil x.
-Proof.
-move=> x0.
-have := isint_Rceil x.
-  move/RintP => [z cxz].
-have : Rceil x \is a int_num.
-  rewrite archimedean.Num.Theory.intrEceil.
-  by rewrite archimedean.Num.Theory.intrKceil.
-rewrite archimedean.Num.Theory.intrEge0; last exact: Rceil_ge0.
-move/archimedean.Num.Theory.natrP => {z cxz}[n cxn].
-by exists n.
-Qed.
-
-(* same as real_interval.itv_bnd_inftyEbigcup *)
-Lemma itvaybig {R : realType} (a : R) :
-  `[a%R, +oo[%classic = \bigcup_n `[a%R, a + (@GRing.natmul R 1%R n)]%classic.
-Proof.
-suff H0 : `[0%R, +oo[%classic = \bigcup_n `[0%R, (@GRing.natmul R 1%R n)]%classic.
-  case: (leP a 0%R) => a0.
-    rewrite (@set_interval.itv_bndbnd_setU _ _ _ (BLeft 0%R)); last 2 first.
-        by rewrite bnd_simp.
-      by rewrite bnd_simp.
-    rewrite H0//.
-    rewrite eqEsubset; split => x.
-    - move=> [/=|[n _/=]]; rewrite in_itv/=; move/andP.
-      - move=>[ax x0].
-        have Na_ge0 : (0 <= @GRing.opp R a)%R by rewrite oppr_ge0.
-        have [n na] := ge0_Rceil_nat Na_ge0.
-        exists n => //=; rewrite in_itv/= ax/=.
-        rewrite ltW//; apply: (lt_le_trans x0).
-        by rewrite addrC -(opprK a) subr_ge0 na Rceil_ge.
-      move=> [x0 xn].
-      have : (0 <= (n%:R) - a)%R.
-        rewrite subr_ge0.
-        exact: (le_trans a0).
-      move/ge0_Rceil_nat => [m mna].
-      exists m => //=; rewrite in_itv/=; apply/andP; split.
-        exact: (le_trans a0).
-      rewrite mna -lerBlDl.
-      apply: (@le_trans _ _ (n%:R - a)%R); first exact: lerB.
-      exact: Rceil_ge.
-    move=> [n _]/=.
-    rewrite in_itv/= => /andP[ax xan].
-    case: (ltP x 0%R).
-      by move=> x0; left; rewrite in_itv/= ax x0.
-    move=> x0.
-    have := le_trans x0 xan.
-    move/ge0_Rceil_nat => [m man].
-    right.
-    exists m => //=.
-    rewrite in_itv/= x0/= man.
-    apply: (le_trans xan).
-    exact: Rceil_ge.
-  rewrite eqEsubset; split => x/=.
-    rewrite in_itv/= => /andP[ax _].
-    have /ltW := lt_le_trans a0 ax.
-    move/ge0_Rceil_nat => [n nx].
-    exists n => //=; rewrite in_itv/= nx ax/= ltW//.
-    apply: (ltr_pwDl a0).
-    exact: Rceil_ge.
-  by move=> [? _]/=; rewrite !in_itv/= => /andP[-> _].
-rewrite eqEsubset; split.
-  move=> x/=.
-  rewrite in_itv/= => /andP[x0 _].
-  have [n nx] := ge0_Rceil_nat x0.
-  exists n => //=.
-  by rewrite in_itv/= x0 nx Rceil_ge.
-move=> x [n _]/=.
-by rewrite !in_itv/= andbT => /andP[].
-Abort.
-
 Local Import real_interval.
 
 Lemma increasing_telescope_sume_infty_fin_num
@@ -276,29 +386,6 @@ have -> : limn (EFin \o f) - (f n)%:E =
   under eq_bigr do rewrite EFinN.
   by rewrite telescope_sume// ltnW.
 exact: ereal_nondecreasing_cvgn.
-Qed.
-
-Lemma seqDUE {R : realType} (k : nat) (a : R) :
-  seqDU (fun k0 => `]a, (a + k0%:R)%R]%classic) k = `](a + k.-1%:R), (a + k%:R)%R]%classic.
-Proof.
-  rewrite seqDU_seqD/seqD.
-    case: k; first by rewrite addr0.
-    move=> n.
-    rewrite eqEsubset; split => x/=.
-    - move=> [].
-      rewrite !in_itv/= => /andP[-> ->].
-      by move/negP; rewrite negb_and /= real_ltNge//= => ->.
-    - rewrite !in_itv/= => /andP[anx xaSn]; split.
-      + rewrite xaSn andbT.
-        apply: le_lt_trans anx => //.
-        by rewrite lerDl ler0n.
-      + apply/negP; rewrite negb_and; apply/orP; right.
-        by rewrite -real_ltNge//=.
-  apply/nondecreasing_seqP => n.
-  rewrite subsetEset => x/=; rewrite !in_itv/=.
-  move/andP => [-> xan]/=.
-  apply: (le_trans xan).
-  by rewrite lerD// ler_nat.
 Qed.
 
 Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) :
@@ -492,7 +579,6 @@ case: l; last 2 first.
 
 End within_continuous_FTC2_pinfty.
 
-
 Section Gamma.
 
 Context {R : realType}.
@@ -615,8 +701,8 @@ exact: cvgn_expR.
 Qed.
 
 Let I_rec n : I n.+1 = n.+1%:R%:E * I n.
-(* using integration by parts *)
 Proof.
+(* using integration by parts *)
 Admitted.
 
 Let In n : I n = n`!%:R%:E.
@@ -667,68 +753,13 @@ transitivity (\int[mu]_(x in D `&` E) f x).
     rewrite [X in _ + X]null_set_integral; last 3 first.
 Abort.
 
-(* PR? *)
-Lemma normr_EFin {R : realType} (x : R) :
-  `|x%:E| = (normr x)%:E.
-Proof.
-have [x0|x0] := (leP 0%R x).
-  rewrite gee0_abs; last by rewrite lee_fin.
-  by move/normr_idP in x0; rewrite x0.
-rewrite lte0_abs; last by rewrite lte_fin.
-by rewrite ltr0_norm.
-Qed.
-
-Section Rceil_lemma.
-Context {R : realType}.
-
-Lemma ler_RceilD (x y : R) :
-  (Rceil (x + y) <= Rceil x + Rceil y)%R.
-Proof.
-Admitted.
-
-End Rceil_lemma.
-
-Section integral_bigsetU.
-Local Open Scope ereal_scope.
-Context d (T : measurableType d) (R : realType)
-        (mu : {measure set T -> \bar R}).
-
-Lemma integral_bigsetU_EFin (I : eqType) (F : I -> set T) (f : T -> R)
-    (s : seq I) :
-  (forall n : I, d.-measurable (F n)) ->
-  uniq s ->
-  trivIset [set` s] F ->
-  let D := \big[setU/set0]_(i <- s) F i in
-  measurable_fun D (EFin \o f) ->
-  \int[mu]_(x in D) (f x)%:E = (\sum_(i <- s) (\int[mu]_(x in F i) (f x)%:E)).
-Proof.
-move=> mF; elim: s => [|h t ih] us tF D mf.
-  by rewrite /D 2!big_nil integral_set0.
-rewrite /D big_cons integral_setU_EFin//.
-- rewrite big_cons ih//.
-  + by move: us => /= /andP[].
-  + by apply: sub_trivIset tF => /= i /= it; rewrite inE it orbT.
-  + apply: measurable_funS mf => //; first exact: bigsetU_measurable.
-    by rewrite /D big_cons; exact: subsetUr.
-- exact: bigsetU_measurable.
-- by move/EFin_measurable_fun : mf; rewrite /D big_cons.
-- apply/eqP; rewrite big_distrr/= big_seq big1// => i it.
-  move/trivIsetP : tF; apply => //=; rewrite ?mem_head//.
-  + by rewrite inE it orbT.
-  + by apply/eqP => hi; move: us => /=; rewrite hi it.
-Qed.
-
-End integral_bigsetU.
-
-From mathcomp Require Import archimedean.
-
 Lemma itv_bnd_infty_bigcup_shiftn (R : realType) b (x : R) (n : nat):
   [set` Interval (BSide b x) +oo%O] =
   \bigcup_i [set` Interval (BSide b x) (BLeft (x + (i + n)%:R))].
 Proof.
 apply/seteqP; split=> y; rewrite /= !in_itv/= andbT; last first.
   by move=> [k _ /=]; move: b => [|] /=; rewrite in_itv/= => /andP[//] /ltW.
-move=> xy; exists (`|Num.ceil (y - x)|)%N => //=. Admitted.
+move=> xy; exists (`|Num.ceil (y - x)|)%N => //=. (* TODO: urgent *) Admitted.
 (* rewrite in_itv/= xy/= -lerBlDl.
 apply: (@le_trans _ _ (`|Num.ceil (y - x)|)%N%:R); last by rewrite natrD lerDl.
 rewrite !natr_absz/= ger0_norm -?ceil_ge0 ?ceil_ge//; last first.
@@ -783,7 +814,6 @@ exact: nearW => //.
 Qed.
 
 End near_in_itv_yy.
-
 
 Import numFieldNormedType.Exports.
 
@@ -895,7 +925,7 @@ transitivity (limn (fun n => \int[mu]_(x in `[F (a + n%:R)%R, F a]) (G x)%:E)).
     move=> x [n _ /=]; rewrite in_itv/= => /andP[_ xFa].
     exact: G0.
   - rewrite -seqDU_bigcup_eq.
-    apply/EFin_measurable_fun.
+    apply/measurable_EFinP.
     exact/measurable_fun_bigcup.
   - move=> n.
     apply: measurableD => //.
@@ -1378,30 +1408,6 @@ End improper_integration_by_substitution.
 
 Section Rintegral_lemmas.
 
-Lemma RintegralZl d (T : measurableType d) (R : realType)
-  (mu : measure T R) (D : set T) :
-  d.-measurable D ->
-  forall (f : T -> R), mu.-integrable D (EFin \o f) ->
-  forall r, (\int[mu]_(x in D) (r * f x) = r * \int[mu]_(x in D) f x)%R.
-Proof.
-move=> mD f intf r.
-rewrite (_:r = fine r%:E)//.
-rewrite -fineM//; last exact: integral_fune_fin_num.
-congr (fine _).
-under eq_integral do rewrite EFinM.
-exact: integralZl.
-Qed.
-
-Lemma RintegralZr d (T : measurableType d) (R : realType)
-  (mu : measure T R) (D : set T) :
-  d.-measurable D ->
-  forall (f : T -> R), mu.-integrable D (EFin \o f) ->
-  forall r, (\int[mu]_(x in D) (f x * r) = \int[mu]_(x in D) f x * r)%R.
-Proof.
-move=> mD f intf r.
-by rewrite mulrC -RintegralZl//; under eq_Rintegral do rewrite mulrC.
-Qed.
-
 Context {R : realType}.
 Let mu := @lebesgue_measure R.
 
@@ -1443,7 +1449,6 @@ rewrite integral_itv_obnd_cbnd; last admit.
 rewrite integral_itv_bndo_bndc; last admit.
 rewrite (@ge0_integration_by_substitution_decreasing_opinfty _ -%R f 0%R).
 Abort.
-
 
 Lemma Rintegral_even (D : set R) (f : R -> R) :
   measurable D ->
@@ -1501,59 +1506,6 @@ Definition partial1 y : R -> R := (f ^~ y)^`().
 
 End partial.
 Notation "'d1 f" := (partial1 f).
-
-Section mv_to_realfun.
-Context {R : realType}.
-
-Lemma cvg_dnbhsP (f : R -> R) (p l : R) :
-  f x @[x --> p^'] --> l <->
-  (forall u : R^nat, (forall n, u n != p) /\ (u n @[n --> \oo] --> p) ->
-    f (u n) @[n --> \oo] --> l).
-Proof.
-split=> [/cvgrPdist_le fpl u [up /cvgrPdist_lt uyp]|H]; last first.
-  apply: cvg_at_right_left_dnbhs.
-  - by apply/cvg_at_rightP => u [pu uyp]; apply: H; split => // n; rewrite gt_eqF.
-  - by apply/cvg_at_leftP => u [pu uyp]; apply: H; split => // n; rewrite lt_eqF.
-apply/cvgrPdist_le => e e0.
-have [r /= r0 {}fpl] := fpl _ e0.
-have [n _ {}uyp] := uyp _ r0.
-near=> t; apply: fpl => //=.
-apply: uyp.
-by near: t; exists n.
-Unshelve. all: end_near. Qed.
-
-Lemma cvgr_sub0 T {F : set_system T} {FF : Filter F} (f : T -> R) (k : R) :
-  (fun x => f x - k)%R @ F --> 0%R <-> f @ F --> k.
-Proof.
-split=> [|fFk]; first exact: cvg_zero.
-by rewrite -(@subrr _ k)//; apply: cvgB => //; exact: cvg_cst.
-Qed.
-
-End mv_to_realfun.
-
-Lemma RintegralD d {T : measurableType d} {R : realType}
-  (mu : measure T R) (D : set T) (f1 f2 : T -> R) : measurable D ->
-  mu.-integrable D (EFin \o f1) ->
-  mu.-integrable D (EFin \o f2) ->
-  (\int[mu]_(x in D) (f1 x + f2 x))%R =
-  (\int[mu]_(x in D) f1 x + \int[mu]_(x in D) f2 x)%R.
-Proof.
-move=> mD if1 if2.
-by rewrite /Rintegral integralD_EFin// fineD//; exact: integral_fune_fin_num.
-Qed.
-
-Lemma RintegralB d {T : measurableType d} {R : realType}
-  (mu : measure T R) (D : set T) (f1 f2 : T -> R) : measurable D ->
-  mu.-integrable D (EFin \o f1) ->
-  mu.-integrable D (EFin \o f2) ->
-  (\int[mu]_(x in D) (f1 x - f2 x))%R =
-  (\int[mu]_(x in D) f1 x - \int[mu]_(x in D) f2 x)%R.
-Proof.
-move=> mD if1 if2.
-by rewrite /Rintegral integralB_EFin// fineB//; exact: integral_fune_fin_num.
-Qed.
-
-Require Import set_interval.
 
 Module Leibniz.
 (* without ae predicates *)
@@ -2005,8 +1957,6 @@ Lemma cvg_f : (f x) ^+ 2 @[x --> +oo] --> pi / 4.
 Proof.
 Admitted.
 
-Require Import real_interval.
-
 Lemma gauss : \int[mu]_(t in `[0, +oo[) (expR (- t ^+ 2)) = Num.sqrt pi / 2.
 Proof.
 suff: f x @[x --> +oo] -->  Num.sqrt pi / 2.
@@ -2083,15 +2033,6 @@ End leibniz.
 
 Section Gauss_integration.
 Context {R : realType}.
-
-(* TODO: PR *)
-Lemma Rintegral_ge0 D (f : R -> R ) :
- (forall x, D x -> (0 <= f x)%R) -> (0 <= \int[lebesgue_measure]_(x in D) f x)%R.
-Proof.
-move=> f0.
-rewrite fine_ge0//.
-exact: integral_ge0.
-Qed.
 
 (* TODO: PR *)
 Lemma locally_integrable_cst (x : R) :
@@ -2714,6 +2655,8 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
       (fun y => (Num.sqrt (expR 1))^-1 * expR (- c ^+ 2 * y ^+ 2)))%R; last 7 first.
     by [].
     rewrite /=.
+    move: Ig_fin_num.
+    rewrite /gauss.
     admit. (* integrable *)
     move=> x1 /= Ix1.
     rewrite /dJ.
