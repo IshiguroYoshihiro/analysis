@@ -2166,6 +2166,27 @@ have substE : \int[mu]_(y in `[0%R, +oo[) (expR (- x ^+ 2 * oneDsqrx y))%:E =
   rewrite derive_val /GRing.scale/= mulr1.
   rewrite mulrAC divfK//; last by rewrite gt_eqF.
   by rewrite mulrDr mulr1 mulNr -exprMn expRD.
+have int_substE : \int[mu]_(y in `[0%R, +oo[) (expR (- x ^+ 2 * oneDsqrx y))%:E
+ = (\int[lebesgue_measure]_(x1 in `[0%R, +oo[)
+         (expR (- x ^+ 2) / x * expR (- x1 ^+ 2))%:E).
+  rewrite substE.
+  rewrite -ge0_integration_by_substitution_increasing_opinfty; first last.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  by rewrite mulr0.
+have mexpRVxexpR (D : set R) : measurable_fun D (fun y => (expR (- x ^+ 2) / x * expR (- y ^+ 2))%R).
+  move=> mD.
+  apply: measurable_funM => //.
+  apply: measurableT_comp => //.
+  exact: measurableT_comp.
 transitivity (-2 * x * \int[mu]_(y in `[0, +oo[) (expR ((- x ^+ 2) * oneDsqrx y)))%R.
   rewrite /Rintegral (_:-2 * x = fine (-2 * x)%:E)%R//.
   rewrite -fineM; last 2 first.
@@ -2173,52 +2194,80 @@ transitivity (-2 * x * \int[mu]_(y in `[0, +oo[) (expR ((- x ^+ 2) * oneDsqrx y)
     rewrite lee_fin.
     by rewrite mulr_le0_ge0// ltW.
   - rewrite ge0_fin_numE; last first.
-      admit.
-    rewrite substE.
-    rewrite -ge0_integration_by_substitution_increasing_opinfty; first last.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
-    rewrite mulr0.
+      apply: integral_ge0 => ? _.
+      exact: expR_ge0.
+    rewrite int_substE.
+    rewrite -integral_itv_obnd_cbnd; last exact: mexpRVxexpR.
     rewrite (@itv_bndbnd_setU _ _ _ (BLeft 1%R))//; last by rewrite bnd_simp.
     rewrite ge0_integral_setU//=; first last.
-    - admit.
-    - admit.
-    - admit.
+    - apply: lt_disjoint => a b; rewrite !in_itv/= => /andP[_ a1] /andP[b1 _].
+      exact: lt_le_trans a1 b1.
+    - move=> /= z z0.
+      have {}z0 : (0 < z)%R.
+        by case : z0; rewrite in_itv/= => /andP[+ _]//; apply: lt_le_trans.
+      rewrite lee_fin mulr_ge0//.
+        by rewrite divr_ge0// ?expR_ge0// ltW.
+      exact: expR_ge0.
+    - apply/EFin_measurable_fun.
+      rewrite -itv_bndbnd_setU//; last by rewrite bnd_simp.
+      exact: mexpRVxexpR.
     under eq_integral do rewrite EFinM.
     rewrite ge0_integralZl//; first last.
-    - admit.
-    - move=> ? _; exact: expR_ge0.
-    - admit.
-    apply: lte_add_pinfty.
+    - by rewrite lee_fin divr_ge0// ?expR_ge0// ltW.
+    - by move=> ? _; exact: expR_ge0.
+    - apply/EFin_measurable_fun.
+      by apply: measurableT_comp => //; apply: measurableT_comp.
+    apply: lte_add_pinfty; last first.
+      apply: (@le_lt_trans _ _ (\int[lebesgue_measure]_(x1 in `]0%R, +oo[) (expR (- x ^+ 2) / x * expR (- x1 ^+ 2))%:E)).
+        apply: ge0_subset_integral => //=; first last.
+        - by apply: subset_itvr; rewrite bnd_simp.
+        - move=> z; rewrite in_itv/= => /andP[z0 _].
+          by rewrite lee_fin mulr_ge0// ?divr_ge0// ?expR_ge0// ltW.
+        apply/EFin_measurable_fun.
+        exact: mexpRVxexpR.
+      rewrite integral_itv_obnd_cbnd; last exact: mexpRVxexpR.
+      under eq_integral do rewrite EFinM//.
+      rewrite integralZl//; last first.
+        apply/integrableP; split.
+          apply/EFin_measurable_fun.
+          apply: measurableT_comp => //.
+          exact: measurableT_comp.
+        apply/abse_integralP => //.
+          apply/EFin_measurable_fun.
+          by apply: measurableT_comp => //; apply: measurableT_comp.
+        rewrite -ge0_fin_numE; last exact: abse_ge0.
+        by rewrite abse_fin_num.
+      rewrite muleC lte_mul_pinfty//.
+        by apply: integral_ge0 => ? _; exact: expR_ge0.
+      exact: ltey.
     apply: lte_mul_pinfty.
-    - admit.
-    - admit.
-    admit.
+    - by rewrite lee_fin divr_ge0// ?expR_ge0// ltW.
+    - by rewrite fin_numElt ltry ltNyr.
     apply: (@le_lt_trans _ _ Ig%:E).
-      admit.
+      rewrite /= fineK//.
+      apply: ge0_subset_integral => //; first last.
+          by move=> r/=; rewrite !in_itv/= andbT => /andP[+ _]; exact: ltW.
+        by move=> ? _; exact: expR_ge0.
+      apply/EFin_measurable_fun.
+      apply: measurableT_comp => //.
+      exact: measurableT_comp.
     exact: ltry.
   rewrite mulNr EFinN mulNe.
   rewrite -ge0_integralZl//; first last.
-  - admit.
-  - admit.
-  - admit.
+  - by rewrite lee_fin mulr_ge0// ltW.
+  - by move=> ? _; rewrite lee_fin expR_ge0.
+  - apply/EFin_measurable_fun.
+    apply: measurableT_comp => //.
+    apply: measurable_funM => //.
+    exact: measurable_funD.
   rewrite -integral_ge0N; last first.
-    admit.
+    move=> ? _; apply: mulr_ge0; last exact: expR_ge0.
+    by rewrite mulr_ge0// ltW.
   congr fine.
   apply: eq_integral=> y; rewrite inE/= in_itv/= => y0.
   rewrite /d_dx_dJ derive1E.
   rewrite /dJ; under eq_fun do (rewrite mulrC); rewrite deriveZ/=; last exact: ex_derive.
-  rewrite -derive1E derive1_comp; first last.
-  - admit.
-  - admit.
+  rewrite -derive1E derive1_comp => //.
   rewrite derive1E derive_val.
   rewrite mulrC /GRing.scale/= mulrA.
   under eq_fun do (rewrite mulrC); rewrite derive1E deriveZ/=; last exact: ex_derive.
@@ -2226,29 +2275,23 @@ transitivity (-2 * x * \int[mu]_(y in `[0, +oo[) (expR ((- x ^+ 2) * oneDsqrx y)
   rewrite deriveN// mulNr; congr (- _%:E).
   rewrite exp_derive expr1.
   by rewrite /GRing.scale/= mulr1.
-rewrite /Rintegral substE.
-rewrite -ge0_integration_by_substitution_increasing_opinfty//; first last.
-- admit.
-- admit.
-- admit.
-- admit.
-- admit.
-- admit.
-- admit.
-- admit.
-- admit.
-rewrite mulr0.
+rewrite /Rintegral int_substE.
 under eq_integral do rewrite EFinM.
 rewrite ge0_integralZl//=; first last.
-- admit.
-- admit.
-- admit.
+- rewrite lee_fin.
+  apply: divr_ge0; last exact: ltW.
+  exact: expR_ge0.
+- by move=> ? _; rewrite lee_fin expR_ge0.
+- apply/EFin_measurable_fun.
+  apply: measurableT_comp => //.
+  exact: measurableT_comp => //.
 rewrite fineM/=; first last.
-- admit.
-- admit.
+- exact: Ig_fin_num.
+- rewrite ge0_fin_numE; last by rewrite lee_fin divr_ge0 ?expR_ge0 ?ltW.
+  exact: ltey.
 rewrite -!mulrA.
 rewrite [X in (-2 * X)%R]mulrCA !mulrA mulfK; last first.
-  admit.
+  by rewrite gt_eqF.
 by rewrite mulrAC.
 Admitted.
 
