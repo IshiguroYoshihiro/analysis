@@ -44,7 +44,7 @@ Lemma lt0_continuous_change_of_variables (F G : R -> R)
     {within `[F b, F a], continuous G} ->
 \int[mu]_(x in `[F b, F a]) (G x)%:E = \int[mu]_(x in `[a, b]) (((G \o F) * - (F^`() : R -> R)) x)%:E.
 Proof.
-Admitted.
+Abort.
 
 End continuous_change_of_variables.
 
@@ -58,58 +58,12 @@ Notation left_continuous f :=
 
 Lemma left_continuousW (R : numFieldType) (f : R -> R) :
   continuous f -> left_continuous f.
-Proof. Admitted.
+Proof. by move=> cf x; exact/cvg_at_left_filter/cf. Qed.
 
 End left_continuousW.
 
-Lemma exprn_derivable {R : realType} (n : nat) (x : R):
-  derivable ((@GRing.exp R) ^~ n) x 1.
-Proof.
-Admitted.
-
 (*============================================================================*)
 (* my works begin here *)
-
-(* TODO: PR *)
-Lemma lt_atan {R : realType} : {homo (@atan R) : x y / (x < y)%R}.
-Proof.
-move=> x y xy; rewrite -subr_gt0.
-have datan z : z \in `]x, y[ -> is_derive z 1%R atan (1 + z ^+ 2)^-1.
-  by move=> _; exact: is_derive1_atan.
-have catan : {within `[x, y], continuous atan}.
-  by apply: derivable_within_continuous => z _; exact: ex_derive.
-have [c] := MVT xy datan catan.
-have [-> _ ->|c0 _ ->] := eqVneq c 0%R.
-  by rewrite expr0n/= addr0 invr1 mul1r subr_gt0.
-by rewrite mulr_gt0 ?subr_gt0// invr_gt0 addr_gt0// exprn_even_gt0.
-Qed.
-
-Lemma nondecreasing_atan {R : realType} : {homo @atan R : x y / (x <= y)%R}.
-Proof.
-by move=> x y; rewrite le_eqVlt => /predU1P[-> //|xy]; exact/ltW/lt_atan.
-Qed.
-
-(* TODO: PR *)
-Lemma atan_pinfty_pi2 {R : realType} : (@atan R) x @[x --> +oo%R] --> pi / 2.
-Proof.
-rewrite (_: pi / 2 = sup (range atan)).
-  apply: (nondecreasing_cvgr nondecreasing_atan); exists (pi / 2)%R.
-  by move=> _ /= [x _ <-]; exact/ltW/atan_ltpi2.
-apply/eqP; rewrite eq_le; apply/andP; split; last first.
-  apply: sup_le_ub.
-    by exists 0%R, 0%R => //; exact: atan0.
-  by move=> _ /= [x _ <-]; exact/ltW/atan_ltpi2.
-have -> : pi / 2 = sup `[0%R, pi / 2[%classic :> R.
-  by rewrite real_interval.sup_itv// bnd_simp divr_gt0// pi_gt0.
-apply: le_sup; last 2 first.
-- by exists 0%R; rewrite /= in_itv/= lexx/= divr_gt0// pi_gt0.
-- split; first by exists 0%R, 0%R => //; rewrite atan0.
-  by exists (pi / 2)%R => _ [x _ <-]; exact/ltW/atan_ltpi2.
-move=> x/= /[!in_itv]/= /andP[x0 xpi2].
-apply/downP; exists (atan (tan x)) => /=; first by exists (tan x).
-rewrite tanK// in_itv/= xpi2 andbT (lt_le_trans _ x0)//.
-by rewrite ltrNl oppr0 divr_gt0// pi_gt0.
-Qed.
 
 Lemma cvgr_expR {R : realType} : @expR R (- x) @[x --> +oo%R] --> 0%R.
 Proof.
@@ -324,6 +278,29 @@ have -> : limn (EFin \o f) - (f n)%:E =
 exact: ereal_nondecreasing_cvgn.
 Qed.
 
+Lemma seqDUE {R : realType} (k : nat) (a : R) :
+  seqDU (fun k0 => `]a, (a + k0%:R)%R]%classic) k = `](a + k.-1%:R), (a + k%:R)%R]%classic.
+Proof.
+  rewrite seqDU_seqD/seqD.
+    case: k; first by rewrite addr0.
+    move=> n.
+    rewrite eqEsubset; split => x/=.
+    - move=> [].
+      rewrite !in_itv/= => /andP[-> ->].
+      by move/negP; rewrite negb_and /= real_ltNge//= => ->.
+    - rewrite !in_itv/= => /andP[anx xaSn]; split.
+      + rewrite xaSn andbT.
+        apply: le_lt_trans anx => //.
+        by rewrite lerDl ler0n.
+      + apply/negP; rewrite negb_and; apply/orP; right.
+        by rewrite -real_ltNge//=.
+  apply/nondecreasing_seqP => n.
+  rewrite subsetEset => x/=; rewrite !in_itv/=.
+  move/andP => [-> xan]/=.
+  apply: (le_trans xan).
+  by rewrite lerD// ler_nat.
+Qed.
+
 Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) :
   (forall x, (a <= x)%R -> 0 <= f x)%R ->
   F x @[x --> +oo%R] --> l ->
@@ -336,7 +313,6 @@ Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) 
   {in `]a, +oo[, F^`() =1 f} ->
   (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l%:E - (F a)%:E)%E.
 Proof.
-have zeroR : (@GRing.zero R = 0%:R) by [].
 move=> f_ge0 Fxl fa cf dF Fa dFE.
 rewrite -integral_itv_obnd_cbnd; last first.
   apply: open_continuous_measurable_fun.
@@ -345,25 +321,6 @@ rewrite -integral_itv_obnd_cbnd; last first.
   exact: cf.
 rewrite itv_bnd_infty_bigcup.
 rewrite seqDU_bigcup_eq.
-have seqDUE (k : nat) : seqDU (fun k0 => `]a, (a + k0%:R)%R]%classic) k = `](a + k.-1%:R), (a + k%:R)%R]%classic.
-  rewrite seqDU_seqD/seqD.
-    case: k; first by rewrite addr0.
-    move=> n.
-    rewrite eqEsubset; split => x/=.
-    - move=> [].
-      rewrite !in_itv/= => /andP[-> ->].
-      by move/negP; rewrite negb_and /= real_ltNge//= => ->.
-    - rewrite !in_itv/= => /andP[anx xaSn]; split.
-      + rewrite xaSn andbT.
-        apply: le_lt_trans anx => //.
-        by rewrite lerDl zeroR// ler_nat.
-      + apply/negP; rewrite negb_and; apply/orP; right.
-        by rewrite -real_ltNge//=.
-  apply/nondecreasing_seqP => n.
-  rewrite subsetEset => x/=; rewrite !in_itv/=.
-  move/andP => [-> xan]/=.
-  apply: (le_trans xan).
-  by rewrite lerD// ler_nat.
 rewrite ge0_integral_bigcup//=; last 3 first.
 - move=> k.
   apply: measurableD => //.
@@ -385,7 +342,7 @@ have dFEn n : {in `]a + n%:R, a + n.+1%:R[, F^`() =1 f}.
   apply: in1_subset_itv dFE.
   move=> x/=; rewrite !in_itv/= andbT=> /andP[+ _].
   apply: le_lt_trans.
-  by rewrite lerDl zeroR ler_nat.
+  by rewrite lerDl ler0n.
 have Fshiftn_liml : limn (EFin \o (fun k : nat => F (a + k%:R))) = l%:E.
   apply/cvg_lim => //.
   apply: cvg_EFin; first by apply: nearW => ?.
@@ -425,7 +382,7 @@ transitivity (\big[+%R/0%R]_(0 <= i <oo)
     move=> x; rewrite inE/= in_itv/= => /andP[anx _].
     apply: cf.
     apply: le_lt_trans anx.
-    by rewrite lerDl zeroR// ler_nat.
+    by rewrite lerDl ler0n.
   apply: continuous_FTC2 (dFEn n).
   - by apply: ler_ltD => //; rewrite ltr_nat.
   - apply/continuous_within_itvP; first by apply: ler_ltD => //; rewrite ltr_nat.
@@ -434,20 +391,20 @@ transitivity (\big[+%R/0%R]_(0 <= i <oo)
       rewrite in_itv/= => /andP[xan _].
       apply: cf.
       apply: le_lt_trans xan.
-      by rewrite lerDl zeroR// ler_nat.
+      by rewrite lerDl ler0n.
     + case : n; first by rewrite addr0.
       move=> n.
       apply: cvg_at_right_filter.
       apply: cf.
-      by rewrite ltrDl zeroR ltr_nat.
+      by rewrite ltrDl ltr0n.
     + apply: cvg_at_left_filter.
       apply: cf.
-      by rewrite ltrDl zeroR ltr_nat.
+      by rewrite ltrDl ltr0n.
   - split.
     + move=> x; rewrite in_itv/= => /andP[anx _].
       apply: dF.
       apply: le_lt_trans anx.
-      by rewrite lerDl zeroR ler_nat.
+      by rewrite lerDl ler0n.
     + case : n; first by rewrite addr0.
       move=> n.
       have : {within `[(a + n.+1%:R)%R, (a + n.+2%:R)%R], continuous F}.
@@ -455,7 +412,7 @@ transitivity (\big[+%R/0%R]_(0 <= i <oo)
         move=> x; rewrite in_itv/= => /andP[aSn _].
         apply: dF.
         apply: lt_le_trans aSn.
-        by rewrite ltrDl zeroR ltr_nat.
+        by rewrite ltrDl ltr0n.
       move/continuous_within_itvP.
       have aSnaSSn: (a + n.+1%:R < a + n.+2%:R)%R.
         apply: ler_ltD => //.
@@ -484,12 +441,12 @@ rewrite increasing_telescope_sume_infty_fin_num; last 2 first.
     rewrite -dFE; last first. 
     rewrite in_itv/= andbT.
     apply: le_lt_trans anx.
-    by rewrite lerDl zeroR.
+    by rewrite lerDl ler0n.
     rewrite derive1E.
     apply: derivableP.
     apply: dF.
     apply: le_lt_trans anx.
-    by rewrite lerDl zeroR.
+    by rewrite lerDl ler0n.
   have [| |r ranaSn ->] := (MVT _ isdF).
   - by apply: ler_ltD => //; rewrite ltr_nat.
   - case : n isdF => [_ |n _].
@@ -531,7 +488,7 @@ Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \ba
 Proof.
 move=> f_ge0 + fa cf df dFE.
 case: l; last 2 first.
-Admitted.
+(* TODO: urgent *) Admitted.
 
 End within_continuous_FTC2_pinfty.
 
@@ -2328,7 +2285,7 @@ Let J0E :
 Proof.
 rewrite /dJ expr0n/= oppr0.
 under eq_integral do rewrite mul0r expR0 div1r.
-rewrite (ge0_within_pinfty_continuous_FTC2 _ atan_pinfty_pi2)/=; last 6 first.
+rewrite (ge0_within_pinfty_continuous_FTC2 _ (@cvgy_atan R))/=; last 6 first.
 - by move=> x _; rewrite invr_ge0 ltW// gt0_oneDsqrx.
 - by apply: cvg_at_right_filter; apply: cVoneDsqrx.
 - by move=> x x0; apply: cVoneDsqrx.
@@ -2561,9 +2518,9 @@ Qed.
 Let atan_cvg_to_J0 : (atan x)%:E @[x --> +oo%R] --> (J 0)%:E.
 Proof.
 rewrite fineK J0E//.
-apply: cvg_EFin; last exact: atan_pinfty_pi2.
+apply: cvg_EFin; last exact: cvgy_atan.
 near=> x.
-rewrite ge0_fin_numE; last first. by rewrite lee_fin -atan0 nondecreasing_atan.
+rewrite ge0_fin_numE; last first. by rewrite lee_fin -atan0 le_atan.
 apply: (@lt_trans _ _ (pi / 2)%:E); last exact: ltey.
 by rewrite lte_fin atan_ltpi2.
 Unshelve. end_near. Qed.
