@@ -266,6 +266,9 @@ Qed.
 Section within_continuous_FTC2_pinfty.
 Notation mu := lebesgue_measure.
 
+(* duprication of integral_bigcup,
+ * use monotonicity of a seq of sets
+ * but disjointness *)
 Lemma ge0_nondecreasing_set_cvg_integral {R : realType}
   (S : (set R)^nat) (f : R -> \bar R) :
   {homo S : n m / (n <= m)%N >-> (n <= m)%O} ->
@@ -308,7 +311,7 @@ apply/eqP; rewrite eq_le; apply/andP; split.
   rewrite inE -[X in X -> _]/((~` _) x) setC_bigcup => nSx.
   apply/ereal_sup_le; exists point => //=; exists 0%R => //.
   by rewrite patchE memNset//; exact: nSx.
-Qed.
+Abort.
 
 Lemma le0_nondecreasing_set_cvg_integral {R : realType}
   (S : nat -> set R) (f : R -> \bar R) :
@@ -327,11 +330,11 @@ transitivity (- ereal_sup [set \int[lebesgue_measure]_(x in S i) (fun x => - f x
 transitivity (- \int[lebesgue_measure]_(x in \bigcup_i S i) (fun x => - f x) x); last first.
   admit.
 congr (- _).
-apply: ge0_nondecreasing_set_cvg_integral => //.
+(* apply: ge0_nondecreasing_set_cvg_integral => //.
   exact: measurableT_comp.
 move=> x Sx.
 rewrite leeNr oppe0.
-exact: f0.
+exact: f0. *)
 Abort.
 
 Local Import real_interval.
@@ -360,6 +363,7 @@ have [nm|mn]:= ltnP m n; last 2 first.
     apply/negP => /andP[] /leq_ltn_trans => H /H{H}.
     apply/negP.
     by rewrite ltn_geF// ltnW.
+
 rewrite !telescope_sume//; last exact: leqW.
 by rewrite oppeB// addeCA subeK// addeC sube_ge0// lee_fin nondecf.
 have -> : limn (EFin \o f) - (f n)%:E =
@@ -525,7 +529,7 @@ rewrite increasing_telescope_sume_infty_fin_num; last 2 first.
   rewrite -subr_ge0.
   have isdF x : x \in `](a + n%:R)%R, (a + n.+1%:R)%R[ -> is_derive x 1%R F (f x).
     rewrite in_itv/= => /andP[anx _].
-    rewrite -dFE; last first. 
+    rewrite -dFE; last first.
     rewrite in_itv/= andbT.
     apply: le_lt_trans anx.
     by rewrite lerDl ler0n.
@@ -619,24 +623,62 @@ have <- : lim ((\int[mu]_(x in `[0%R, n.+1%:R]) (expR (- x))%:E) @[n --> \oo]) =
           by rewrite natz.
         by move=> /= x [n _]/=; rewrite !in_itv/= => /andP[->].
       (* applying improper integral *)
-      rewrite -ge0_nondecreasing_set_cvg_integral//; last 2 first.
-          apply: measurable_funTS.
-          apply: (measurable_comp measurableT) => //.
-          exact: (measurable_comp measurableT).
-        by move=> ? _; apply: expR_ge0.
-      apply/nondecreasing_seqP => n.
-      rewrite subsetEset => x/=.
-      rewrite !in_itv/= => /andP[-> xnS]/=.
-      apply: (le_trans xnS).
-      by rewrite ler_nat.
+      rewrite seqDU_bigcup_eq.
+      rewrite ge0_integral_bigcup//; last 3 first.
+      - move=> ?.
+        apply: measurableD => //.
+        exact: bigsetU_measurable.
+      - apply: measurable_funTS.
+        apply/measurable_EFinP.
+        exact: measurableT_comp.
+      - by move=> ? _; exact: expR_ge0.
+      apply: lime_le => /=.
+        apply: is_cvg_nneseries => n _.
+        apply: integral_ge0 => k _.
+        exact: expR_ge0.
+      apply: nearW => n.
+      rewrite -ge0_integral_bigsetU//=; first last.
+      - by move=> ? _; rewrite lee_fin ?expR_ge0.
+      - apply/measurable_EFinP.
+        exact: measurableT_comp.
+      - exact: (@sub_trivIset _ _ _ [set: nat]).
+      - exact: iota_uniq.
+      - move=> k.
+        apply: measurableD => //.
+        exact: bigsetU_measurable.
+      rewrite big_mkord.
+      rewrite -bigsetU_seqDU.
+      case: n => [|n].
+        rewrite big_ord0 integral_set0.
+        apply: ereal_sup_le.
+        exists (\int[mu]_(x in `[0%R, 1%:R]) (expR (- x))%:E) => //.
+        apply: integral_ge0.
+        by move=> ? _; rewrite lee_fin expR_ge0.
+      rewrite [X in \int[_]_(_ in X) _](_:_=`[0%R, n.+1%:R]%classic); last first.
+        rewrite eqEsubset; split => x/=; rewrite in_itv/=.
+          rewrite -(bigcup_mkord _ (fun k => `[0%R, k.+1%:R]%classic)).
+          move=> [k /= kSn].
+          rewrite in_itv/= => /andP[-> xSk]/=.
+          apply: (le_trans xSk).
+          by rewrite ler_nat.
+        move=> /andP[x0 Snx].
+        rewrite -(bigcup_mkord _ (fun k => `[0%R, k.+1%:R]%classic)).
+        exists n => //=.
+        by rewrite in_itv/= x0 Snx.
+      apply: ereal_sup_le.
+      exists (\int[lebesgue_measure]_(x in `[0%R, n.+1%:R]) (expR (- x))%:E).
+        by exists n.
+      apply: ge0_subset_integral => //=.
+        apply/measurable_EFinP.
+        exact: measurableT_comp.
+      by move=> ? _; rewrite lee_fin expR_ge0.
     apply: ub_ereal_sup.
-    move=> _/= [n _ <-].
-    apply: ge0_subset_integral => //; last 2 first.
-        by move=> ? _; apply: expR_ge0.
-      by move=> x/=; rewrite !in_itv/=; move/andP => [->].
-    apply: measurable_funTS => /=.
-    apply: (measurable_comp measurableT) => //.
-    exact: (measurable_comp measurableT).
+    move=> /=_ [n _ <-].
+    apply: ge0_subset_integral => //=.
+        apply/measurable_EFinP.
+        exact: measurableT_comp.
+      by move=> ? _; rewrite lee_fin expR_ge0.
+    by move=> x/=; rewrite !in_itv/= => /andP[-> xn] /=.
   apply: ereal_nondecreasing_cvgn.
   apply/nondecreasing_seqP => n.
   apply: (@ge0_subset_integral _ _ _ mu) => //.
