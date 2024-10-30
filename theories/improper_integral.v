@@ -583,18 +583,51 @@ rewrite increasing_telescope_sume_infty_fin_num.
   by rewrite subr_ge0 lerD2l ler_nat.
 Unshelve. end_near. Qed.
 
-Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : \bar R) :
+(* need to generalize l : \bar R? *)
+Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) :
   (forall x, (a <= x)%R -> f x <= 0)%R ->
-  (F x)%:E @[x --> +oo%R] --> l ->
+  F x @[x --> +oo%R] --> l ->
   {within `[a, +oo[, continuous f} ->
   (* f x @[x --> a^'+] --> f a ->
   (forall x, (a < x)%R -> {for x, continuous f}) -> *)
   (* derivable_oo_continuous_bnd F a +oo *)
-  (forall x, (a < x)%R -> derivable f x 1) ->
+  (F x @[x --> a^'+] --> F a) ->
+  (forall x, (a < x)%R -> derivable F x 1) ->
   {in `]a, +oo[, F^`() =1 f} ->
-  (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l - (F a)%:E)%E.
+  (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l%:E - (F a)%:E)%E.
 Proof.
-move=> f_ge0 Fl /continuous_within_itvcyP[cf fa] df dFE.
+move=> f_ge0 Fl /continuous_within_itvcyP[cf fa] dF dFE.
+rewrite -[LHS]oppeK.
+rewrite -integralN/=; last first.
+  rewrite adde_defN.
+  apply: ge0_adde_def => //=; rewrite inE.
+    rewrite oppe_ge0.
+    rewrite le_eqVlt.
+    apply/predU1P; left.
+    apply: integral0_eq.
+    move=> /= x; rewrite in_itv/= => /andP[ax _].
+    rewrite /funepos -EFin_max.
+    rewrite /maxr; case: ifP => //.
+    move/negP/negP; rewrite -leNgt.
+    rewrite le_eqVlt => /predU1P[<- //|].
+    move: (f_ge0 x ax).
+    rewrite leNgt.
+    by move/negP.
+  apply: integral_ge0 => /= x.
+  rewrite in_itv/= => /andP[ax _].
+  rewrite /funeneg.
+  rewrite /maxe.
+  case: ifP => // _.
+  rewrite oppe_ge0 lee_fin.
+  exact: f_ge0.
+rewrite (@ge0_within_pinfty_continuous_FTC2 _ (- f)%R (- F)%R _ (- l)%R).
+- rewrite oppeB//.
+  admit.
+- admit.
+- admit.
+- admit.
+- admit.
+- admit.
 (* TODO: urgent *) Admitted.
 
 End within_continuous_FTC2_pinfty.
@@ -2528,10 +2561,8 @@ apply: (@le_lt_trans _ _ (\int[mu]_(y in `[0%R, +oo[) (EFin \o dJ 0%R) y)).
 by rewrite J0E ltey.
 Qed.
 
-Let eJoo : (J x)%:E @[x --> +oo%R] --> 0%:E.
+Let Joo : J x @[x --> +oo%R] --> 0%R.
 Proof.
-apply: cvg_EFin => //; first exact: nearW.
-rewrite /J fctE/=.
 apply/cvgrPdist_le => /= e e0.
 near=> x.
 rewrite sub0r ler0_norm ?opprK; last first.
@@ -2857,7 +2888,7 @@ have cdJ x : {for x, continuous (fun x1 : R => (-2 * Ig * gauss x1)%R)}.
   exact: continuous_expR.
 rewrite -J0E.
 rewrite -[X in 0%:E - X = _]fineK; last by rewrite J0E.
-rewrite -(le0_within_pinfty_continuous_FTC2 _ eJoo _ _ dJE); last 3 first.
+rewrite -(le0_within_pinfty_continuous_FTC2 _ Joo _ _ _ dJE); last 4 first.
 - move=> x x0.
   rewrite -mulN1r -!mulrA mulN1r.
   rewrite lerNl oppr0 pmulr_rge0//.
@@ -2866,7 +2897,14 @@ rewrite -(le0_within_pinfty_continuous_FTC2 _ eJoo _ _ dJE); last 3 first.
 - apply/continuous_within_itvcyP; split.
     move=> x _; exact: cdJ.
   apply: cvg_at_right_filter; exact: cdJ.
-- by move=> x x0.
+- apply: cvg_at_right_filter.
+  rewrite /J/Rintegral J0E/=.
+  admit.
+- move=> x x0.
+  have :  J^`() x = (-2 * Ig * gauss x)%R.
+    by apply: dJE; rewrite in_itv/= andbT.
+  rewrite derive1E.
+  admit.
 under eq_integral do rewrite !EFinM EFinN !mulNe.
 rewrite integral_ge0N; last first.
 - move=> x _.
@@ -2882,7 +2920,7 @@ rewrite expr2 mulrA [RHS]EFinM.
 rewrite EFinM EFinN !mulNe.
 congr (- (_ * _)).
 rewrite fineK//.
-Qed.
+Admitted.
 
 (*
 rewrite itv0ybig.
