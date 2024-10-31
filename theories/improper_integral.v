@@ -632,17 +632,8 @@ rewrite (@ge0_within_pinfty_continuous_FTC2 _ (- f)%R (- F)%R _ (- l)%R).
 
 End within_continuous_FTC2_pinfty.
 
-Section Gamma.
-
+Section improper.
 Context {R : realType}.
-
-Let mu := @lebesgue_measure R.
-
-(* NB: also defined in prob_lang_wip*)
-Definition Gamma (a : R) : \bar R :=
-  (\int[mu]_(x in `[0%R, +oo[) (powR x (a - 1) * expR (- x))%:E)%E.
-
-Let I n := \int[mu]_(x in `[0%R, +oo[) (x ^+ n * expR (- x))%:E.
 
 (* NB: look too much like itv_bnd_infty_bigcup *)
 Let itv_bnd_infty_bigcupS :
@@ -655,6 +646,9 @@ exists i => //=.
 apply: subset_itvl zi.
 by rewrite bnd_simp/= add0r ler_nat.
 Qed.
+
+Variable mu : {measure set [the measurableType (R.-ocitv.-measurable).-sigma of
+  g_sigma_algebraType (R.-ocitv.-measurable)] -> \bar R}.
 
 Let ereal_sup_integral (f : R -> R) :
   (forall x, 0 <= f x)%R -> measurable_fun setT f ->
@@ -719,11 +713,12 @@ apply: ge0_subset_integral => //=.
 by move=> ? _; rewrite lee_fin f0.
 Qed.
 
-Let ge0_limn_integraly (f : R -> R) :
+Lemma ge0_limn_integraly (f : R -> R) :
   (forall x, 0 <= f x)%R -> measurable_fun setT f ->
-  limn (fun n => \int[mu]_(x in `[0%R, n%:R]) (f x)%:E) = \int[mu]_(x in `[0%R, +oo[) (f x)%:E.
+  (fun n => \int[mu]_(x in `[0%R, n%:R]) (f x)%:E) @ \oo -->
+  \int[mu]_(x in `[0%R, +oo[) (f x)%:E.
 Proof.
-move=> f0 mf; apply/cvg_lim => //.
+move=> f0 mf.
 rewrite -cvg_shiftS/= ereal_sup_integral//.
 apply/ereal_nondecreasing_cvgn/nondecreasing_seqP => n.
 apply: (@ge0_subset_integral _ _ _ mu) => //.
@@ -732,6 +727,19 @@ apply: (@ge0_subset_integral _ _ _ mu) => //.
 - by apply: subset_itvl; rewrite bnd_simp ler_nat.
 Qed.
 
+End improper.
+
+Section Gamma.
+Context {R : realType}.
+
+Let mu := @lebesgue_measure R.
+
+(* NB: also defined in prob_lang_wip*)
+Definition Gamma (a : R) : \bar R :=
+  (\int[mu]_(x in `[0%R, +oo[) (powR x (a - 1) * expR (- x))%:E)%E.
+
+Let I n := \int[mu]_(x in `[0%R, +oo[) (x ^+ n * expR (- x))%:E.
+
 Let I0 : I O = 1.
 Proof.
 rewrite /I.
@@ -739,7 +747,9 @@ rewrite /I.
 have expRN1 : (fun x => @expR R (- x)) = fun x => (expR x)^-1.
   apply/funext => z.
   by rewrite expRN.
-rewrite -ge0_limn_integraly//; last 2 first.
+rewrite -/mu.
+have /(_ _ _)/cvg_lim := @ge0_limn_integraly _ mu (fun x => expR (- x)).
+move=> <-//; last 2 first.
   by move=> x; exact: expR_ge0.
   exact: measurableT_comp.
 rewrite -{1}(@add0e _ 1).
@@ -1845,6 +1855,9 @@ Definition g x := \int[mu]_(t in `[0, 1]) (expR (- x ^+ 2 * oneDsqr t) / oneDsqr
 
 Definition u x t := (expR (- x ^+ 2 * oneDsqr t) / oneDsqr t).
 
+Let f_ge0 x : 0 <= f x.
+Proof. by apply: Rintegral_ge0 => //= r _; rewrite expR_ge0. Qed.
+
 Let oneDsqr_gt0 t : 0 < oneDsqr t.
 Proof. by rewrite ltr_pwDl// sqr_ge0. Qed.
 
@@ -2009,14 +2022,16 @@ Admitted.
 
 Lemma gauss : \int[mu]_(t in `[0, +oo[) (expR (- t ^+ 2)) = Num.sqrt pi / 2.
 Proof.
-suff: f x @[x --> +oo] --> Num.sqrt pi / 2.
-  move/cvg_lim => <-//.
-  rewrite itv_bnd_infty_bigcup.
-  rewrite seqDU_bigcup_eq.
-  (* rewrite integral_bigcup//; last 2 first.
-    admit.
-    admit.
-  admit. *)
+have cvg_f : f x @[x --> +oo] --> Num.sqrt pi / 2.
+  have : Num.sqrt (f x ^+ 2) @[x --> +oo] --> Num.sqrt (pi / 4).
+    apply: continuous_cvg => //.
+      exact: sqrt_continuous.
+    exact: cvg_f.
+  rewrite sqrtrM ?pi_ge0// sqrtrV// (_ : 4 = 2 ^+ 2); last first.
+    by rewrite expr2 -natrM.
+  rewrite sqrtr_sqr ger0_norm//.
+  rewrite (_ : (fun x => Num.sqrt (f x ^+ 2)) = f)//.
+  by apply/funext => r; rewrite sqrtr_sqr// ger0_norm.
 Admitted.
 
 End application.
