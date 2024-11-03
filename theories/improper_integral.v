@@ -87,6 +87,7 @@ Admitted.
 
 End PRed.
 
+(* Abort? *)
 Lemma ge0_Rceil_nat {R : realType} (x : R) : (0 <= x)%R ->
   exists n, n%:R = Rceil x.
 Proof.
@@ -99,6 +100,16 @@ have : Rceil x \is a int_num.
 rewrite Num.Theory.intrEge0; last exact: Rceil_ge0.
 move/Num.Theory.natrP => {z cxz}[n cxn].
 by exists n.
+Restart.
+move=> x0.
+exists (`|Num.ceil x|)%N.
+rewrite natr_absz.
+rewrite intr_norm.
+rewrite RceilE.
+apply/normr_idP.
+rewrite ler0z.
+rewrite -ceil_ge0.
+exact: lt_le_trans x0.
 Qed.
 
 (* NB: similar to real_interval.itv_bnd_inftyEbigcup *)
@@ -596,7 +607,7 @@ Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) 
   {in `]a, +oo[, F^`() =1 f} ->
   (\int[lebesgue_measure ]_(x in `[a, +oo[) (f x)%:E = l%:E - (F a)%:E)%E.
 Proof.
-move=> f_ge0 Fl /continuous_within_itvcyP[cf fa] dF dFE.
+move=> f_ge0 Fl /continuous_within_itvcyP[cf fa] Fa dF dFE.
 rewrite -[LHS]oppeK.
 rewrite -integralN/=; last first.
   rewrite adde_defN.
@@ -622,13 +633,25 @@ rewrite -integralN/=; last first.
   exact: f_ge0.
 rewrite (@ge0_within_pinfty_continuous_FTC2 _ (- f)%R (- F)%R _ (- l)%R).
 - rewrite oppeB//.
-  admit.
-- admit.
-- admit.
-- admit.
-- admit.
-- admit.
-(* TODO: urgent *) Admitted.
+  by rewrite EFinN oppeK.
+- move=> x ax.
+  by rewrite oppr_ge0 f_ge0.
+- by apply: cvgN.
+- rewrite continuous_within_itvcyP; split.
+    move=> x ax.
+    apply: continuousN.
+    exact: cf.
+  by apply: cvgN.
+- move=> x ax.
+  apply: derivableN.
+  exact: dF.
+- exact: cvgN.
+- move=> x; rewrite in_itv/= andbT => ax.
+  rewrite derive1E deriveN; last exact: dF.
+  congr -%R.
+  rewrite -derive1E.
+  by apply: dFE; rewrite in_itv/= andbT.
+Qed.
 
 End within_continuous_FTC2_pinfty.
 
@@ -850,11 +873,28 @@ Abort.
 
 Lemma itv_bnd_infty_bigcup_shiftn (R : realType) b (x : R) (n : nat):
   [set` Interval (BSide b x) +oo%O] =
-  \bigcup_i [set` Interval (BSide b x) (BLeft (x + (i + n)%:R))].
+  \bigcup_i [set` Interval (BSide b x) (BLeft (x + (i + n.+1)%:R))].
 Proof.
 apply/seteqP; split=> y; rewrite /= !in_itv/= andbT; last first.
   by move=> [k _ /=]; move: b => [|] /=; rewrite in_itv/= => /andP[//] /ltW.
-move=> xy; exists (`|Num.ceil (y - x)|)%N => //=. (* TODO: urgent *) Admitted.
+move=> xy; exists (`|Num.ceil (y - x)|)%N => //=.
+rewrite in_itv/= xy/=.
+rewrite natrD.
+rewrite natr_absz.
+rewrite intr_norm.
+rewrite addrA.
+apply: ltr_pwDr; first by rewrite (_: 0%R = 0%:R)// ltr_nat.
+rewrite -lterBDl.
+apply: (le_trans (le_ceil _)) => //=.
+rewrite le_eqVlt; apply/predU1P; left.
+apply/esym/normr_idP.
+rewrite -RceilE.
+apply: Rceil_ge0.
+rewrite subr_ge0.
+move: xy.
+by case: b => //=; exact: ltW.
+Qed.
+
 (* rewrite in_itv/= xy/= -lerBlDl.
 apply: (@le_trans _ _ (`|Num.ceil (y - x)|)%N%:R); last by rewrite natrD lerDl.
 rewrite !natr_absz/= ger0_norm -?ceil_ge0 ?ceil_ge//; last first.
@@ -2737,7 +2777,10 @@ have int_substE : \int[mu]_(y in `[0%R, +oo[) (expR (- x ^+ 2 * oneDsqrx y))%:E
          (expR (- x ^+ 2) / x * expR (- x1 ^+ 2))%:E).
   rewrite substE.
   rewrite -ge0_integration_by_substitution_increasing_opinfty; first last.
-  - admit.
+  - move=> y _.
+    apply: mulr_ge0; last exact: expR_ge0.
+    apply: divr_ge0; first exact: expR_ge0.
+    exact: ltW.
   - admit.
   - admit.
   - admit.
