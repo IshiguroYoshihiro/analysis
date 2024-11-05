@@ -1663,14 +1663,10 @@ Hypothesis G_ub :
 
 Let F x' := \int[mu]_(y in A) f x' y.
 
-Lemma differentiation_under_integral : I a ->
-  F^`() a = \int[mu]_(y in A) ('d1 f y) a.
+Lemma cvg_differentiation_under_integral : I a ->
+  h^-1 *: (F (h + a)%E - F a) @[h --> 0^'] --> \int[mu]_(y in A) ('d1 f) y a.
 Proof.
-move=> Ia.
-rewrite /derive1.
-suff: h^-1 *: (F (h + a)%E - F a) @[h --> 0^'] --> \int[mu]_(y in A) ('d1 f) y a.
-  by move/cvg_lim => ->.
-apply/cvg_dnbhsP => t [t_neq0 t_cvg0].
+move=> Ia; apply/cvg_dnbhsP => t [t_neq0 t_cvg0].
 suff: forall x_, (forall n : nat, x_ n != a) ->
     (x_ n @[n --> \oo] --> a) -> (forall n, I (x_ n)) ->
     (x_ n - a)^-1 *: (F (x_ n)%E - F a) @[n --> \oo] --> \int[mu]_(y in A) ('d1 f) y a.
@@ -1744,8 +1740,8 @@ have intg : forall n, mu.-integrable (A) (EFin \o g_ n).
     exact: nbhs_pinfty_ge.
 have mG : mu.-integrable (A) (EFin \o G).
   exact: intG.
-have H1 : forall y, (A) y -> (g_ n y)%:E @[n --> \oo] --> (('d1 f) y a)%:E.
-  move=> y Ay.
+have H1 y : A y -> (g_ n y)%:E @[n --> \oo] --> (('d1 f) y a)%:E.
+  move=> Ay.
   rewrite /g_.
   apply/fine_cvgP; split.
     by apply: nearW.
@@ -1770,8 +1766,8 @@ have H1 : forall y, (A) y -> (g_ n y)%:E @[n --> \oo] --> (('d1 f) y a)%:E.
   suff : (f (x_ x) y - f a y) / (x_ x - a) @[x --> \oo] --> ('d1 f) y a by [].
   rewrite d1fyal.
   by under eq_fun do rewrite mulrC.
-have H2 : forall (x : Y) (n : nat), (A) x -> (`|(g_ n x)%:E| <= (EFin \o G) x)%E.
-  move=> y n Ay.
+have H2 (y : Y) n : A y -> (`|(g_ n y)%:E| <= (EFin \o G) y)%E.
+  move=> Ay.
   rewrite /g_.
   have [axn|axn|<-] := ltgtP a (x_ n); last first.
   + by rewrite subrr mul0r abse0 lee_fin.
@@ -1901,6 +1897,23 @@ apply: (@squeeze_cvgr _ _ _ _ (cst 0) _ _ _ _ _ K2) => //.
 exact: cvg_cst.
 Unshelve. all: end_near. Qed.
 
+Lemma differentiation_under_integral : I a ->
+  F^`() a = \int[mu]_(y in A) ('d1 f y) a.
+Proof.
+move=> Ia.
+rewrite /derive1.
+have /cvg_lim-> //:= cvg_differentiation_under_integral Ia.
+Qed.
+
+Lemma derivable_under_integral : I a -> derivable F a 1.
+Proof.
+move=> Ia.
+apply/cvg_ex => /=; exists (\int[mu]_(y in A) ('d1 f y) a).
+rewrite /GRing.scale/=.
+under eq_fun do rewrite mulr1.
+exact: cvg_differentiation_under_integral.
+Qed.
+
 End leibniz.
 
 Section application.
@@ -1918,6 +1931,9 @@ Proof. by apply: Rintegral_ge0 => //= r _; rewrite expR_ge0. Qed.
 
 Let oneDsqr_gt0 t : 0 < oneDsqr t.
 Proof. by rewrite ltr_pwDl// sqr_ge0. Qed.
+
+Let oneDsqr_ge1 t : 1 <= oneDsqr t.
+Proof. by rewrite lerDl sqr_ge0. Qed.
 
 Lemma du x t :
   ('d1 u t) x = - 2 * x * expR (- x ^+ 2) * expR (- (t * x) ^+ 2).
@@ -1959,14 +1975,17 @@ Qed.
 
 Lemma cu z : continuous (u z).
 Proof.
-rewrite /u.
-Admitted.
+rewrite /u /= => x.
+rewrite /continuous_at.
+apply: cvgM; last first.
+  apply: cvgV; first by rewrite gt_eqF.
+  by apply: cvgD; [exact: cvg_cst|exact: exprn_continuous].
+apply: continuous_comp => /=; last exact: continuous_expR.
+apply: cvgMr.
+by apply: cvgD; [exact: cvg_cst|exact: exprn_continuous].
+Qed.
 
-Lemma derivable_g x : derivable g x 1.
-Proof.
-Admitted.
-
-Lemma dg x : g^`() x =
+Lemma dg0 x : h^-1 *: (g (h + x)%E - g x) @[h --> 0^'] -->
   - 2 * x * expR (- x ^+ 2) * \int[mu]_(t in `[0, 1]) expR (- (t * x) ^+ 2).
 Proof.
 have [c [e e0 cex]] : exists c : R, exists2 e : R, 0 < e & ball c e x.
@@ -1974,16 +1993,16 @@ have [c [e e0 cex]] : exists c : R, exists2 e : R, 0 < e & ball c e x.
   exact: ballxx.
 have [M M0 HM]: exists2 M : R, 0 < M & forall x0 y, x0 \in `](c - e), (c + e)[ ->
     y \in `[0, 1] -> normr (('d1 u) y x0) <= M.
-  rewrite /=.
   admit.
-have /= := @differentiation_under_integral R _ _ mu u _ _ `[0, 1] _ x _ _ _ _ _ HM.
-move=> -> //.
-+ rewrite -RintegralZl//; last first.
+rewrite [X in _ --> X](_ : _ = \int[mu]_(y in `[0, 1]) ('d1 u) y x)//; last first.
+  rewrite /= -RintegralZl//; last first.
     apply: continuous_compact_integrable => /=.
       exact: segment_compact.
     apply/continuous_subspaceT => x0.
     exact: cexpR.
   by apply: eq_Rintegral => z z01; rewrite du//.
+have /= := @cvg_differentiation_under_integral R _ _ mu u _ _ `[0, 1] _ x _ _ _ _ _ HM.
+apply => //=.
 - move=> z z01.
   apply: continuous_compact_integrable => //.
     exact: segment_compact.
@@ -1997,6 +2016,26 @@ move=> -> //.
   exact: cst_continuous.
 - by rewrite ball_itv/= in cex.
 Admitted.
+
+Lemma derivable_g x : derivable g x 1.
+Proof.
+apply/cvg_ex.
+eexists.
+rewrite /g/=.
+rewrite /GRing.scale/=.
+under eq_fun.
+  move=> x0.
+  under eq_Rintegral do rewrite mulr1.
+  over.
+exact: dg0.
+Qed.
+
+Lemma dg x : g^`() x =
+  - 2 * x * expR (- x ^+ 2) * \int[mu]_(t in `[0, 1]) expR (- (t * x) ^+ 2).
+Proof.
+apply/cvg_lim => //=.
+exact: dg0.
+Qed.
 
 Lemma df x : 0 < x ->
   derivable f x 1 /\ f^`() x = expR (- x ^+ 2).
@@ -2040,6 +2079,22 @@ Proof.
 rewrite /h /f set_itv1 Rintegral_set1 expr0n addr0.
 rewrite -atan1.
 rewrite /g.
+under eq_Rintegral do rewrite expr0n/= oppr0 mul0r expR0 /oneDsqr.
+rewrite /Rintegral.
+rewrite (@continuous_FTC2 _ _ atan)//.
+- by rewrite atan0 sube0.
+- apply: continuous_in_subspaceT => x x01.
+  apply: cvgM; first exact: cvg_cst.
+  apply: cvgV; first by rewrite gt_eqF// oneDsqr_gt0.
+  apply: cvgD; first exact: cvg_cst.
+  exact: exprn_continuous.
+- split.
+  + move=> x x01.
+    admit.
+  + admit.
+  + admit.
+- move=> x x01.
+  by rewrite derive1_atan// mul1r.
 Admitted.
 
 Lemma encadrement0 t x : t \in `[0, 1] ->
@@ -2049,7 +2104,10 @@ move=> t01.
 apply/andP; split.
   by rewrite divr_ge0 ?expR_ge0// ltW//.
 rewrite ler_pdivrMr//.
-Admitted.
+rewrite (@le_trans _ _ (expR (- x ^+ 2)))//.
+  by rewrite ler_expR// mulNr lerN2 ler_peMr// sqr_ge0.
+by rewrite ler_peMr// expR_ge0.
+Qed.
 
 Lemma encadrement x : 0 <= g x <= expR (- x ^+ 2).
 Proof.
@@ -2057,25 +2115,52 @@ rewrite /g; apply/andP; split.
   rewrite /Rintegral fine_ge0// integral_ge0//= => t t01.
   by rewrite lee_fin divr_ge0 ?expR_ge0// ltW.
 have -> : expR (- x ^+ 2) = \int[mu]_(t in `[0, 1]) expR (- x ^+ 2).
-  admit.
+  rewrite /Rintegral integral_cst//. (* TODO: lemma Rintegral_cst *)
+  by rewrite /mu/= lebesgue_measure_itv//= lte01 oppr0 adde0 mule1/=.
 rewrite fine_le//.
-admit.
-admit.
+- apply: integral_fune_fin_num => //=.
+  apply: continuous_compact_integrable.
+    exact: segment_compact.
+  apply: continuous_in_subspaceT => y y01.
+  apply: cvgM.
+    apply: continuous_comp => //=.
+      admit.
+    exact: continuous_expR.
+  apply: cvgV.
+    by rewrite gt_eqF.
+  apply: cvgD; first exact: cvg_cst.
+  admit.
+- apply: integral_fune_fin_num => //=.
+  apply: continuous_compact_integrable.
+    exact: segment_compact.
+  admit.
 apply: ge0_le_integral => //=.
-admit.
-admit.
-admit.
-move=> t t01.
-by have /andP[_]:= encadrement0 x t01.
+- by move=> y _; rewrite lee_fin divr_ge0 ?expR_ge0// ltW//.
+- admit.
+- by by move=> y _; rewrite lee_fin expR_ge0.
+- move=> y y01.
+  rewrite lee_fin.
+  by have /andP[] := encadrement0 x y01.
 Admitted.
 
 Lemma cvg_g : g x @[x --> +oo] --> 0.
 Proof.
-(* use the squeeze theorem *)
+apply: (@squeeze_cvgr _ _ _ _ (cst 0) (fun x => expR (- x ^+ 2))); last 2 first.
+  exact: cvg_cst.
+  apply: (@cvg_comp _ _ _ (fun x => x ^+ 2) (fun x => expR (- x))); last first.
+    exact: cvgr_expR.
+  (* TODO: lemma *)
+  apply/cvgryPge => M.
+  near=> x.
+  admit.
+near=> n => /=.
+exact: encadrement.
+Unshelve. all: end_near.
 Admitted.
 
 Lemma cvg_f : (f x) ^+ 2 @[x --> +oo] --> pi / 4.
 Proof.
+
 Admitted.
 
 Lemma gauss : \int[mu]_(t in `[0, +oo[) (expR (- t ^+ 2)) = Num.sqrt pi / 2.
@@ -2090,6 +2175,21 @@ have cvg_f : f x @[x --> +oo] --> Num.sqrt pi / 2.
   rewrite sqrtr_sqr ger0_norm//.
   rewrite (_ : (fun x => Num.sqrt (f x ^+ 2)) = f)//.
   by apply/funext => r; rewrite sqrtr_sqr// ger0_norm.
+rewrite /f in cvg_f.
+rewrite /Rintegral.
+have /(_ _ _)/cvg_lim := @ge0_limn_integraly _ mu (fun x => expR (- x ^+ 2)).
+move=> <-//; last 2 first.
+  by move=> x; exact: expR_ge0.
+  admit.
+suff: (limn (fun n : nat => (\int[mu]_(x in `[0%R, n%:R]) (expR (- x ^+ 2))%:E)%E)) = (Num.sqrt pi / 2)%:E.
+  move=> suf.
+  by rewrite suf//.
+apply/cvg_lim => //.
+have H : (n%:R : R) @[n --> \oo] --> +oo.
+  admit.
+move/cvg_pinftyP : cvg_f => /(_ _ H).
+move/neq0_fine_cvgP; apply.
+by rewrite gt_eqF// divr_gt0// sqrtr_gt0 pi_gt0.
 Admitted.
 
 End application.
