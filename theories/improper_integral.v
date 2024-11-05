@@ -1511,45 +1511,6 @@ Section Rintegral_lemmas.
 Context {R : realType}.
 Let mu := @lebesgue_measure R.
 
-Lemma ge0_integralT_even (f : R -> R) :
-  (forall x, (0 <= f x)%R) ->
-  measurable_fun [set: R] f ->
-  f =1 f \o -%R ->
-    (\int[mu]_x (f x)%:E =
-     2%:E * \int[mu]_(x in [set x | (0 <= x)%R]) (f x)%:E).
-Proof.
-move=> f0 mf evenf.
-set posnums := [set x : R | (0 <= x)%R].
-have mposnums : measurable posnums by rewrite /posnums -set_interval.set_itv_c_infty//.
-rewrite -(setUv posnums).
-rewrite ge0_integral_setU//= ; last 4 first.
-- by apply: measurableC.
-- apply/measurable_EFinP.
-  by rewrite setUv.
-  move=> x _.
-  by rewrite lee_fin.
-- exact/disj_setPCl.
-rewrite mule_natl mule2n.
-congr (_ + _).
-rewrite /posnums.
-rewrite -set_interval.set_itv_c_infty//.
-rewrite set_interval.setCitvr.
-(* rewrite integral_itv_bndo_bndc. *)
-rewrite -set_interval.setU1itv//.
-rewrite ge0_integral_setU//=; last 3 first.
-- apply/measurable_EFinP.
-  exact: measurable_funTS.
-- by move=> x _; rewrite lee_fin.
-- apply/disj_set2P.
-  rewrite set1I ifF//.
-  admit.
-rewrite integral_set1 add0e.
-rewrite -{1}oppr0.
-rewrite integral_itv_obnd_cbnd; last admit.
-rewrite integral_itv_bndo_bndc; last admit.
-rewrite (@ge0_integration_by_substitution_decreasing_opinfty _ -%R f 0%R).
-Abort.
-
 Lemma Rintegral_even (D : set R) (f : R -> R) :
   measurable D ->
   measurable_fun D f ->
@@ -1590,7 +1551,64 @@ set Dn := [set x : R | D x /\ (x < 0)%R].
 have sepD : D = Dp `|` Dn.
   rewrite eqEsubset; split => [x Dx|x].
   case : ltP x 0.*)
-Admitted.
+Abort.
+
+Lemma ge0_integralT_even (f : R -> R) :
+  (forall x, (0 <= f x)%R) ->
+  continuous f ->
+  f =1 f \o -%R ->
+    (\int[mu]_x (f x)%:E =
+     2%:E * \int[mu]_(x in [set x | (0 <= x)%R]) (f x)%:E).
+Proof.
+move=> f0 cf evenf.
+have mf : measurable_fun [set: R] f by exact: continuous_measurable_fun.
+set posnums := [set x : R | (0 <= x)%R].
+have mposnums : measurable posnums by rewrite /posnums -set_interval.set_itv_c_infty//.
+rewrite -(setUv posnums).
+rewrite ge0_integral_setU//= ; last 4 first.
+- by apply: measurableC.
+- apply/measurable_EFinP.
+  by rewrite setUv.
+  move=> x _.
+  by rewrite lee_fin.
+- exact/disj_setPCl.
+rewrite mule_natl mule2n.
+congr (_ + _).
+rewrite /posnums.
+rewrite -set_interval.set_itv_c_infty//.
+rewrite set_interval.setCitvr.
+(* rewrite integral_itv_bndo_bndc. *)
+rewrite -set_interval.setU1itv//.
+rewrite ge0_integral_setU//=; last 3 first.
+- apply/measurable_EFinP.
+  exact: measurable_funTS.
+- by move=> x _; rewrite lee_fin.
+- apply/disj_set2P.
+  rewrite set1I ifF//.
+  apply: memNset => /=.
+  by rewrite in_itv/= andbT ltxx.
+rewrite integral_set1 add0e.
+rewrite -{1}oppr0.
+rewrite integral_itv_obnd_cbnd; last exact: measurable_funTS.
+rewrite integral_itv_bndo_bndc; last exact: measurable_funTS.
+have oppr_der1 : (@GRing.opp R)^`() = cst (-1).
+  by apply/funext => ?; rewrite derive1E derive_val.
+rewrite (@ge0_integration_by_substitution_decreasing_opinfty _ -%R f 0%R)//.
+- apply: eq_integral => /= x.
+  rewrite inE/= in_itv/= andbT => x0.
+  by rewrite evenf oppr_der1 opprK mulr1.
+- by move=> ? ? _ _; rewrite ltrN2.
+- move=> x _.
+  by rewrite oppr_der1; exact: cst_continuous.
+- by rewrite oppr_der1; exact: is_cvg_cst.
+- by rewrite oppr_der1; exact: is_cvg_cst.
+- apply: cvgN.
+  exact: cvg_at_right_filter.
+- exact: continuous_subspaceT.
+- apply/cvgrNyPlt => x.
+  exists (- x)%R; split; first exact: num_real.
+  by move=> z; rewrite ltrNl.
+Qed.
 
 End Rintegral_lemmas.
 
@@ -2907,13 +2925,20 @@ Admitted.
 Lemma gauss_integration : (\int[mu]_x (gauss x))%R = Num.sqrt pi.
 Proof.
 have -> : (\int[mu]_x gauss x)%R = (Ig * 2)%R.
-  rewrite Rintegral_even//=; last 2 first.
-  - rewrite eqEsubset; split => x//=.
-    by move=> _; exists (- x)%R => //; rewrite opprK.
+  rewrite /Rintegral.
+  rewrite ge0_integralT_even//=; last 2 first.
+  - rewrite /gauss => x. apply: continuous_comp => /=.
+      apply: continuous_comp.
+        exact: exprn_continuous.
+      exact: continuousN.
+    exact: continuous_expR.
   - move=> x.
-    by rewrite /gauss sqrrN.
-  rewrite [RHS]mulrC; congr (2%R * _)%R.
-  by rewrite [X in (\int[_]_(_ in X) _)%R](_:_= `[0%R, +oo[%classic).
+    by rewrite /gauss fctE sqrrN.
+  rewrite [RHS]mulrC. rewrite fineM/=; last 2 first.
+      by rewrite ge0_fin_numE//= ltry.
+    by rewrite -set_itv_c_infty.
+  congr (2%R * _)%R.
+  by rewrite -set_itv_c_infty.
 rewrite -[RHS](@divfK _ 2)//.
 congr (_ * 2)%R.
 rewrite -[LHS]ger0_norm; last exact: Rintegral_ge0.
