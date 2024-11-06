@@ -2407,6 +2407,41 @@ Qed.
 
 End leibniz.
 
+Section thm227a.
+Local Open Scope ring_scope.
+Context {R : realType}.
+Let mu := @lebesgue_measure R.
+
+(* folland thm2.27(a) *)
+Lemma continuous_integral (mx Mx my My : R) (f : R -> R -> R) :
+  (forall x, mu.-integrable `[my, My] (EFin \o (f x))) ->
+  (exists g : R -> R, mu.-integrable `[my, My] (EFin \o g) /\
+      {in `[mx, Mx], forall x : R,
+         {in `[my, My], forall y, (`|(f x y)| <= g y)%R}}) ->
+  {in `]mx, Mx[, forall x0 : R,
+      {in `]my, My[, forall y, continuous_at x0 (f ^~ y)}} ->
+  let F x := (\int[mu]_(y in `[my, My]) f x y)%R in
+    {in `]mx, Mx[, continuous F}.
+Proof.
+move=> intfx.
+move=> [domi [intdomi fdomi]].
+move=> cfy.
+move=> F.
+move=> x; rewrite in_itv/= => /andP[mxx xMx].
+rewrite /continuous_at.
+(* apply/cvg_dnbhsP. *)
+Abort.
+(*
+have : exists x_ : nat -> R, (forall n, x_ n \in `]mx, Mx[) /\ x_ n @[n --> \oo] --> x.
+  admit.
+move=> [x_ [x_itv x_x]].
+have := (@dominated_convergence _ _ _ mu `]my, My[ _
+   (fun n => (fun y => (f (x_ n) y)%:E)) (EFin\o (f x)) (EFin \o domi)).
+xxx
+*)
+
+End thm227a.
+
 Section Gauss_integration.
 Context {R : realType}.
 
@@ -3170,14 +3205,69 @@ rewrite [X in (-2 * X)%R]mulrCA !mulrA mulfK; last first.
 by rewrite mulrAC.
 Admitted.
 
-Let J0 : J x @[x --> 0^'+] --> J 0.
+(*Lemma dableJ :{in `[0%R, 1%R], forall x, derivable J x 1}.
 Proof.
-have -> : (J 0 = sup [set J x | x in `]0%R, +oo[]).
+move=> x; rewrite in_itv/= => /andP[x0 x1].
+apply/cvg_ex => /=.
+exists (\int[mu]_(y in `[0%R, +oo[) ((dJ ^~ y)^`() x))%R.
+under eq_cvg.
+  move=> h.
+  rewrite -RintegralB//.
+  under eq_Rintegral.
+    move=> y.
+    rewrite inE/= in_itv/= => y0.
+    have := @MVT _ (dJ ^~ y) (dJ ^~ y)^`() x (h + a)%R.
+*)
+
+Let rcJ0 : J x @[x --> 0^'+] --> J 0.
+Proof.
+apply/cvg_at_rightP.
+move=> x_ [x_ge0 x_0].
+rewrite /J.
+have mitv : @measurable _ R `[0%R, +oo[.
+  exact: measurable_itv.
+have mdJx_ n : measurable_fun `[@GRing.zero R, +oo[ (fun y : R => (dJ (x_ n) y)%:E).
+  by move/integrableP : (int_J (x_ n)) => [].
+have mdJ0 : measurable_fun `[@GRing.zero R, +oo[ (EFin \o dJ 0).
+  by move/integrableP : (int_J 0%R) => [].
+have cvg_dJ : {ae mu, forall x : R, `[0%R, +oo[%classic x ->
+          (dJ (x_ x0) x)%:E @[x0 --> \oo] --> (EFin \o dJ 0) x}.
+  apply: aeW => /= y _.
+  apply: cvg_EFin.
+    apply: nearW => n.
+    rewrite ge0_fin_numE; first exact: ltry.
+    by rewrite lee_fin mulr_ge0// ?expR_ge0// invr_ge0 ltW.
+  apply: (cvg_dnbhsP (dJ ^~ y) 0%R (dJ 0 y)).1; last first.
+    split.
+      by move=> n; rewrite gt_eqF.
+    exact: x_0.
+  have : continuous_at 0%R (dJ ^~ y).
+    admit.
+  rewrite /continuous_at.
+  move=> H.
+  apply/cvgrPdist_le.
+  move=> /= e e0.
+  near=> t.
+  rewrite -mulNr -mulrDl expr0n/= oppr0 mul0r expR0.
+  have /normr_idP -> : (0 <= (1 - expR (- t ^+ 2 * oneDsqrx y)) / oneDsqrx y)%R.
+    apply: divr_ge0; last exact: ltW.
+    rewrite subr_ge0 -expR0 ler_expR.
+    by rewrite mulNr oppr_le0 mulr_ge0// ?sqr_ge0 ?ltW.
+  rewrite ler_pdivrMr//.
+  rewrite lerBlDl -lerBlDr.
+
+  apply: filter_app.
   admit.
-apply: nonincreasing_at_right_cvgr.
-    done.
-  move=> x y; rewrite !in_itv/= !andbT => x0 y0 xy.
+have int_J0 : mu.-integrable `[0%R, +oo[ (EFin \o dJ 0) by [].
+have domdJ : {ae mu, forall (x : R) (n : Datatypes.nat),
+   `[0%R, +oo[%classic x -> `|(dJ (x_ n) x)%:E| <= (EFin \o dJ 0) x}.
   admit.
+have /= := @dominated_convergence _ (measurableTypeR R) _ mu _ mitv _ _ _ mdJx_ mdJ0 cvg_dJ int_J0 domdJ.
+move=> [_ lim_norm0 cvgJ].
+apply: fine_cvg; rewrite fineK.
+apply: cvgJ.
+rewrite J0E ge0_fin_numE; first by rewrite ltry.
+by rewrite lee_fin divr_ge0// pi_ge0.
 Admitted.
 (*
 apply: cvg_at_right_filter.
