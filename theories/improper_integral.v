@@ -3241,6 +3241,7 @@ have cvg_dJ : {ae mu, forall x : R, `[0%R, +oo[%classic x ->
     split.
       by move=> n; rewrite gt_eqF.
     exact: x_0.
+  (* lemma *)
   apply/cvgrPdist_lep.
   near=> e.
   near=> t.
@@ -3479,11 +3480,28 @@ rewrite -(le0_within_pinfty_continuous_FTC2 _ Joo _ _ _ dJE); last 4 first.
 - apply/continuous_within_itvcyP; split.
     move=> x _; exact: cdJ.
   apply: cvg_at_right_filter; exact: cdJ.
-- exact: J0.
+- exact: rcJ0.
 - move=> x x0.
+  (* lemma *)
+  have :  J^`() x = (-2 * Ig * gauss x)%R.
+    by apply: dJE; rewrite in_itv/= andbT.
+
+  rewrite /derivable.
+  apply/cvg_ex.
+  exists (-2 * Ig * gauss x)%R.
+  under eq_cvg.
+    move=> h/=.
+    rewrite /GRing.scale/= mulr1.
+    rewrite -RintegralB//.
+    over.
+  rewrite /=.
   have :  J^`() x = (-2 * Ig * gauss x)%R.
     by apply: dJE; rewrite in_itv/= andbT.
   rewrite derive1E.
+  
+  apply/ex_derive1.
+  apply: (@ex_derive _ _ _ _ _ _ (-2 * Ig * gauss x)%R).
+
   admit.
 under eq_integral do rewrite !EFinM EFinN !mulNe.
 rewrite integral_ge0N; last first.
