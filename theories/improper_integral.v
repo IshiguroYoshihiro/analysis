@@ -1702,6 +1702,7 @@ by near: M; exact: nbhs_pinfty_ge.
 Unshelve. all: end_near. Qed.
 
 Module Leibniz.
+
 (* without ae predicates *)
 Section leibniz.
 Local Open Scope ring_scope.
@@ -1710,12 +1711,12 @@ Variable mu : {measure set Y -> \bar R}.
 Variable f : R -> Y -> R.
 
 Variable c : R.
-Variable e : R.
-Hypothesis e0 : (0 < e)%R.
-
-Let I : set R := `](c - e), (c + e)[.
+Variables u v : R.
+Hypothesis uc : (u < c)%R.
+Hypothesis cv : (c < v)%R.
+Let I : set R := `]u, v[.
 Let Ic : I c.
-Proof. by rewrite /I/= in_itv/= ltrBlDr ltrDl e0. Qed.
+Proof. by rewrite /I/= in_itv/= uc cv. Qed.
 
 Variable A  : set Y.
 Hypothesis mA : measurable A.
@@ -1723,100 +1724,84 @@ Hypothesis mA : measurable A.
 
 Variable a : R.
 
-(* hypo (1) *)
+(* hypo (1): t |-> f(x, t) is integrable in A *)
 Hypothesis intf : forall x, I x -> mu.-integrable A (EFin \o f x).
 
-(* hypo (2) *)
+(* hypo (2): t |-> f(x, t) is derivable in I *)
 Hypothesis derf1 : forall x y, I x -> A y -> derivable (f ^~ y) x 1.
 
-(* hypo (3) *)
+(* hypo (3): the first derivative is bounded by a non-negative function integrable on A *)
 Variable G : Y -> R.
 Hypothesis G_ge0 : forall y, 0 <= G y.
 Hypothesis intG : mu.-integrable A (EFin \o G).
-
-Hypothesis G_ub :
-  forall x y, I x -> A y -> `|'d1 f y x| <= G y.
+Hypothesis G_ub : forall x y, I x -> A y -> `|'d1 f y x| <= G y.
 
 Let F x' := \int[mu]_(y in A) f x' y.
 
 Lemma cvg_differentiation_under_integral : I a ->
-  h^-1 *: (F (h + a)%E - F a) @[h --> 0^'] --> \int[mu]_(y in A) ('d1 f) y a.
+  h^-1 *: (F (h + a) - F a) @[h --> 0^'] --> \int[mu]_(y in A) ('d1 f) y a.
 Proof.
 move=> Ia; apply/cvg_dnbhsP => t [t_neq0 t_cvg0].
 suff: forall x_, (forall n : nat, x_ n != a) ->
-    (x_ n @[n --> \oo] --> a) -> (forall n, I (x_ n)) ->
-    (x_ n - a)^-1 *: (F (x_ n)%E - F a) @[n --> \oo] --> \int[mu]_(y in A) ('d1 f) y a.
+      x_ n @[n --> \oo] --> a -> (forall n, I (x_ n)) ->
+    (x_ n - a)^-1 *: (F (x_ n) - F a) @[n --> \oo] -->
+      \int[mu]_(y in A) ('d1 f) y a.
   move=> suf.
   apply/cvgrPdist_le => /= r r0.
-  have [rho rho0 H] := near_in_itv Ia.
-  move/cvgr_dist_lt : (t_cvg0) => /(_ _ rho0)[P _ t_cvg0'].
+  have [rho /= rho0 arhouv] := near_in_itv Ia.
+  move/cvgr_dist_lt : (t_cvg0) => /(_ _ rho0)[m _ t_cvg0'].
   near \oo => N.
-  pose x (k : nat) : R := a + t (N + k)%N.
+  pose x k := a + t (N + k)%N.
   have x_a n : x n != a by rewrite /x addrC eq_sym -subr_eq subrr eq_sym t_neq0.
   have x_cvg_a : x n @[n --> \oo] --> a.
-    rewrite /x.
     apply: cvg_zero.
-    set h := (X in X x @[x --> \oo] --> _).
-    have -> : h = (fun n => t (n + N)%N).
-      by apply/funext => n; rewrite addnC /h (addrC a) addrK.
+    rewrite [X in X @ _ --> _](_ : _ = (fun n => t (n + N)%N)); last first.
+      by apply/funext => n; rewrite /x fctE addrAC subrr add0r addnC.
     by rewrite cvg_shiftn.
   have Ix n : I (x n).
-    apply: H => /=.
+    apply: arhouv => /=.
     rewrite /x opprD addrA subrr.
     apply: t_cvg0' => //=.
-    suff: (P <= N)%N by move/leq_trans => ->//; rewrite leq_addr.
-    by near: N; exists P.
+    rewrite (@leq_trans N) ?leq_addr//.
+    by near: N; exists m.
   have := suf x x_a x_cvg_a Ix.
-  move=> /cvgrPdist_le/(_ _ r0)[n _ /=] suf'.
+  move=> /cvgrPdist_le/(_ _ r0)[n _ /=] {}suf.
   near=> M.
-  have nMN : (n <= M - N)%N.
-    rewrite leq_subRL.
-      by near: M; exists (N + n).
-    by near: M; exists N.
-  have := suf' _ nMN.
-  rewrite /x subnKC.
-    by rewrite (addrC a) addrK.
-  by near: M; exists N.
+  have /suf : (n <= M - N)%N.
+    by rewrite leq_subRL; near: M; exact: nbhs_infty_ge.
+  rewrite /x subnKC; last by near: M; exact: nbhs_infty_ge.
+  by rewrite (addrC a) addrK.
 move=> {t t_neq0 t_cvg0} x_ x_neqa x_cvga Ix_.
 pose g_ n y : R := (f (x_ n) y - f a y) / (x_ n - a).
 have mg_ n : measurable_fun A (fun y => (g_ n y)%:E).
-  apply/measurable_EFinP.
-  apply: measurable_funM => //.
+  apply/measurable_EFinP/measurable_funM => //.
   apply: measurable_funB.
-    have /integrableP[+ _] := intf (Ix_ n).
-    by move/measurable_EFinP; exact.
-  have /integrableP[+ _] := intf Ia.
-  by move/measurable_EFinP.
+    by have /integrableP[/measurable_EFinP] := intf (Ix_ n).
+  by have /integrableP[/measurable_EFinP] := intf Ia.
 have intg_ m : mu.-integrable A (EFin \o g_ m).
   rewrite /g_ /comp/=.
   under eq_fun do rewrite EFinM.
   apply: integrableMl => //.
     under eq_fun do rewrite EFinB.
-    apply: integrableB.
-    - by [].
-    - by have := intf (Ix_ m).
-    - by have := intf Ia.
+    apply: integrableB; [by []|exact:intf..].
   exact: bounded_cst.
 have g_cvg_d1f y : A y -> (g_ n y)%:E @[n --> \oo] --> (('d1 f) y a)%:E.
   move=> Ay.
   rewrite /g_.
   apply/fine_cvgP; split.
-    by apply: nearW.
+    exact: nearW.
   rewrite /comp/=.
-  have := derf1 Ia Ay.
-  move=> /cvg_ex[/= l].
-  move=> tmp.
+  have /cvg_ex[/= l fayl] := derf1 Ia Ay.
   have d1fyal : ('d1 f) y a = l.
     apply/cvg_lim => //.
-    rewrite /GRing.scale/= in tmp.
-    move: tmp.
+    move: fayl; rewrite /GRing.scale/=.
     by under eq_fun do rewrite mulr1.
   have H : (forall n : nat, x_ n - a != 0) /\ x_ n - a @[n --> \oo] --> 0.
     split.
       move=> x.
       by rewrite subr_eq0.
     by apply/cvgr_sub0.
-  move: tmp => /cvg_dnbhsP/(_ _ H).
+  move: fayl => /cvg_dnbhsP/(_ _ H).
   rewrite /GRing.scale/=.
   under [in X in X -> _]eq_fun do rewrite mulr1 subrK.
   move=> HH.
@@ -1930,7 +1915,7 @@ Qed.
 
 End leibniz.
 
-Section application.
+Section application_to_gauss_integral.
 Local Open Scope ring_scope.
 Context {R : realType}.
 Let mu := @lebesgue_measure R.
@@ -2326,7 +2311,7 @@ move/neq0_fine_cvgP; apply.
 by rewrite gt_eqF// divr_gt0// sqrtr_gt0 pi_gt0.
 Qed.
 
-End application.
+End application_to_gauss_integral.
 
 End Leibniz.
 
@@ -2382,7 +2367,7 @@ have H4 : (forall (x0 : R) (y : Y),
   move=> r y xer N1y.
   apply: theta_ub.
   by apply: xeA.
-have := @Leibniz.differentiation_under_integral R _ Y mu f a e (B) mB a H1 H2 theta theta_ge0 inttheta H4.
+have := @Leibniz.differentiation_under_integral R _ Y mu f (a - e) (a + e) B mB a H1 H2 theta theta_ge0 inttheta H4.
 move=> H.
 rewrite /F.
 rewrite H//.
