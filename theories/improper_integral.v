@@ -3241,12 +3241,8 @@ have cvg_dJ : {ae mu, forall x : R, `[0%R, +oo[%classic x ->
     split.
       by move=> n; rewrite gt_eqF.
     exact: x_0.
-  have : continuous_at 0%R (dJ ^~ y).
-    admit.
-  rewrite /continuous_at.
-  move=> H.
-  apply/cvgrPdist_le.
-  move=> /= e e0.
+  apply/cvgrPdist_lep.
+  near=> e.
   near=> t.
   rewrite -mulNr -mulrDl expr0n/= oppr0 mul0r expR0.
   have /normr_idP -> : (0 <= (1 - expR (- t ^+ 2 * oneDsqrx y)) / oneDsqrx y)%R.
@@ -3255,20 +3251,51 @@ have cvg_dJ : {ae mu, forall x : R, `[0%R, +oo[%classic x ->
     by rewrite mulNr oppr_le0 mulr_ge0// ?sqr_ge0 ?ltW.
   rewrite ler_pdivrMr//.
   rewrite lerBlDl -lerBlDr.
-
-  apply: filter_app.
-  admit.
+  rewrite -[leLHS]lnK; last first.
+    rewrite posrE.
+    rewrite subr_gt0.
+    rewrite -ltr_pdivlMr//.
+    near: e.
+    apply: nbhs_right_lt.
+    by rewrite divr_gt0.
+  rewrite ler_expR.
+  rewrite -ler_pdivrMr//.
+  rewrite lerNr.
+  rewrite -ler_sqrt; last first.
+    rewrite lerNr oppr0.
+    apply: mulr_le0_ge0; last by rewrite invr_ge0 ltW.
+    apply: ln_le0.
+    rewrite gerBl.
+    by apply: mulr_ge0 => //; rewrite ltW.
+  rewrite sqrtr_sqr.
+  near: t.
+  rewrite near_nbhs.
+  apply: dnbhs0_le.
+  rewrite sqrtr_gt0 oppr_gt0 pmulr_llt0; last by rewrite invr_gt0.
+  apply: ln_lt0; apply/andP; split.
+    rewrite subr_gt0 -ltr_pdivlMr//.
+    near: e.
+    apply: nbhs_right_lt.
+    by rewrite divr_gt0.
+  by rewrite gtrBl mulr_gt0.
 have int_J0 : mu.-integrable `[0%R, +oo[ (EFin \o dJ 0) by [].
 have domdJ : {ae mu, forall (x : R) (n : Datatypes.nat),
    `[0%R, +oo[%classic x -> `|(dJ (x_ n) x)%:E| <= (EFin \o dJ 0) x}.
-  admit.
+  apply: aeW => /= x n _.
+  have /normr_idP -> : (0 <= (dJ (x_ n) x))%R.
+    by rewrite mulr_ge0// ?expR_ge0 ?invr_ge0 ?ltW.
+  rewrite lee_fin.
+  apply: ler_pM => //; rewrite ?expR_ge0 ?invr_ge0//; first exact: ltW.
+  rewrite expr0n oppr0 mul0r ler_expR mulNr oppr_le0.
+  by rewrite mulr_ge0 ?sqr_ge0 ?ltW.
 have /= := @dominated_convergence _ (measurableTypeR R) _ mu _ mitv _ _ _ mdJx_ mdJ0 cvg_dJ int_J0 domdJ.
 move=> [_ lim_norm0 cvgJ].
 apply: fine_cvg; rewrite fineK.
 apply: cvgJ.
 rewrite J0E ge0_fin_numE; first by rewrite ltry.
 by rewrite lee_fin divr_ge0// pi_ge0.
-Admitted.
+Unshelve. all: end_near. Qed.
+
 (*
 apply: cvg_at_right_filter.
 rewrite /J/Rintegral.
