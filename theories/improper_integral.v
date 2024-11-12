@@ -357,10 +357,10 @@ rewrite /sval/=; case: cid => // x [px xpn].
 by rewrite ltNge distrC => /negP.
 Unshelve. all: end_near. Qed.
 
-Section itv_bounded_interior.
+Section itv_interior.
 Context {R : realType}.
 
-Lemma itv_bounded_interior_bounded (x y : R) (a b : bool) :
+Lemma itv_interior_bounded (x y : R) (a b : bool) :
 (x < y)%R ->
 interior [set` (Interval (BSide a x) (BSide b y))] = `]x, y[%classic.
 Proof.
@@ -371,7 +371,7 @@ rewrite sup_itv; last by case: a; case b; rewrite bnd_simp ?ltW.
 apply: set_itvoo.
 Qed.
 
-Lemma itv_bounded_interior_pinfty (x : R) (a : bool) :
+Lemma itv_interior_pinfty (x : R) (a : bool) :
 interior [set` (Interval (BSide a x) (BInfty _ false))] = `]x, +oo[%classic.
 Proof.
 rewrite interval_right_unbounded_interior//; first last.
@@ -381,7 +381,7 @@ rewrite inf_itv; last by case: a; rewrite bnd_simp ?ltW.
 by rewrite set_itv_o_infty.
 Qed.
 
-Lemma itv_bounded_interior_ninfty (y : R) (b : bool) :
+Lemma itv_interior_ninfty (y : R) (b : bool) :
 interior [set` (Interval (BInfty _ true) (BSide b y))] = `]-oo, y[%classic.
 Proof.
 rewrite interval_left_unbounded_interior//; first last.
@@ -391,10 +391,10 @@ rewrite sup_itv; last by case b; rewrite bnd_simp ?ltW.
 by apply: set_itv_infty_o.
 Qed.
 
-Definition itv_bounded_interior :=
-  (itv_bounded_interior_bounded, itv_bounded_interior_pinfty, itv_bounded_interior_ninfty).
+Definition itv_interior :=
+  (itv_interior_bounded, itv_interior_pinfty, itv_interior_ninfty).
 
-End itv_bounded_interior.
+End itv_interior.
 
 Section decr_derive1.
 Local Close Scope ereal_scope.
@@ -453,10 +453,10 @@ have [x10|x01] := leP x1 x0.
 set itv := Interval (BSide b0 x0) (BSide b1 x1).
 move=> df decrf xx0x1.
 apply: (@decr_derive1_le0 _ _ _ [set` itv]).
-    rewrite itv_bounded_interior//.
+    rewrite itv_interior//.
     by move=> ?; rewrite inE/=; apply: df.
   move=> ? ?; rewrite !inE/=; apply: decrf.
-by rewrite itv_bounded_interior/=.
+by rewrite itv_interior/=.
 Qed.
 
 Section within_continuous_FTC2_pinfty.
@@ -798,6 +798,31 @@ End within_continuous_FTC2_pinfty.
 Section improper.
 Context {R : realType}.
 
+Let itv_bnd_infty_bigcup_seq_pinfty (a0 : R) (b b': bool) (a_ : nat -> R) :
+  (a0 < a_ 0%N)%R ->
+  {homo a_ : n m / (n <= m)%N >-> (n <= m)%R} ->
+  a_ n @[n --> \oo] --> +oo%R ->
+  [set` (Interval (BSide b a0) (BInfty _ false))] =
+     \bigcup_i [set` (Interval (BSide b a0) (BSide b' (a_ i)))] :> set R.
+Proof.
+move=> a0a0 incra ay.
+rewrite eqEsubset; split; last first.
+  by move=> /= x [n _]/=; rewrite !in_itv => /andP[->].
+rewrite itv_bnd_infty_bigcup.
+move=> x [n _]/=; rewrite in_itv/= => /andP[ax xan].
+move: ay.
+have [m anam] : exists m, (a0 + n%:R < a_ m)%R.
+  
+exists m => //=.
+rewrite in_itv/= ax/=.
+by case: b'; rewrite /= ?ltW// (le_lt_trans xan).
+Admitted.
+
+End improper.
+
+Section improper_old.
+Context {R : realType}.
+
 (* NB: look too much like itv_bnd_infty_bigcup *)
 Let itv_bnd_infty_bigcupS :
   `[0%R, +oo[%classic = \bigcup_i `[0%R, i.+1%:R]%classic :> set R.
@@ -889,7 +914,7 @@ apply: (@ge0_subset_integral _ _ _ mu) => //.
 - by apply: subset_itvl; rewrite bnd_simp ler_nat.
 Qed.
 
-End improper.
+End imprope_old.
 
 Section Gamma.
 Context {R : realType}.
@@ -1111,38 +1136,22 @@ Proof.
 move=> decrF cdF /cvg_ex[/= dFa cdFa] /cvg_ex[/= dFoo cdFoo].
 move=> cFa dF /continuous_within_itvycP[cG cGFa] Fny G0.
 have mG n : measurable_fun `](F (a + n.+1%:R)), (F a)] G.
-  rewrite -setUitv1; last first.
-    rewrite bnd_simp.
-    by apply: decrF; rewrite ?in_itv/= ?andbT// ?ltW// ltrDl.
-  apply/measurable_funU => //; split; last exact: measurable_fun_set1.
+  apply: (@measurable_fun_itv_oc _ _ _ false true).
   apply: open_continuous_measurable_fun; first exact: interval_open.
   move=> x; rewrite inE/= in_itv/= => /andP[_ xFa].
   by apply: cG; rewrite in_itv/=.
 have mGFNF' i : measurable_fun `[a, (a + i.+1%:R)[ ((G \o F) * - F^`())%R.
-  rewrite -setU1itv; last first.
-    rewrite bnd_simp.
-    by rewrite ?in_itv/= ?andbT// ?ltW// ltrDl.
-  rewrite measurable_funU//; split; first exact: measurable_fun_set1.
-  apply: measurable_funM.
-    apply: (measurable_comp (measurable_itv `]F (a + i.+1%:R), F a[)).
-        move=> _/= [x + <-].
-        rewrite !in_itv/= => /andP[ax aSi]; apply/andP.
-        by split; apply: decrF; rewrite ?in_itv//= ?lexx ?ltW ?ltrDl.
-      apply: open_continuous_measurable_fun; first exact: interval_open.
-      move=> y; rewrite inE/= in_itv/= => /andP[_ xFa].
-      by apply: cG; rewrite in_itv/=.
-    apply: open_continuous_measurable_fun.
-    exact: interval_open.
-    move=> x; rewrite inE/= in_itv/= => /andP[ax _].
-    apply: differentiable_continuous.
-    apply/derivable1_diffP.
-    by apply: dF; rewrite in_itv/= ax.
-  apply: open_continuous_measurable_fun.
-    exact: interval_open.
+  apply: (@measurable_fun_itv_co _ _ _ false true).
+  apply: open_continuous_measurable_fun; first exact: interval_open.
   move=> x; rewrite inE/= in_itv/= => /andP[ax _].
-  apply: continuousN.
-  apply: cdF.
-  by rewrite in_itv/= ax.
+  apply: continuousM; last first.
+    apply: continuousN.
+    by apply: cdF; rewrite in_itv/= andbT.
+  apply: continuous_comp.
+    have := derivable_within_continuous dF.
+    rewrite continuous_open_subspace; last exact: interval_open.
+    by apply; rewrite inE/= in_itv/= andbT.
+  by apply: cG; rewrite in_itv/=; apply: decrF; rewrite ?in_itv/= ?lexx ?ltW.
 transitivity (limn (fun n => \int[mu]_(x in `[F (a + n%:R)%R, F a]) (G x)%:E)).
   rewrite (decreasing_fun_itv_infty_bnd_bigcup decrF Fny).
   rewrite seqDU_bigcup_eq.
@@ -1228,10 +1237,10 @@ transitivity (limn (fun n => \int[mu]_(x in `]a, (a + n%:R)%R[) (((G \o F) * - F
       by apply: decrF; rewrite ?in_itv/= ?lexx// ltW.
     + rewrite oppr_ge0.
       apply: (@decr_derive1_le0 _ _ _ `[a, +oo[).
-          rewrite itv_bounded_interior.
+          rewrite itv_interior.
           by move=> ?; rewrite inE/=; apply: dF.
         by move=> ? ?; rewrite !inE/=; apply: decrF.
-      by rewrite itv_bounded_interior/= in_itv/= andbT.
+      by rewrite itv_interior/= in_itv/= andbT.
   - exact: trivIset_seqDU.
   apply: congr_lim.
   apply/funext => n.
