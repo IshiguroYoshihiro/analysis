@@ -468,6 +468,102 @@ Global Hint Extern 0 (open _) => now apply: interval_open : core.
 Global Hint Extern 0 ({in [set` _], continuous _}) =>
   now apply: in_continuous_mksetr : core.
 
+Section improper_old.
+Context {R : realType}.
+
+(* NB: look too much like itv_bnd_infty_bigcup *)
+Let itv_bnd_infty_bigcupS :
+  `[0%R, +oo[%classic = \bigcup_i `[0%R, i.+1%:R]%classic :> set R.
+Proof.
+rewrite eqEsubset; split; last first.
+  by move=> /= x [n _]/=; rewrite !in_itv/= => /andP[->].
+rewrite itv_bnd_infty_bigcup => z [i _ /= zi].
+exists i => //=.
+apply: subset_itvl zi.
+by rewrite bnd_simp/= add0r ler_nat.
+Qed.
+
+Variable mu : {measure set [the measurableType (R.-ocitv.-measurable).-sigma of
+  g_sigma_algebraType (R.-ocitv.-measurable)] -> \bar R}.
+
+Let ereal_sup_integral (f : R -> R) :
+  (forall x, 0 <= f x)%R -> measurable_fun setT f ->
+  \int[mu]_(x in `[0%R, +oo[) (f x)%:E =
+  ereal_sup [set \int[mu]_(x in `[0%R, i.+1%:R]) (f x)%:E | i in [set: nat]].
+Proof.
+move=> f0 mf.
+apply/eqP; rewrite eq_le; apply/andP; split; last first.
+  apply: ub_ereal_sup => /=_ [n _ <-].
+  apply: ge0_subset_integral => //=.
+  - apply/measurable_EFinP.
+    exact: measurable_funS mf.
+  - by move=> ? _; rewrite lee_fin f0.
+  - exact: subset_itvl.
+rewrite itv_bnd_infty_bigcupS seqDU_bigcup_eq ge0_integral_bigcup//; last 3 first.
+- move=> ?.
+  apply: measurableD => //.
+  exact: bigsetU_measurable.
+- apply: measurable_funTS.
+  exact/measurable_EFinP.
+- by move=> x; rewrite lee_fin f0//.
+apply: lime_le => /=.
+  apply: is_cvg_nneseries => n _.
+  apply: integral_ge0 => k _.
+  exact: f0.
+apply: nearW => n.
+rewrite -ge0_integral_bigsetU//=; first last.
+- by move=> ? _; rewrite lee_fin ?expR_ge0.
+- apply/measurable_EFinP.
+  exact: measurableT_comp.
+- exact: (@sub_trivIset _ _ _ [set: nat]).
+- exact: iota_uniq.
+- move=> k.
+  apply: measurableD => //.
+  exact: bigsetU_measurable.
+rewrite -/mu.
+rewrite big_mkord.
+rewrite -bigsetU_seqDU.
+move: n => [|n].
+  rewrite big_ord0 integral_set0.
+  apply: ereal_sup_le.
+  exists (\int[mu]_(x in `[0%R, 1%:R]) (f x)%:E) => //.
+  apply: integral_ge0.
+  by move=> ? _; rewrite lee_fin f0.
+rewrite [X in \int[_]_(_ in X) _](_ : _ = `[0%R, n.+1%:R]%classic); last first.
+  rewrite eqEsubset; split => x/=; rewrite in_itv/=.
+    rewrite -(bigcup_mkord _ (fun k => `[0%R, k.+1%:R]%classic)).
+    move=> [k /= kSn].
+    rewrite in_itv/= => /andP[-> xSk]/=.
+    by rewrite (le_trans xSk)// ler_nat.
+  move=> /andP[x0 Snx].
+  rewrite -(bigcup_mkord _ (fun k => `[0%R, k.+1%:R]%classic)).
+  exists n => //=.
+  by rewrite in_itv/= x0 Snx.
+apply: ereal_sup_le.
+exists (\int[mu]_(x in `[0%R, n.+1%:R]) (f x)%:E).
+  by exists n.
+apply: ge0_subset_integral => //=.
+  apply/measurable_EFinP.
+  exact: measurableT_comp.
+by move=> ? _; rewrite lee_fin f0.
+Qed.
+
+Lemma ge0_limn_integraly (f : R -> R) :
+  (forall x, 0 <= f x)%R -> measurable_fun setT f ->
+  (fun n => \int[mu]_(x in `[0%R, n%:R]) (f x)%:E) @ \oo -->
+  \int[mu]_(x in `[0%R, +oo[) (f x)%:E.
+Proof.
+move=> f0 mf.
+rewrite -cvg_shiftS/= ereal_sup_integral//.
+apply/ereal_nondecreasing_cvgn/nondecreasing_seqP => n.
+apply: (@ge0_subset_integral _ _ _ mu) => //.
+- by apply: measurable_funTS; exact: measurableT_comp.
+- by move => ? _; apply: f0.
+- by apply: subset_itvl; rewrite bnd_simp ler_nat.
+Qed.
+
+End improper_old.
+
 Section within_continuous_FTC2_pinfty.
 Notation mu := lebesgue_measure.
 
@@ -590,6 +686,38 @@ rewrite -ltnNge => nk.
 under eq_bigr do rewrite EFinN.
 by rewrite telescope_sume// ltnW.
 Qed.
+
+Lemma continuous_derivable_limn_integraly {R : realType} (F : R -> R) (a : R) :
+  cvg (F x @[x --> +oo%R]) ->
+ {in `]a, +oo[, forall x, derivable F x 1} -> F x @[x --> a^'+] --> F a ->
+  {in `]a, +oo[, continuous F^`()} ->
+(* continuity of F^`() at a^'+ ? *)
+  (fun n => \int[mu]_(x in `[a, n%:R]) (F^`() x)%:E) @ \oo -->
+  \int[mu]_(x in `[a, +oo[) (F^`() x)%:E.
+Proof.
+(*
+move=> f0 mf.
+rewrite -cvg_shiftS/= ereal_sup_integral//.
+apply/ereal_nondecreasing_cvgn/nondecreasing_seqP => n.
+apply: (@ge0_subset_integral _ _ _ mu) => //.
+- by apply: measurable_funTS; exact: measurableT_comp.
+- by move => ? _; apply: f0.
+- by apply: subset_itvl; rewrite bnd_simp ler_nat.
+*)
+Admitted.
+
+Lemma continuous_derivable_integrable_itvy {R : realType} (F : R -> R) (a : R) :
+  cvg (F x @[x --> +oo%R]) ->
+  {in `]a, +oo[, forall x, derivable F x 1} -> F x @[x --> a^'+] --> F a ->
+  {in `]a, +oo[, continuous F^`()} ->
+(* continuity of F^`() at a^'+ ? *)
+ mu.-integrable `[a, +oo[ (EFin \o F^`()).
+Proof.
+move=> cvgF dF cFa cF'.
+apply/integrableP; split.
+  admit.
+(* have /cvg_lim <- := (continuous_derivable_limn_integraly cvgF dF cFa cF'). *)
+Admitted.
 
 Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) :
   (forall x, a <= x -> 0 <= f x)%R ->
@@ -763,102 +891,6 @@ by case: b'; rewrite /= ?ltW// (le_lt_trans xan).*)
 Abort.
 
 End improper.
-
-Section improper_old.
-Context {R : realType}.
-
-(* NB: look too much like itv_bnd_infty_bigcup *)
-Let itv_bnd_infty_bigcupS :
-  `[0%R, +oo[%classic = \bigcup_i `[0%R, i.+1%:R]%classic :> set R.
-Proof.
-rewrite eqEsubset; split; last first.
-  by move=> /= x [n _]/=; rewrite !in_itv/= => /andP[->].
-rewrite itv_bnd_infty_bigcup => z [i _ /= zi].
-exists i => //=.
-apply: subset_itvl zi.
-by rewrite bnd_simp/= add0r ler_nat.
-Qed.
-
-Variable mu : {measure set [the measurableType (R.-ocitv.-measurable).-sigma of
-  g_sigma_algebraType (R.-ocitv.-measurable)] -> \bar R}.
-
-Let ereal_sup_integral (f : R -> R) :
-  (forall x, 0 <= f x)%R -> measurable_fun setT f ->
-  \int[mu]_(x in `[0%R, +oo[) (f x)%:E =
-  ereal_sup [set \int[mu]_(x in `[0%R, i.+1%:R]) (f x)%:E | i in [set: nat]].
-Proof.
-move=> f0 mf.
-apply/eqP; rewrite eq_le; apply/andP; split; last first.
-  apply: ub_ereal_sup => /=_ [n _ <-].
-  apply: ge0_subset_integral => //=.
-  - apply/measurable_EFinP.
-    exact: measurable_funS mf.
-  - by move=> ? _; rewrite lee_fin f0.
-  - exact: subset_itvl.
-rewrite itv_bnd_infty_bigcupS seqDU_bigcup_eq ge0_integral_bigcup//; last 3 first.
-- move=> ?.
-  apply: measurableD => //.
-  exact: bigsetU_measurable.
-- apply: measurable_funTS.
-  exact/measurable_EFinP.
-- by move=> x; rewrite lee_fin f0//.
-apply: lime_le => /=.
-  apply: is_cvg_nneseries => n _.
-  apply: integral_ge0 => k _.
-  exact: f0.
-apply: nearW => n.
-rewrite -ge0_integral_bigsetU//=; first last.
-- by move=> ? _; rewrite lee_fin ?expR_ge0.
-- apply/measurable_EFinP.
-  exact: measurableT_comp.
-- exact: (@sub_trivIset _ _ _ [set: nat]).
-- exact: iota_uniq.
-- move=> k.
-  apply: measurableD => //.
-  exact: bigsetU_measurable.
-rewrite -/mu.
-rewrite big_mkord.
-rewrite -bigsetU_seqDU.
-move: n => [|n].
-  rewrite big_ord0 integral_set0.
-  apply: ereal_sup_le.
-  exists (\int[mu]_(x in `[0%R, 1%:R]) (f x)%:E) => //.
-  apply: integral_ge0.
-  by move=> ? _; rewrite lee_fin f0.
-rewrite [X in \int[_]_(_ in X) _](_ : _ = `[0%R, n.+1%:R]%classic); last first.
-  rewrite eqEsubset; split => x/=; rewrite in_itv/=.
-    rewrite -(bigcup_mkord _ (fun k => `[0%R, k.+1%:R]%classic)).
-    move=> [k /= kSn].
-    rewrite in_itv/= => /andP[-> xSk]/=.
-    by rewrite (le_trans xSk)// ler_nat.
-  move=> /andP[x0 Snx].
-  rewrite -(bigcup_mkord _ (fun k => `[0%R, k.+1%:R]%classic)).
-  exists n => //=.
-  by rewrite in_itv/= x0 Snx.
-apply: ereal_sup_le.
-exists (\int[mu]_(x in `[0%R, n.+1%:R]) (f x)%:E).
-  by exists n.
-apply: ge0_subset_integral => //=.
-  apply/measurable_EFinP.
-  exact: measurableT_comp.
-by move=> ? _; rewrite lee_fin f0.
-Qed.
-
-Lemma ge0_limn_integraly (f : R -> R) :
-  (forall x, 0 <= f x)%R -> measurable_fun setT f ->
-  (fun n => \int[mu]_(x in `[0%R, n%:R]) (f x)%:E) @ \oo -->
-  \int[mu]_(x in `[0%R, +oo[) (f x)%:E.
-Proof.
-move=> f0 mf.
-rewrite -cvg_shiftS/= ereal_sup_integral//.
-apply/ereal_nondecreasing_cvgn/nondecreasing_seqP => n.
-apply: (@ge0_subset_integral _ _ _ mu) => //.
-- by apply: measurable_funTS; exact: measurableT_comp.
-- by move => ? _; apply: f0.
-- by apply: subset_itvl; rewrite bnd_simp ler_nat.
-Qed.
-
-End improper_old.
 
 Section Gamma.
 Context {R : realType}.
