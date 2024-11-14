@@ -92,11 +92,9 @@ Lemma ge0_Rceil_nat {R : realType} (x : R) : (0 <= x)%R ->
   exists n, n%:R = Rceil x.
 Proof.
 move=> x0.
-have := isint_Rceil x.
-  move/RintP => [z cxz].
+have /RintP[z cxz] := isint_Rceil x.
 have : Rceil x \is a int_num.
-  rewrite Num.Theory.intrEceil.
-  by rewrite Num.Theory.intrKceil.
+  by rewrite Num.Theory.intrEceil Num.Theory.intrKceil.
 rewrite Num.Theory.intrEge0; last exact: Rceil_ge0.
 move/Num.Theory.natrP => {z cxz}[n cxn].
 by exists n.
@@ -113,84 +111,57 @@ exact: lt_le_trans x0.
 Qed.
 
 (* NB: similar to real_interval.itv_bnd_inftyEbigcup *)
-Lemma itvaybig {R : realType} (a : R) :
-  `[a%R, +oo[%classic = \bigcup_n `[a%R, a + (@GRing.natmul R 1%R n)]%classic.
+Lemma itvcy_bigcup {R : realType} (a : R) :
+  `[a, +oo[%classic = \bigcup_n `[a, a + n%:R]%classic.
 Proof.
-suff H0 : `[0%R, +oo[%classic = \bigcup_n `[0%R, (@GRing.natmul R 1%R n)]%classic.
-  case: (leP a 0%R) => a0.
-    rewrite (@set_interval.itv_bndbnd_setU _ _ _ (BLeft 0%R)); last 2 first.
-        by rewrite bnd_simp.
-      by rewrite bnd_simp.
-    rewrite H0//.
-    rewrite eqEsubset; split => x.
-    - move=> [/=|[n _/=]]; rewrite in_itv/=; move/andP.
-      - move=>[ax x0].
-        have Na_ge0 : (0 <= @GRing.opp R a)%R by rewrite oppr_ge0.
+suff H0 : `[0%R, +oo[%classic = \bigcup_n `[0%R, n%:R]%classic :> set R.
+  have [a0|a0] := leP a 0%R.
+    rewrite (@set_interval.itv_bndbnd_setU _ _ _ (BLeft 0%R)) ?bnd_simp//.
+    rewrite H0// eqEsubset; split => x.
+    - move=> [/=|[n _/=]]; rewrite in_itv/= => /andP.
+      + move=>[ax x0].
+        have Na_ge0 : (0 <= - a)%R by rewrite oppr_ge0.
         have [n na] := ge0_Rceil_nat Na_ge0.
-        exists n => //=; rewrite in_itv/= ax/=.
-        rewrite ltW//; apply: (lt_le_trans x0).
+        exists n => //=; rewrite in_itv/= ax/= (le_trans (ltW x0))//.
         by rewrite addrC -(opprK a) subr_ge0 na Rceil_ge.
-      move=> [x0 xn].
-      have : (0 <= (n%:R) - a)%R.
-        rewrite subr_ge0.
-        exact: (le_trans a0).
-      move/ge0_Rceil_nat => [m mna].
-      exists m => //=; rewrite in_itv/=; apply/andP; split.
-        exact: (le_trans a0).
-      rewrite mna -lerBlDl.
-      apply: (@le_trans _ _ (n%:R - a)%R); first exact: lerB.
-      exact: Rceil_ge.
-    move=> [n _]/=.
-    rewrite in_itv/= => /andP[ax xan].
-    case: (ltP x 0%R).
-      by move=> x0; left; rewrite in_itv/= ax x0.
-    move=> x0.
-    have := le_trans x0 xan.
-    move/ge0_Rceil_nat => [m man].
-    right.
-    exists m => //=.
-    rewrite in_itv/= x0/= man.
-    apply: (le_trans xan).
-    exact: Rceil_ge.
+      + move=> [x0 xn].
+        have : (0 <= n%:R - a)%R by rewrite subr_ge0 (le_trans a0).
+        move=> /ge0_Rceil_nat[m mna].
+        exists m => //=; rewrite in_itv/= (le_trans a0)//=.
+        by rewrite mna -lerBlDl (@le_trans _ _ (n%:R - a)%R) ?lerB// Rceil_ge.
+    - move=> [n _]/=; rewrite in_itv/= => /andP[ax xan].
+      have [x0|x0] := ltP x 0%R; first by left; rewrite in_itv/= ax x0.
+      have /ge0_Rceil_nat[m man] := le_trans x0 xan.
+      right; exists m => //=.
+      by rewrite in_itv/= x0/= man (le_trans xan)// Rceil_ge.
   rewrite eqEsubset; split => x/=.
     rewrite in_itv/= => /andP[ax _].
-    have /ltW := lt_le_trans a0 ax.
-    move/ge0_Rceil_nat => [n nx].
-    exists n => //=; rewrite in_itv/= nx ax/= ltW//.
-    apply: (ltr_pwDl a0).
-    exact: Rceil_ge.
-  by move=> [? _]/=; rewrite !in_itv/= => /andP[-> _].
-rewrite eqEsubset; split.
-  move=> x/=.
+    have /ltW/ge0_Rceil_nat[n nx] := lt_le_trans a0 ax.
+    by exists n => //=; rewrite in_itv/= nx ax/= ltW// (ltr_pwDl a0)// Rceil_ge.
+  by move=> [? _]/=; rewrite !in_itv/= => /andP[->].
+rewrite eqEsubset; split=> [x/=|x [n _]/=].
   rewrite in_itv/= => /andP[x0 _].
   have [n nx] := ge0_Rceil_nat x0.
-  exists n => //=.
-  by rewrite in_itv/= x0 nx Rceil_ge.
-move=> x [n _]/=.
+  by exists n => //=; rewrite in_itv/= x0 nx Rceil_ge.
 by rewrite !in_itv/= andbT => /andP[].
 Qed.
 
+(* TODO: rename to seqDU_itv *)
 Lemma seqDUE {R : realType} (k : nat) (a : R) :
-  seqDU (fun k0 => `]a, (a + k0%:R)%R]%classic) k = `](a + k.-1%:R), (a + k%:R)%R]%classic.
+  seqDU (fun n => `]a, (a + n%:R)%R]%classic) k = `](a + k.-1%:R), (a + k%:R)%R]%classic.
 Proof.
-rewrite seqDU_seqD/seqD.
-  case: k; first by rewrite addr0.
-  move=> n.
+rewrite seqDU_seqD /seqD.
+  move: k => [|k]; first by rewrite addr0.
   rewrite eqEsubset; split => x/=.
   - move=> [].
-    rewrite !in_itv/= => /andP[-> ->].
-    by move/negP; rewrite negb_and /= real_ltNge//= => ->.
+    rewrite !in_itv/= => /andP[-> ->]/=; rewrite andbT => /negP.
+    by rewrite -ltNge.
   - rewrite !in_itv/= => /andP[anx xaSn]; split.
-    + rewrite xaSn andbT.
-      apply: le_lt_trans anx => //.
-      by rewrite lerDl ler0n.
-    + apply/negP; rewrite negb_and; apply/orP; right.
-      by rewrite -real_ltNge//=.
+    + by rewrite xaSn andbT (le_lt_trans _ anx)// lerDl ler0n.
+    + by apply/negP; rewrite negb_and -(ltNge _ x) anx orbT.
 apply/nondecreasing_seqP => n.
-rewrite subsetEset => x/=; rewrite !in_itv/=.
-move/andP => [-> xan]/=.
-apply: (le_trans xan).
-by rewrite lerD// ler_nat.
+rewrite subsetEset => x/=; rewrite !in_itv/= => /andP[-> xan]/=.
+by rewrite (le_trans xan)// lerD// ler_nat.
 Qed.
 
 Section integral_bigsetU.
@@ -225,29 +196,6 @@ Qed.
 
 End integral_bigsetU.
 
-(*============================================================================*)
-(* from lang_syntax.v in branch prob_lang_axiom by affeldt-aist *)
-(* https://github.com/affeldt-aist/analysis/tree/prob_lang_axiom *)
-Section continuous_change_of_variables.
-Context {R : realType}.
-Let mu := (@lebesgue_measure R).
-
-Lemma lt0_continuous_change_of_variables (F G : R -> R)
-   ( a b : R) :
-    (a < b)%R ->
-    {in `[a, b]&, {homo F : x y / (y < x)%R}} ->
-    {within `[a, b], continuous F^`()} ->
-    derivable_oo_continuous_bnd F a b ->
-    {within `[F b, F a], continuous G} ->
-\int[mu]_(x in `[F b, F a]) (G x)%:E = \int[mu]_(x in `[a, b]) (((G \o F) * - (F^`() : R -> R)) x)%:E.
-Proof.
-Abort.
-
-End continuous_change_of_variables.
-
-(*============================================================================*)
-(* from lang_syntax.v in branch prob_lang_axiom by IshiguroYoshihiro *)
-(* https://github.com/IshiguroYoshihiro/analysis/tree/prob_lang_axiom *)
 Section left_continuousW.
 
 Notation left_continuous f :=
@@ -262,6 +210,7 @@ End left_continuousW.
 Section mv_to_realfun.
 Context {R : realType}.
 
+(* PRed to MathComp-Analysis and renamed cvgr_dnbhsP *)
 Lemma cvg_dnbhsP (f : R -> R) (p l : R) :
   f x @[x --> p^'] --> l <->
   (forall u : R^nat, (forall n, u n != p) /\ (u n @[n --> \oo] --> p) ->
@@ -310,31 +259,18 @@ move=> mD if1 if2.
 by rewrite /Rintegral integralB_EFin// fineB//; exact: integral_fune_fin_num.
 Qed.
 
-(*============================================================================*)
-(* my works begin here *)
-
-
 (* PR *)
-Lemma cvg_nbhsP {R: realType} (f : R -> R) (p : R) :
+Lemma cvg_nbhsP {R : realType} (f : R -> R) (p : R) :
   f x @[x --> p] --> f p <->
-  (forall u : R^nat, (u n @[n --> \oo] --> p) ->
-    f (u n) @[n --> \oo] --> f p).
+  (forall u : R^nat, (u n @[n --> \oo] --> p) -> f (u n) @[n --> \oo] --> f p).
 Proof.
 split=> [/cvgrPdist_le /= fpl u /cvgrPdist_lt /= uyp|pfl].
-  apply/cvgrPdist_le.
-  move=> e e0.
-  move: (fpl e e0).
-  move=> [d d0 Hd].
-  move: (uyp d d0).
-  move=> [m _ Hm].
-  exists m => //.
-  move=> k mk.
-  apply: Hd.
-  exact: Hm.
+  apply/cvgrPdist_le => e /fpl[d d0 pdf].
+  by apply: filterS (uyp d d0) => t /pdf.
 apply: contrapT => fpl; move: pfl; apply/existsNP.
 suff: exists2 x : R ^nat,
     x n @[n --> \oo] --> p & ~ f (x n) @[n --> \oo] --> f p.
-  by move=> [x_] hp; exists x_; apply/not_implyP.
+  by move=> [x_] hp; exists x_; exact/not_implyP.
 have [e He] : exists e : {posnum R}, forall d : {posnum R},
     exists xn : R, (`|xn - p| < d%:num)%R /\ (`|f xn - f p| >= e%:num)%R.
   apply: contrapT; apply: contra_not fpl => /forallNP h.
@@ -342,9 +278,9 @@ have [e He] : exists e : {posnum R}, forall d : {posnum R},
   move/forallNP => {}h; near=> t.
   have /not_andP[abs|/negP] := h t.
   - exfalso; apply: abs.
-    by near: t;  by exists d%:num => //= z/=; rewrite distrC.
+    by near: t; exists d%:num => //= z/=; rewrite distrC.
   - by rewrite -ltNge distrC => /ltW.
-have invn n : (@GRing.zero R < n.+1%:R^-1)%R by rewrite invr_gt0.
+have invn n : (0%R < n.+1%:R^-1 :> R)%R by rewrite invr_gt0.
 exists (fun n => sval (cid (He (PosNum (invn n))))).
   apply/cvgrPdist_lt => r r0; near=> t.
   rewrite /sval/=; case: cid => x [xpt _].
@@ -361,18 +297,18 @@ Section itv_interior.
 Context {R : realType}.
 
 Lemma itv_interior_bounded (x y : R) (a b : bool) :
-(x < y)%R ->
-interior [set` (Interval (BSide a x) (BSide b y))] = `]x, y[%classic.
+  (x < y)%R ->
+  interior [set` (Interval (BSide a x) (BSide b y))] = `]x, y[%classic.
 Proof.
 move=> xy.
 rewrite interval_bounded_interior//; last exact: interval_is_interval.
 rewrite inf_itv; last by case: a; case b; rewrite bnd_simp ?ltW.
 rewrite sup_itv; last by case: a; case b; rewrite bnd_simp ?ltW.
-apply: set_itvoo.
+exact: set_itvoo.
 Qed.
 
 Lemma itv_interior_pinfty (x : R) (a : bool) :
-interior [set` (Interval (BSide a x) (BInfty _ false))] = `]x, +oo[%classic.
+  interior [set` (Interval (BSide a x) (BInfty _ false))] = `]x, +oo[%classic.
 Proof.
 rewrite interval_right_unbounded_interior//; first last.
     by apply: hasNubound_itv; rewrite lt_eqF.
@@ -382,7 +318,7 @@ by rewrite set_itv_o_infty.
 Qed.
 
 Lemma itv_interior_ninfty (y : R) (b : bool) :
-interior [set` (Interval (BInfty _ true) (BSide b y))] = `]-oo, y[%classic.
+  interior [set` (Interval (BInfty _ true) (BSide b y))] = `]-oo, y[%classic.
 Proof.
 rewrite interval_left_unbounded_interior//; first last.
     by apply: hasNlbound_itv; rewrite gt_eqF.
@@ -411,12 +347,12 @@ Lemma decr_derive1_le0 :
 Proof.
 move=> df decrf Dx.
 apply: limr_le.
-under eq_fun.
-  move=> h.
-  rewrite {2}(_:h = h%:A :> R^o); last first.
-    by rewrite /GRing.scale/= mulr1.
-  over.
-  by apply: df; rewrite inE.
+  under eq_fun.
+    move=> h.
+    rewrite {2}(_:h = h%:A :> R^o); last first.
+      by rewrite /GRing.scale/= mulr1.
+    over.
+    by apply: df; rewrite inE.
 have := open_subball (open_interior D) Dx.
 move=> [e /= e0 Hball].
 have/normr_idP normr2E : @GRing.zero R <= 2 by [].
