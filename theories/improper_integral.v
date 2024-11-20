@@ -3035,7 +3035,7 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
   near ((0:R)%R^'+) => e.
   pose I : set R := ball x e.
   have openI : open I by apply: ball_open.
-  pose c : R := x / 2.
+  pose c : R := (x - e)%R.
   rewrite (@Leibniz.differentiation_under_integral R _ _ (@lebesgue_measure R) _ (x - e)%R (x + e)%R `[(0%R:R), +oo[%classic _ _ _ _ (fun y => (Num.sqrt (2 / expR 1)) * expR (- c ^+ 2 * y ^+ 2))%R)%R; last 7 first.
   - by [].
   - move=> x1 _.
@@ -3076,7 +3076,8 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
       rewrite /I /ball/= in Ix'.
       rewrite /c.
       rewrite ler_sqr; last 2 first.
-        by rewrite nnegrE divr_ge0// ltW.
+        rewrite nnegrE.
+        admit.
         rewrite nnegrE.
         admit. (* ok *)
       admit. (* ok *)
