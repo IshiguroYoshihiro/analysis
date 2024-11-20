@@ -2353,49 +2353,54 @@ rewrite /Rintegral fine_ge0// integral_ge0//= => t t01.
 by rewrite lee_fin u_ge0.
 Qed.
 
-Lemma cvg_dIu01 x : h^-1 *: (Iu01 (h + x)%E - Iu01 x) @[h --> 0^'] -->
+Lemma du_local_ub c (e : R) : 0 < e ->
+  exists2 M : R, 0 < M & forall x0 y, x0 \in `](c - e), (c + e)[ -> `|('d1 u) y x0| <= M.
+Proof.
+move=> e0 /=.
+near (pinfty_nbhs R) => M.
+exists M => // x y.
+rewrite in_itv/= => /andP[cex xce].
+rewrite du !mulNr normrN -!mulrA normrM ger0_norm//.
+rewrite -expRD exprMn_comm; last by rewrite /GRing.comm mulrC.
+rewrite -opprD.
+rewrite -{1}(mul1r (x ^+ 2)) -mulrDl.
+rewrite (@le_trans _ _ (2 * `|x * gauss x|))//.
+  rewrite ler_pM2l// normrM [leRHS]normrM.
+  rewrite ler_wpM2l//.
+  do 2 rewrite ger0_norm ?expR_ge0//.
+  by rewrite ler_expR// lerN2 ler_peMl ?sqr_ge0// lerDl sqr_ge0.
+rewrite normrM (ger0_norm (expR_ge0 _)).
+have ? : `|x| <= maxr `|c + e| `|c - e|.
+  rewrite le_max.
+  have [x0|x0] := lerP 0 x.
+    by rewrite ger0_norm// ler_normr (ltW xce).
+  rewrite ltr0_norm//; apply/orP; right.
+  move/ltW : cex.
+  rewrite -lerN2 => /le_trans; apply.
+  by rewrite -normrN ler_norm.
+rewrite (@le_trans _ _ (2 * ((maxr `|c + e| `|c - e|) * expR (- 0 ^+ 2))))//.
+  rewrite ler_pM2l// ler_pM ?expR_ge0//.
+  by rewrite expr0n/= oppr0 expR0 gauss_le1.
+near: M.
+by apply: nbhs_pinfty_ge; rewrite num_real.
+Unshelve. all: end_near. Qed.
+
+Lemma cvg_dIu01 x :
+  h^-1 *: (Iu01 (h + x)%E - Iu01 x) @[h --> 0^'] -->
   - 2 * x * gauss x * \int[mu]_(t in `[0, 1]) gauss (t * x).
 Proof.
 have [c [e e0 cex]] : exists c : R, exists2 e : R, 0 < e & ball c e x.
   exists x, 1 => //.
   exact: ballxx.
-have [M M0 HM]: exists2 M : R, 0 < M & forall x0 y, x0 \in `](c - e), (c + e)[ ->
-    y \in `[0, 1] -> `|('d1 u) y x0| <= M.
-  rewrite /=.
-  near (pinfty_nbhs R) => M.
-  exists M => // {}x {cex} t.
-  rewrite in_itv/= => /andP[cex xce].
-  rewrite in_itv/= => /andP[_ _].
-  rewrite du !mulNr normrN -!mulrA normrM ger0_norm//.
-  rewrite -expRD exprMn_comm; last by rewrite /GRing.comm mulrC.
-  rewrite -opprD.
-  rewrite -{1}(mul1r (x ^+ 2)) -mulrDl.
-  rewrite (@le_trans _ _ (2 * `|x * gauss x|))//.
-    rewrite ler_pM2l// normrM [leRHS]normrM.
-    rewrite ler_wpM2l//.
-    do 2 rewrite ger0_norm ?expR_ge0//.
-    by rewrite ler_expR// lerN2 ler_peMl ?sqr_ge0// lerDl sqr_ge0.
-  rewrite normrM (ger0_norm (expR_ge0 _)).
-  have ? : `|x| <= maxr `|c + e| `|c - e|.
-    rewrite le_max.
-    have [x0|x0] := lerP 0 x.
-      by rewrite ger0_norm// ler_normr (ltW xce).
-    rewrite ltr0_norm//; apply/orP; right.
-    move/ltW : cex.
-    rewrite -lerN2 => /le_trans; apply.
-    by rewrite -normrN ler_norm.
-  rewrite (@le_trans _ _ (2 * ((maxr `|c + e| `|c - e|) * expR (- 0 ^+ 2))))//.
-    rewrite ler_pM2l// ler_pM ?expR_ge0//.
-    by rewrite expr0n/= oppr0 expR0 gauss_le1.
-  near: M.
-  by apply: nbhs_pinfty_ge; rewrite num_real.
+have [M M0 HM] := du_local_ub c e0.
 rewrite [X in _ --> X](_ : _ = \int[mu]_(y in `[0, 1]) ('d1 u) y x)//; last first.
   rewrite /= -RintegralZl//; last first.
     apply: continuous_compact_integrable => /=.
       exact: segment_compact.
     by apply/continuous_subspaceT => x0; exact: cexpR.
   by apply: eq_Rintegral => z z01; rewrite du.
-have /= := @cvg_differentiation_under_integral R _ _ mu u _ _ `[0, 1] _ x _ _ _ _ _ HM.
+have /= := @cvg_differentiation_under_integral R _ _ mu u _ _ `[0, 1] _ x _ _ _ _ _
+  (fun x y H _ => HM x y H).
 apply => //=.
 - move=> z z01; apply: continuous_compact_integrable => //.
     exact: segment_compact.
@@ -2594,68 +2599,6 @@ Qed.
 End application_to_gauss_integral.
 
 End Leibniz.
-
-Section leibniz.
-Local Open Scope ring_scope.
-Context {R : realType} d {Y : measurableType d}.
-Variable mu : {measure set Y -> \bar R}.
-Variable A : set R.
-Hypothesis openA : open A.
-Variable f : R -> Y -> R.
-Variable theta : Y -> R.
-Variable B : set Y.
-Hypothesis mB : measurable B.
-
-Hypothesis inttheta : mu.-integrable B (EFin \o theta).
-
-Hypothesis intf : forall x, A x -> mu.-integrable B (EFin \o (f x)).
-Hypothesis derf1 :
-  (*{ae mu,*) forall y, B y -> forall x, A x -> derivable (f ^~ y) x 1(*}*).
-Hypothesis theta_ge0 : forall y : Y, 0 <= theta y.
-
-Variable a : R.
-
-Hypothesis theta_ub :
-  forall x, A x -> forall y, `|'d1 f y x| <= theta y.
-(* ref: https://planetmath.org/differentiationundertheintegralsign *)
-
-Let F x' := \int[mu]_(y in B) f x' y.
-
-(* ref: https://www.math.wustl.edu/~sk/math4121.02-12-2021.pdf *)
-Lemma differentiation_under_integral : A a ->
-  F^`() a = \int[mu]_(y in B) ('d1 f y) a.
-Proof.
-move=> Aa.
-have [e e0 xeA] : exists2 e, (0 < e) & `](a - e), (a + e)[ `<=` A.
-  rewrite /=.
-  have [r r0 H] := open_itvoo_subset openA Aa.
-  exists (r / 2) => //.
-    by rewrite divr_gt0.
-  apply: H; last by rewrite divr_gt0.
-  rewrite /ball_/= sub0r normrN gtr0_norm ?divr_gt0//.
-  by rewrite ltr_pdivrMr// ltr_pMr// ltr1n.
-have H1 : (forall x0 : R, `](a - e), (a + e)%E[%classic x0 -> mu.-integrable B (EFin \o f x0)).
-  move=> r xer.
-  apply: intf.
-  by apply: xeA.
-have H2 : (forall (x0 : R) (y : Y), `](a - e), (a + e)%E[%classic x0 -> B y -> derivable (f^~ y) x0 1) .
-  move=> r y xer N1y.
-  apply: derf1 => //.
-  exact: xeA.
-have H4 : (forall (x0 : R) (y : Y),
-    `](a - e), (a + e)%E[%classic x0 -> (B) y -> normr (('d1 f) y x0) <= theta y).
-  move=> r y xer N1y.
-  apply: theta_ub.
-  by apply: xeA.
-have := @Leibniz.differentiation_under_integral R _ Y mu f (a - e) (a + e) B mB a H1 H2 theta theta_ge0 inttheta H4.
-move=> H.
-rewrite /F.
-rewrite H//.
-rewrite -ball_itv.
-exact: ballxx.
-Qed.
-
-End leibniz.
 
 Section thm227a.
 Local Open Scope ring_scope.
@@ -3089,26 +3032,25 @@ rewrite /Ig0y.
 (* FTC1 *)
 transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
   pose NdJ_dx (x y : R) : R := -%R (fun y => (Leibniz.u^~ y)^`() x) y.
-  pose I : set R := ball x x.
-  have openI : open I.
-    by apply: ball_open.
-  have c : R := x / 2.
-  rewrite (@differentiation_under_integral R _ _ (@lebesgue_measure R) _ openI Leibniz.u
-      (fun y => (Num.sqrt (expR 1))^-1 * expR (- c ^+ 2 * y ^+ 2)))%R; last 7 first.
+  near ((0:R)%R^'+) => e.
+  pose I : set R := ball x e.
+  have openI : open I by apply: ball_open.
+  pose c : R := x / 2.
+  rewrite (@Leibniz.differentiation_under_integral R _ _ (@lebesgue_measure R) _ (x - e)%R (x + e)%R `[(0%R:R), +oo[%classic _ _ _ _ (fun y => (Num.sqrt (2 / expR 1)) * expR (- c ^+ 2 * y ^+ 2))%R)%R; last 7 first.
   - by [].
-  - rewrite /=.
-    move: (@Igoo_fin_num R).
-    rewrite /gauss.
-    rewrite /=.
-    admit. (* integrable *)
-  - by move=> x1 /= Ix1; exact: Leibniz.integrable_u.
-  - move=> y/=; rewrite in_itv/= andbT => y0 r _.
-    
-    rewrite /Leibniz.u.
+  - move=> x1 _.
+    exact: Leibniz.integrable_u.
+  - move=> /= x1 y x1x2 y0.
     admit. (* derivable *)
   - move=> /= y.
     by rewrite mulr_ge0// expR_ge0.
-  - move=> x' Ix' /= y.
+  - rewrite (_ : _ \o _ = (fun x => (Num.sqrt (2 / expR 1))%:E * (expR (- c ^+ 2 * x ^+ 2))%:E))//.
+    apply: integrableZl => //=.
+    move: (@Igoo_fin_num R).
+    rewrite /gauss.
+    admit. (* integrable *)
+  - rewrite /=.
+    move=> x' y Ix' /= y0.
     have d1tmp : 'd1 Leibniz.u y x' = (oneDsqr y * - 2 * x' * Leibniz.u x' y)%R.
       rewrite Leibniz.du /Leibniz.u.
       rewrite -![in RHS]mulrA [RHS]mulrC -![in RHS]mulrA.
@@ -3127,14 +3069,19 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
     rewrite expRD.
     rewrite mulrA.
     rewrite ler_pM//.
-      by rewrite mulr_ge0// expR_ge0.
-    by rewrite expR_ge0.
-  - admit.
-  - rewrite ler_expR// !mulNr lerN2 ler_wpM2r// ?sqr_ge0//.
-    rewrite /I /ball/= in Ix'.
-    admit.
-  - rewrite /I.
-    exact/ballxx.
+    + by rewrite mulr_ge0// expR_ge0.
+    + by rewrite expR_ge0.
+    + admit. (* ok but taihen *)
+    + rewrite ler_expR// !mulNr lerN2 ler_wpM2r// ?sqr_ge0//.
+      rewrite /I /ball/= in Ix'.
+      rewrite /c.
+      rewrite ler_sqr; last 2 first.
+        by rewrite nnegrE divr_ge0// ltW.
+        rewrite nnegrE.
+        admit. (* ok *)
+      admit. (* ok *)
+  - rewrite -ball_itv.
+  - exact/ballxx.
   done.
 (*  apply: eq_Rintegral => x1; rewrite inE/= in_itv/= andbT => x10.
   rewrite /dJ /partial1/=.
