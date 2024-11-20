@@ -3022,6 +3022,33 @@ Abort.
 
 Import Num.Theory.
 
+Definition helper (x : R) := (2 * normr x * expR (- x ^+ 2))%R.
+
+Definition helper' (x : R) := ((2 - 4 * x ^+ 2) * expR (- x ^+ 2))%R.
+
+Definition max_x : R := (Num.sqrt 2)^-1.
+
+Definition max_y : R := 2 / Num.sqrt 2 / Num.sqrt (expR 1).
+
+Let max_y_ge0 : (0 <= max_y)%R.
+Proof. by rewrite mulr_ge0. Qed.
+
+Lemma helper_max_x : helper max_x = max_y.
+Proof.
+rewrite /helper/= /max_x exprVn expRN.
+rewrite sqr_sqrtr// ger0_norm//.
+by rewrite -(div1r 2) expRM powR12_sqrt ?expR_ge0//.
+Qed.
+
+Lemma helper_max (x : R) : (0 < x)%R -> (helper x <= max_y)%R.
+Proof.
+move=> x0.
+have [xmax|xmax] := leP x max_x.
+  (* use le0r_derive1_ndecr *)
+  admit.
+(* use ler0_derive1_nincr *)
+Admitted.
+
 Let dJE : {in `]0%R, +oo[, Ig0y^`() =1 (fun x => (- 2) * Igoo * gauss x)%R}.
 Proof.
 move=> x; rewrite in_itv/= => /andP[x0 _].
@@ -3036,15 +3063,15 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
   pose I : set R := ball x e.
   have openI : open I by apply: ball_open.
   pose c : R := (x - e)%R.
-  rewrite (@Leibniz.differentiation_under_integral R _ _ (@lebesgue_measure R) _ (x - e)%R (x + e)%R `[(0%R:R), +oo[%classic _ _ _ _ (fun y => (Num.sqrt (2 / expR 1)) * expR (- c ^+ 2 * y ^+ 2))%R)%R; last 7 first.
+  rewrite (@Leibniz.differentiation_under_integral R _ _ (@lebesgue_measure R) _ (x - e)%R (x + e)%R `[(0%R:R), +oo[%classic _ _ _ _ (fun y => (max_y) * expR (- c ^+ 2 * y ^+ 2))%R)%R; last 7 first.
   - by [].
   - move=> x1 _.
     exact: Leibniz.integrable_u.
   - move=> /= x1 y x1x2 y0.
     admit. (* derivable *)
   - move=> /= y.
-    by rewrite mulr_ge0// expR_ge0.
-  - rewrite (_ : _ \o _ = (fun x => (Num.sqrt (2 / expR 1))%:E * (expR (- c ^+ 2 * x ^+ 2))%:E))//.
+    by rewrite mulr_ge0// ?expR_ge0//.
+  - rewrite (_ : _ \o _ = (fun x => (max_y)%:E * (expR (- c ^+ 2 * x ^+ 2))%:E))//.
     apply: integrableZl => //=.
     move: (@Igoo_fin_num R).
     rewrite /gauss.
@@ -3071,7 +3098,11 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
     rewrite ler_pM//.
     + by rewrite mulr_ge0// expR_ge0.
     + by rewrite expR_ge0.
-    + admit. (* ok but taihen *)
+    + apply: helper_max.
+      move: Ix'; rewrite in_itv/= => /andP[+ _].
+      apply: le_lt_trans.
+      rewrite subr_ge0.
+      by near: e; apply: nbhs_right_le.
     + rewrite ler_expR// !mulNr lerN2 ler_wpM2r// ?sqr_ge0//.
       rewrite /I /ball/= in Ix'.
       rewrite /c.
