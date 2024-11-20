@@ -3020,6 +3020,23 @@ Lemma ge0_integrable_comp_continuous_increasing (f g : R -> R)
 Proof.
 Abort.
 
+
+Definition is_maximal_point (f : R -> R) (t : R)
+   := \forall x \near t, (f x <= f t)%R.
+
+Lemma C1_maximal (f : R -> R) (a b : R) (t : R) :
+  t \in `]a, b[ ->
+  {in `]a, b[, forall x : R, derivable f x 1%R} ->
+  {in `]a, b[, continuous f^`()} ->
+    [/\ f^`() t = 0%R,
+   {in `]a, t[, forall x, (0 <= f^`() x)%R} & {in `]t, b[, forall x, (f^`() x <= 0)%R}]
+  <-> is_maximal_point f t.
+Proof.
+move=> tab df cf'; split => [[t0 nngf' npsf']|maxt].
+near=> z.
+admit.
+Abort.
+
 Import Num.Theory.
 
 Definition helper (x : R) := (2 * normr x * expR (- x ^+ 2))%R.
@@ -3108,10 +3125,17 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
       rewrite /c.
       rewrite ler_sqr; last 2 first.
         rewrite nnegrE.
-        admit.
+        rewrite subr_ge0.
+        near: e.
+        exact: nbhs_right_le.
         rewrite nnegrE.
-        admit. (* ok *)
-      admit. (* ok *)
+        move: Ix'.
+        rewrite in_itv/= => /andP[/ltW + _].
+        apply: le_trans.
+        rewrite subr_ge0.
+        near: e.
+        exact: nbhs_right_le.
+      by move: Ix'; rewrite in_itv/= => /andP[/ltW].
   - rewrite -ball_itv.
   - exact/ballxx.
   done.
@@ -3156,16 +3180,36 @@ have substE : \int[mu]_(y in `[0%R, +oo[) (expR (- x ^+ 2 * oneDsqr y))%:E =
 have int_substE : \int[mu]_(y in `[0%R, +oo[) (expR (- x ^+ 2 * oneDsqr y))%:E
  = (\int[lebesgue_measure]_(x1 in `[0%R, +oo[) (gauss x / x * gauss x1)%:E).
   rewrite substE.
+  have der_mulrE: (fun z => (x * z)%R)^`() = cst x.
+    apply/funext => z.
+    rewrite derive1E.
+    rewrite derive_val fctE.
+    by rewrite /GRing.scale/= mulr1.
   rewrite -ge0_integration_by_substitution_increasing_opinfty; first last.
   - by move=> y _; rewrite mulr_ge0 ?expR_ge0// divr_ge0 ?expR_ge0// ltW.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - apply/cvgryPge.
+    move=> r; near=> t.
+    rewrite -lter_pdivrMl; last exact: x0.
+    near: t.
+    apply:nbhs_pinfty_ge.
+    by rewrite num_real.
+  - rewrite mulr0.
+    apply: continuous_subspaceT.
+    move=> z.
+    apply: continuousZr.
+    exact: continuous_gauss.
+  - move=> z _; exact: derivableM.
+  - apply: cvgZr.
+    exact: cvg_at_right_filter.
+  - rewrite der_mulrE.
+    exact: is_cvg_cst.
+  - rewrite der_mulrE.
+    exact: is_cvg_cst.
+  - rewrite der_mulrE => z _.
+    exact: cst_continuous.
+  - move=> r s + + rs.
+    rewrite !in_itv/= !andbT => r0 s0.
+    by rewrite ltr_pM2l.
   by rewrite mulr0.
 have mexpRVxexpR (D : set R) :
     measurable_fun D (fun y => (gauss x / x * gauss y)%R).
