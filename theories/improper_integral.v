@@ -3198,7 +3198,19 @@ apply: integral_ge0 => ? _.
 by rewrite lee_fin gauss_ge0.
 Qed.
 
-Let dJE : {in `]0%R, +oo[, Ig0y^`() =1 (fun x => (- 2) * Igoo * gauss x)%R}.
+Let derivable_u (x y : R) : derivable (Leibniz.u^~ y) x 1.
+Proof.
+rewrite /Leibniz.u.
+apply/derivable1_diffP.
+apply: differentiableM; last first.
+  apply: differentiableV => //.
+  rewrite gt_eqF//.
+  exact: oneDsqr_gt0.
+apply: differentiable_comp => //.
+exact/derivable1_diffP.
+Qed.
+
+Let dIg0yE : {in `]0%R, +oo[, Ig0y^`() =1 (fun x => (- 2) * Igoo * gauss x)%R}.
 Proof.
 move=> x; rewrite in_itv/= => /andP[x0 _].
 pose d_dx_dJ x0 y0 : R := (Leibniz.u^~ y0)^`() x0.
@@ -3217,7 +3229,7 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
   - move=> x1 _.
     exact: Leibniz.integrable_u.
   - move=> /= x1 y x1x2 y0.
-    admit. (* derivable *)
+    exact: derivable_u.
   - move=> /= y.
     by rewrite mulr_ge0// ?expR_ge0//.
   - rewrite (_ : _ \o _ = (fun x => (max_y)%:E * (expR (- c ^+ 2 * x ^+ 2))%:E))//.
@@ -3449,9 +3461,9 @@ rewrite -!mulrA.
 rewrite [X in (-2 * X)%R]mulrCA !mulrA mulfK; last first.
   by rewrite gt_eqF.
 by rewrite mulrAC.
-Admitted.
+Unshelve. all: end_near. Qed.
 
-Lemma dableJ : {in `]0%R, +oo[, forall x, derivable Ig0y x 1}.
+Lemma derivable_Ig0y : {in `]0%R, +oo[, forall x, derivable Ig0y x 1}.
 Proof.
 move=> x x0oo.
 near (0%R:R)^'+ => e.
@@ -3482,6 +3494,22 @@ apply: (@Leibniz.derivable_under_integral _ _ (measurableTypeR R) _ _ _ _ _ _ _ 
 - move=> t y xet _.
   apply: HM.
   by rewrite /= in xet.
+(*
+  rewrite /derivable.
+  apply/cvg_ex.
+  exists (-2 * Ig * gauss x)%R.
+  under eq_cvg.
+    move=> h/=.
+    rewrite /GRing.scale/= mulr1.
+    rewrite -RintegralB//.
+    over.
+  rewrite /=.
+  have :  J^`() x = (-2 * Ig * gauss x)%R.
+    by apply: dJE; rewrite in_itv/= andbT.
+  rewrite derive1E.
+  apply/ex_derive1.
+  apply: (@ex_derive _ _ _ _ _ _ (-2 * Ig * gauss x)%R).
+*)
 Admitted.
 
 Let rcJ0 : Ig0y x @[x --> 0^'+] --> Ig0y 0.
@@ -3729,7 +3757,7 @@ have cdJ x : {for x, continuous (fun x1 : R => (- 2 * Igoo * gauss x1)%R)}.
   by move=> ?; exact: continuous_gauss.
 rewrite -Leibniz.integral_u0.
 rewrite -[X in 0%:E - X = _]fineK; last by rewrite Leibniz.integral_u0.
-rewrite -(le0_within_pinfty_continuous_FTC2 _ Joo _ _ _ dJE); last 4 first.
+rewrite -(le0_within_pinfty_continuous_FTC2 _ Joo _ _ _ dIg0yE); last 4 first.
 - move=> x x0.
   rewrite -mulN1r -!mulrA mulN1r.
   by rewrite lerNl oppr0 pmulr_rge0// mulr_ge0 ?Igoo_ge0 ?gauss_ge0.
@@ -3738,26 +3766,7 @@ rewrite -(le0_within_pinfty_continuous_FTC2 _ Joo _ _ _ dJE); last 4 first.
   apply: cvg_at_right_filter; exact: cdJ.
 - exact: rcJ0.
 - move=> x x0.
-  (* lemma *)
-  have : Ig0y^`() x = (-2 * Igoo * gauss x)%R.
-    by apply: dJE; rewrite in_itv/= andbT.
-(*
-  rewrite /derivable.
-  apply/cvg_ex.
-  exists (-2 * Ig * gauss x)%R.
-  under eq_cvg.
-    move=> h/=.
-    rewrite /GRing.scale/= mulr1.
-    rewrite -RintegralB//.
-    over.
-  rewrite /=.
-  have :  J^`() x = (-2 * Ig * gauss x)%R.
-    by apply: dJE; rewrite in_itv/= andbT.
-  rewrite derive1E.
-  apply/ex_derive1.
-  apply: (@ex_derive _ _ _ _ _ _ (-2 * Ig * gauss x)%R).
-*)
-  admit.
+  by apply: derivable_Ig0y; rewrite in_itv/= andbT.
 under eq_integral do rewrite !EFinM EFinN !mulNe.
 rewrite integral_ge0N; last first.
 - move=> x _.
@@ -3774,7 +3783,8 @@ rewrite expr2 mulrA [RHS]EFinM.
 rewrite EFinM EFinN !mulNe.
 congr (- (_ * _)).
 rewrite fineK//.
-Admitted.
+exact: Igoo_fin_num.
+Qed.
 
 (*
 rewrite itv0ybig.
