@@ -13,7 +13,7 @@ From mathcomp Require Import ring lra.
 
 (**md**************************************************************************)
 (* # Improper Integral                                                        *)
-(*                                                                            *)
+(* # calculating integrals by limit                                           *)
 (******************************************************************************)
 
 Set Implicit Arguments.
@@ -3066,6 +3066,69 @@ have [xmax|xmax] := leP x max_x.
 (* use ler0_derive1_nincr *)
 Admitted.
 
+Let int_gaussZl (c : R) : (c != 0)%R -> mu.-integrable `[0%R, +oo[
+  (fun z => (expR (- (c * z) ^+ 2))%:E).
+Proof.
+suff : (forall c, (0 < c)%R -> mu.-integrable `[0%R, +oo[ (fun z => (expR (- (c * z) ^+ 2))%:E)).
+  move=> H.
+  rewrite neq_lt => /orP.
+  case => c0.
+  - under [X in _.-integrable _ X]eq_fun do rewrite -sqrrN -(mulNr c).
+    by apply: H; rewrite oppr_gt0.
+  - exact: H.
+move=> /=  {}c c0.
+have mcg : measurable_fun `[@GRing.zero R, +oo[ (fun x => (expR (- (c * x)^+2))%:E).
+  apply/measurable_EFinP.
+  exact: (measurableT_comp mgauss).
+apply/integrableP; split => //.
+apply/abse_integralP => //.
+rewrite -ge0_fin_numE; last exact: abse_ge0.
+rewrite abse_fin_num ge0_fin_numE; last first.
+  apply: integral_ge0 => z _.
+  exact: gauss_ge0.
+under eq_integral.
+  move=> z _.
+  have -> :(expR (- (c * z) ^+ 2))%:E =
+    c^-1%:E * (((gauss \o (fun z => c * z)) * (fun z => c * z)^`()) z)%:E.
+    rewrite !fctE derive1E derive_val EFinM muleC -muleA -EFinM.
+    by rewrite /GRing.scale/= mulr1 mulfV ?mulr1// gt_eqF.
+  over.
+rewrite ge0_integralZl//; first last.
+  - by rewrite lee_fin invr_ge0 ltW.
+  - move=> x _.
+    by rewrite !fctE derive1E derive_val /GRing.scale/= mulr1 lee_fin mulr_ge0 ?gauss_ge0 ?ltW.
+  - under [X in _ _ X]eq_fun.
+      move=> x.
+      rewrite !fctE derive1E derive_val /GRing.scale/= mulr1.
+      over.
+    apply/measurable_EFinP.
+    rewrite /=.
+    apply: (measurableT_comp (mulrr_measurable _)).
+    exact: (measurableT_comp mgauss).
+have dME : [eta  *%R c]^`() = cst c.
+  apply/funext => x.
+  by rewrite derive1E derive_val /GRing.scale/= mulr1.
+rewrite -ge0_integration_by_substitution_increasing_opinfty//=; first last.
+- move=> ? _; exact: gauss_ge0.
+- apply/cvgryPge => r.
+  under eq_near do rewrite -ler_pdivrMl//.
+  apply: nbhs_pinfty_ge.
+  exact: num_real.
+- by apply: continuous_subspaceT; exact: continuous_gauss.
+- apply: cvgZr; exact: cvg_at_right_filter.
+- by rewrite dME; exact: is_cvg_cst.
+- by rewrite dME; exact: is_cvg_cst.
+- by rewrite dME => ? _; exact: cst_continuous.
+- by move=> ? ? _ _ +; rewrite ltr_pM2l.
+apply: lte_mul_pinfty.
+  by rewrite lee_fin invr_ge0 ltW.
+rewrite ge0_fin_numE; first exact: ltry.
+  by rewrite lee_fin invr_ge0 ltW.
+rewrite -ge0_fin_numE mulr0; first exact: Igoo_fin_num.
+apply: integral_ge0 => ? _.
+by rewrite lee_fin gauss_ge0.
+Unshelve. end_near. Qed.
+
 Let dJE : {in `]0%R, +oo[, Ig0y^`() =1 (fun x => (- 2) * Igoo * gauss x)%R}.
 Proof.
 move=> x; rewrite in_itv/= => /andP[x0 _].
@@ -3090,9 +3153,15 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
     by rewrite mulr_ge0// ?expR_ge0//.
   - rewrite (_ : _ \o _ = (fun x => (max_y)%:E * (expR (- c ^+ 2 * x ^+ 2))%:E))//.
     apply: integrableZl => //=.
-    move: (@Igoo_fin_num R).
-    rewrite /gauss.
-    admit. (* integrable *)
+    under [X in _.-integrable _ X]eq_fun.
+      move=> z.
+      rewrite mulNr -exprMn_comm; last exact: mulrC.
+      over.
+    apply: int_gaussZl.
+    rewrite gt_eqF//.
+    rewrite subr_gt0.
+    near: e.
+    exact: nbhs_right_lt.
   - rewrite /=.
     move=> x' y Ix' /= y0.
     have d1tmp : 'd1 Leibniz.u y x' = (oneDsqr y * - 2 * x' * Leibniz.u x' y)%R.
