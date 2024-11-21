@@ -3039,21 +3039,75 @@ Abort.
 
 Import Num.Theory.
 
-Definition helper (x : R) := (2 * normr x * expR (- x ^+ 2))%R.
+(* TODO: move to derive.v and generalize le0r_derive1_ndecr *)
+Lemma ler0_derive1_nincry (*(R : realType)*) (f : R -> R) (a : R) :
+  (forall x, x \in `]a, +oo[%R -> derivable f x 1) ->
+  (forall x, x \in `]a, +oo[%R -> f^`() x <= 0)%R ->
+  {within `[a, +oo[, continuous f} ->
+  (forall x y, a <= x -> x <= y -> f y <= f x)%R.
+Proof.
+move=> fdrvbl dfge0 fcont x y ax xy.
+near (pinfty_nbhs R)%R => N.
+apply: (@ler0_derive1_nincr _ _ a N) => //.
+- move=> r /[!in_itv]/= /andP[ar rN].
+  by apply: fdrvbl; rewrite !in_itv/= andbT ar.
+- move=> r /[!in_itv]/= /andP[ar rN].
+  by apply: dfge0; rewrite !in_itv/= andbT ar.
+- apply: continuous_subspaceW fcont.
+  exact: subset_itvl.
+- near: N.
+  apply: nbhs_pinfty_ge.
+  by rewrite num_real.
+Unshelve. all: end_near. Qed.
 
-Definition helper' (x : R) := ((2 - 4 * x ^+ 2) * expR (- x ^+ 2))%R.
+Lemma le0r_derive1_ndecry (*(R : realType)*) (f : R -> R) (a b : R) :
+  (forall x, x \in `]a, +oo[%R -> derivable f x 1) ->
+  (forall x, x \in `]a, +oo[%R -> 0 <= f^`() x)%R ->
+  {within `[a, +oo[, continuous f} ->
+  (forall x y, a <= x -> x <= y -> f x <= f y)%R.
+Proof.
+move=> fdrvbl dfge0 fcont x y ax xy.
+near (pinfty_nbhs R)%R => N.
+apply: (@le0r_derive1_ndecr _ _ a N) => //.
+- move=> r /[!in_itv]/= /andP[ar rN].
+  by apply: fdrvbl; rewrite !in_itv/= andbT ar.
+- move=> r /[!in_itv]/= /andP[ar rN].
+  by apply: dfge0; rewrite !in_itv/= andbT ar.
+- apply: continuous_subspaceW fcont.
+  exact: subset_itvl.
+- near: N.
+  apply: nbhs_pinfty_ge.
+  by rewrite num_real.
+Unshelve. all: end_near. Qed.
+
+Definition helper (x : R) := (2 * x * expR (- x ^+ 2))%R.
+
+Definition helper' (x : R) := (expR (- x ^+ 2) * (2 - 4 * x ^+ 2))%R.
+
+Lemma helper'E : helper^`() = helper'.
+Proof.
+apply/funext => x; rewrite /helper/= derive1E !deriveM//=.
+rewrite derive_cst scaler0 derive_id addr0.
+rewrite -derive1E (@derive1_comp _ _ expR)//= (_ : expR^`() = expR); last first.
+  by apply/funext => ?; rewrite derive1E -[in RHS]derive_expR.
+rewrite derive1E/= deriveN//= -derive1E exp_derive1 expr1.
+rewrite [in X in X + _ = _]scalerA (mulrC (2 * x)%R) -scalerA.
+rewrite -scalerDr; congr *%R.
+rewrite /GRing.scale/= mulr1 mulrN [LHS]addrC.
+by rewrite mulrACA -expr2 -natrM.
+Qed.
 
 Definition max_x : R := (Num.sqrt 2)^-1.
 
+Let max_x_ge0 : (0 <= max_x)%R. Proof. by rewrite invr_ge0. Qed.
+
 Definition max_y : R := 2 / Num.sqrt 2 / Num.sqrt (expR 1).
 
-Let max_y_ge0 : (0 <= max_y)%R.
-Proof. by rewrite mulr_ge0. Qed.
+Let max_y_ge0 : (0 <= max_y)%R. Proof. by rewrite mulr_ge0. Qed.
 
 Lemma helper_max_x : helper max_x = max_y.
 Proof.
-rewrite /helper/= /max_x exprVn expRN.
-rewrite sqr_sqrtr// ger0_norm//.
+rewrite /helper/= /max_x exprVn expRN sqr_sqrtr//.
 by rewrite -(div1r 2) expRM powR12_sqrt ?expR_ge0//.
 Qed.
 
@@ -3061,10 +3115,25 @@ Lemma helper_max (x : R) : (0 < x)%R -> (helper x <= max_y)%R.
 Proof.
 move=> x0.
 have [xmax|xmax] := leP x max_x.
-  (* use le0r_derive1_ndecr *)
-  admit.
-(* use ler0_derive1_nincr *)
-Admitted.
+- rewrite -helper_max_x.
+  apply: (@le0r_derive1_ndecr _ _ 0 max_x) => //; last exact: ltW.
+  + move=> y /[!in_itv]/= => /andP[y0 ymax].
+    rewrite helper'E mulr_ge0 ?expR_ge0// subr_ge0.
+    rewrite (natrM _ 2 2) -mulrA ler_piMr// -ler_pdivlMl// mulr1.
+    move/ltW : ymax => /(lerXn2r 2).
+    rewrite !nnegrE => /(_ (ltW y0) max_x_ge0).
+    by rewrite /max_x exprVn sqr_sqrtr.
+  + exact: derivable_within_continuous.
+rewrite -helper_max_x.
+apply: (@ler0_derive1_nincry _ max_x) => //; last exact/ltW.
+- move=> y /[!in_itv]/= => /andP[ymax _].
+  rewrite helper'E /helper' mulr_ge0_le0 ?expR_ge0// subr_le0.
+  rewrite (natrM _ 2 2) -mulrA ler_peMr// -ler_pdivrMl// mulr1.
+  move/ltW : (ymax) => /(lerXn2r 2).
+  rewrite !nnegrE => /(_ max_x_ge0 (ltW (le_lt_trans max_x_ge0 ymax))).
+  by rewrite /max_x exprVn sqr_sqrtr//.
+- exact: derivable_within_continuous.
+Qed.
 
 Let int_gaussZl (c : R) : (c != 0)%R -> mu.-integrable `[0%R, +oo[
   (fun z => (expR (- (c * z) ^+ 2))%:E).
@@ -3127,7 +3196,7 @@ rewrite ge0_fin_numE; first exact: ltry.
 rewrite -ge0_fin_numE mulr0; first exact: Igoo_fin_num.
 apply: integral_ge0 => ? _.
 by rewrite lee_fin gauss_ge0.
-Unshelve. end_near. Qed.
+Qed.
 
 Let dJE : {in `]0%R, +oo[, Ig0y^`() =1 (fun x => (- 2) * Igoo * gauss x)%R}.
 Proof.
@@ -3164,6 +3233,9 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
     exact: nbhs_right_lt.
   - rewrite /=.
     move=> x' y Ix' /= y0.
+    have x'0 : (0 < x')%R.
+      move: Ix'; rewrite in_itv/= => /andP[+ _]; apply: le_lt_trans.
+      by rewrite subr_ge0; near: e; exact: nbhs_right_le.
     have d1tmp : 'd1 Leibniz.u y x' = (oneDsqr y * - 2 * x' * Leibniz.u x' y)%R.
       rewrite Leibniz.du /Leibniz.u.
       rewrite -![in RHS]mulrA [RHS]mulrC -![in RHS]mulrA.
@@ -3184,30 +3256,17 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
     rewrite ler_pM//.
     + by rewrite mulr_ge0// expR_ge0.
     + by rewrite expR_ge0.
-    + apply: helper_max.
-      move: Ix'; rewrite in_itv/= => /andP[+ _].
-      apply: le_lt_trans.
-      rewrite subr_ge0.
-      by near: e; apply: nbhs_right_le.
+    + rewrite gtr0_norm//.
+      exact: helper_max.
     + rewrite ler_expR// !mulNr lerN2 ler_wpM2r// ?sqr_ge0//.
       rewrite /I /ball/= in Ix'.
       rewrite /c.
       rewrite ler_sqr; last 2 first.
-        rewrite nnegrE.
-        rewrite subr_ge0.
-        near: e.
-        exact: nbhs_right_le.
-        rewrite nnegrE.
-        move: Ix'.
-        rewrite in_itv/= => /andP[/ltW + _].
-        apply: le_trans.
-        rewrite subr_ge0.
-        near: e.
-        exact: nbhs_right_le.
+        by rewrite nnegrE subr_ge0; near: e; exact: nbhs_right_le.
+        by rewrite nnegrE ltW.
       by move: Ix'; rewrite in_itv/= => /andP[/ltW].
-  - rewrite -ball_itv.
-  - exact/ballxx.
-  done.
+  - by rewrite -ball_itv; exact/ballxx.
+  by [].
 (*  apply: eq_Rintegral => x1; rewrite inE/= in_itv/= andbT => x10.
   rewrite /dJ /partial1/=.
   rewrite (@derive1_comp _ (fun x => - x ^+ 2)%R
