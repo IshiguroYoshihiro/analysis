@@ -1,4 +1,3 @@
-Require Import String.
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval.
 From mathcomp Require Import archimedean.
@@ -2712,16 +2711,16 @@ apply: (@le0r_derive1_ndecr _ _ a N) => //.
   by rewrite num_real.
 Unshelve. all: end_near. Qed.
 
-Section gauss_donminates.
+Section gauss_dominates.
 Context {R : realType}.
 
 Definition max_x : R := (Num.sqrt 2)^-1.
 
-Let max_x_ge0 : (0 <= max_x)%R. Proof. by rewrite invr_ge0. Qed.
+Lemma max_x_ge0 : (0 <= max_x)%R. Proof. by rewrite invr_ge0. Qed.
 
 Definition max_y : R := 2 / Num.sqrt 2 / Num.sqrt (expR 1).
 
-Let max_y_ge0 : (0 <= max_y)%R. Proof. by rewrite mulr_ge0. Qed.
+Lemma max_y_ge0 : (0 <= max_y)%R. Proof. by rewrite mulr_ge0. Qed.
 
 Definition helper (x : R) := (2 * x * expR (- x ^+ 2))%R.
 
@@ -2770,19 +2769,54 @@ apply: (@ler0_derive1_nincry _ _ max_x) => //; last exact/ltW.
 - exact: derivable_within_continuous.
 Qed.
 
-Lemma u_dominates x e : forall (x0 : R) (y : measurableTypeR R),
-  `](x - e)%R, (x + e)[%classic x0 ->
+Lemma u_dominates (x : R) : (0 < x)%R ->
+  \forall e \near (0:R)%R^'+,
+  let I := (ball x e : set R) : set R in
+  let c := ((x - e)%R : R) : R in
+  forall (x1 : R)
+    (y : [the measurableType (R.-ocitv.-measurable).-sigma of
+     g_sigma_algebraType R.-ocitv.-measurable]),
+  `](x - e)%R, (x + e)[%classic x1 ->
   `[0%R, +oo[%classic y ->
-let c := (x - e)%R in
-  (normr (('d1 Leibniz.u) y x0) <= max_y * expR (- c ^+ 2 * y ^+ 2))%R.
+  (normr (('d1 Leibniz.u) y x1) <= max_y * expR (- c ^+ 2 * y ^+ 2))%R.
 Proof.
-move=> z y/= zxe y0.
-rewrite /Leibniz.u/partial1/= /max_y.
-rewrite derive1E derive_val.
-rewrite !scaler0 !add0r.
-Admitted.
+move=> x0.
+near=> e.
+    move=> x' y Ix' /= y0.
+    have x'0 : (0 < x')%R.
+      move: Ix'; rewrite /= in_itv/= => /andP[+ _]; apply: le_lt_trans.
+      by rewrite subr_ge0; near: e; apply: nbhs_right_le.
+    have d1tmp : 'd1 Leibniz.u y x' = (oneDsqr y * - 2 * x' * Leibniz.u x' y)%R.
+      rewrite Leibniz.du /Leibniz.u.
+      rewrite -![in RHS]mulrA [RHS]mulrC -![in RHS]mulrA.
+      rewrite mulVf ?oneDsqr_neq0// mulr1.
+      rewrite -!mulrA; congr (_ * (_ * _))%R.
+      rewrite -expRD exprMn_comm//; last by rewrite /GRing.comm mulrC.
+      by rewrite mulrDr mulr1 mulNr mulrC.
+    rewrite {}d1tmp {}/Leibniz.u/=.
+    rewrite [leLHS](_ : _ = 2 * normr x' * (expR (- x' ^+ 2 * oneDsqr y)))%R; last first.
+      rewrite -![in LHS]mulrA (mulrC (oneDsqr y)) -![in LHS]mulrA.
+      rewrite mulVf ?oneDsqr_neq0// mulr1.
+      rewrite normrM normrN (@ger0_norm _ 2)//.
+      by rewrite normrM (@ger0_norm _ (expR _)) ?expR_ge0// mulrA.
+    rewrite /oneDsqr.
+    rewrite mulrDr mulr1.
+    rewrite expRD.
+    rewrite mulrA.
+    rewrite ler_pM//.
+    + by rewrite mulr_ge0// expR_ge0.
+    + by rewrite expR_ge0.
+    + rewrite gtr0_norm//.
+      exact: helper_max.
+    + rewrite ler_expR// !mulNr lerN2 ler_wpM2r// ?sqr_ge0//.
+      rewrite /I /ball/= in Ix'.
+      rewrite ler_sqr; last 2 first.
+        by rewrite nnegrE subr_ge0; near: e; exact: nbhs_right_le.
+        by rewrite nnegrE ltW.
+      by move: Ix'; rewrite in_itv/= => /andP[/ltW].
+Unshelve. end_near. Qed.
 
-End gauss_donminates.
+End gauss_dominates.
 
 Section Gauss_integration.
 Context {R : realType}.
@@ -3248,7 +3282,7 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
   - move=> /= x1 y x1x2 y0.
     exact: derivable_u.
   - move=> /= y.
-    by rewrite mulr_ge0// ?expR_ge0//.
+    by rewrite mulr_ge0// ?expR_ge0// max_y_ge0.
   - rewrite (_ : _ \o _ = (fun x => (max_y)%:E * (expR (- c ^+ 2 * x ^+ 2))%:E))//.
     apply: integrableZl => //=.
     under [X in _.-integrable _ X]eq_fun.
@@ -3260,71 +3294,13 @@ transitivity ((\int[mu]_(y in `[0, +oo[) d_dx_dJ x y)%R).
     rewrite subr_gt0.
     near: e.
     exact: nbhs_right_lt.
-  - rewrite /=.
-    move=> x' y Ix' /= y0.
-    have x'0 : (0 < x')%R.
-      move: Ix'; rewrite in_itv/= => /andP[+ _]; apply: le_lt_trans.
-      by rewrite subr_ge0; near: e; exact: nbhs_right_le.
-    have d1tmp : 'd1 Leibniz.u y x' = (oneDsqr y * - 2 * x' * Leibniz.u x' y)%R.
-      rewrite Leibniz.du /Leibniz.u.
-      rewrite -![in RHS]mulrA [RHS]mulrC -![in RHS]mulrA.
-      rewrite mulVf ?oneDsqr_neq0// mulr1.
-      rewrite -!mulrA; congr (_ * (_ * _))%R.
-      rewrite -expRD exprMn_comm//; last by rewrite /GRing.comm mulrC.
-      by rewrite mulrDr mulr1 mulNr mulrC.
-    rewrite {}d1tmp {}/Leibniz.u/=.
-    rewrite [leLHS](_ : _ = 2 * normr x' * (expR (- x' ^+ 2 * oneDsqr y)))%R; last first.
-      rewrite -![in LHS]mulrA (mulrC (oneDsqr y)) -![in LHS]mulrA.
-      rewrite mulVf ?oneDsqr_neq0// mulr1.
-      rewrite normrM normrN (@ger0_norm _ 2)//.
-      by rewrite normrM (@ger0_norm _ (expR _)) ?expR_ge0// mulrA.
-    rewrite /oneDsqr.
-    rewrite mulrDr mulr1.
-    rewrite expRD.
-    rewrite mulrA.
-    rewrite ler_pM//.
-    + by rewrite mulr_ge0// expR_ge0.
-    + by rewrite expR_ge0.
-    + rewrite gtr0_norm//.
-      exact: helper_max.
-    + rewrite ler_expR// !mulNr lerN2 ler_wpM2r// ?sqr_ge0//.
-      rewrite /I /ball/= in Ix'.
-      rewrite /c.
-      rewrite ler_sqr; last 2 first.
-        by rewrite nnegrE subr_ge0; near: e; exact: nbhs_right_le.
-        by rewrite nnegrE ltW.
-      by move: Ix'; rewrite in_itv/= => /andP[/ltW].
+  clear openI.
+  rewrite {}/I.
+  rewrite {}/c.
+  near: e.
+  by apply: u_dominates => //.
   - by rewrite -ball_itv; exact/ballxx.
   by [].
-(*  apply: eq_Rintegral => x1; rewrite inE/= in_itv/= andbT => x10.
-  rewrite /dJ /partial1/=.
-  rewrite (@derive1_comp _ (fun x => - x ^+ 2)%R
-            (fun y => expR (y * oneDsqrx x1) / oneDsqrx x1))//.
-  rewrite !derive1E.
-  rewrite deriveMr//=.
-  rewrite deriveN//=.
-  rewrite exp_derive//= expr1.
-  rewrite -derive1E derive1_comp//=.
-  rewrite !derive1E.
-  rewrite deriveMr//=.
-  rewrite (mulrCA _ (oneDsqrx x1)).
-  rewrite !mulrA.
-  rewrite mulVf// ?mul1r; last first.
-    by rewrite gt_eqF// ltr_pwDl// sqr_ge0.
-  rewrite derive_id mulr1.
-  rewrite /d_dx_dJ /dJ.
-  rewrite (@derive1_comp _ (fun x => - x ^+ 2)%R
-            (fun y => expR (y * oneDsqrx x1) / oneDsqrx x1))//.
-  rewrite !derive1E.
-  rewrite deriveN//= exp_derive expr1.
-  rewrite deriveMr//=.
-  rewrite -[in RHS]derive1E derive1_comp//=.
-  rewrite ![in RHS]derive1E.
-  rewrite deriveMr//= derive_id mulr1.
-  rewrite (mulrCA _ _ (oneDsqrx x1)).
-  rewrite mulVf ?mulr1; last first.
-    by rewrite gt_eqF// ltr_pwDl// sqr_ge0.
-  done.*)
 have substE : \int[mu]_(y in `[0%R, +oo[) (expR (- x ^+ 2 * oneDsqr y))%:E =
   \int[mu]_(y in `[0%R, +oo[)
                     ((((fun z => gauss x / x * gauss z) \o
@@ -3492,7 +3468,7 @@ pose c : R := (x - e)%R.
 apply: (@Leibniz.derivable_under_integral _ _ (measurableTypeR R) _ _ _ _ _ _ _ _ _ (fun y => (max_y) * expR (- c ^+ 2 * y ^+ 2))%R _ _ _ ballx_x) => //.
 - move=> ? _; exact: Leibniz.integrable_u.
 - move=> /= y.
-  by rewrite mulr_ge0// ?expR_ge0//.
+  by rewrite mulr_ge0// ?expR_ge0// max_y_ge0.
 - rewrite (_ : _ \o _ = (fun x => (max_y)%:E * (expR (- c ^+ 2 * x ^+ 2))%:E))//.
   apply: integrableZl => //=.
   under [X in _.-integrable _ X]eq_fun.
@@ -3505,27 +3481,12 @@ apply: (@Leibniz.derivable_under_integral _ _ (measurableTypeR R) _ _ _ _ _ _ _ 
   near: e.
   apply: nbhs_right_lt.
   by rewrite in_itv/= andbT in x0oo.
-- admit. (* name gauss_dominate, make section *)
-- move=> t y xet _.
-  apply: HM.
-  by rewrite /= in xet.
-(*
-  rewrite /derivable.
-  apply/cvg_ex.
-  exists (-2 * Ig * gauss x)%R.
-  under eq_cvg.
-    move=> h/=.
-    rewrite /GRing.scale/= mulr1.
-    rewrite -RintegralB//.
-    over.
-  rewrite /=.
-  have :  J^`() x = (-2 * Ig * gauss x)%R.
-    by apply: dJE; rewrite in_itv/= andbT.
-  rewrite derive1E.
-  apply/ex_derive1.
-  apply: (@ex_derive _ _ _ _ _ _ (-2 * Ig * gauss x)%R).
-*)
-Admitted.
+- rewrite {}/ballx.
+  rewrite {}/c.
+  near: e.
+  apply: u_dominates.
+  by rewrite in_itv/= andbT in x0oo.
+Unshelve. all: end_near. Qed.
 
 Let rcJ0 : Ig0y x @[x --> 0^'+] --> Ig0y 0.
 Proof.
