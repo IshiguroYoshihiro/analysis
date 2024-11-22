@@ -6,7 +6,7 @@ From mathcomp Require Import cardinality fsbigop.
 From mathcomp Require Import signed reals ereal.
 From mathcomp Require Import topology normedtype sequences esum exp.
 From mathcomp Require Import measure lebesgue_measure numfun lebesgue_integral.
-From mathcomp Require Import itv realfun derive trigo ftc.
+From mathcomp Require Import itv real_interval realfun derive trigo ftc.
 
 From mathcomp Require Import ring lra.
 
@@ -46,27 +46,6 @@ Proof.
 Abort.
 
 End Rceil_lemma.
-
-Section near_in_itv_yy_PRed.
-
-Local Import real_interval.
-
-Lemma near_in_itv_oy {R : realFieldType} (a : R) :
-  {in `]a, +oo[, forall y, \forall z \near y, z \in `]a, +oo[}.
-Proof.
-Admitted.
-
-Lemma near_in_itv_yo {R : realFieldType} (b : R) :
-  {in `]-oo, b[, forall y, \forall z \near y, z \in `]-oo, b[}.
-Proof.
-Admitted.
-
-Lemma near_in_itv_yy {R : realFieldType} :
-  {in `]-oo, +oo[, forall y : R, \forall z \near y, z \in `]-oo, +oo[}.
-Proof.
-Admitted.
-
-End near_in_itv_yy_PRed.
 
 Section PRed.
 Context {R : realType}.
@@ -209,29 +188,14 @@ End left_continuousW.
 Section mv_to_realfun.
 Context {R : realType}.
 
-(* PRed to MathComp-Analysis and renamed cvgr_dnbhsP *)
-Lemma cvg_dnbhsP (f : R -> R) (p l : R) :
-  f x @[x --> p^'] --> l <->
-  (forall u : R^nat, (forall n, u n != p) /\ (u n @[n --> \oo] --> p) ->
-    f (u n) @[n --> \oo] --> l).
-Proof.
-split=> [/cvgrPdist_le fpl u [up /cvgrPdist_lt uyp]|H]; last first.
-  apply: cvg_at_right_left_dnbhs.
-  - by apply/cvg_at_rightP => u [pu uyp]; apply: H; split => // n; rewrite gt_eqF.
-  - by apply/cvg_at_leftP => u [pu uyp]; apply: H; split => // n; rewrite lt_eqF.
-apply/cvgrPdist_le => e e0.
-have [r /= r0 {}fpl] := fpl _ e0.
-have [n _ {}uyp] := uyp _ r0.
-near=> t; apply: fpl => //=.
-apply: uyp.
-by near: t; exists n.
-Unshelve. all: end_near. Qed.
-
 Lemma cvgr_sub0 T {F : set_system T} {FF : Filter F} (f : T -> R) (k : R) :
-  (fun x => f x - k)%R @ F --> 0%R <-> f @ F --> k.
+  (fun x => f x - k)%R @ F --> (0:R)%R <-> f @ F --> k.
 Proof.
-split=> [|fFk]; first exact: cvg_zero.
-by rewrite -(@subrr _ k)//; apply: cvgB => //; exact: cvg_cst.
+split=> [?|fFk].
+  by apply: (@cvg_zero _ R^o).
+rewrite -(@subrr _ k)//.
+apply: (@cvgB _ R^o) => //.
+exact: cvg_cst.
 Qed.
 
 End mv_to_realfun.
@@ -263,8 +227,8 @@ Lemma cvg_nbhsP {R : realType} (f : R -> R) (p : R) :
   f x @[x --> p] --> f p <->
   (forall u : R^nat, (u n @[n --> \oo] --> p) -> f (u n) @[n --> \oo] --> f p).
 Proof.
-split=> [/cvgrPdist_le /= fpl u /cvgrPdist_lt /= uyp|pfl].
-  apply/cvgrPdist_le => e /fpl[d d0 pdf].
+split=> [/(@cvgrPdist_le _ R^o) /= fpl u /(@cvgrPdist_lt _ R^o) /= uyp|pfl].
+  apply/(@cvgrPdist_le _ R^o) => e /fpl[d d0 pdf].
   by apply: filterS (uyp d d0) => t /pdf.
 apply: contrapT => fpl; move: pfl; apply/existsNP.
 suff: exists2 x : R ^nat,
@@ -273,7 +237,7 @@ suff: exists2 x : R ^nat,
 have [e He] : exists e : {posnum R}, forall d : {posnum R},
     exists xn : R, (`|xn - p| < d%:num)%R /\ (`|f xn - f p| >= e%:num)%R.
   apply: contrapT; apply: contra_not fpl => /forallNP h.
-  apply/cvgrPdist_le => e e0; have /existsNP[d] := h (PosNum e0).
+  apply/(@cvgrPdist_le _ R^o) => e e0; have /existsNP[d] := h (PosNum e0).
   move/forallNP => {}h; near=> t.
   have /not_andP[abs|/negP] := h t.
   - exfalso; apply: abs.
@@ -281,13 +245,13 @@ have [e He] : exists e : {posnum R}, forall d : {posnum R},
   - by rewrite -ltNge distrC => /ltW.
 have invn n : (0%R < n.+1%:R^-1 :> R)%R by rewrite invr_gt0.
 exists (fun n => sval (cid (He (PosNum (invn n))))).
-  apply/cvgrPdist_lt => r r0; near=> t.
+  apply/(@cvgrPdist_lt _ R^o) => r r0; near=> t.
   rewrite /sval/=; case: cid => x [xpt _].
   rewrite distrC (lt_le_trans xpt)// -(@invrK _ r) lef_pV2 ?posrE ?invr_gt0//.
   near: t; exists `|ceil r^-1|%N => // s /=.
   rewrite -ltnS -(@ltr_nat R) => /ltW; apply: le_trans.
   by rewrite natr_absz gtr0_norm -?ceil_gt0 ?invr_gt0 ?le_ceil ?num_real.
-move=> /cvgrPdist_lt/(_ e%:num (ltac:(by [])))[] n _ /(_ _ (leqnn _)).
+move=> /(@cvgrPdist_lt _ R^o)/(_ e%:num (ltac:(by [])))[] n _ /(_ _ (leqnn _)).
 rewrite /sval/=; case: cid => // x [px xpn].
 by rewrite ltNge distrC => /negP.
 Unshelve. all: end_near. Qed.
@@ -335,7 +299,7 @@ Section decr_derive1.
 Local Close Scope ereal_scope.
 
 Context {R: realType}.
-Variables (f : R -> R) (x : R).
+Variables (f : R^o -> R^o) (x : R).
 Variable (D : set R).
 
 (* PR? *)
@@ -352,7 +316,7 @@ apply: limr_le.
       by rewrite /GRing.scale/= mulr1.
     over.
     by apply: df; rewrite inE.
-have := open_subball (open_interior D) Dx.
+have := open_subball (@open_interior R^o D) Dx.
 move=> [e /= e0 Hball].
 have/normr_idP normr2E : @GRing.zero R <= 2 by [].
 near=> h.
@@ -362,7 +326,7 @@ have Dohx : (interior D) (h + x).
   apply => //.
       rewrite /= sub0r normrN !normrM !normr_id normr2E -ltr_pdivlMl//.
       near: h.
-      apply: dnbhs0_lt.
+      apply: (@dnbhs0_lt _ R^o).
       exact: mulr_gt0.
     by rewrite normrM normr2E mulr_gt0// normr_gt0.
   apply: ball_sym; rewrite /ball/= addrK.
@@ -377,7 +341,7 @@ Unshelve. end_near. Qed.
 
 End decr_derive1.
 
-Lemma decr_derive1_le0_itv {R: realType} (f : R -> R) (z : R) (x0 x1 : R) (b0 b1 : bool) :
+Lemma decr_derive1_le0_itv {R: realType} (f : R^o -> R^o) (z : R) (x0 x1 : R) (b0 b1 : bool) :
   {in `]x0, x1[, forall x : R, derivable f x 1%R} ->
   {in (Interval (BSide b0 x0) (BSide b1 x1)) &, {homo f : x y /~ (x < y)%R}} ->
   z \in `]x0, x1[ -> (f^`() z <= 0)%R.
@@ -622,7 +586,7 @@ under eq_bigr do rewrite EFinN.
 by rewrite telescope_sume// ltnW.
 Qed.
 
-Lemma continuous_derivable_limn_integraly {R : realType} (F : R -> R) (a : R) :
+Lemma continuous_derivable_limn_integraly {R : realType} (F : R^o -> R^o) (a : R) :
   cvg (F x @[x --> +oo%R]) ->
  {in `]a, +oo[, forall x, derivable F x 1} -> F x @[x --> a^'+] --> F a ->
   {in `]a, +oo[, continuous F^`()} ->
@@ -641,7 +605,7 @@ apply: (@ge0_subset_integral _ _ _ mu) => //.
 *)
 Abort.
 
-Lemma continuous_derivable_integrable_itvy {R : realType} (F : R -> R) (a : R) :
+Lemma continuous_derivable_integrable_itvy {R : realType} (F : R^o -> R^o) (a : R) :
   cvg (F x @[x --> +oo%R]) ->
   {in `]a, +oo[, forall x, derivable F x 1} -> F x @[x --> a^'+] --> F a ->
   {in `]a, +oo[, continuous F^`()} ->
@@ -654,7 +618,7 @@ apply/integrableP; split.
 (* have /cvg_lim <- := (continuous_derivable_limn_integraly cvgF dF cFa cF'). *)
 Abort.
 
-Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) :
+Lemma ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R^o -> R^o) a (l : R) :
   (forall x, a <= x -> 0 <= f x)%R ->
   F x @[x --> +oo%R] --> l ->
   {within `[a, +oo[, continuous f} ->
@@ -725,7 +689,7 @@ rewrite increasing_telescope_sume_infty_fin_num.
 - by rewrite addr0 EFinN; congr (_ - _).
 - by rewrite Fshiftn_liml.
 - apply/nondecreasing_seqP => n; rewrite -subr_ge0.
-  have isdF (x : R) : x \in `]a + n%:R, a + n.+1%:R[ -> is_derive x 1%R F (f x).
+  have isdF (x : R^o) : x \in `]a + n%:R, a + n.+1%:R[ -> is_derive x 1%R F (f x).
     rewrite in_itv/= => /andP[anx _].
     rewrite -dFE; last by rewrite in_itv/= andbT (le_lt_trans _ anx)// lerDl.
     rewrite derive1E.
@@ -736,9 +700,9 @@ rewrite increasing_telescope_sume_infty_fin_num.
     + have : {within `[a, +oo[, continuous F}.
         apply/continuous_within_itvcyP; split => // x.
         rewrite in_itv/= andbT => ax.
-        by apply: differentiable_continuous; exact/derivable1_diffP/dF.
+        by apply: (@differentiable_continuous _ R^o R^o) ; exact/derivable1_diffP/dF.
       by apply: continuous_subspaceW; rewrite addr0; exact: subset_itvl.
-    + apply: derivable_within_continuous => x; rewrite in_itv/= => /andP[aSnx _].
+    + apply: (@derivable_within_continuous _ R^o) => x; rewrite in_itv/= => /andP[aSnx _].
       by apply: dF; rewrite (lt_le_trans _ aSnx)// ltrDl.
   - move: ranaSn; rewrite in_itv/= => /andP[/ltW anr _].
     rewrite mulr_ge0//; last by rewrite subr_ge0 lerD2l ler_nat.
@@ -746,7 +710,7 @@ rewrite increasing_telescope_sume_infty_fin_num.
 Unshelve. end_near. Qed.
 
 (* need to generalize l : \bar R? *)
-Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R -> R) a (l : R) :
+Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R^o -> R^o) a (l : R) :
   (forall x, (a <= x)%R -> f x <= 0)%R ->
   F x @[x --> +oo%R] --> l ->
   {within `[a, +oo[, continuous f} ->
@@ -789,8 +753,8 @@ rewrite (@ge0_within_pinfty_continuous_FTC2 _ (- f)%R (- F)%R _ (- l)%R).
   by rewrite oppr_ge0 f_ge0.
 - by apply: cvgN.
 - rewrite continuous_within_itvcyP; split.
-    by move=> x ax; apply/continuousN/cf.
-  exact: cvgN.
+    by move=> x ax; apply/(@continuousN _ R^o)/cf.
+  exact: (@cvgN _ R^o).
 - by move=> x ax; exact/derivableN/dF.
 - exact: cvgN.
 - move=> x; rewrite in_itv/= andbT => ax.
@@ -862,7 +826,7 @@ under eq_cvg => n.
     exact: continuous_expR.
   - have cX : continuous (fun x : R => - expR (- x))%R.
       move=> /= x; rewrite /continuous_at.
-      apply: cvgN.
+      apply: (@cvgN _ R^o).
       rewrite expRN1.
       rewrite [X in _ --> X](_:_= (expR x)^-1)%R; last first.
         suff : (fun x => @expR R (- x)) =1 (fun x => (expR x)^-1) by [].
@@ -1379,7 +1343,7 @@ have mF' : measurable_fun `]a, +oo[ (- F)%R^`().
   apply: dF.
   near: z.
   rewrite near_nbhs.
-exact: near_in_itv_oy.
+exact: near_in_itvoy.
 rewrite -!integral_itv_obnd_cbnd; last 2 first.
 - apply: measurable_funM => //.
   apply: open_continuous_measurable_fun; first exact: interval_open.
@@ -1865,7 +1829,7 @@ Let F x' := \int[mu]_(y in A) f x' y.
 Lemma cvg_differentiation_under_integral : I a ->
   h^-1 *: (F (h + a) - F a) @[h --> 0^'] --> \int[mu]_(y in A) ('d1 f) y a.
 Proof.
-move=> Ia; apply/cvg_dnbhsP => t [t_neq0 t_cvg0].
+move=> Ia; apply/cvgr_dnbhsP => t [t_neq0 t_cvg0].
 suff: forall x_, (forall n : nat, x_ n != a) ->
       x_ n @[n --> \oo] --> a -> (forall n, I (x_ n)) ->
     (x_ n - a)^-1 *: (F (x_ n) - F a) @[n --> \oo] -->
@@ -1925,7 +1889,7 @@ have g_cvg_d1f y : A y -> (g_ n y)%:E @[n --> \oo] --> (('d1 f) y a)%:E.
       move=> x.
       by rewrite subr_eq0.
     by apply/cvgr_sub0.
-  move: fayl => /cvg_dnbhsP/(_ _ H).
+  move: fayl => /cvgr_dnbhsP/(_ _ H).
   rewrite /GRing.scale/=.
   under [in X in X -> _]eq_fun do rewrite mulr1 subrK.
   move=> HH.
@@ -2075,14 +2039,14 @@ Let F x' := \int[mu]_(y in A) f x' y.
 Lemma cvg_differentiation_under_integraly : Ioo a ->
   h^-1 *: (F (h + a) - F a) @[h --> 0^'] --> \int[mu]_(y in A) ('d1 f) y a.
 Proof.
-move=> Iooa; apply/cvg_dnbhsP => t [t_neq0 t_cvg0].
+move=> Iooa; apply/cvgr_dnbhsP => t [t_neq0 t_cvg0].
 suff: forall x_, (forall n : nat, x_ n != a) ->
       x_ n @[n --> \oo] --> a -> (forall n, Ioo (x_ n)) ->
     (x_ n - a)^-1 *: (F (x_ n) - F a) @[n --> \oo] -->
       \int[mu]_(y in A) ('d1 f) y a.
   move=> suf.
   apply/cvgrPdist_le => /= r r0.
-  have [rho /= rho0 arhouv] := near_in_itv_oy Iooa.
+  have [rho /= rho0 arhouv] := near_in_itvoy Iooa.
   move/cvgr_dist_lt : (t_cvg0) => /(_ _ rho0)[m _ t_cvg0'].
   near \oo => N.
   pose x k := a + t (N + k)%N.
@@ -2135,7 +2099,7 @@ have g_cvg_d1f y : A y -> (g_ n y)%:E @[n --> \oo] --> (('d1 f) y a)%:E.
       move=> x.
       by rewrite subr_eq0.
     by apply/cvgr_sub0.
-  move: fayl => /cvg_dnbhsP/(_ _ H).
+  move: fayl => /cvgr_dnbhsP/(_ _ H).
   rewrite /GRing.scale/=.
   under [in X in X -> _]eq_fun do rewrite mulr1 subrK.
   move=> HH.
@@ -2620,7 +2584,7 @@ have [x_ [x0xn cvgx0]] : exists x_ : nat -> R, (forall n, x0 < x_ n) /\ x_ n @[n
 set f_ := fun (n : nat) (y : R) => f (x_ n) y.
 have : forall y, f_ n y @[n --> \oo] --> f x0 y.
   move=> y.
-  apply: (cvg_dnbhsP (f ^~ y) x0 (f x0 y)).1; last first.
+  apply: (cvgr_dnbhsP (f ^~ y) x0 (f x0 y)).1; last first.
     split.
       move=> n.
       by rewrite gt_eqF.
@@ -3508,7 +3472,7 @@ have cvg_dJ : {ae mu, forall x : R, `[0%R, +oo[%classic x ->
     apply: nearW => n.
     rewrite ge0_fin_numE; first exact: ltry.
     by rewrite lee_fin mulr_ge0// ?expR_ge0// invr_ge0// oneDsqr_ge0.
-  apply: (cvg_dnbhsP (Leibniz.u ^~ y) 0%R (Leibniz.u 0 y)).1; last first.
+  apply: (cvgr_dnbhsP (Leibniz.u ^~ y) 0%R (Leibniz.u 0 y)).1; last first.
     split.
       by move=> n; rewrite gt_eqF.
     exact: x_0.
