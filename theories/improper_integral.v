@@ -2671,6 +2671,119 @@ xxx
 
 End thm227a.
 
+(* TODO: move to derive.v and generalize le0r_derive1_ndecr *)
+Lemma ler0_derive1_nincry {R : realType} (f : R -> R) (a : R) :
+  (forall x, x \in `]a, +oo[%R -> derivable f x 1) ->
+  (forall x, x \in `]a, +oo[%R -> f^`() x <= 0)%R ->
+  {within `[a, +oo[, continuous f} ->
+  (forall x y, a <= x -> x <= y -> f y <= f x)%R.
+Proof.
+move=> fdrvbl dfge0 fcont x y ax xy.
+near (pinfty_nbhs R)%R => N.
+apply: (@ler0_derive1_nincr _ _ a N) => //.
+- move=> r /[!in_itv]/= /andP[ar rN].
+  by apply: fdrvbl; rewrite !in_itv/= andbT ar.
+- move=> r /[!in_itv]/= /andP[ar rN].
+  by apply: dfge0; rewrite !in_itv/= andbT ar.
+- apply: continuous_subspaceW fcont.
+  exact: subset_itvl.
+- near: N.
+  apply: nbhs_pinfty_ge.
+  by rewrite num_real.
+Unshelve. all: end_near. Qed.
+
+Lemma le0r_derive1_ndecry {R : realType} (f : R -> R) (a b : R) :
+  (forall x, x \in `]a, +oo[%R -> derivable f x 1) ->
+  (forall x, x \in `]a, +oo[%R -> 0 <= f^`() x)%R ->
+  {within `[a, +oo[, continuous f} ->
+  (forall x y, a <= x -> x <= y -> f x <= f y)%R.
+Proof.
+move=> fdrvbl dfge0 fcont x y ax xy.
+near (pinfty_nbhs R)%R => N.
+apply: (@le0r_derive1_ndecr _ _ a N) => //.
+- move=> r /[!in_itv]/= /andP[ar rN].
+  by apply: fdrvbl; rewrite !in_itv/= andbT ar.
+- move=> r /[!in_itv]/= /andP[ar rN].
+  by apply: dfge0; rewrite !in_itv/= andbT ar.
+- apply: continuous_subspaceW fcont.
+  exact: subset_itvl.
+- near: N.
+  apply: nbhs_pinfty_ge.
+  by rewrite num_real.
+Unshelve. all: end_near. Qed.
+
+Section gauss_donminates.
+Context {R : realType}.
+
+Definition max_x : R := (Num.sqrt 2)^-1.
+
+Let max_x_ge0 : (0 <= max_x)%R. Proof. by rewrite invr_ge0. Qed.
+
+Definition max_y : R := 2 / Num.sqrt 2 / Num.sqrt (expR 1).
+
+Let max_y_ge0 : (0 <= max_y)%R. Proof. by rewrite mulr_ge0. Qed.
+
+Definition helper (x : R) := (2 * x * expR (- x ^+ 2))%R.
+
+Definition helper' (x : R) := (expR (- x ^+ 2) * (2 - 4 * x ^+ 2))%R.
+
+Lemma helper'E : helper^`() = helper'.
+Proof.
+apply/funext => x; rewrite /helper/= derive1E !deriveM//=.
+rewrite derive_cst scaler0 derive_id addr0.
+rewrite -derive1E (@derive1_comp _ _ expR)//= (_ : expR^`() = expR); last first.
+  by apply/funext => ?; rewrite derive1E -[in RHS]derive_expR.
+rewrite derive1E/= deriveN//= -derive1E exp_derive1 expr1.
+rewrite [in X in X + _ = _]scalerA (mulrC (2 * x)%R) -scalerA.
+rewrite -scalerDr; congr *%R.
+rewrite /GRing.scale/= mulr1 mulrN [LHS]addrC.
+by rewrite mulrACA -expr2 -natrM.
+Qed.
+
+Lemma helper_max_x : helper max_x = max_y.
+Proof.
+rewrite /helper/= /max_x exprVn expRN sqr_sqrtr//.
+by rewrite -(div1r 2) expRM powR12_sqrt ?expR_ge0//.
+Qed.
+
+Lemma helper_max (x : R) : (0 < x)%R -> (helper x <= max_y)%R.
+Proof.
+move=> x0.
+have [xmax|xmax] := leP x max_x.
+- rewrite -helper_max_x.
+  apply: (@le0r_derive1_ndecr _ _ 0 max_x) => //; last exact: ltW.
+  + move=> y /[!in_itv]/= => /andP[y0 ymax].
+    rewrite helper'E mulr_ge0 ?expR_ge0// subr_ge0.
+    rewrite (natrM _ 2 2) -mulrA ler_piMr// -ler_pdivlMl// mulr1.
+    move/ltW : ymax => /(lerXn2r 2).
+    rewrite !nnegrE => /(_ (ltW y0) max_x_ge0).
+    by rewrite /max_x exprVn sqr_sqrtr.
+  + exact: derivable_within_continuous.
+rewrite -helper_max_x.
+apply: (@ler0_derive1_nincry _ _ max_x) => //; last exact/ltW.
+- move=> y /[!in_itv]/= => /andP[ymax _].
+  rewrite helper'E /helper' mulr_ge0_le0 ?expR_ge0// subr_le0.
+  rewrite (natrM _ 2 2) -mulrA ler_peMr// -ler_pdivrMl// mulr1.
+  move/ltW : (ymax) => /(lerXn2r 2).
+  rewrite !nnegrE => /(_ max_x_ge0 (ltW (le_lt_trans max_x_ge0 ymax))).
+  by rewrite /max_x exprVn sqr_sqrtr//.
+- exact: derivable_within_continuous.
+Qed.
+
+Lemma u_dominates x e : forall (x0 : R) (y : measurableTypeR R),
+  `](x - e)%R, (x + e)[%classic x0 ->
+  `[0%R, +oo[%classic y ->
+let c := (x - e)%R in
+  (normr (('d1 Leibniz.u) y x0) <= max_y * expR (- c ^+ 2 * y ^+ 2))%R.
+Proof.
+move=> z y/= zxe y0.
+rewrite /Leibniz.u/partial1/= /max_y.
+rewrite derive1E derive_val.
+rewrite !scaler0 !add0r.
+Admitted.
+
+End gauss_donminates.
+
 Section Gauss_integration.
 Context {R : realType}.
 
@@ -3039,102 +3152,6 @@ Abort.
 
 Import Num.Theory.
 
-(* TODO: move to derive.v and generalize le0r_derive1_ndecr *)
-Lemma ler0_derive1_nincry (*(R : realType)*) (f : R -> R) (a : R) :
-  (forall x, x \in `]a, +oo[%R -> derivable f x 1) ->
-  (forall x, x \in `]a, +oo[%R -> f^`() x <= 0)%R ->
-  {within `[a, +oo[, continuous f} ->
-  (forall x y, a <= x -> x <= y -> f y <= f x)%R.
-Proof.
-move=> fdrvbl dfge0 fcont x y ax xy.
-near (pinfty_nbhs R)%R => N.
-apply: (@ler0_derive1_nincr _ _ a N) => //.
-- move=> r /[!in_itv]/= /andP[ar rN].
-  by apply: fdrvbl; rewrite !in_itv/= andbT ar.
-- move=> r /[!in_itv]/= /andP[ar rN].
-  by apply: dfge0; rewrite !in_itv/= andbT ar.
-- apply: continuous_subspaceW fcont.
-  exact: subset_itvl.
-- near: N.
-  apply: nbhs_pinfty_ge.
-  by rewrite num_real.
-Unshelve. all: end_near. Qed.
-
-Lemma le0r_derive1_ndecry (*(R : realType)*) (f : R -> R) (a b : R) :
-  (forall x, x \in `]a, +oo[%R -> derivable f x 1) ->
-  (forall x, x \in `]a, +oo[%R -> 0 <= f^`() x)%R ->
-  {within `[a, +oo[, continuous f} ->
-  (forall x y, a <= x -> x <= y -> f x <= f y)%R.
-Proof.
-move=> fdrvbl dfge0 fcont x y ax xy.
-near (pinfty_nbhs R)%R => N.
-apply: (@le0r_derive1_ndecr _ _ a N) => //.
-- move=> r /[!in_itv]/= /andP[ar rN].
-  by apply: fdrvbl; rewrite !in_itv/= andbT ar.
-- move=> r /[!in_itv]/= /andP[ar rN].
-  by apply: dfge0; rewrite !in_itv/= andbT ar.
-- apply: continuous_subspaceW fcont.
-  exact: subset_itvl.
-- near: N.
-  apply: nbhs_pinfty_ge.
-  by rewrite num_real.
-Unshelve. all: end_near. Qed.
-
-Definition helper (x : R) := (2 * x * expR (- x ^+ 2))%R.
-
-Definition helper' (x : R) := (expR (- x ^+ 2) * (2 - 4 * x ^+ 2))%R.
-
-Lemma helper'E : helper^`() = helper'.
-Proof.
-apply/funext => x; rewrite /helper/= derive1E !deriveM//=.
-rewrite derive_cst scaler0 derive_id addr0.
-rewrite -derive1E (@derive1_comp _ _ expR)//= (_ : expR^`() = expR); last first.
-  by apply/funext => ?; rewrite derive1E -[in RHS]derive_expR.
-rewrite derive1E/= deriveN//= -derive1E exp_derive1 expr1.
-rewrite [in X in X + _ = _]scalerA (mulrC (2 * x)%R) -scalerA.
-rewrite -scalerDr; congr *%R.
-rewrite /GRing.scale/= mulr1 mulrN [LHS]addrC.
-by rewrite mulrACA -expr2 -natrM.
-Qed.
-
-Definition max_x : R := (Num.sqrt 2)^-1.
-
-Let max_x_ge0 : (0 <= max_x)%R. Proof. by rewrite invr_ge0. Qed.
-
-Definition max_y : R := 2 / Num.sqrt 2 / Num.sqrt (expR 1).
-
-Let max_y_ge0 : (0 <= max_y)%R. Proof. by rewrite mulr_ge0. Qed.
-
-Lemma helper_max_x : helper max_x = max_y.
-Proof.
-rewrite /helper/= /max_x exprVn expRN sqr_sqrtr//.
-by rewrite -(div1r 2) expRM powR12_sqrt ?expR_ge0//.
-Qed.
-
-Lemma helper_max (x : R) : (0 < x)%R -> (helper x <= max_y)%R.
-Proof.
-move=> x0.
-have [xmax|xmax] := leP x max_x.
-- rewrite -helper_max_x.
-  apply: (@le0r_derive1_ndecr _ _ 0 max_x) => //; last exact: ltW.
-  + move=> y /[!in_itv]/= => /andP[y0 ymax].
-    rewrite helper'E mulr_ge0 ?expR_ge0// subr_ge0.
-    rewrite (natrM _ 2 2) -mulrA ler_piMr// -ler_pdivlMl// mulr1.
-    move/ltW : ymax => /(lerXn2r 2).
-    rewrite !nnegrE => /(_ (ltW y0) max_x_ge0).
-    by rewrite /max_x exprVn sqr_sqrtr.
-  + exact: derivable_within_continuous.
-rewrite -helper_max_x.
-apply: (@ler0_derive1_nincry _ max_x) => //; last exact/ltW.
-- move=> y /[!in_itv]/= => /andP[ymax _].
-  rewrite helper'E /helper' mulr_ge0_le0 ?expR_ge0// subr_le0.
-  rewrite (natrM _ 2 2) -mulrA ler_peMr// -ler_pdivrMl// mulr1.
-  move/ltW : (ymax) => /(lerXn2r 2).
-  rewrite !nnegrE => /(_ max_x_ge0 (ltW (le_lt_trans max_x_ge0 ymax))).
-  by rewrite /max_x exprVn sqr_sqrtr//.
-- exact: derivable_within_continuous.
-Qed.
-
 Let int_gaussZl (c : R) : (c != 0)%R -> mu.-integrable `[0%R, +oo[
   (fun z => (expR (- (c * z) ^+ 2))%:E).
 Proof.
@@ -3471,26 +3488,24 @@ pose ballx : set R := ball x e.
 have ballx_x : `](x - e)%R, (x + e)%R[%classic x.
   rewrite -ball_itv.
   exact: ballxx.
-have [M M0 HM]: exists2 M : R, (0 < M)%R & forall x0 y0, x0 \in `](x - e)%R, (x + e)%R[ ->
-  (`|('d1 Leibniz.u) y0 x0| <= M)%R.
-  admit.
-apply: (@Leibniz.derivable_under_integral _ _ (measurableTypeR R) _ _ _ _ _ _ _ _ _ (cst M) _ _ _ ballx_x) => //.
-- (*have mg : @measurable_fun _ _ R (\bar R) `[0%R, +oo[ (EFin \o gauss).
-    by apply/measurable_EFinP; apply: measurable_funTS; exact: mgauss.
-  move=> r; rewrite /= in_itv/= => r0.
-  apply/integrableP; split=> //.
-    by apply/measurable_EFinP; apply: measurable_funTS; exact: Leibniz.measurable_u.
-  under eq_integral.
-    move=> y _/=.
-    rewrite ger0_norm; last first.
-      by rewrite Leibniz.u_ge0.
+pose c : R := (x - e)%R.
+apply: (@Leibniz.derivable_under_integral _ _ (measurableTypeR R) _ _ _ _ _ _ _ _ _ (fun y => (max_y) * expR (- c ^+ 2 * y ^+ 2))%R _ _ _ ballx_x) => //.
+- move=> ? _; exact: Leibniz.integrable_u.
+- move=> /= y.
+  by rewrite mulr_ge0// ?expR_ge0//.
+- rewrite (_ : _ \o _ = (fun x => (max_y)%:E * (expR (- c ^+ 2 * x ^+ 2))%:E))//.
+  apply: integrableZl => //=.
+  under [X in _.-integrable _ X]eq_fun.
+    move=> z.
+    rewrite mulNr -exprMn_comm; last exact: mulrC.
     over.
-  rewrite -ge0_fin_numE//=.
-    apply: integral_fune_fin_num => //.
-    exact: Leibniz.integrable_u.
-  by apply: integral_ge0 => y _; rewrite lee_fin Leibniz.u_ge0.*) admit.
-- admit.
-- admit.
+  apply: int_gaussZl.
+  rewrite gt_eqF//.
+  rewrite subr_gt0.
+  near: e.
+  apply: nbhs_right_lt.
+  by rewrite in_itv/= andbT in x0oo.
+- admit. (* name gauss_dominate, make section *)
 - move=> t y xet _.
   apply: HM.
   by rewrite /= in xet.
