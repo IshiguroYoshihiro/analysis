@@ -709,6 +709,21 @@ rewrite increasing_telescope_sume_infty_fin_num.
     by rewrite f_ge0// (le_trans _ anr)// lerDl.
 Unshelve. end_near. Qed.
 
+Lemma Rintegral_ge0_within_pinfty_continuous_FTC2 {R : realType} (f F : R^o -> R^o) a (l : R) :
+  (forall x, a <= x -> 0 <= f x)%R ->
+  F x @[x --> +oo%R] --> l ->
+  {within `[a, +oo[, continuous f} ->
+  (forall x, a < x -> derivable F x 1)%R -> F x @[x --> a^'+] --> F a ->
+  (* TODO: introduce derivable_oo_continuous_bnd F a +oo *)
+  {in `]a, +oo[, F^`() =1 f} ->
+  (\int[mu]_(x in `[a, +oo[) (f x) = l - F a)%R.
+Proof.
+move=> f_ge0 Fxl cf dF Fa dFE.
+rewrite /Rintegral.
+rewrite (ge0_within_pinfty_continuous_FTC2 f_ge0 Fxl cf dF Fa dFE).
+by rewrite -EFinD.
+Qed.
+
 (* need to generalize l : \bar R? *)
 Lemma le0_within_pinfty_continuous_FTC2 {R : realType} (f F : R^o -> R^o) a (l : R) :
   (forall x, (a <= x)%R -> f x <= 0)%R ->
