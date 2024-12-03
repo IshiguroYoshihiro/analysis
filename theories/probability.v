@@ -6,8 +6,8 @@ From mathcomp Require Import cardinality fsbigop.
 From HB Require Import structures.
 From mathcomp Require Import exp numfun lebesgue_measure lebesgue_integral.
 From mathcomp Require Import reals ereal signed topology normedtype sequences.
-From mathcomp Require Import esum measure exp numfun lebesgue_measure.
-From mathcomp Require Import lebesgue_integral kernel.
+From mathcomp Require Import esum measure lebesgue_measure.
+From mathcomp Require Import lebesgue_integral kernel trigo realfun.
 
 (**md**************************************************************************)
 (* # Probability                                                              *)
@@ -50,6 +50,8 @@ From mathcomp Require Import lebesgue_integral kernel.
 (*      uniform_pdf a b == uniform pdf                                        *)
 (*  uniform_prob a b ab == uniform probability over the interval [a,b]        *)
 (*                         with ab0 a proof that 0 < b - a                    *)
+(*        gauss_pdf m s == gauss pdf                                          *)
+(*           gauss_prob == gauss probability measure with 0 < s               *)
 (* ```                                                                        *)
 (*                                                                            *)
 (******************************************************************************)
@@ -1397,3 +1399,147 @@ apply/ereal_nondecreasing_is_cvgn => x y xy; apply: ge0_le_integral => //=.
 Qed.
 
 End uniform_probability.
+
+Section normal_density.
+Context {R : realType}.
+Local Open Scope ring_scope.
+Local Import Num.ExtraDef.
+
+Definition normal_pdf m s x : R :=
+  (s * sqrtr (pi *+ 2))^-1 * expR (- ((x - m) / s) ^+ 2 / 2%:R).
+
+Lemma normal_pdf_ge0 m s x : 0 <= s -> 0 <= normal_pdf m s x.
+Proof. by move=> s0; rewrite mulr_ge0 ?expR_ge0// invr_ge0 mulr_ge0. Qed.
+
+Lemma normal_pdf_gt0 m s x : 0 < s -> 0 < normal_pdf m s x.
+Proof.
+move=> s0; rewrite mulr_gt0 ?expR_gt0// invr_gt0 mulr_gt0//.
+by rewrite sqrtr_gt0 pmulrn_rgt0// pi_gt0.
+Qed.
+
+Lemma measurable_normal_pdf m s : measurable_fun setT (normal_pdf m s).
+Proof.
+apply: measurable_funM => //=; apply: measurableT_comp => //=.
+apply: measurable_funM => //=; apply: measurableT_comp => //=.
+apply: measurableT_comp (exprn_measurable _) _ => /=.
+by apply: measurable_funM => //=; exact: measurable_funD.
+Qed.
+
+Lemma continuous_normal_pdf m s x : {for x, continuous (normal_pdf m s)}.
+Proof.
+apply: continuousM => //=; first exact: cvg_cst.
+apply: continuous_comp => /=; last exact: continuous_expR.
+apply: continuousM => //=; last exact: cvg_cst.
+apply: continuous_comp => //=; last exact: (@continuousN _ R^o).
+apply: (@continuous_comp _ _ _ _ (fun x : R => x ^+ 2)%R); last exact: exprn_continuous.
+apply: continuousM => //=; last exact: cvg_cst.
+by apply: (@continuousD _ R^o) => //=; exact: cvg_cst.
+Qed.
+
+Lemma normal_pdf_ub m s x : (0 < s) ->
+  normal_pdf m s x <= (s * sqrtr (pi *+ 2))^-1.
+Proof.
+move=> s0.
+rewrite /normal_pdf.
+rewrite -[leRHS]mulr1.
+rewrite ler_pM2l ?invr_gt0// ?sqrtr_gt0; last first.
+  by rewrite mulr_gt0// sqrtr_gt0 mulrn_wgt0// pi_gt0.
+by rewrite -[leRHS]expR0 ler_expR mulNr oppr_le0 mulr_ge0// sqr_ge0.
+Qed.
+
+(* Definition normal_pdf01 : R -> R := normal_pdf 0 1.
+
+Lemma normal_pdf01E x :
+  normal_pdf01 x = (sqrtr (pi *+ 2))^-1 * expR (- (x ^+ 2) / 2%:R).
+Proof. by rewrite /normal_pdf01 /normal_pdf mul1r subr0 divr1. Qed.
+*)
+
+End normal_density.
+
+(* normal distribution *)
+Definition normal_prob {R : realType} {m s : R} (s0 : 0 < s)
+  of (\int[@lebesgue_measure R]_x (normal_pdf m s x)%:E = 1%E)%E : set _ -> \bar R :=
+  fun V => (\int[lebesgue_measure]_(x in V) (normal_pdf m s x)%:E)%E.
+
+Section normal_probability.
+Variable R : realType.
+Variables (m s : R).
+Local Open Scope ring_scope.
+Notation mu := lebesgue_measure.
+
+Hypothesis s0 : (0 < s)%R.
+Hypothesis integral_normal_pdf :
+  (\int[@lebesgue_measure R]_x (normal_pdf m s x)%:E = 1%E)%E.
+
+Local Notation normal_pdf := (normal_pdf m s).
+Local Notation normal_prob := (normal_prob s0 integral_normal_pdf).
+
+Let normal0 : normal_prob set0 = 0%E.
+Proof. by rewrite /normal_prob integral_set0. Qed.
+
+Let normal_ge0 A : (0 <= normal_prob A)%E.
+Proof.
+by rewrite /normal_prob integral_ge0//= => x _; rewrite lee_fin normal_pdf_ge0 ?ltW.
+Qed.
+
+Let normal_sigma_additive : semi_sigma_additive normal_prob.
+Proof.
+move=> /= F mF tF mUF.
+rewrite /normal_prob/= integral_bigcup//=; last first.
+  apply/integrableP; split.
+    apply/measurable_funTS/measurableT_comp => //.
+    exact: measurable_normal_pdf.
+  rewrite (_ : (fun x => _) = EFin \o normal_pdf); last first.
+    by apply/funext => x; rewrite gee0_abs// lee_fin normal_pdf_ge0 ?ltW.
+  apply: le_lt_trans.
+    apply: (@ge0_subset_integral _ _ _ _ _ setT) => //=.
+      by apply/EFin_measurable_fun; exact: measurable_normal_pdf.
+    by move=> ? _; rewrite lee_fin normal_pdf_ge0 ?ltW.
+  by rewrite integral_normal_pdf // ltey.
+apply: is_cvg_ereal_nneg_natsum_cond => n _ _.
+by apply: integral_ge0 => /= x ?; rewrite lee_fin normal_pdf_ge0 ?ltW.
+Qed.
+
+HB.instance Definition _ := isMeasure.Build _ _ _
+  normal_prob normal0 normal_ge0 normal_sigma_additive.
+
+Let normal_setT : normal_prob [set: _] = 1%E.
+Proof. by rewrite /normal_prob integral_normal_pdf. Qed.
+
+HB.instance Definition _ := @Measure_isProbability.Build _ _ R normal_prob normal_setT.
+
+Lemma normal_dom : normal_prob `<< mu.
+Proof.
+move=> A mA muA0; rewrite /normal_prob.
+apply/eqP; rewrite eq_le; apply/andP; split; last first.
+  by apply: integral_ge0 => x _; rewrite lee_fin normal_pdf_ge0 ?ltW.
+apply: (@le_trans _ _ (\int[mu]_(x in A) (s * Num.sqrt (pi *+ 2))^-1%:E))%E; last first.
+  by rewrite integral_cst//= muA0 mule0.
+apply: ge0_le_integral => //=.
+- by move=> x _; rewrite lee_fin normal_pdf_ge0 ?ltW.
+- apply/measurable_funTS/measurableT_comp => //.
+  exact: measurable_normal_pdf.
+- by move=> x _; rewrite lee_fin invr_ge0 mulr_ge0// ltW.
+- by move=> x _; rewrite lee_fin normal_pdf_ub.
+Qed.
+
+End normal_probability.
+
+Section normal_probability_1.
+Context {R : realType}.
+Hypothesis integral_normal_pdf_1 : forall m : R,
+  (\int[@lebesgue_measure R]_x (normal_pdf m 1%R x)%:E = 1%E)%E.
+
+(* TODO: generalize *)
+Lemma measurable_normal_1_prob :
+  measurable_fun setT
+  (fun x : R => normal_prob ltr01 (integral_normal_pdf_1 x) : pprobability _ _).
+Proof.
+apply: (@measurability _ _ _ _ _ _
+  (@pset _ _ _ : set (set (pprobability _ R)))) => //.
+move=> _ -[_ [r r01] [Ys mYs <-]] <-; apply: emeasurable_fun_infty_o => //=.
+rewrite /binomial_prob/=.
+set f := (X in measurable_fun _ X).
+Admitted.
+
+End normal_probability_1.
