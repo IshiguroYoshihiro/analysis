@@ -1701,6 +1701,7 @@ Inductive exp : flag -> ctx -> typ -> Type :=
 | exp_uniform g (a b : R) (ab : (a < b)%R) : exp D g (Prob Real)
 | exp_beta g (a b : nat) (* NB: should be R *) : exp D g (Prob Real)
 | exp_poisson g : nat -> exp D g Real -> exp D g Real
+| exp_normal_1 g : exp D g Real -> exp D g (Prob Real) (* NB: fix s = 1 *)
 | exp_normalize g t : exp P g t -> exp D g (Prob t)
 | exp_letin g t1 t2 str : exp P g t1 -> exp P ((str, t1) :: g) t2 ->
     exp P g t2
@@ -1736,6 +1737,7 @@ Arguments exp_binomial {R g} &.
 Arguments exp_uniform {R g} &.
 Arguments exp_beta {R g} &.
 Arguments exp_poisson {R g}.
+Arguments exp_normal_1 {R g}.
 Arguments exp_normalize {R g _}.
 Arguments exp_letin {R g} & {_ _}.
 Arguments exp_sample {R g} & {t}.
@@ -1824,6 +1826,7 @@ Fixpoint free_vars k g t (e : @exp R k g t) : seq string :=
   | exp_uniform _ _ _ _     => [::]
   | exp_beta _ _ _ => [::]
   | exp_poisson _ _ e       => free_vars e
+  | exp_normal_1 _ e          => free_vars e
   | exp_normalize _ _ e     => free_vars e
   | exp_letin _ _ _ x e1 e2 => free_vars e1 ++ rem x (free_vars e2)
   | exp_sample _ _ _        => [::]
@@ -1989,6 +1992,13 @@ Inductive evalD : forall g t, exp D g t ->
   e -D> f ; mf ->
   exp_poisson n e -D> poisson_pdf n \o f ;
                       measurableT_comp (measurable_poisson_pdf n) mf
+
+(* TODO:
+| eval_normal g (e : exp D g _) f mf :
+  e -D> f ; mf ->
+  (exp_gaussian e : exp D g _) -D> (fun x => normal_prob (f x) 1%R) ;
+    measurableT_comp measurable_normal_pdf (
+*)
 
 | eval_normalize g t (e : exp P g t) k :
   e -P> k ->
@@ -2378,6 +2388,7 @@ all: rewrite {z g t}.
 - by eexists; eexists; exact: eval_beta.
 - move=> g h e [f [mf H]].
   by exists (poisson_pdf h \o f); eexists; exact: eval_poisson.
+- admit. (* NB: wip *)
 - move=> g t e [k ek].
   by exists (normalize_pt k); eexists; exact: eval_normalize.
 - move=> g t1 t2 x e1 [k1 ev1] e2 [k2 ev2].
@@ -2396,7 +2407,7 @@ all: rewrite {z g t}.
 - case=> [g h t x e [f [mf ef]] xgh|g h st x e [k ek] xgh].
   + by exists (weak _ _ _ f), (measurable_weak _ _ _ _ mf); exact/evalD_weak.
   + by exists (kweak _ _ _ k); exact: evalP_weak.
-Qed.
+Admitted.
 
 Lemma evalD_total g t (e : @exp R D g t) : exists f mf, e -D> f ; mf.
 Proof. exact: (eval_total e). Qed.
