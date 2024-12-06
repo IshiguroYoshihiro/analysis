@@ -75,6 +75,15 @@ Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 
+Module gaussian.
+Section gaussian.
+Context {R: realType}.
+(* NB: Import gaussian integral *)
+Axiom (integral_normal_1 :forall m : R, (\int[lebesgue_measure]_x (normal_pdf m 1 x)%:E = 1)%E).
+
+End gaussian.
+End gaussian.
+
 (* In this module, we use our lemma continuous_FTC2 to compute the value of
  * integration of the indicator function over the interval [0, 1].
  * we can use our lemma continuous_FTC2 because it requires continuous
@@ -1658,6 +1667,8 @@ Defined.
 
 End binop.
 
+(* TODO: rename *)
+(* TODO: generalize? *)
 Section relop.
 Inductive relop :=
 | relop_le | relop_lt | relop_eq .
@@ -1682,16 +1693,44 @@ Defined.
 
 End relop.
 
+(* TODO: relop_real *)
+Section relop_Real.
+Inductive relopR :=
+| relopR_le | relopR_lt | relopR_eq .
+
+Definition fun_of_relopR g (r : relopR) : (@mctx R g -> @mtyp R Real) ->
+  (mctx g -> mtyp Real) -> @mctx R g -> @mtyp R Bool :=
+match r with
+| relopR_le => (fun f1 f2 x => (f1 x <= f2 x)%R)
+| relopR_lt => (fun f1 f2 x => (f1 x < f2 x)%R)
+| relopR_eq => (fun f1 f2 x => (f1 x == f2 x)%R)
+end.
+
+Definition mfun_of_relopR g r
+  (f1 : @mctx R g -> @mtyp R Real) (mf1 : measurable_fun setT f1)
+  (f2 : @mctx R g -> @mtyp R Real) (mf2 : measurable_fun setT f2) :
+  measurable_fun [set: @mctx R g] (fun_of_relopR r f1 f2).
+destruct r.
+exact: measurable_fun_ler.
+exact: measurable_fun_ltr.
+exact: measurable_fun_eqr.
+Defined.
+
+End relop_Real.
+
 Inductive exp : flag -> ctx -> typ -> Type :=
 | exp_unit g : exp D g Unit
 | exp_bool g : bool -> exp D g Bool
 | exp_nat g : nat -> exp D g Nat
 | exp_real g : R -> exp D g Real
-| exp_pow g : nat -> exp D g Real -> exp D g Real
+| exp_pow g : nat -> exp D g Real -> exp D g Real (* TODO: nat should be at second *)
+| exp_pow_real g : R (* base *) -> exp D g Real -> exp D g Real
 | exp_bin (b : binop) g : exp D g (type_of_binop b) ->
     exp D g (type_of_binop b) -> exp D g (type_of_binop b)
 | exp_rel (r : relop) g : exp D g Nat ->
     exp D g Nat -> exp D g Bool
+| exp_relR (r : relopR) g : exp D g Real ->
+    exp D g Real -> exp D g Bool
 | exp_pair g t1 t2 : exp D g t1 -> exp D g t2 -> exp D g (Pair t1 t2)
 | exp_proj1 g t1 t2 : exp D g (Pair t1 t2) -> exp D g t1
 | exp_proj2 g t1 t2 : exp D g (Pair t1 t2) -> exp D g t2
@@ -1728,8 +1767,10 @@ Arguments exp_bool {R g}.
 Arguments exp_nat {R g}.
 Arguments exp_real {R g}.
 Arguments exp_pow {R g}.
+Arguments exp_pow_real {R g}.
 Arguments exp_bin {R} b {g} &.
 Arguments exp_rel {R} r {g} &.
+Arguments exp_relR {R} r {g} &.
 Arguments exp_pair {R g} & {t1 t2}.
 Arguments exp_var {R g} _ {t} & H.
 Arguments exp_bernoulli {R g} &.
@@ -1758,6 +1799,8 @@ Notation "r ':R'" := (@exp_real _ _ r%R)
   (in custom expr at level 1, format "r :R") : lang_scope.
 Notation "e ^+ n" := (exp_pow n e)
   (in custom expr at level 1) : lang_scope.
+Notation "e `^ r" := (exp_pow_real e r)
+  (in custom expr at level 1) : lang_scope.
 Notation "e1 && e2" := (exp_bin binop_and e1 e2)
   (in custom expr at level 2) : lang_scope.
 Notation "e1 || e2" := (exp_bin binop_or e1 e2)
@@ -1771,6 +1814,10 @@ Notation "e1 * e2" := (exp_bin binop_mult e1 e2)
 Notation "e1 <= e2" := (exp_rel relop_le e1 e2)
   (in custom expr at level 2) : lang_scope.
 Notation "e1 == e2" := (exp_rel relop_eq e1 e2)
+  (in custom expr at level 4) : lang_scope.
+Notation "e1 <=R e2" := (exp_relR relopR_le e1 e2)
+  (in custom expr at level 2) : lang_scope.
+Notation "e1 ==R e2" := (exp_relR relopR_eq e1 e2)
   (in custom expr at level 4) : lang_scope.
 Notation "'return' e" := (@exp_return _ _ _ e)
   (in custom expr at level 6) : lang_scope.
@@ -1815,8 +1862,10 @@ Fixpoint free_vars k g t (e : @exp R k g t) : seq string :=
   | exp_nat _ _             => [::]
   | exp_real _ _            => [::]
   | exp_pow _ _ e           => free_vars e
+  | exp_pow_real _ _ e      => free_vars e
   | exp_bin _ _ e1 e2    => free_vars e1 ++ free_vars e2
   | exp_rel _ _ e1 e2    => free_vars e1 ++ free_vars e2
+  | exp_relR _ _ e1 e2    => free_vars e1 ++ free_vars e2
   | exp_pair _ _ _ e1 e2    => free_vars e1 ++ free_vars e2
   | exp_proj1 _ _ _ e       => free_vars e
   | exp_proj2 _ _ _ e       => free_vars e
@@ -1934,6 +1983,24 @@ Local Open Scope lang_scope.
 
 Local Open Scope ring_scope.
 
+(* TODO: remove *)
+Local Import gaussian.
+
+(* TODO: PR *)
+Lemma measurable_powRr b : measurable_fun setT (@powR R b).
+Proof.
+rewrite /powR.
+apply: measurable_fun_if => //.
+  rewrite preimage_true setTI/=.
+   case: (b == 0); rewrite ?set_true ?set_false.
+     apply: measurableT_comp => //.
+     exact: measurable_fun_eqr.
+   exact: measurable_fun_set0.
+rewrite preimage_false setTI.
+apply: measurableT_comp => //.
+exact: mulrr_measurable.
+Qed.
+
 Inductive evalD : forall g t, exp D g t ->
   forall f : dval R g t, measurable_fun setT f -> Prop :=
 | eval_unit g : ([TT] : exp D g _) -D> cst tt ; ktt
@@ -1947,6 +2014,9 @@ Inductive evalD : forall g t, exp D g t ->
 | eval_pow g n (e : exp D g _) f mf : e -D> f ; mf ->
   [e ^+ {n}] -D> (fun x => f x ^+ n) ; (measurable_funX n mf)
 
+| eval_pow_real g (e : exp D g _) r f mf : e -D> f ; mf ->
+  [{r} `^ e] -D> (fun x => r `^ (f x)) ; measurableT_comp (measurable_powRr r) mf
+
 | eval_bin g bop (e1 : exp D g _) f1 mf1 e2 f2 mf2 :
   e1 -D> f1 ; mf1 -> e2 -D> f2 ; mf2 ->
   exp_bin bop e1 e2 -D> fun_of_binop f1 f2 ; mfun_of_binop mf1 mf2
@@ -1954,6 +2024,10 @@ Inductive evalD : forall g t, exp D g t ->
 | eval_rel g rop (e1 : exp D g _) f1 mf1 e2 f2 mf2 :
   e1 -D> f1 ; mf1 -> e2 -D> f2 ; mf2 ->
   exp_rel rop e1 e2 -D> fun_of_relop rop f1 f2 ; mfun_of_relop rop mf1 mf2
+
+| eval_relR g rop (e1 : exp D g _) f1 mf1 e2 f2 mf2 :
+  e1 -D> f1 ; mf1 -> e2 -D> f2 ; mf2 ->
+  exp_relR rop e1 e2 -D> fun_of_relopR rop f1 f2 ; mfun_of_relopR rop mf1 mf2
 
 | eval_pair g t1 (e1 : exp D g t1) f1 mf1 t2 (e2 : exp D g t2) f2 mf2 :
   e1 -D> f1 ; mf1 -> e2 -D> f2 ; mf2 ->
@@ -1993,12 +2067,11 @@ Inductive evalD : forall g t, exp D g t ->
   exp_poisson n e -D> poisson_pdf n \o f ;
                       measurableT_comp (measurable_poisson_pdf n) mf
 
-(* TODO:
-| eval_normal g (e : exp D g _) f mf :
-  e -D> f ; mf ->
-  (exp_gaussian e : exp D g _) -D> (fun x => normal_prob (f x) 1%R) ;
-    measurableT_comp measurable_normal_pdf (
-*)
+| eval_normal g (e : exp D g _) r mr :
+  e -D> r ; mr ->
+  (exp_normal_1 e : exp D g _) -D>
+     (fun x => @normal_prob _ (r x) _ ltr01 (integral_normal_1 _)) ;
+ measurableT_comp (measurable_normal_1_prob integral_normal_1) mr
 
 | eval_normalize g t (e : exp P g t) k :
   e -P> k ->
@@ -2056,6 +2129,9 @@ Section eval_prop.
 Variables (R : realType).
 Local Open Scope lang_scope.
 
+(* TODO: remove *)
+Import gaussian.
+
 Lemma evalD_uniq g t (e : exp D g t) (u v : dval R g t) mu mv :
   e -D> u ; mu -> e -D> v ; mv -> u = v.
 Proof.
@@ -2083,12 +2159,23 @@ all: (rewrite {g t e u v mu mv hu}).
   inj_ex H4; subst v.
   inj_ex H2; subst e0.
   by move: H3 => /IH <-.
+- move=> g e r f mf ev IH {}v {}mv.
+  inversion 1; subst g0 r0.
+  inj_ex H4; subst v.
+  inj_ex H2; subst e0.
+  by move: H3 => /IH <-.
 - move=> g bop e1 f1 mf1 e2 f2 mf2 ev1 IH1 ev2 IH2 {}v {}mv.
   inversion 1; subst g0 bop0.
   inj_ex H10; subst v.
   inj_ex H5; subst e1.
   inj_ex H6; subst e5.
   by move: H4 H11 => /IH1 <- /IH2 <-.
+- move=> g rop e1 f1 mf1 e2 f2 mf2 ev1 IH1 ev2 IH2 {}v {}mv.
+  inversion 1; subst g0 rop0.
+  inj_ex H5; subst v.
+  inj_ex H1; subst e1.
+  inj_ex H3; subst e3.
+  by move: H6 H7 => /IH1 <- /IH2 <-.
 - move=> g rop e1 f1 mf1 e2 f2 mf2 ev1 IH1 ev2 IH2 {}v {}mv.
   inversion 1; subst g0 rop0.
   inj_ex H5; subst v.
@@ -2141,6 +2228,11 @@ all: (rewrite {g t e u v mu mv hu}).
   inj_ex H2; subst e0.
   inj_ex H4; subst v.
   by rewrite (IH _ _ H3).
+- move=> g e r mr ev IH {}v {}mv.
+  inversion 1; subst g0 .
+  inj_ex H0; subst e0.
+  inj_ex H2; subst v.
+  by rewrite (IH _ _ H4).
 - move=> g t e k ev IH f mf.
   inversion 1; subst g0 t0.
   inj_ex H2; subst e0.
@@ -2231,12 +2323,23 @@ all: rewrite {g t e u v eu}.
   inj_ex H4; subst v.
   inj_ex H2; subst e0.
   by move: H3 => /IH <-.
+- move=> g e b f mf ev IH {}v {}mv.
+  inversion 1; subst g0 r.
+  inj_ex H4; subst v.
+  inj_ex H2; subst e0.
+  by move: H3 => /IH <-.
 - move=> g bop e1 f1 mf1 e2 f2 mf2 ev1 IH1 ev2 IH2 {}v {}mv.
   inversion 1; subst g0 bop0.
   inj_ex H10; subst v.
   inj_ex H5; subst e1.
   inj_ex H6; subst e5.
   by move: H4 H11 => /IH1 <- /IH2 <-.
+- move=> g rop e1 f1 mf1 e2 f2 mf2 ev1 IH1 ev2 IH2 {}v {}mv.
+  inversion 1; subst g0 rop0.
+  inj_ex H5; subst v.
+  inj_ex H1; subst e1.
+  inj_ex H3; subst e3.
+  by move: H6 H7 => /IH1 <- /IH2 <-.
 - move=> g rop e1 f1 mf1 e2 f2 mf2 ev1 IH1 ev2 IH2 {}v {}mv.
   inversion 1; subst g0 rop0.
   inj_ex H5; subst v.
@@ -2291,6 +2394,11 @@ all: rewrite {g t e u v eu}.
   inj_ex H4; subst v.
   inj_ex H5; subst mv.
   by rewrite (IH _ _ H3).
+- move=> g e r mr ev IH {}v {}mv.
+  inversion 1; subst g0.
+  inj_ex H0; subst e0.
+  inj_ex H2; subst v.
+  by rewrite (IH _ _ H4).
 - move=> g t e k ev IH {}v {}mv.
   inversion 1; subst g0 t0.
   inj_ex H2; subst e0.
@@ -2367,10 +2475,14 @@ all: rewrite {z g t}.
 - by do 2 eexists; exact: eval_real.
 - move=> g n e [f [mf H]].
   by exists (fun x => (f x ^+ n)%R); eexists; exact: eval_pow.
+- move=> g r e [f [mf H]].
+  by exists (fun x => (r `^ (f x))%R); eexists; exact: eval_pow_real.
 - move=> b g e1 [f1 [mf1 H1]] e2 [f2 [mf2 H2]].
   by exists (fun_of_binop f1 f2); eexists; exact: eval_bin.
 - move=> r g e1 [f1 [mf1 H1]] e2 [f2 [mf2 H2]].
   by exists (fun_of_relop r f1 f2); eexists; exact: eval_rel.
+- move=> r g e1 [f1 [mf1 H1]] e2 [f2 [mf2 H2]].
+  by exists (fun_of_relopR r f1 f2); eexists; exact: eval_relR.
 - move=> g t1 t2 e1 [f1 [mf1 H1]] e2 [f2 [mf2 H2]].
   by exists (fun x => (f1 x, f2 x)); eexists; exact: eval_pair.
 - move=> g t1 t2 e [f [mf H]].
@@ -2388,7 +2500,9 @@ all: rewrite {z g t}.
 - by eexists; eexists; exact: eval_beta.
 - move=> g h e [f [mf H]].
   by exists (poisson_pdf h \o f); eexists; exact: eval_poisson.
-- admit. (* NB: wip *)
+- move=> g e [r [mr H]].
+  exists (fun x => @normal_prob _ (r x) _ ltr01 (integral_normal_1 _) : pprobability _ _).
+  by eexists; exact: eval_normal.
 - move=> g t e [k ek].
   by exists (normalize_pt k); eexists; exact: eval_normalize.
 - move=> g t1 t2 x e1 [k1 ev1] e2 [k2 ev2].
@@ -2407,7 +2521,7 @@ all: rewrite {z g t}.
 - case=> [g h t x e [f [mf ef]] xgh|g h st x e [k ek] xgh].
   + by exists (weak _ _ _ f), (measurable_weak _ _ _ _ mf); exact/evalD_weak.
   + by exists (kweak _ _ _ k); exact: evalP_weak.
-Admitted.
+Qed.
 
 Lemma evalD_total g t (e : @exp R D g t) : exists f mf, e -D> f ; mf.
 Proof. exact: (eval_total e). Qed.

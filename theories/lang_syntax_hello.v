@@ -37,10 +37,29 @@ Local Open Scope lang_scope.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
 
-(*
-Definition prog0 : @exp R _ [::] _ :=
+Definition guard_real {g} str (r : R) :
+ @exp R P [:: (str, _) ; g] _ :=
+  [if #{str} ==R {r}:R then return TT else Score {0}:R].
+
+Definition helloWrong (y0 : R) : @exp R _ [::] _ :=
  [Normalize
-  let "x" := Sample {exp_normal 0 1 (@ltr01 R)} in
+  let "x" := Sample {exp_normal_1 (exp_real 0)} in
+  let "y" := Sample {exp_normal_1 [#{"x"}]} in
+  let "_" := {guard_real "y" y0} in
+  let "z" := Sample {exp_normal_1 [#{"x"}]} in
+  return #{"z"}].
+
+Definition helloRight (y0 : R) : @exp R _ [::] _ :=
+ [Normalize
+  let "x" := Sample {exp_normal_1 (exp_real 0)} in
+  let "_" := Score {(exp_pow_real (expR 1)
+    ([{0}:R] - exp_pow 2 ([{y0}:R] - [#{"x"}])) * [{2^-1}:R]) *
+    [{(Num.sqrt 2 * pi)^-1}:R]} in
+  let "z" := Sample {exp_normal_1 [#{"x"}]} in
+  return #{"z"}].
+
+  return {1}:Nat <= #{"x"}].
+
 
   let "x" := Sample {exp_binomial 8 [#{"p"}]} in
   let "_" := {guard "x" 5} in
