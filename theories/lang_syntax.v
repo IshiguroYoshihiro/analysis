@@ -79,7 +79,7 @@ Module gaussian.
 Section gaussian.
 Context {R: realType}.
 (* NB: Import gaussian integral *)
-Axiom (integral_normal_1 :forall m : R, (\int[lebesgue_measure]_x (normal_pdf m 1 x)%:E = 1)%E).
+Axiom (integral_normal :forall m s : R, (0 < s)%R -> (\int[lebesgue_measure]_x (normal_pdf m s x)%:E = 1)%E).
 
 End gaussian.
 End gaussian.
@@ -1695,21 +1695,21 @@ End relop.
 
 (* TODO: relop_real *)
 Section relop_Real.
-Inductive relopR :=
-| relopR_le | relopR_lt | relopR_eq .
+Inductive relop_real :=
+| relop_real_le | relop_real_lt | relop_real_eq .
 
-Definition fun_of_relopR g (r : relopR) : (@mctx R g -> @mtyp R Real) ->
+Definition fun_of_relop_real g (r : relop_real) : (@mctx R g -> @mtyp R Real) ->
   (mctx g -> mtyp Real) -> @mctx R g -> @mtyp R Bool :=
 match r with
-| relopR_le => (fun f1 f2 x => (f1 x <= f2 x)%R)
-| relopR_lt => (fun f1 f2 x => (f1 x < f2 x)%R)
-| relopR_eq => (fun f1 f2 x => (f1 x == f2 x)%R)
+| relop_real_le => (fun f1 f2 x => (f1 x <= f2 x)%R)
+| relop_real_lt => (fun f1 f2 x => (f1 x < f2 x)%R)
+| relop_real_eq => (fun f1 f2 x => (f1 x == f2 x)%R)
 end.
 
-Definition mfun_of_relopR g r
+Definition mfun_of_relop_real g r
   (f1 : @mctx R g -> @mtyp R Real) (mf1 : measurable_fun setT f1)
   (f2 : @mctx R g -> @mtyp R Real) (mf2 : measurable_fun setT f2) :
-  measurable_fun [set: @mctx R g] (fun_of_relopR r f1 f2).
+  measurable_fun [set: @mctx R g] (fun_of_relop_real r f1 f2).
 destruct r.
 exact: measurable_fun_ler.
 exact: measurable_fun_ltr.
@@ -1729,7 +1729,7 @@ Inductive exp : flag -> ctx -> typ -> Type :=
     exp D g (type_of_binop b) -> exp D g (type_of_binop b)
 | exp_rel (r : relop) g : exp D g Nat ->
     exp D g Nat -> exp D g Bool
-| exp_relR (r : relopR) g : exp D g Real ->
+| exp_rel_real (r : relop_real) g : exp D g Real ->
     exp D g Real -> exp D g Bool
 | exp_pair g t1 t2 : exp D g t1 -> exp D g t2 -> exp D g (Pair t1 t2)
 | exp_proj1 g t1 t2 : exp D g (Pair t1 t2) -> exp D g t1
@@ -1740,7 +1740,8 @@ Inductive exp : flag -> ctx -> typ -> Type :=
 | exp_uniform g (a b : R) (ab : (a < b)%R) : exp D g (Prob Real)
 | exp_beta g (a b : nat) (* NB: should be R *) : exp D g (Prob Real)
 | exp_poisson g : nat -> exp D g Real -> exp D g Real
-| exp_normal_1 g : exp D g Real -> exp D g (Prob Real) (* NB: fix s = 1 *)
+| exp_normal g (s : R) (s0 : (0 < s)%R)
+    : exp D g Real -> exp D g (Prob Real) (* NB: 0 < s *)
 | exp_normalize g t : exp P g t -> exp D g (Prob t)
 | exp_letin g t1 t2 str : exp P g t1 -> exp P ((str, t1) :: g) t2 ->
     exp P g t2
@@ -1770,7 +1771,7 @@ Arguments exp_pow {R g}.
 Arguments exp_pow_real {R g}.
 Arguments exp_bin {R} b {g} &.
 Arguments exp_rel {R} r {g} &.
-Arguments exp_relR {R} r {g} &.
+Arguments exp_rel_real {R} r {g} &.
 Arguments exp_pair {R g} & {t1 t2}.
 Arguments exp_var {R g} _ {t} & H.
 Arguments exp_bernoulli {R g} &.
@@ -1778,7 +1779,7 @@ Arguments exp_binomial {R g} &.
 Arguments exp_uniform {R g} &.
 Arguments exp_beta {R g} &.
 Arguments exp_poisson {R g}.
-Arguments exp_normal_1 {R g}.
+Arguments exp_normal {R g _} &.
 Arguments exp_normalize {R g _}.
 Arguments exp_letin {R g} & {_ _}.
 Arguments exp_sample {R g} & {t}.
@@ -1815,9 +1816,9 @@ Notation "e1 <= e2" := (exp_rel relop_le e1 e2)
   (in custom expr at level 2) : lang_scope.
 Notation "e1 == e2" := (exp_rel relop_eq e1 e2)
   (in custom expr at level 4) : lang_scope.
-Notation "e1 <=R e2" := (exp_relR relopR_le e1 e2)
+Notation "e1 <=R e2" := (exp_rel_real relop_real_le e1 e2)
   (in custom expr at level 2) : lang_scope.
-Notation "e1 ==R e2" := (exp_relR relopR_eq e1 e2)
+Notation "e1 ==R e2" := (exp_rel_real relop_real_eq e1 e2)
   (in custom expr at level 4) : lang_scope.
 Notation "'return' e" := (@exp_return _ _ _ e)
   (in custom expr at level 6) : lang_scope.
@@ -1865,7 +1866,7 @@ Fixpoint free_vars k g t (e : @exp R k g t) : seq string :=
   | exp_pow_real _ _ e      => free_vars e
   | exp_bin _ _ e1 e2    => free_vars e1 ++ free_vars e2
   | exp_rel _ _ e1 e2    => free_vars e1 ++ free_vars e2
-  | exp_relR _ _ e1 e2    => free_vars e1 ++ free_vars e2
+  | exp_rel_real _ _ e1 e2    => free_vars e1 ++ free_vars e2
   | exp_pair _ _ _ e1 e2    => free_vars e1 ++ free_vars e2
   | exp_proj1 _ _ _ e       => free_vars e
   | exp_proj2 _ _ _ e       => free_vars e
@@ -1875,7 +1876,7 @@ Fixpoint free_vars k g t (e : @exp R k g t) : seq string :=
   | exp_uniform _ _ _ _     => [::]
   | exp_beta _ _ _ => [::]
   | exp_poisson _ _ e       => free_vars e
-  | exp_normal_1 _ e          => free_vars e
+  | exp_normal _ _ _ e          => free_vars e
   | exp_normalize _ _ e     => free_vars e
   | exp_letin _ _ _ x e1 e2 => free_vars e1 ++ rem x (free_vars e2)
   | exp_sample _ _ _        => [::]
@@ -2025,9 +2026,9 @@ Inductive evalD : forall g t, exp D g t ->
   e1 -D> f1 ; mf1 -> e2 -D> f2 ; mf2 ->
   exp_rel rop e1 e2 -D> fun_of_relop rop f1 f2 ; mfun_of_relop rop mf1 mf2
 
-| eval_relR g rop (e1 : exp D g _) f1 mf1 e2 f2 mf2 :
+| eval_rel_real g rop (e1 : exp D g _) f1 mf1 e2 f2 mf2 :
   e1 -D> f1 ; mf1 -> e2 -D> f2 ; mf2 ->
-  exp_relR rop e1 e2 -D> fun_of_relopR rop f1 f2 ; mfun_of_relopR rop mf1 mf2
+  exp_rel_real rop e1 e2 -D> fun_of_relop_real rop f1 f2 ; mfun_of_relop_real rop mf1 mf2
 
 | eval_pair g t1 (e1 : exp D g t1) f1 mf1 t2 (e2 : exp D g t2) f2 mf2 :
   e1 -D> f1 ; mf1 -> e2 -D> f2 ; mf2 ->
@@ -2067,11 +2068,13 @@ Inductive evalD : forall g t, exp D g t ->
   exp_poisson n e -D> poisson_pdf n \o f ;
                       measurableT_comp (measurable_poisson_pdf n) mf
 
-| eval_normal g (e : exp D g _) r mr :
+(* TODO *)
+| eval_normal g s (s0 : (0 < s)%R) (e : exp D g _) r mr :
   e -D> r ; mr ->
-  (exp_normal_1 e : exp D g _) -D>
-     (fun x => @normal_prob _ (r x) _ ltr01 (integral_normal_1 _)) ;
- measurableT_comp (measurable_normal_1_prob integral_normal_1) mr
+  (exp_normal s0 e : exp D g _) -D>
+     (fun x => @normal_prob _ (r x) _ s0 (integral_normal (r x) s0)) ;
+  measurableT_comp
+    (measurable_normal_prob integral_normal s0 ) mr
 
 | eval_normalize g t (e : exp P g t) k :
   e -P> k ->
@@ -2482,7 +2485,7 @@ all: rewrite {z g t}.
 - move=> r g e1 [f1 [mf1 H1]] e2 [f2 [mf2 H2]].
   by exists (fun_of_relop r f1 f2); eexists; exact: eval_rel.
 - move=> r g e1 [f1 [mf1 H1]] e2 [f2 [mf2 H2]].
-  by exists (fun_of_relopR r f1 f2); eexists; exact: eval_relR.
+  by exists (fun_of_relop_real r f1 f2); eexists; exact: eval_rel_real.
 - move=> g t1 t2 e1 [f1 [mf1 H1]] e2 [f2 [mf2 H2]].
   by exists (fun x => (f1 x, f2 x)); eexists; exact: eval_pair.
 - move=> g t1 t2 e [f [mf H]].

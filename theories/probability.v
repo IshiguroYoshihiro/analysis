@@ -1525,21 +1525,19 @@ Qed.
 
 End normal_probability.
 
-Section normal_probability_1.
+Section normal_probability_s.
 Context {R : realType}.
-Hypothesis integral_normal_pdf_1 : forall m : R,
-  (\int[@lebesgue_measure R]_x (normal_pdf m 1%R x)%:E = 1%E)%E.
+Hypothesis integral_normal_pdf : forall (m s : R) (s0 : 0 < s),
+  (\int[@lebesgue_measure R]_x (normal_pdf m s x)%:E = 1%E)%E.
 
 (* TODO: generalize *)
-Lemma measurable_normal_1_prob :
+Lemma measurable_normal_prob s (s0 : 0 < s) (m : R) :
   measurable_fun setT
-  (fun x : R => normal_prob ltr01 (integral_normal_pdf_1 x) : pprobability _ _).
+  (fun x : R => normal_prob s0 (integral_normal_pdf m s0) : pprobability _ _).
 Proof.
 apply: (@measurability _ _ _ _ _ _
   (@pset _ _ _ : set (set (pprobability _ R)))) => //.
 move=> _ -[_ [r r01] [Ys mYs <-]] <-; apply: emeasurable_fun_infty_o => //=.
-rewrite /binomial_prob/=.
-set f := (X in measurable_fun _ X).
-Admitted.
+Qed.
 
-End normal_probability_1.
+End normal_probability_s.
