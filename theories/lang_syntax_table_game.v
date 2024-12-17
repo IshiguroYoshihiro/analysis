@@ -554,7 +554,7 @@ under eq_integral.
   rewrite /XMonemX01 patchE x0 XMonemX0.
   over.
 rewrite /= => ->; congr bernoulli.
-by rewrite /div_betafun addn0 !betafunE/= !factE/=; field.
+by rewrite /div_betafun addn0 !betafunE/= !factE/= !factE(* NB: factE stopped *); field.
 Qed.
 
 Lemma dirac_bool {R : realType} (U : set bool) :

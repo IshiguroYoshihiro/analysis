@@ -1530,14 +1530,14 @@ Context {R : realType}.
 Hypothesis integral_normal_pdf : forall (m s : R) (s0 : 0 < s),
   (\int[@lebesgue_measure R]_x (normal_pdf m s x)%:E = 1%E)%E.
 
-(* TODO: generalize *)
-Lemma measurable_normal_prob s (s0 : 0 < s) (m : R) :
+(* TODO: prove *)
+Lemma measurable_normal_s_prob s (s0 : 0 < s) :
   measurable_fun setT
-  (fun x : R => normal_prob s0 (integral_normal_pdf m s0) : pprobability _ _).
+  (fun m : R => normal_prob s0 (integral_normal_pdf m s0) : pprobability _ _).
 Proof.
 apply: (@measurability _ _ _ _ _ _
   (@pset _ _ _ : set (set (pprobability _ R)))) => //.
 move=> _ -[_ [r r01] [Ys mYs <-]] <-; apply: emeasurable_fun_infty_o => //=.
-Qed.
+Admitted.
 
 End normal_probability_s.
