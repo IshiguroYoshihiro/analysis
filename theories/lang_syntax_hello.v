@@ -52,25 +52,97 @@ Definition helloWrong (y0 : R) : @exp R _ [::] _ :=
 Definition helloRight : @exp R _ [:: ("y0", Real)] _ :=
  [Normalize
   let "x" := Sample {exp_normal ltr01 (exp_real 0)} in
-  let "_" := Score {exp_pow_real (expR 1)
-     [{0}:R - {exp_pow 2 [{[#{"y0"} - #{"x"}]}]}]}
-in
+  let "_" := Score {expR 1} `^
+                     ({0}:R - (#{"y0"} - #{"x"}) ^+ {2} * {2^-1}:R)
+                   * {(Num.sqrt 2 * pi)^-1}:R in
  return #{"x"}].
 
-    ([{0}:R] - exp_pow 2 ([#{"y0"}:R] - [#{"x"}])) * [{2^-1}:R]) *
-    exp_real (Num.sqrt 2 * pi)^-1} in
+Definition helloJoint : @exp R _ [::] _ :=
+ [Normalize
+  let "x" := Sample {exp_normal ltr01 (exp_real 0)} in
+  let "y" := Sample {exp_normal ltr01 [#{"x"}]} in
   let "z" := Sample {exp_normal ltr01 [#{"x"}]} in
-  return #{"z"}].
+ return (#{"y"}, #{"z"})].
 
-  return {1}:Nat <= #{"x"}].
+End hello_programs.
 
+Section helloRight_proof.
+Local Open Scope lang_scope.
+Context {R : realType}.
+Local Notation mu := lebesgue_measure.
+Variable y0 : R.
 
-  let "x" := Sample {exp_binomial 8 [#{"p"}]} in
-  let "_" := {guard "x" 5} in
-  let "y" := Sample {exp_binomial 3 [#{"p"}]} in
-  return {1}:N <= #{"y"}].
- *)
- End hello_programs.
+Let ltr0Vsqrt2 : (0 < (@Num.sqrt R 2)^-1)%R.
+Proof. by []. Qed.
+
+Let ltr03Vsqrt2 : (0 < 3 * (@Num.sqrt R 2)^-1)%R.
+Proof. by []. Qed.
+
+Definition helloRight1 : @exp R _ [:: ("y0", Real)] _ :=
+ [Normalize
+  let "_" := Score {expR 1} `^ ({0}:R - #{"y0"} ^+ {2} * {4^-1}:R) *
+                   {(Num.sqrt (4 * pi))^-1}:R in
+  let "x" := Sample {exp_normal ltr0Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
+  let "z" := Sample {exp_normal ltr01 [#{"x"}]} in
+ return #{"z"}].
+
+Definition helloRight2 : @exp R _ [:: ("y0", Real)] _ :=
+ [Normalize
+  let "_" := Score {expR 1} `^ ({0}:R - #{"y0"} ^+ {2} * {4^-1}:R) *
+                   {(Num.sqrt (4 * pi))^-1}:R in
+  Sample {exp_normal ltr03Vsqrt2 [#{"y0"} * {2^-1}:R]}].
+
+Local Import gaussian.
+(*Local Notation "normal_prob m s s0" := (normal_prob m s s0 interal_normal). *)
+(* TODO: prove *)
+Axiom integral_normal_prob : forall (m s : R) (s0 : (0 < s)%R) f U,
+  measurable U ->
+  measurable_fun U f ->
+  \int[@normal_prob _ m s s0 (integral_normal m s0)]_(x in U) `|f x| < +oo ->
+  \int[@normal_prob _ m s s0 (integral_normal m s0)]_(x in U) f x =
+  \int[mu]_(x in U) (f x * (normal_pdf m s x)%:E).
+
+Lemma helloRight12' u U :
+ @execP R [:: ("y0", Real)] _
+   [let "x" := Sample {exp_normal ltr0Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
+    let "z" := Sample {exp_normal ltr01 [#{"x"}]} in
+    return #{"z"}] u U =
+ @execP R [:: ("y0", Real)] _
+   [Sample {exp_normal ltr03Vsqrt2 [#{"y0"} * {2^-1}:R]}] u U.
+Proof.
+rewrite !execP_letin.
+rewrite !execP_sample !execD_normal/=.
+rewrite (@execD_bin _ _ binop_mult) execD_real/=.
+rewrite execP_return.
+rewrite !exp_var'E (execD_var_erefl "y0") (execD_var_erefl "x") (execD_var_erefl "z")/=.
+rewrite !letin'E/=.
+(* rhs *)
+rewrite [RHS]/normal_prob.
+rewrite integral_normal_prob//=; first last.
+- admit.
+- admit.
+rewrite [RHS]integral_mkcond/=.
+apply: eq_integral => x _.
+rewrite letin'E/=.
+rewrite integral_normal_prob//=; first last.
+- admit.
+- admit.
+(* Radon_Nikodym *)
+Admitted.
+
+Lemma helloRight1_to_2 : execD helloRight1 = execD helloRight2.
+Proof.
+apply: eq_execD.
+rewrite /helloRight1/helloRight2.
+rewrite !execD_normalize_pt/=.
+rewrite !execP_letin.
+rewrite !execP_score.
+rewrite !execD_pow_real/=.
+rewrite !execP_sample.
+rewrite execP_return/=.
+Abort.
+
+End helloRight_proof.
 
 (* TODO: move *)
 Section exponential_pdf.
@@ -132,7 +204,3 @@ Proof. by rewrite /exponential integral_exponential_pdf. Qed.
 HB.instance Definition _ := @Measure_isProbability.Build _ _ R exponential exponential_setT.
 
 End exponential.
-
-
-Definition guard {g} str n : @exp R P [:: (str, _) ; g] _ :=
-  [if #{str} == {n}:N then return TT else Score {0}:R].
