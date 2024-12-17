@@ -43,19 +43,23 @@ Definition guard_real {g} str (r : R) :
 
 Definition helloWrong (y0 : R) : @exp R _ [::] _ :=
  [Normalize
-  let "x" := Sample {exp_normal_1 (exp_real 0)} in
-  let "y" := Sample {exp_normal_1 [#{"x"}]} in
+  let "x" := Sample {exp_normal ltr01 (exp_real 0)} in
+  let "y" := Sample {exp_normal ltr01 [#{"x"}]} in
   let "_" := {guard_real "y" y0} in
-  let "z" := Sample {exp_normal_1 [#{"x"}]} in
+  let "z" := Sample {exp_normal ltr01 [#{"x"}]} in
   return #{"z"}].
 
-Definition helloRight (y0 : R) : @exp R _ [::] _ :=
+Definition helloRight : @exp R _ [:: ("y0", Real)] _ :=
  [Normalize
-  let "x" := Sample {exp_normal_1 (exp_real 0)} in
-  let "_" := Score {(exp_pow_real (expR 1)
-    ([{0}:R] - exp_pow 2 ([{y0}:R] - [#{"x"}])) * [{2^-1}:R]) *
-    [{(Num.sqrt 2 * pi)^-1}:R]} in
-  let "z" := Sample {exp_normal_1 [#{"x"}]} in
+  let "x" := Sample {exp_normal ltr01 (exp_real 0)} in
+  let "_" := Score {exp_pow_real (expR 1)
+     [{0}:R - {exp_pow 2 [{[#{"y0"} - #{"x"}]}]}]}
+in
+ return #{"x"}].
+
+    ([{0}:R] - exp_pow 2 ([#{"y0"}:R] - [#{"x"}])) * [{2^-1}:R]) *
+    exp_real (Num.sqrt 2 * pi)^-1} in
+  let "z" := Sample {exp_normal ltr01 [#{"x"}]} in
   return #{"z"}].
 
   return {1}:Nat <= #{"x"}].
