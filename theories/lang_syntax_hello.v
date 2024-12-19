@@ -55,7 +55,8 @@ Definition helloRight : @exp R _ [:: ("y0", Real)] _ :=
   let "_" := Score {expR 1} `^
                      ({0}:R - (#{"y0"} - #{"x"}) ^+ {2} * {2^-1}:R)
                    * {(Num.sqrt 2 * pi)^-1}:R in
- return #{"x"}].
+  let "z" := Sample {exp_normal ltr01 [#{"x"}]} in
+ return #{"z"}].
 
 Definition helloJoint : @exp R _ [::] _ :=
  [Normalize
@@ -70,7 +71,6 @@ Section helloRight_proof.
 Local Open Scope lang_scope.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
-Variable y0 : R.
 
 Let ltr0Vsqrt2 : (0 < (@Num.sqrt R 2)^-1)%R.
 Proof. by []. Qed.
@@ -102,6 +102,96 @@ Axiom integral_normal_prob : forall (m s : R) (s0 : (0 < s)%R) f U,
   \int[@normal_prob _ m s s0 (integral_normal m s0)]_(x in U) f x =
   \int[mu]_(x in U) (f x * (normal_pdf m s x)%:E).
 
+(*
+Definition tail1 : @exp R _ [:: ("x", Real)] _ :=
+  [let "z" := Sample {exp_normal ltr01 [#{"x"}]} in
+   return #{"z"}].
+
+Lemma helloRight01 :
+execP [let "x" := Sample {exp_normal ltr01 (exp_real 0)} in
+  let "_" := Score {expR 1} `^
+                     ({0}:R - (#{"y0"} - #{"x"}) ^+ {2} * {2^-1}:R)
+                   * {(Num.sqrt 2 * pi)^-1}:R in
+  {exp_weak _ [::] [:: ("x", Real); ("y0", Real)] ("_", Unit)
+    (exp_weak _ [:: ("x", Real)] [::] ("y0", Real) tail1 _)}] =
+  [let "_" := Score {expR 1} `^ ({0}:R - #{"y0"} ^+ {2} * {4^-1}:R) *
+                   {(Num.sqrt (4 * pi))^-1}:R in
+  let "x" := Sample {exp_normal ltr0Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
+  {tail1}].
+*)
+
+Lemma helloRight0_to_1 :
+execD helloRight = execD helloRight1.
+Proof.
+apply: congr_normalize => y V.
+(* lhs *)
+rewrite [in LHS]execP_letin.
+rewrite [in LHS]execP_sample.
+rewrite [in LHS]execD_normal/=.
+rewrite [in LHS]execD_real/=.
+rewrite [in LHS]execP_letin.
+rewrite [in LHS]execP_score.
+rewrite [in LHS]execD_pow_real/=.
+rewrite [in LHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in LHS](@execD_bin _ _ binop_minus)/=.
+rewrite [in LHS]execD_real/=.
+rewrite [in LHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in LHS]execD_pow/=.
+rewrite [in LHS](@execD_bin _ _ binop_minus)/=.
+rewrite [in LHS]exp_var'E/= (execD_var_erefl "y0")/=.
+rewrite [in LHS]exp_var'E/= (execD_var_erefl "x")/=.
+rewrite [in LHS]execD_real/=.
+rewrite [in LHS]execD_real/=.
+rewrite [in LHS]execP_letin.
+rewrite [in LHS]execP_sample.
+rewrite [in LHS]execD_normal/=.
+rewrite [in LHS]exp_var'E/= (execD_var_erefl "x")/=.
+rewrite [in LHS]execP_return/=.
+rewrite [in LHS]exp_var'E/= (execD_var_erefl "z")/=.
+(* rhs *)
+rewrite [in RHS]execP_letin.
+rewrite [in RHS]execP_score.
+rewrite [in RHS]execD_pow_real/=.
+rewrite [in RHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in RHS](@execD_bin _ _ binop_minus)/=.
+rewrite [in RHS]execD_real/=.
+rewrite [in RHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in RHS]execD_pow/=.
+rewrite [in RHS]exp_var'E/= (execD_var_erefl "y0")/=.
+rewrite [in RHS]execD_real/=.
+rewrite [in RHS]execD_real/=.
+rewrite [in RHS]execP_letin.
+rewrite [in RHS]execP_sample.
+rewrite [in RHS]execD_normal/=.
+rewrite [in RHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in RHS]exp_var'E/= (execD_var_erefl "y0")/=.
+rewrite [in RHS]execD_real/=.
+rewrite [in RHS]execP_letin.
+rewrite [in RHS]execP_sample.
+rewrite [in RHS]execD_normal/=.
+rewrite [in RHS]exp_var'E/= (execD_var_erefl "x")/=.
+rewrite [in RHS]execP_return.
+rewrite [in RHS]exp_var'E/= (execD_var_erefl "z")/=.
+(* lhs *)
+rewrite [in LHS]letin'E/=.
+
+(* rhs *)
+Admitted.
+
+Lemma int_normal_prob_normal_pdf (y0 : R) U:
+  \int[mu]_x
+     (\int[normal_prob ltr01 (integral_normal x ltr01)]_y \d_y U *
+      (normal_pdf (y0 / 2) (Num.sqrt 2)^-1 x)%:E) =
+  \int[mu]_(x in U) (normal_pdf (y0 / 2) (3 / Num.sqrt 2) x)%:E.
+Proof.
+rewrite [RHS]integral_mkcond/=.
+apply: eq_integral => x _.
+under eq_integral do rewrite diracE.
+rewrite [RHS](_:_= \int[normal_prob ltr01 (integral_normal x ltr01)]_(z in U)
+  (normal_pdf (y0 / 2) (Num.sqrt 2)^-1 x)%:E).
+  admit.
+Admitted.
+
 Lemma helloRight12' u U :
  @execP R [:: ("y0", Real)] _
    [let "x" := Sample {exp_normal ltr0Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
@@ -121,20 +211,18 @@ rewrite [RHS]/normal_prob.
 rewrite integral_normal_prob//=; first last.
 - admit.
 - admit.
-rewrite [RHS]integral_mkcond/=.
-apply: eq_integral => x _.
-rewrite letin'E/=.
-rewrite integral_normal_prob//=; first last.
-- admit.
-- admit.
-(* Radon_Nikodym *)
+under eq_integral do rewrite letin'E/=.
+rewrite /=.
+exact: int_normal_prob_normal_pdf.
 Admitted.
 
 Lemma helloRight1_to_2 : execD helloRight1 = execD helloRight2.
 Proof.
 apply: eq_execD.
 rewrite /helloRight1/helloRight2.
-rewrite !execD_normalize_pt/=.
+(* TODO: split rewriting on LHS and RHS *)
+(* lhs *)
+rewrite [X in projT1 X = _]execD_normalize_pt/=.
 rewrite !execP_letin.
 rewrite !execP_score.
 rewrite !execD_pow_real/=.
