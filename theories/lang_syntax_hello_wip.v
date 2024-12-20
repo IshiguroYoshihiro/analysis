@@ -32,6 +32,26 @@ Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 
+Section normal.
+Context {R : realType}.
+Local Notation mu := lebesgue_measure.
+
+Local Import charge.
+Local Import gaussian.
+Local Arguments integral_normal {R m s}.
+
+Local Open Scope charge_scope.
+
+
+Lemma beta_pdf_uniq_ae (m s : R) (s0 : (0 < s)%R) :
+  ae_eq mu setT
+   ('d ((charge_of_finite_measure (@normal_prob R m s s0 (integral_normal s0)))) '/d mu)
+               (EFin \o (@normal_pdf R m s)).
+Proof.
+Admitted.
+
+End normal.
+
 Section hello_programs.
 Local Open Scope lang_scope.
 Context {R : realType}.
@@ -119,6 +139,24 @@ execP [let "x" := Sample {exp_normal ltr01 (exp_real 0)} in
   let "x" := Sample {exp_normal ltr0Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
   {tail1}].
 *)
+Local Definition normal_prob1 (x : R) :=
+   (normal_prob ltr01 (integral_normal x ltr01)).
+
+Lemma integral_normal_prob_dirac m V : \int[normal_prob1 m]_x0 (\d_x0 V)
+   = normal_prob1 m V.
+Proof.
+rewrite integral_normal_prob; first last.
+- admit.
+- admit.
+- exact: measurableT.
+under eq_integral do rewrite diracE.
+rewrite /normal_prob1/normal_prob.
+rewrite [in RHS]integral_mkcond.
+under [in RHS]eq_integral do rewrite patchE.
+rewrite /=.
+apply: eq_integral => x _.
+by case: ifP => xV/=; rewrite ?mul1e ?mul0e.
+Admitted.
 
 Lemma helloRight0_to_1 :
 execD helloRight = execD helloRight1.
@@ -174,8 +212,79 @@ rewrite [in RHS]execP_return.
 rewrite [in RHS]exp_var'E/= (execD_var_erefl "z")/=.
 (* lhs *)
 rewrite [in LHS]letin'E/=.
-
+under [in LHS]eq_integral.
+  move=> x _.
+  rewrite letin'E/=.
+  under eq_integral.
+    move=> u _.
+    rewrite letin'E/=.
+    rewrite integral_normal_prob_dirac.
+    over.
+  rewrite /=.
+  rewrite ge0_integral_mscale/=; first last.
+  - by move=> ? _.
+  - by [].
+  - exact: measurableT.
+  rewrite integral_dirac; first last.
+  - by [].
+  - exact: measurableT.
+  rewrite diracT mul1e.
+  rewrite sub0r.
+  rewrite -expRM mul1r.
+  over.
+rewrite /=.
+rewrite [in LHS]integral_normal_prob; first last.
+- (* ? *) admit.
+- (* ok *) admit.
+- exact: measurableT.
 (* rhs *)
+rewrite [in RHS]letin'E/=.
+under [in RHS]eq_integral.
+  move=> u _.
+  rewrite letin'E/=.
+  under eq_integral.
+    move=> x _.
+    rewrite letin'E/=.
+    rewrite integral_normal_prob_dirac.
+    over.
+  over.
+rewrite ge0_integral_mscale; first last.
+- move=> ? _.
+  exact: integral_ge0.
+- exact: measurable_cst.
+- exact: measurableT.
+rewrite integral_dirac/=; first last.
+- exact: measurable_cst.
+- exact: measurableT.
+rewrite diracT mul1e.
+rewrite sub0r -expRM mul1r.
+rewrite [in RHS]integral_normal_prob; first last.
+- (* ok *) admit.
+- (* ? *)admit. (* TODO1: ish *)
+- exact: measurableT.
+rewrite -ge0_integralZl; first last.
+- by [].
+- move=> ? _.
+  apply: mule_ge0 => //.
+  rewrite lee_fin.
+  exact: normal_pdf_ge0.
+- apply: emeasurable_funM.
+  + (* TODO1: ish *) admit.
+  + (* ? *)admit.
+- exact: measurableT.
+(* eq_integral *)
+apply: eq_integral.
+move=> x _.
+rewrite [in LHS]muleAC.
+rewrite [in RHS](muleC (normal_prob1 x V)) muleA.
+congr *%E.
+rewrite [in LHS]ger0_norm; last first.
+- (* ok *)admit.
+rewrite [in RHS]ger0_norm; last first.
+- (* ok *)admit.
+rewrite /normal_pdf mul1r subr0 divr1.
+(* ? *) (* TODO2: ish *)
+admit.
 Admitted.
 
 Lemma int_normal_prob_normal_pdf (y0 : R) U:
