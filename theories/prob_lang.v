@@ -1410,6 +1410,7 @@ Qed.
 
 End iterate_unit.
 
+(* an s-finite kernel to test that two expressions are different *)
 Section lift_neq.
 Context {R : realType} d (G : measurableType d).
 Variables (f : G -> bool) (g : G -> bool).
@@ -1793,7 +1794,6 @@ Qed.
 
 End staton_bus_exponential.
 
-
 Section von_neumann_trick.
 Context d {T : measurableType d} {R : realType}.
 
@@ -1914,6 +1914,157 @@ Proof. by apply: eq_bernoulli; rewrite von_neumann_trick_prob_kernel. Qed.
 End von_neumann_trick_proof.
 
 End von_neumann_trick.
+
+(*
+Section von_neumann_trick.
+Context d {T : measurableType d} {R : realType}.
+
+Definition minltt {d1 d2} {T1 : measurableType d1} {T2 : measurableType d2} :=
+  @measurable_cst _ _ T1 _ setT (@inl _ T2 tt).
+
+Definition finrb d1 d2 (T1 : measurableType d1) (T2 : measurableType d2) :
+  T1 * bool -> T2 + bool := fun t1b => inr t1b.2.
+
+Lemma minrb {d1 d2} {T1 : measurableType d1} {T2 : measurableType d2} :
+  measurable_fun setT (@finrb _ _ T1 T2).
+Proof. exact: measurableT_comp. Qed.
+
+(* biased coin *)
+Variable (D : pprobability bool R).
+Let unit := measurableTypeUnit.
+Let bool := measurableTypeBool.
+
+Definition trick : R.-sfker (T * unit) ~> (unit + bool)%type :=
+  letin (sample_cst D)
+    (letin (sample_cst D)
+      (letin (lift_neq macc1of3 macc2of3)
+        (ite macc3of4
+           (letin (ret macc1of4) (ret minrb))
+           (ret minltt)))).
+
+Definition kvon_neumann_trick : _ -> _ :=
+  (@iterate _ _ R _ unit _ bool trick _ ktt).
+Definition von_neumann_trick x : _ -> _ := kvon_neumann_trick x.
+
+HB.instance Definition _ := SFiniteKernel.on kvon_neumann_trick.
+HB.instance Definition _ x := Measure.on (von_neumann_trick x).
+
+Section von_neumann_trick_proof.
+
+Let p : R := fine (D [set true]).
+Let q : R := p * (1 - p).
+Let r : R := p ^+ 2 + (1 - p) ^+ 2.
+
+Let Dtrue : D [set true] = p%:E.
+Proof. by rewrite fineK//= fin_num_measure. Qed.
+
+Let Dfalse : D [set false] = 1 - (p%:E).
+Proof.
+rewrite -Dtrue; have <- : D [set: bool] = 1 := probability_setT.
+rewrite setT_bool measureU//=; last first.
+  by rewrite disjoints_subset => -[]//.
+by rewrite addeAC subee ?fin_num_measure ?add0e.
+Qed.
+
+Let p_ge0 : (0 <= p)%R.
+Proof. by rewrite fine_ge0 ?measure_ge0. Qed.
+
+Let p'_ge0 : (1 - p >= 0)%R.
+Proof. by rewrite -lee_fin EFinB -Dfalse measure_ge0. Qed.
+
+Let q_ge0 : (q >= 0)%R. Proof. by rewrite mulr_ge0 ?p_ge0 ?p'_ge0. Qed.
+
+Let r_ge0 : (r >= 0)%R.
+Proof. by rewrite addr_ge0// exprn_ge0 ?p_ge0 ?p'_ge0. Qed.
+
+Let intDE f : (forall x, 0 <= f x) ->
+  \int[D]_x (f x) = (1 - (p%:E)) * f false + p%:E * f true.
+Proof.
+move=> f_ge0.
+pose M := measure_add (mscale (NngNum p'_ge0) \d_false)
+                          (mscale (NngNum p_ge0) \d_true).
+rewrite (eq_measure_integral M) => [|A Ameas _].
+  rewrite ge0_integral_measure_add//.
+  by rewrite !ge0_integral_mscale ?integral_dirac ?diracT ?mul1e.
+rewrite /M/= /msum/= !big_ord_recl/= big_ord0 addr0 /mscale/=.
+by case: (set_bool A) => /eqP->/=;
+   rewrite ?measure0 ?probability_setT ?Dtrue ?Dfalse//=
+     ?diracE/= ?in_set1 ?inE/= ?(mule0, mul0e, adde0, add0e, mule1)//
+     -EFinD addrNK.
+Qed.
+
+Lemma trick_bool gamma b : trick gamma [set inr b] = q%:E.
+Proof.
+rewrite /trick/= /kcomp /= intDE//= /kcomp/= !intDE//= /kcomp.
+rewrite !integral_dirac ?diracT//= ?mul1e.
+rewrite !iteE//= ?diracE/= /kcomp/=.
+rewrite !integral_dirac ?diracT ?diracE ?mul1e//=.
+rewrite /finrb ?inl_in_set_inr//= /acc1of4/= ?inr_in_set_inr !in_set1 !inE.
+rewrite /q -?(EFinB, EFinN, EFinM, EFinD); congr (_)%:E.
+by case: b => //=; ring.
+Qed.
+
+Lemma trick_unit gamma : trick gamma [set inl tt] = r%:E.
+Proof.
+rewrite /trick/= /kcomp /= intDE//= /kcomp/= !intDE//= /kcomp.
+rewrite !integral_dirac ?diracT//= ?mul1e.
+rewrite !iteE//= ?diracE/= /kcomp/=.
+rewrite !integral_dirac ?diracT ?diracE ?mul1e//=.
+rewrite /finrb ?inl_in_set_inr//= /acc1of4/= ?inr_in_set_inr.
+rewrite !in_set1 !inE/=.
+by rewrite /r -?(EFinB, EFinN, EFinM, EFinD); congr (_)%:E; ring.
+Qed.
+
+Hypothesis D_nontrivial : 0 < D [set true] < 1.
+
+Let p_gt0 : (0 < p)%R.
+Proof. by rewrite -lte_fin -Dtrue; case/andP : D_nontrivial. Qed.
+
+Let p_lt1 : (p < 1)%R.
+Proof. by rewrite -lte_fin -Dtrue; case/andP : D_nontrivial. Qed.
+
+Let p'_gt0 : (0 < 1 - p)%R. Proof. by rewrite subr_gt0. Qed.
+
+Let r_lt1 : (r < 1)%R.
+Proof.
+rewrite /r -subr_gt0 [ltRHS](_ : _ = 2 * p * (1 - p))%R; last by ring.
+by rewrite !mulr_gt0.
+Qed.
+
+Lemma von_neumann_trick_prob_kernel gamma b :
+   kvon_neumann_trick gamma [set b] = 2^-1%:E.
+Proof.
+rewrite [LHS](@iterateE _ _ _ _ _ _ _ _ r _ _ _ q)//=.
+- rewrite /r /q; congr (_)%:E.
+  suff: (1 - ((p ^+ 2)%R + ((1 - p) ^+ 2)%R)%E)%R != 0%R by move=> *; field.
+  rewrite [X in X != _](_ : _ = 2 * (p * (1 - p)))%R; last by ring.
+  by rewrite mulf_eq0 ?pnatr_eq0/= mulf_neq0// gt_eqF ?p_gt0 ?p'_gt0.
+- by move=> gamma'; exact: trick_unit.
+- suff -> : [set inr x | x in [set b]] = [set inr b] by exact: trick_bool.
+  by move=> A; apply/seteqP; split=> [a [_ ->]|_ ->]//=; exists b.
+Qed.
+
+Lemma von_neumann_trick_prob_kernelT gamma :
+  von_neumann_trick gamma [set: bool] = 1.
+Proof.
+rewrite setT_bool measureU//=; last by rewrite disjoints_subset => -[].
+rewrite !von_neumann_trick_prob_kernel -EFinD.
+by have := splitr (1 : R); rewrite mul1r => <-.
+Qed.
+
+HB.instance Definition _ gamma := Measure.on (von_neumann_trick gamma).
+HB.instance Definition _ gamma := Measure_isProbability.Build _ _ _
+  (von_neumann_trick gamma) (von_neumann_trick_prob_kernelT gamma).
+HB.instance Definition _ := Kernel_isProbability.Build _ _ _ _ _
+  kvon_neumann_trick von_neumann_trick_prob_kernelT.
+
+Theorem von_neumann_trickP gamma : von_neumann_trick gamma =1 bernoulli 2^-1.
+Proof. by apply: eq_bernoulli; rewrite von_neumann_trick_prob_kernel. Qed.
+
+End von_neumann_trick_proof.
+
+End von_neumann_trick.
+*)
 
 (**md
   letin' variants
