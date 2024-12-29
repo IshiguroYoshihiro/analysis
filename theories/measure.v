@@ -1590,6 +1590,8 @@ End measurable_fun.
 Arguments eq_measurable_fun {d1 d2 T1 T2 D} f {g}.
 Arguments measurable_fun_eqP {d1 d2 T1 T2 D} f {g}.
 #[deprecated(since="mathcomp-analysis 0.6.2", note="renamed `eq_measurable_fun`")]
+Arguments measurable_fun_eqP {d1 d2 T1 T2 D} f {g}.
+#[deprecated(since="mathcomp-analysis 0.6.2", note="renamed `eq_measurable_fun`")]
 Notation measurable_fun_ext := eq_measurable_fun (only parsing).
 #[deprecated(since="mathcomp-analysis 0.6.3", note="renamed `measurable_id`")]
 Notation measurable_fun_id := measurable_id (only parsing).
