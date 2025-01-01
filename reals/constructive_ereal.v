@@ -2407,6 +2407,11 @@ Qed.
 Lemma EFin_max : {morph (@EFin R) : r s / Num.max r s >-> maxe r s}.
 Proof. by move=> a b /=; rewrite -fine_max. Qed.
 
+Lemma EFin_bigmax  {I : Type} (s : seq I) (P : I -> bool) (F : I -> R) r :
+  \big[maxe/r%:E]_(i <- s | P i) (F i)%:E =
+  (\big[Num.max/r]_(i <- s | P i) F i)%:E.
+Proof. by rewrite (big_morph _ EFin_max erefl). Qed.
+
 Lemma fine_min :
   {in fin_num &, {mono @fine R : x y / mine x y >-> (Num.min x y)%:E}}.
 Proof.
