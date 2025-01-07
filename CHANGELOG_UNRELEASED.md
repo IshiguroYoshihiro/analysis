@@ -30,6 +30,13 @@
 - in `classical_sets.v`:
   + lemmas `xsectionE`, `ysectionE`
 
+- in `normedtype.v`:
+  + lemmas `interior_itv_bnd`, `interior_itv_bndy`, `interior_itv_Nybnd`,
+    definition `interior_itv`
+
+- in `derive.v`:
+  + lemmas `decr_derive1_le0`, `decr_derive1_le0_itv`
+
 ### Changed
 
 - in `lebesgue_integrale.v`
