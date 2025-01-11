@@ -42,7 +42,6 @@ Local Arguments integral_normal {R m s}.
 
 Local Open Scope charge_scope.
 
-
 Lemma beta_pdf_uniq_ae (m s : R) (s0 : (0 < s)%R) :
   ae_eq mu setT
    ('d ((charge_of_finite_measure (@normal_prob R m s s0 (integral_normal s0)))) '/d mu)
@@ -51,6 +50,34 @@ Proof.
 Admitted.
 
 End normal.
+
+Section disintegration_measure.
+Context {R : realType}.
+
+Lemma 
+
+
+End disintegration_measure.
+
+Section disintegration_program.
+
+Variable l : ctx.
+
+Definition lhs : exp R _  l _ :=
+ [let "t" := Sample {exp_normal ltr01 (exp_real 0)} in
+  let "p" :=  (* ? TODO *) in
+  return (#{"t"}, #{"p"})].
+
+Definition rhs : exp R _ l _ :=
+ [let "t" := Sample exp_lebesgue(* TODO *) in
+  let "p" := Score (exp_normal_pdf [#{"t"}])) (* TODO *) in
+  return (#{"t"}, #{"p"})].
+
+Lemma disintegration_normal :
+execD lhs = exec rhs.
+
+End disintegration_program.
+
 
 Section hello_programs.
 Local Open Scope lang_scope.
@@ -163,11 +190,10 @@ execD helloRight = execD helloRight1.
 Proof.
 apply: congr_normalize => y V.
 (* lhs *)
-rewrite [in LHS]execP_letin.
+rewrite ![in LHS]execP_letin.
 rewrite [in LHS]execP_sample.
 rewrite [in LHS]execD_normal/=.
 rewrite [in LHS]execD_real/=.
-rewrite [in LHS]execP_letin.
 rewrite [in LHS]execP_score.
 rewrite [in LHS]execD_pow_real/=.
 rewrite [in LHS](@execD_bin _ _ binop_mult)/=.
@@ -180,7 +206,6 @@ rewrite [in LHS]exp_var'E/= (execD_var_erefl "y0")/=.
 rewrite [in LHS]exp_var'E/= (execD_var_erefl "x")/=.
 rewrite [in LHS]execD_real/=.
 rewrite [in LHS]execD_real/=.
-rewrite [in LHS]execP_letin.
 rewrite [in LHS]execP_sample.
 rewrite [in LHS]execD_normal/=.
 rewrite [in LHS]exp_var'E/= (execD_var_erefl "x")/=.
@@ -284,6 +309,21 @@ rewrite [in RHS]ger0_norm; last first.
 - (* ok *)admit.
 rewrite /normal_pdf mul1r subr0 divr1.
 (* ? *) (* TODO2: ish *)
+rewrite -!EFinM.
+congr EFin.
+rewrite mulrA.
+rewrite mulrAC.
+rewrite -expRD.
+rewrite [RHS]mulrA.
+rewrite [RHS]mulrAC.
+rewrite -expRD.
+congr *%R.
+- congr expR.
+  rewrite [in RHS]expr_div_n.
+  rewrite -[in RHS](@sqrtrV _ 2)//.
+  rewrite sqr_sqrtr//.
+  (* ? *)
+  admit.
 admit.
 Admitted.
 
