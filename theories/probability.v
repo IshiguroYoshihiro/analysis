@@ -1567,6 +1567,7 @@ Section normal_kernel.
 
 Variable R : realType.
 Variables s : R.
+Hypothesis s0 : s != 0.
 Local Open Scope ring_scope.
 Notation mu := lebesgue_measure.
 
@@ -1627,7 +1628,14 @@ Proof.
 by rewrite /pushforward shift_preimage.
 Qed.
 
-Lemma normal_shift0 x : normal_prob2 x =
+Lemma integration_by_substitution_shift f (r : R) U :
+(\int[mu]_(x in (shift r) @` U) f x =
+\int[mu]_(x in U) (f \o (shift r)) x)%E.
+Proof.
+Admitted.
+
+Lemma normal_shift0 x : 
+normal_prob2 x =
   @pushforward _ _ _
   (measurableTypeR R) _ (normal_prob2 0%R) _
     (measurable_funD (@measurable_id _ _ _)
@@ -1639,13 +1647,15 @@ rewrite /normal_prob2/=.
 rewrite /pushforward/=.
 rewrite /normal_prob.
 rewrite shift_preimage.
-under [RHS]eq_integral.
-  move=> y H.
-  rewrite -[X in (_ X _ _)%:E](subrr x).
-  over.
-rewrite /=.
-(* rewrite integration_by_substitution. *)
-Admitted.
+rewrite integration_by_substitution_shift/=.
+apply: eq_integral.
+move=> z Uz.
+congr EFin.
+rewrite /normal_pdf/=.
+rewrite ifF; last exact/negP/negP.
+rewrite ifF; last exact/negP/negP.
+by rewrite subr0.
+Qed.
 
 (*
 Lemma measurable_normal_prob2_ocitv a b:
@@ -1697,11 +1707,18 @@ under [X in _ _ X]eq_fun.
   rewrite (_: normal_prob2 _ _ = (fine (normal_prob2 x Ys))%:E); last first.
     admit.
   rewrite normal_shift0//=.
+  rewrite /pushforward.
+  rewrite shift_preimage.
+  rewrite /normal_prob/=.
+  rewrite integration_by_substitution_shift/=.
   over.
 apply: measurableT_comp => //.
 apply/measurable_EFinP.
 apply: measurableT_comp => //.
-rewrite /pushforward/=/normal_prob.
+have := (@measurableT_comp _ _ _ _ _ _
+           (fun x => \int[mu]_(x0 in Ys) (normal_pdf 0 s x0
+
+
 Admitted.
 
 (*
