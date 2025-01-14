@@ -1732,6 +1732,20 @@ Qed.
 
 End normal_probability.
 
+(*
+From mathcomp Require Import charge.
+
+Section radon_nikodym_mrestr.
+Variable R : realType.
+
+Local Open Scope charge_scope.
+
+Local Notation mu := lebesgue_measure.
+Variable (nu : {charge set R -> \bar R}).
+Check ('d nu '/d sigma_mu).
+
+*)
+
 From mathcomp Require Import ftc.
 
 Section normal_kernel.
@@ -1799,10 +1813,51 @@ Proof.
 by rewrite /pushforward shift_preimage.
 Qed.
 
+From mathcomp Require Import charge.
+Open Scope charge_scope.
+
+Lemma radon_nikodym_crestr_fin U (mU : measurable U)
+(Uoo : (@lebesgue_measure R U < +oo)%E) :
+ ae_eq lebesgue_measure setT ('d charge_of_finite_measure (mfrestr mU Uoo) '/d
+ [the sigma_finite_measure _ _ of @lebesgue_measure R])
+ (EFin \o \1_U).
+Proof.
+apply: integral_ae_eq => //=.
+- admit.
+- admit.
+move=> E _ mE.
+rewrite -Radon_Nikodym_integral.
+rewrite integral_indic/=.
+by rewrite /mfrestr/mrestr setIC.
+Admitted.
+
+(*
+Lemma radon_nikodym_crestr U (mU : measurable U) :
+ ae_eq lebesgue_measure setT ('d charge_of_finite_measure (mfrestr mU Uoo) '/d
+ [the sigma_finite_measure _ _ of @lebesgue_measure R])
+ (EFin \o \1_U).
+Proof.
+*)
+
 Lemma integration_by_substitution_shift f (r : R) U :
 (\int[mu]_(x in (shift r) @` U) f x =
 \int[mu]_(x in U) (f \o (shift r)) x)%E.
 Proof.
+rewrite integral_mkcond.
+(*
+rewrite [RHS](_:_= ('d charge_of_finite_measure (mfrestr mU Uoo) '/d
+ [the sigma_finite_measure _ _ of @lebesgue_measure R])
+ (EFin \o \1_U)
+  move=> x _.
+  rewrite epatch_indic.
+  rewrite -radon_nikodym_crestr.
+rewrite [RHS]integral_mkcond.
+under [RHS]eq_integral do rewrite epatch_indic.
+
+rewrite -integral_pushforward.
+apply: eq_integral.
+move=> x _.
+*)
 Admitted.
 
 Lemma normal_shift0 x : 
@@ -1867,6 +1922,23 @@ Admitted.
 
 Local Close Scope ereal_scope.
 
+Lemma continuousT_integralT (f : R -> R -> R) :
+(forall l, mu.-integrable setT (fun x => (f l x)%:E)) ->
+{ae mu, forall x, {for x, continuous (fun l => f l x)}} ->
+(exists g : R -> R, forall l x, `|f l x| <= g x) ->
+continuous (fun l => \int[mu]_x f l x).
+Proof.
+Abort.
+
+Lemma continuousT_integral (f : R -> R -> R) (V : set R) :
+(forall l, mu.-integrable V (fun x => (f l x)%:E)) ->
+{ae mu, forall x, {for x, continuous (fun l => f l x)}} ->
+(exists g : R -> R, {in V, forall l, forall x, `|f l x| <= g x}) ->
+continuous (fun l => \int[mu]_(x in V) f l x).
+Proof.
+Admitted.
+
+
 Lemma measurable_normal_prob2 :
   measurable_fun setT (normal_prob2 : R -> pprobability _ _).
 Proof.
@@ -1883,13 +1955,22 @@ under [X in _ _ X]eq_fun.
   rewrite /normal_prob/=.
   rewrite integration_by_substitution_shift/=.
   over.
-apply: measurableT_comp => //.
-apply/measurable_EFinP.
-apply: measurableT_comp => //.
-(*have := (@measurableT_comp _ _ _ _ _ _
-           (fun x => \int[mu]_(x0 in Ys) (normal_pdf 0 s x0*)
-
-
+apply: measurableT_comp => //=.
+apply/measurable_EFinP => /=.
+apply: continuous_measurable_fun => /=.
+apply: (@continuousT_integral (fun x0 x1 : R => normal_pdf 0 s (x1 - x0)) Ys).
+- move=> z.
+  (* apply: integrable_normal_pdf. *)
+  admit.
+- apply: aeW => /=.
+  rewrite /measurable/=/g_sigma_algebraType/ocitv_type.
+  move=> x.
+  apply: continuous_comp => //=.
+    admit.
+  rewrite subrr.
+  exact: continuous_normal_pdf.
+exists (cst ((Num.sqrt (s^+2 * pi *+ 2))^-1 * fine (mu Ys))%R).
+admit.
 Admitted.
 
 (*
