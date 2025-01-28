@@ -2105,38 +2105,171 @@ continuous (fun l => \int[mu]_(x in V) f l x).
 Proof.
 Admitted.
 
+Lemma normal_prob_fin_num (m : R) U : normal_prob m s U \is a fin_num.
+Proof.
+Admitted.
+
+Lemma integrable_normal_pdf0 U z :  mu.-integrable U
+    (fun x : R => (normal_pdf 0 s (x - z))%:E).
+Proof.
+Admitted.
+
+Lemma shift_continuous (x : R) : continuous (shift x).
+Proof.
+Admitted.
+
+Lemma add_continuous (x : R) : continuous (+%R x).
+Proof.
+Admitted.
+
+Local Import Num.ExtraDef.
+
+Local Definition f (m x : R) :=
+  (fun n => let sigma := s ^+ 2 in
+  ((sqrtr (sigma * pi *+ 2))^-1 *
+  series (exp_coeff (- ((x - m) ) ^+ 2 / (sigma *+ 2))) n%N)%:E).
+
+Lemma normal_pdfE (m x : R) :
+  (normal_pdf m s x)%:E = limn (f m x).
+Proof.
+apply/esym/cvg_lim => //=.
+rewrite /f.
+rewrite /normal_pdf.
+
+Admitted.
+
+Lemma lim_normal_probE m Ys : measurable Ys ->
+ (\int[mu]_(x in Ys) f m x n)%E @[n --> \oo] --> normal_prob m s Ys.
+Proof.
+move=> mYs.
+rewrite /normal_prob.
+rewrite [X in _ --> X](_ : _ = (\int[mu]_(x in Ys) (limn (f m x)))%E); last first.
+  apply: eq_integral => y _.
+  by rewrite -normal_pdfE.
+apply: cvg_monotone_convergence => //.
+move=> n.
+rewrite /f.
+(* ge0_emeasurable_sum *)
+- admit.
+- move=> n x Ysx.
+  rewrite /f.
+admit.
+move=> x Ysx.
+Admitted.
+
+Lemma integral_f_fin_num x Ys n : (\int[mu]_(x0 in Ys) f x x0 n)%E \is a fin_num.
+Admitted.
+
+Lemma integrable_f x Ys n : mu.-integrable Ys ((f x)^~ n).
+Admitted.
+
+Lemma exp_coeff_gt0 (x : R) n : 0 < x -> 0 < exp_coeff x n.
+Proof.
+move=> x0.
+rewrite /exp_coeff/=.
+apply: divr_gt0.
+  exact: exprn_gt0.
+rewrite (_:0%R = 0%:R)// ltr_nat.
+exact: fact_gt0.
+Qed.
 
 Lemma measurable_normal_prob2 :
   measurable_fun setT (normal_prob2 : R -> pprobability _ _).
 Proof.
 apply: (@measurability _ _ _ _ _ _
   (@pset _ _ _ : set (set (pprobability _ R)))) => //.
-move=> _ -[_ [r r01] [Ys mYs <-]] <-; apply: emeasurable_fun_infty_o => //=.
+(*
+rewrite /pset.
+under [X in _ _ _ X `<=` _]eq_fun.
+  move=> x.
+  rewrite RGenOpens.measurableE.
+  over.
+rewrite /=.
+move=> /= _ [_ [x x01] [Y mYs <-]] <-.
+rewrite setTI.
+
+move: mYs.
+rewrite /measurable/=.
+*)
+(*
+move=> _ -[_ [r r01] [Ys mYs <-]] <-.
+apply: emeasurable_fun_infty_o => //=.
 under [X in _ _ X]eq_fun.
   move=> x.
-  rewrite (_: normal_prob2 _ _ = (fine (normal_prob2 x Ys))%:E); last first.
+  have:= (@lim_normal_probE x _ mYs).
+  rewrite -(fineK (normal_prob_fin_num _ _)).
+  move/fine_cvg.
+  move/cvg_lim => <-; last exact: Rhausdorff.
+  rewrite -EFin_lim; last first.
     admit.
+  under [X in limn X]eq_fun do rewrite (fineK (integral_f_fin_num _ _ _)).
+  over.
+rewrite /=.
+apply: (emeasurable_fun_cvg (fun n : nat => fun x => (\int[mu]_(x0 in Ys) f x x0 n)%E)).
+  move=> m/=.
+  under [X in _ _ X]eq_fun do rewrite -(fineK (integral_f_fin_num _ _ _)); apply/measurable_EFinP => /=.
+  apply: continuous_measurable_fun.
+  apply: continuousT_integral => /=.
+  - admit.
+  - apply: aeW => /= x.
+    admit.
+  - exists (cst (Num.sqrt (s^+2 * pi *+ 2))^-1 * 1).
+    admit.
+move=> x _.
+apply: ereal_nondecreasing_is_cvgn.
+apply/nondecreasing_seqP.
+move=> n.
+apply: le_integral => //=.
+- exact: integrable_f.
+- exact: integrable_f.
+move=> y _.
+rewrite /f.
+rewrite lee_fin ler_pM2l; last first.
+  admit.
+rewrite -(add1n n) series_addn lerDl add1n.
+rewrite !big_nat1.
+rewrite /exp_coeff/=. (* it is not true! *)
+*)
+
+(*
+under [X in _ _ X]eq_fun do rewrite -(fineK (normal_prob_fin_num _ Ys)).
+apply/measurable_EFinP.
+apply: (@measurability _ _ _ _ _ _ (@RGenOpens.G R)).
+  by rewrite /measurable/=/measurableR RGenOpens.measurableE.
+move=> _ -[_ [a [b ->]] <-].
+rewrite setTI.
+apply: is_interval_measurable.
+move=> x y/=.
+*)
+move=> _ -[_ [r r01] [Ys mYs <-]] <-.
+apply: emeasurable_fun_infty_o => //=.
+under [X in _ _ X]eq_fun.
+  move=> x.
+  rewrite -(fineK (normal_prob_fin_num x Ys)).
   rewrite normal_shift0//=.
   rewrite /pushforward.
   rewrite shift_preimage.
   rewrite /normal_prob/=.
-  rewrite integration_by_substitution_shift/=.
+  rewrite integration_by_substitution_shift/=. (* TODO *)
   over.
 apply: measurableT_comp => //=.
 apply/measurable_EFinP => /=.
 apply: continuous_measurable_fun => /=.
 apply: (@continuousT_integral (fun x0 x1 : R => normal_pdf 0 s (x1 - x0)) Ys).
 - move=> z.
-  (* apply: integrable_normal_pdf. *)
-  admit.
+  exact: integrable_normal_pdf0.
 - apply: aeW => /=.
   rewrite /measurable/=/g_sigma_algebraType/ocitv_type.
   move=> x.
   apply: continuous_comp => //=.
-    admit.
-  rewrite subrr.
+    apply: continuous_comp.
+      exact: (@opp_continuous _ R^o).
+    exact: (@add_continuous x).
   exact: continuous_normal_pdf.
-exists (cst ((Num.sqrt (s^+2 * pi *+ 2))^-1 * fine (mu Ys))%R).
+exists (cst ((Num.sqrt (s^+2 * pi *+ 2))^-1)).
+move=> x _ y/=.
+rewrite /normal_pdf; case: ifP => [|_]; first by move/negP: s0.
+
 admit.
 Admitted.
 
