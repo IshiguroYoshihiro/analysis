@@ -1878,6 +1878,51 @@ rewrite (_:0%R = 0%:R)// ltr_nat.
 exact: fact_gt0.
 Qed.
 
+Lemma series_exp_coeff_near_ge0 (x : R) :
+  \forall n \near \oo, 0 <= (series (exp_coeff x)) n.
+Proof.
+have := expR_ge0 x.
+rewrite /expR.
+have {1}<- : limn (@cst nat R 0%R) = 0.
+  apply/cvg_lim; first exact: Rhausdorff.
+  exact: cvg_cst.
+move=> H.
+Admitted.
+
+Lemma normr_exp_coeff_near_nonincreasing (x : R) :
+  \forall n \near \oo,
+  `|exp_coeff x n.+1| <= `|exp_coeff x n|.
+Proof.
+Admitted.
+
+Lemma exp_coeff2_near_increasing (x : R) :
+ \forall N \near \oo, nondecreasing_seq (fun n => (series (exp_coeff x) (2 * (n + N))%N)).
+Proof.
+have := normr_exp_coeff_near_nonincreasing x.
+move=> [N _] Hnear.
+exists N => //n/= Nn.
+apply/nondecreasing_seqP => k.
+rewrite /series/=.
+have N0 : (0 <= N)%N by [].
+rewrite addSn mulnS add2n.
+rewrite !big_nat_recr//=.
+rewrite -addrA lerDl.
+rewrite -[X in _ <= _ + X]opprK subr_ge0.
+rewrite (le_trans (ler_norm _))// normrN.
+have : (N <= (2 * (k+ n)))%N.
+  rewrite mulnDr -(add0n N) leq_add//.
+  by rewrite mulSn mul1n -(add0n N) leq_add.
+move/Hnear => H.
+apply: (le_trans H).
+rewrite ler_norml lexx andbT.
+suff Hsuff : 0 <= exp_coeff x (2 * (k + n))%N.
+  by apply: (le_trans _ Hsuff); rewrite lerNl oppr0.
+rewrite /exp_coeff/=.
+apply: mulr_ge0 => //.
+apply: exprn_even_ge0.
+by rewrite mul2n odd_double.
+Qed.
+
 Lemma measurable_normal_prob2 :
   measurable_fun setT (normal_prob2 : R -> pprobability _ _).
 Proof.
@@ -1885,7 +1930,7 @@ apply: (@measurability _ _ _ _ _ _
   (@pset _ _ _ : set (set (pprobability _ R)))) => //.
 (*
 rewrite /pset.
-under [X in _ _ _ X `<=` _]eq_fun.
+under [X in _ _ _ X `<=` _]eq_fun.　
   move=> x.
   rewrite RGenOpens.measurableE.
   over.
