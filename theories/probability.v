@@ -1575,6 +1575,198 @@ Check ('d nu '/d sigma_mu).
 
 *)
 
+Section near_lt_lim.
+Variable R : realFieldType.
+Implicit Types u : R ^nat.
+
+Lemma near_lt_lim u (M : R) :
+  (\forall N \near \oo, {in [set n | (N <= n)%N] &, nondecreasing_seq u}) ->
+  cvgn u -> M < limn u -> \forall n \near \oo, M <= u n.
+Proof.
+move=> [] N _ Hnear.
+move=> cu Ml; have [[n Mun]|/forallNP Mu] := pselect (exists n, M <= u n).
+  exists (maxn N n) => //.
+  move=> k/=.
+  rewrite geq_max => /andP.
+(*
+  near=> m; suff : u n <= u m by exact: le_trans.
+  apply/(Hnear m).
+  near: m; exists n.+1 => // p q; apply/(Hnear n)/ltnW => //.
+
+ 
+have {}Mu : forall x, M > u x by move=> x; rewrite ltNge; apply/negP.
+have : limn u <= M by apply: limr_le => //; near=> m; apply/ltW/Mu.
+by move/(lt_le_trans Ml); rewrite ltxx.
+Unshelve. all: by end_near. Qed.
+*)
+Admitted.
+
+End near_lt_lim.
+
+Section near_ereal_nondecreasing_is_cvgn.
+
+Let G N := ([set n | (N <= n)%N]).
+
+Lemma near_ereal_nondecreasing_cvgn (R : realType) (u_ : (\bar R)^nat) :
+   (\forall N \near \oo, {in G N &, nondecreasing_seq u_ })
+      -> u_ @ \oo --> ereal_sup (range u_).
+Proof.
+Admitted.
+
+Lemma near_ereal_nondecreasing_is_cvgn (R : realType) (u_ : (\bar R) ^nat) :
+  (\forall N \near \oo, {in G N &, nondecreasing_seq u_ }) -> cvgn u_.
+Proof.
+move=> [N _ H].
+apply/cvg_ex.
+eexists.
+apply: near_ereal_nondecreasing_cvgn.
+by exists N.
+Qed.
+
+End near_ereal_nondecreasing_is_cvgn.
+
+Section near_monotone_convergence.
+Local Open Scope ereal_scope.
+
+Context d (T : measurableType d) (R : realType).
+Variable mu : {measure set T -> \bar R}.
+Variables (D : set T) (mD : measurable D) (g' : (T -> \bar R)^nat).
+Hypothesis mg' : forall n, measurable_fun D (g' n).
+Hypothesis g'0 : forall n x, D x -> 0 <= g' n x.
+Hypothesis near_nd_g' : (forall x : T, D x -> \forall N \near \oo,
+  {in [set k| (N <= k)%N]&,  {homo g'^~ x : n m / (n <= m)%N >-> (n <= m)%E}}).
+Let f' := fun x => limn (g'^~ x).
+
+Lemma near_monotone_convergence :
+(\int[mu]_(x in D) (fun x0 : T => limn (g'^~ x0)) x)%E =
+limn (fun n : nat => (\int[mu]_(x in D) g' n x)%E).
+Proof.
+Admitted.
+
+Lemma cvg_near_monotone_convergence :
+  \int[mu]_(x in D) g' n x @[n \oo] --> \int[mu]_(x in D) f' x.
+Proof.
+rewrite near_monotone_convergence.
+apply: near_ereal_nondecreasing_is_cvgn.
+near=> N.
+move=> m n; rewrite !inE/= => Nm Nn mn.
+apply: ge0_le_integral => // t Dt; [exact: g'0|exact: g'0|].
+move: (near_nd_g' Dt).
+move=> [] M _.
+have MN : (M <= N)%N.
+Admitted.
+
+End near_monotone_convergence.
+
+Section exp_coeff_properties.
+Context {R : realType}.
+
+Lemma exp_coeff_gt0 (x : R) n : 0 < x -> 0 < exp_coeff x n.
+Proof.
+move=> x0.
+rewrite /exp_coeff/=.
+apply: divr_gt0.
+  exact: exprn_gt0.
+rewrite (_:0%R = 0%:R)// ltr_nat.
+exact: fact_gt0.
+Qed.
+
+Lemma series_exp_coeff_near_ge0 (x : R) :
+  \forall n \near \oo, 0 <= (series (exp_coeff x)) n.
+Proof.
+have := expR_ge0 x.
+rewrite /expR.
+have {1}<- : limn (@cst nat R 0%R) = 0.
+  apply/cvg_lim; first exact: Rhausdorff.
+  exact: cvg_cst.
+move=> H.
+Abort.
+
+Lemma normr_exp_coeff_near_nonincreasing (x : R) :
+  \forall n \near \oo,
+  `|exp_coeff x n.+1| <= `|exp_coeff x n|.
+Proof.
+Admitted.
+
+Lemma exp_coeff2_near_increasing (x : R) :
+ \forall N \near \oo, nondecreasing_seq (fun n => (series (exp_coeff x) (2 * (n + N))%N)).
+Proof.
+have := normr_exp_coeff_near_nonincreasing x.
+move=> [N _] Hnear.
+exists N => //n/= Nn.
+apply/nondecreasing_seqP => k.
+rewrite /series/=.
+have N0 : (0 <= N)%N by [].
+rewrite addSn mulnS add2n.
+rewrite !big_nat_recr//=.
+rewrite -addrA lerDl.
+rewrite -[X in _ <= _ + X]opprK subr_ge0.
+rewrite (le_trans (ler_norm _))// normrN.
+have : (N <= (2 * (k + n)))%N.
+  rewrite mulnDr -(add0n N) leq_add//.
+  by rewrite mulSn mul1n -(add0n N) leq_add.
+move/Hnear => H.
+apply: (le_trans H).
+rewrite ler_norml lexx andbT.
+suff Hsuff : 0 <= exp_coeff x (2 * (k + n))%N.
+  by apply: (le_trans _ Hsuff); rewrite lerNl oppr0.
+rewrite /exp_coeff/=.
+apply: mulr_ge0 => //.
+apply: exprn_even_ge0.
+by rewrite mul2n odd_double.
+Abort.
+
+Lemma exp_coeff2_near_in_increasing (x : R) :
+ \forall N \near \oo, {in [set k | (N <= k)%N] &,
+nondecreasing_seq (fun n => (series (exp_coeff x) (2 * n)%N))}.
+Proof.
+have := normr_exp_coeff_near_nonincreasing x.
+move=> [N _] Hnear.
+exists N => //k/= Nk.
+move=> n m; rewrite !inE/= => kn km nm.
+have kn2 : (2 * k <= 2 * n)%N by rewrite leq_pmul2l.
+have km2 : (2 * k <= 2 * m)%N by rewrite leq_pmul2l.
+rewrite /series/=.
+rewrite (big_cat_nat _ _ _ _ kn2)//=.
+rewrite (big_cat_nat _ _ _ _ km2)//=.
+rewrite lerD2.
+have nm2 : (2 * n <= 2 * m)%N by rewrite leq_pmul2l.
+rewrite (big_cat_nat _ _ _ _ nm2)//=.
+rewrite lerDl.
+rewrite -(add0n (2 * n)%N).
+rewrite big_addn.
+rewrite -mulnBr.
+elim: (m - n)%N.
+  rewrite muln0.
+  rewrite big_mkord.
+  by rewrite big_ord0.
+move=> {m km nm km2 nm2}m IH.
+rewrite mul2n.
+rewrite doubleS.
+rewrite big_nat_recr//=.
+rewrite big_nat_recr//=.
+rewrite -addrA.
+rewrite addr_ge0//.
+  by rewrite -mul2n.
+rewrite -[X in _ <= _ + X]opprK subr_ge0.
+rewrite (le_trans (ler_norm _))// normrN.
+rewrite -mul2n addSn -mulnDr.
+have : (N <= (2 * (m + n)))%N.
+  rewrite mulnDr -(add0n N) leq_add//.
+  by rewrite (leq_trans _ kn2)// (leq_trans Nk)// leq_pmull.
+move/Hnear => H.
+apply: (le_trans H).
+rewrite ler_norml lexx andbT.
+suff Hsuff : 0 <= exp_coeff x (2 * (m + n))%N.
+  by apply: (le_trans _ Hsuff); rewrite lerNl oppr0.
+rewrite /exp_coeff/=.
+apply: mulr_ge0 => //.
+apply: exprn_even_ge0.
+by rewrite mul2n odd_double.
+Qed.
+
+End exp_coeff_properties.
+
 From mathcomp Require Import ftc.
 
 Section normal_kernel.
@@ -1789,7 +1981,36 @@ Local Import Num.ExtraDef.
 Local Definition f (m x : R) :=
   (fun n => let sigma := s ^+ 2 in
   ((sqrtr (sigma * pi *+ 2))^-1 *
-  series (exp_coeff (- ((x - m) ) ^+ 2 / (sigma *+ 2))) n%N)%:E).
+  series (exp_coeff (- ((x - m) ) ^+ 2 / (sigma *+ 2))) (2 * n)%N)%:E).
+
+Lemma near_f_ge0 m x : \forall n \near \oo, (0 <= f m x n)%E.
+Proof.
+apply: lt_lim.
+- move => n0 n1 n01.
+  rewrite ler_pM2l; last first.
+    rewrite invr_gt0.
+    rewrite sqrtr_gt0.
+    rewrite pmulrn_rgt0//.
+    rewrite mulr_gt0//.
+      by rewrite exprn_even_gt0.
+    exact: pi_gt0.
+  set X := (- (x - m) ^+ 2 / (s ^+ 2 *+ 2)).
+  have [N] := (exp_coeff2_near_in_increasing X).
+(*
+near=> n.
+apply: mulr_ge0.
+  rewrite invr_ge0.
+  exact: sqrtr_ge0.
+have : series (exp_coeff (- (x - m) ^+ 2 / (s ^+ 2 *+ 2))) (2 * n)%N @[n --> \oo] --> expR (- (x - m) ^+ 2 / (s ^+ 2 *+ 2)).
+*)
+  admit.
+  admit.
+rewrite /expR.
+Admitted.
+
+Lemma measurable_f_second (m : R) n : measurable_fun setT (f m ^~ n).
+Proof.
+Admitted.
 
 Lemma normal_pdfE (m x : R) :
   (normal_pdf m s x)%:E = limn (f m x).
@@ -1823,91 +2044,66 @@ Lemma integral_f_fin_num x Ys n : (\int[mu]_(x0 in Ys) f x x0 n)%E \is a fin_num
 Admitted.
 
 Lemma integrable_f x Ys n : mu.-integrable Ys ((f x)^~ n).
-Admitted.
+Abort.
 
-Lemma exp_coeff_gt0 (x : R) n : 0 < x -> 0 < exp_coeff x n.
-Proof.
-move=> x0.
-rewrite /exp_coeff/=.
-apply: divr_gt0.
-  exact: exprn_gt0.
-rewrite (_:0%R = 0%:R)// ltr_nat.
-exact: fact_gt0.
-Qed.
-
-Lemma series_exp_coeff_near_ge0 (x : R) :
-  \forall n \near \oo, 0 <= (series (exp_coeff x)) n.
-Proof.
-have := expR_ge0 x.
-rewrite /expR.
-have {1}<- : limn (@cst nat R 0%R) = 0.
-  apply/cvg_lim; first exact: Rhausdorff.
-  exact: cvg_cst.
-move=> H.
-Admitted.
-
-Lemma normr_exp_coeff_near_nonincreasing (x : R) :
-  \forall n \near \oo,
-  `|exp_coeff x n.+1| <= `|exp_coeff x n|.
-Proof.
-Admitted.
-
-Lemma exp_coeff2_near_increasing (x : R) :
- \forall N \near \oo, nondecreasing_seq (fun n => (series (exp_coeff x) (2 * (n + N))%N)).
-Proof.
-have := normr_exp_coeff_near_nonincreasing x.
-move=> [N _] Hnear.
-exists N => //n/= Nn.
-apply/nondecreasing_seqP => k.
-rewrite /series/=.
-have N0 : (0 <= N)%N by [].
-rewrite addSn mulnS add2n.
-rewrite !big_nat_recr//=.
-rewrite -addrA lerDl.
-rewrite -[X in _ <= _ + X]opprK subr_ge0.
-rewrite (le_trans (ler_norm _))// normrN.
-have : (N <= (2 * (k+ n)))%N.
-  rewrite mulnDr -(add0n N) leq_add//.
-  by rewrite mulSn mul1n -(add0n N) leq_add.
-move/Hnear => H.
-apply: (le_trans H).
-rewrite ler_norml lexx andbT.
-suff Hsuff : 0 <= exp_coeff x (2 * (k + n))%N.
-  by apply: (le_trans _ Hsuff); rewrite lerNl oppr0.
-rewrite /exp_coeff/=.
-apply: mulr_ge0 => //.
-apply: exprn_even_ge0.
-by rewrite mul2n odd_double.
-Qed.
-
+(* there are three ways:
+ * 1. integration by substitution of shift function.
+ *      This needs int. by subst. of shift for general set R (not only for intervals)
+ *      which requires sigma-finite charge (difficult!)
+ * 2. use dominated_convergence.
+ *      This needs generalized dominated_convergence with hypothesis about domination
+ *      \forall N \near \oo, {ae mu, forall x, f x n <= g x}.
+ *      For the f here, g can be (expR (- x ^+ 2 / (s^+2 *+ 2)))%:E,
+ *      but require gauss integration be merged for integrability.
+ * 3. use monotone_convergence. (ongoing)
+ *      This needs generalized monotone_convergence that
+ *      hypotheses for nondecreasing and non-negativeness to be with near.
+ *      generalization is not so difficult.
+ *)
 Lemma measurable_normal_prob2 :
   measurable_fun setT (normal_prob2 : R -> pprobability _ _).
 Proof.
 apply: (@measurability _ _ _ _ _ _
   (@pset _ _ _ : set (set (pprobability _ R)))) => //.
-(*
-rewrite /pset.
-under [X in _ _ _ X `<=` _]eq_fun.　
-  move=> x.
-  rewrite RGenOpens.measurableE.
-  over.
-rewrite /=.
-move=> /= _ [_ [x x01] [Y mYs <-]] <-.
-rewrite setTI.
-
-move: mYs.
-rewrite /measurable/=.
-*)
-(*
 move=> _ -[_ [r r01] [Ys mYs <-]] <-.
 apply: emeasurable_fun_infty_o => //=.
 under [X in _ _ X]eq_fun.
   move=> x.
+  have mf n : measurable_fun Ys ((f x)^~ n).
+    apply: measurable_funTS.
+    exact: measurable_f_second.
   have:= (@lim_normal_probE x _ mYs).
   rewrite -(fineK (normal_prob_fin_num _ _)).
   move/fine_cvg.
   move/cvg_lim => <-; last exact: Rhausdorff.
   rewrite -EFin_lim; last first.
+    apply/cvg_ex.
+    exists (fine (\int[mu]_(x0 in Ys) limn [eta f x x0])%E).
+    apply: fine_cvg => //.
+    rewrite fineK.
+(* (note for 3.)
+have mlimf : measurable_fun Ys (fun x0 => limn [eta f x x0])%E.
+  admit.
+have H1 : {ae mu, forall x0, Ys x0 -> f x x0 x1 @[x1 --> \oo] --> (limn [eta f x x0])%E}.
+  admit. 
+    have e x : \bar R := (expR (- x ^+ 2 / (s^+2 *+ 2)))%:E.
+have : forall M x0, exists x, (`| f x x0 1 | > M)%E.
+move=> M x0.
+    have H2 : mu.-integrable Ys e.
+      admit.
+    have H3 : \forall N \near \oo, {ae mu, forall x0 n, (N <= n)%N ->  Ys x0 -> (`|f x x0 n| <= e x0)%E}.
+      admit.
+    have [Hdc1 Hdc2 Hdc3] := dominated_convergence mYs mf mlimf H1 H2 H3.
+    exact: Hdc3.
+*)
+    apply: cvg_near_monotone_convergence => // (* generalize more *).
+      move=> n y Ysy.
+      have := (near_f_ge0 x y).
+      move=> [] N _.
+      apply.
+Admitted.
+
+(* (note for 1.)
     admit.
   under [X in limn X]eq_fun do rewrite (fineK (integral_f_fin_num _ _ _)).
   over.
@@ -1923,20 +2119,29 @@ apply: (emeasurable_fun_cvg (fun n : nat => fun x => (\int[mu]_(x0 in Ys) f x x0
   - exists (cst (Num.sqrt (s^+2 * pi *+ 2))^-1 * 1).
     admit.
 move=> x _.
-apply: ereal_nondecreasing_is_cvgn.
-apply/nondecreasing_seqP.
-move=> n.
-apply: le_integral => //=.
-- exact: integrable_f.
-- exact: integrable_f.
-move=> y _.
 rewrite /f.
-rewrite lee_fin ler_pM2l; last first.
-  admit.
-rewrite -(add1n n) series_addn lerDl add1n.
-rewrite !big_nat1.
-rewrite /exp_coeff/=. (* it is not true! *)
-*)
+rewrite -near_monotone_convergence//; first last.
+- admit.
+- admit.
+- move=> n; apply: measurable_funTS; exact: (measurable_f_second x n).
+apply: cvg_near_monotone_convergence => //.
+- admit.
+- admit.
+move=> /= y _.
+have := exp_coeff2_near_in_increasing (- (y - x) ^+ 2 / (s ^+ 2 *+ 2)).
+move=> [] N _ Hnear.
+exists N => //.
+move=> k/= Nk n' m'; rewrite !inE/= => kn' km' n'm'.
+rewrite lee_fin.
+rewrite ler_pM2l; last first.
+  rewrite invr_gt0.
+  rewrite sqrtr_gt0.
+  rewrite pmulrn_lgt0//.
+  rewrite mulr_gt0//.
+    by rewrite exprn_even_gt0.
+  exact: pi_gt0.
+by apply: (Hnear k) => //; rewrite !inE/=.
+Admitted.
 
 (*
 under [X in _ _ X]eq_fun do rewrite -(fineK (normal_prob_fin_num _ Ys)).
@@ -1979,6 +2184,7 @@ rewrite /normal_pdf; case: ifP => [|_]; first by move/negP: s0.
 
 admit.
 Admitted.
+*)
 
 (*
 Lemma measurable_normal_prob2' :
