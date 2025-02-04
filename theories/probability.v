@@ -1654,7 +1654,7 @@ have : limn u <= M by apply: limr_le => //; near=> m; apply/ltW/Mu.
 by move/(lt_le_trans Ml); rewrite ltxx.
 Unshelve. all: by end_near. Qed.
 *)
-Admitted.
+Abort.
 
 End near_lt_lim.
 
@@ -1662,21 +1662,39 @@ Section near_ereal_nondecreasing_is_cvgn.
 
 Let G N := ([set n | (N <= n)%N]).
 
-Lemma near_ereal_nondecreasing_cvgn (R : realType) (u_ : (\bar R)^nat) :
-   (\forall N \near \oo, {in G N &, nondecreasing_seq u_ })
-      -> u_ @ \oo --> ereal_sup (range u_).
-Proof.
-Admitted.
-
 Lemma near_ereal_nondecreasing_is_cvgn (R : realType) (u_ : (\bar R) ^nat) :
   (\forall N \near \oo, {in G N &, nondecreasing_seq u_ }) -> cvgn u_.
 Proof.
 move=> [N _ H].
 apply/cvg_ex.
-eexists.
-apply: near_ereal_nondecreasing_cvgn.
-by exists N.
+exists (ereal_sup (range (fun n =>  u_ (n + N)))).
+rewrite -(cvg_shiftn N).
+apply: ereal_nondecreasing_cvgn.
+move=> n m nm.
+apply: (H N); rewrite /G ?inE//=.
+- exact: leq_addl.
+- exact: leq_addl.
+- exact: leq_add.
 Qed.
+
+Lemma near_ereal_nondecreasing_cvgn (R : realType) (u_ : (\bar R)^nat) :
+(*
+   (\forall N \near \oo, {in G N &, nondecreasing_seq u_ })
+      -> u_ @ \oo --> limn u_. (* ereal_sup range ? *)
+*)
+\forall N \near \oo, {in G N &, nondecreasing_seq u_ }
+      -> u_ @ \oo --> ereal_sup (range (fun n => u_ (n + N))).
+Proof.
+near=> N.
+(*
+move=> [N _ H].
+apply/cvg_ex.
+exists (limn (fun n => u_ (n + N))).
+rewrite -(cvg_shiftn N).
+apply: ereal_nondecreasing_cvgn.
+*)
+Abort.
+
 
 End near_ereal_nondecreasing_is_cvgn.
 
@@ -1771,18 +1789,15 @@ Qed.
 Lemma series_exp_coeff_near_ge0 (x : R) :
   \forall n \near \oo, 0 <= (series (exp_coeff x)) n.
 Proof.
-have := expR_ge0 x.
-rewrite /expR.
-have {1}<- : limn (@cst nat R 0%R) = 0.
-  apply/cvg_lim; first exact: Rhausdorff.
-  exact: cvg_cst.
-move=> H.
+apply: (cvgr_ge (expR x)); last exact: expR_gt0.
+exact: is_cvg_series_exp_coeff.
 Abort.
 
 Lemma normr_exp_coeff_near_nonincreasing (x : R) :
   \forall n \near \oo,
   `|exp_coeff x n.+1| <= `|exp_coeff x n|.
 Proof.
+
 Admitted.
 
 Lemma exp_coeff2_near_increasing (x : R) :
@@ -1879,6 +1894,7 @@ Hypothesis integral_normal : forall m,
 
 Local Definition normal_prob2 := (fun m => normal_prob m s) : _ -> pprobability _ _.
 
+(*
 Lemma bij_shift x : bijective (id \+ @cst R R x).
 Proof.
 apply: (@Bijective _ _ _ (id \- cst x)).
@@ -1930,10 +1946,12 @@ Lemma pushforward_shift_measurable (mu : measure (measurableTypeR R) R) (x : R) 
 Proof.
 by rewrite /pushforward shift_preimage.
 Qed.
+*)
 
 From mathcomp Require Import charge.
 Open Scope charge_scope.
 
+(*
 Lemma radon_nikodym_crestr_fin U (mU : measurable U)
 (Uoo : (@lebesgue_measure R U < +oo)%E) :
  ae_eq lebesgue_measure setT ('d charge_of_finite_measure (mfrestr mU Uoo) '/d
@@ -1948,6 +1966,7 @@ rewrite -Radon_Nikodym_integral.
 rewrite integral_indic/=.
 by rewrite /mfrestr/mrestr setIC.
 Admitted.
+*)
 
 (*
 Lemma radon_nikodym_crestr U (mU : measurable U) :
@@ -1957,6 +1976,7 @@ Lemma radon_nikodym_crestr U (mU : measurable U) :
 Proof.
 *)
 
+(*
 Lemma integration_by_substitution_shift f (r : R) U :
 (\int[mu]_(x in (shift r) @` U) f x =
 \int[mu]_(x in U) (f \o (shift r)) x)%E.
@@ -1977,7 +1997,9 @@ apply: eq_integral.
 move=> x _.
 *)
 Admitted.
+*)
 
+(*
 Lemma normal_shift0 x : 
 normal_prob2 x =
   @pushforward _ _ _
@@ -2000,6 +2022,7 @@ rewrite ifF; last exact/negP/negP.
 rewrite ifF; last exact/negP/negP.
 by rewrite subr0.
 Qed.
+*)
 
 (*
 Lemma measurable_normal_prob2_ocitv a b:
@@ -2040,6 +2063,7 @@ Admitted.
 
 Local Close Scope ereal_scope.
 
+(*
 Lemma continuousT_integralT (f : R -> R -> R) :
 (forall l, mu.-integrable setT (fun x => (f l x)%:E)) ->
 {ae mu, forall x, {for x, continuous (fun l => f l x)}} ->
@@ -2047,6 +2071,7 @@ Lemma continuousT_integralT (f : R -> R -> R) :
 continuous (fun l => \int[mu]_x f l x).
 Proof.
 Abort.
+*)
 
 Lemma continuousT_integral (f : R -> R -> R) (V : set R) :
 (forall l, mu.-integrable V (fun x => (f l x)%:E)) ->
@@ -2065,6 +2090,7 @@ Lemma integrable_normal_pdf0 U z :  mu.-integrable U
 Proof.
 Admitted.
 
+(*
 Lemma shift_continuous (x : R) : continuous (shift x).
 Proof.
 Admitted.
@@ -2072,6 +2098,7 @@ Admitted.
 Lemma add_continuous (x : R) : continuous (+%R x).
 Proof.
 Admitted.
+*)
 
 Local Import Num.ExtraDef.
 
@@ -2080,8 +2107,10 @@ Local Definition f (m x : R) :=
   ((sqrtr (sigma * pi *+ 2))^-1 *
   series (exp_coeff (- ((x - m) ) ^+ 2 / (sigma *+ 2))) (2 * n)%N)%:E).
 
-Lemma near_f_ge0 m x : \forall n \near \oo, (0 <= f m x n)%E.
+Lemma near_f_ge0 : \forall n \near \oo, forall m x, (0 <= f m x n)%E.
 Proof.
+Admitted.
+(*
 apply: lt_lim.
 - move => n0 n1 n01.
   rewrite ler_pM2l; last first.
@@ -2104,6 +2133,7 @@ have : series (exp_coeff (- (x - m) ^+ 2 / (s ^+ 2 *+ 2))) (2 * n)%N @[n --> \oo
   admit.
 rewrite /expR.
 Admitted.
+*)
 
 Lemma measurable_f_second (m : R) n : measurable_fun setT (f m ^~ n).
 Proof.
@@ -2193,11 +2223,12 @@ move=> M x0.
     have [Hdc1 Hdc2 Hdc3] := dominated_convergence mYs mf mlimf H1 H2 H3.
     exact: Hdc3.
 *)
-    apply: cvg_near_monotone_convergence => // (* generalize more *).
-      move=> n y Ysy.
-      have := (near_f_ge0 x y).
-      move=> [] N _.
-      apply.
+    apply: cvg_near_monotone_convergence => //.
+      have [N _ H] := near_f_ge0.
+      exists N => //.
+      move=> n/= Nn y Ysy.
+      exact: H.
+    (* have [N _ H] := near_nd_f *)
 Admitted.
 
 (* (note for 1.)
