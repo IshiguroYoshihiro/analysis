@@ -1913,8 +1913,25 @@ Lemma normr_exp_coeff_near_nonincreasing (x : R) :
   \forall n \near \oo,
   `|exp_coeff x n.+1| <= `|exp_coeff x n|.
 Proof.
-
-Admitted.
+exists `|archimedean.Num.Def.ceil x |%N => //.
+move=> n/= H.
+rewrite exp_coeffE.
+rewrite exprS mulrA normrM [leRHS]normrM ler_pM//.
+rewrite factS mulnC natrM invfM -mulrA normrM ger_pMr; last first.
+  rewrite normr_gt0.
+  rewrite invr_neq0//.
+  apply: lt0r_neq0.
+  rewrite (_:0%R = 0%:R)// ltr_nat.
+  exact: fact_gt0.
+rewrite normrM normfV.
+rewrite ler_pdivrMl; last first.
+  rewrite normr_gt0.
+  by rewrite lt0r_neq0.
+rewrite mulr1.
+apply: (le_trans (abs_ceil_ge _)).
+rewrite gtr0_norm//.
+by rewrite ler_nat ltnS.
+Qed.
 
 Lemma exp_coeff2_near_increasing (x : R) :
  \forall N \near \oo, nondecreasing_seq (fun n => (series (exp_coeff x) (2 * (n + N))%N)).
