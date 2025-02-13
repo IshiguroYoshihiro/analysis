@@ -2058,6 +2058,7 @@ End near_monotone_convergence.
 Section exp_coeff_properties.
 Context {R : realType}.
 
+(* not used, TODO:PR *)
 Lemma exp_coeff_gt0 (x : R) n : 0 < x -> 0 < exp_coeff x n.
 Proof.
 move=> x0.
@@ -2066,7 +2067,7 @@ apply: divr_gt0.
   exact: exprn_gt0.
 rewrite (_:0%R = 0%:R)// ltr_nat.
 exact: fact_gt0.
-Qed.
+Abort.
 
 Lemma series_exp_coeff_near_ge0 (x : R) :
   \forall n \near \oo, 0 <= (series (exp_coeff x)) n.
@@ -2099,7 +2100,7 @@ rewrite gtr0_norm//.
 by rewrite ler_nat ltnS.
 Qed.
 
-Lemma exp_coeff2_near_increasing (x : R) :
+Lemma exp_coeff2_near_nondecreasing (x : R) :
  \forall N \near \oo, nondecreasing_seq (fun n => (series (exp_coeff x) (2 * (n + N))%N)).
 Proof.
 have := normr_exp_coeff_near_nonincreasing x.
@@ -2177,6 +2178,85 @@ by rewrite mul2n odd_double.
 Qed.
 
 End exp_coeff_properties.
+
+Section continuous_under_integral.
+Context {R : realType}.
+Variable f : R -> R -> R.
+Variable V : set R.
+
+Local Notation mu := lebesgue_measure.
+
+Hypothesis mV : measurable V.
+Hypothesis int_f : forall l, mu.-integrable V (fun x => (f l x)%:E).
+Hypothesis cf : forall x, continuous (fun l => f l x). (* generalize *)
+
+Hypothesis ex_locally_dominates_g :
+(forall l, exists U, [/\ U !=set0, U \in (nbhs (l : R^o)) &
+  (exists g : R -> R, mu.-integrable V (EFin \o g) /\
+   {in U, forall l', {in V, forall x, `|f l' x| <= g x}})]).
+
+(* TODO: generalize *)
+(*
+Context {R : realType} d {Y : measurableType d}
+  {mu : {measure set Y -> \bar R}}.
+
+Variable f : R -> Y -> R.
+Variable V : set Y.
+Hypothesis mV : measurable V.
+
+Variable a u v : R.
+Let I : set R := `]u, v[.
+
+Hypothesis Ia : I a.
+Hypothesis int_f : forall x, I x -> mu.-integrable V (EFin \o (f x)).
+Hypothesis cf : forall x, I x -> continuous (f ^~ x).
+
+Variable g : R -> R.
+
+Hypothesis int_g : mu.-integrable V (EFin \o g)
+*)
+
+Lemma continuousT_under_integral :
+continuous (fun l => \int[mu]_(x in V) f l x).
+Proof.
+move=> r.
+apply/cvg_nbhsP.
+move=> u_ ur.
+have [U [U0 Ur [g [intg Hdom]]]] := (ex_locally_dominates_g r).
+move: Ur.
+rewrite inE.
+rewrite {1}/nbhs [X in X -> _]/=.
+rewrite /nbhs_ball_/=.
+case => e /= e0.
+move/(@cvgrPdist_lt _ R^o) : (ur).
+move/(_ _ e0).
+case.
+move=> N _ H1 H2.
+rewrite -(cvg_shiftn N).
+apply: fine_cvg.
+rewrite fineK; last first.
+  have /integrableP[H] := int_f r.
+  rewrite fin_num_abs.
+  by move/abse_integralP; apply.
+apply: (@lebesgue_integral.dominated_cvg _ _ _ mu _ _
+   (fun n x => (f (u_ (n + N)%N) x)%:E) _ (EFin \o g)) => //=.
+- move=> n.
+  apply: measurable_int.
+  exact: int_f.
+- move=> x Vx. (* TODO: forall x in V -> a.e. V *)
+  apply: cvg_EFin; first exact: nearW.
+  have /cvg_nbhsP := (@cf x r).
+  apply.
+  by rewrite (cvg_shiftn N).
+- move=> n x Vx.
+  apply: Hdom; last by rewrite inE.
+  rewrite inE.
+  apply: H2 => /=.
+  apply: H1 => //=.
+  exact: leq_addl.
+Qed.
+
+End continuous_under_integral.
 
 From mathcomp Require Import ftc.
 
@@ -2359,7 +2439,7 @@ Lemma integral_normal_prob (f : R -> \bar R) (m : R) U : measurable U -> measura
   \int[normal_prob2 m]_(x in U) `|f x| < +oo ->
   \int[normal_prob2 m]_(x in U) f x = \int[mu]_(x in U) (f x * (normal_pdf m s x)%:E) :> \bar R.
 Proof.
-Admitted.
+Abort.
 
 Local Close Scope ereal_scope.
 
@@ -2373,13 +2453,6 @@ Proof.
 Abort.
 *)
 
-Lemma continuousT_integral (f : R -> R -> R) (V : set R) :
-(forall l, mu.-integrable V (fun x => (f l x)%:E)) ->
-{ae mu, forall x, {for x, continuous (fun l => f l x)}} ->
-(exists g : R -> R, {in V, forall l, forall x, `|f l x| <= g x}) ->
-continuous (fun l => \int[mu]_(x in V) f l x).
-Proof.
-Admitted.
 
 Lemma normal_prob_fin_num (m : R) U : normal_prob m s U \is a fin_num.
 Proof.
@@ -2388,7 +2461,7 @@ Admitted.
 Lemma integrable_normal_pdf0 U z :  mu.-integrable U
     (fun x : R => (normal_pdf 0 s (x - z))%:E).
 Proof.
-Admitted.
+Abort.
 
 (*
 Lemma shift_continuous (x : R) : continuous (shift x).
@@ -2435,43 +2508,74 @@ rewrite /expR.
 Admitted.
 *)
 
+Lemma near_nd_f : \forall N \near \oo, forall m x,
+  {in [set n | (N <= n)%N]&, nondecreasing (f m x)}.
+Proof.
+near=> N.
+move=> m x n0 n1; rewrite !inE/= => Nn0 Nn1 n01.
+rewrite /f lee_fin ler_pM2l; last first.
+  rewrite invr_gt0 sqrtr_gt0.
+  rewrite pmulrn_lgt0//.
+  rewrite mulr_gt0//.
+    by rewrite exprn_even_gt0.
+  exact: pi_gt0.
+Admitted.
+
+Lemma f_first_continuous (n : nat) (x : R) :
+  continuous (fun m => fine (f m x n)).
+Proof.
+Admitted.
+
+Lemma f_second_continuous (n : nat) (x : R) :
+  continuous (fine \o (f x ^~ n)).
+Proof.
+Admitted.
+
 Lemma measurable_f_second (m : R) n : measurable_fun setT (f m ^~ n).
 Proof.
-Admitted.
+Abort.
 
-Lemma normal_pdfE (m x : R) :
-  (normal_pdf m s x)%:E = limn (f m x).
+Lemma cvg_f m x : (f m x n) @[n --> \oo] --> (normal_pdf m s x)%:E.
 Proof.
-apply/esym/cvg_lim => //=.
-rewrite /f.
-rewrite /normal_pdf.
+rewrite /f/normal_pdf.
+rewrite ifF; last exact/negP/negP.
+apply/cvg_EFin.
+  exact/nearW.
+apply: cvgMr.
+have : (2 * n)%N @[n --> \oo] --> \oo.
+  under eq_cvg do rewrite mulnC.
+  exact: cvg_mulnr.
+move/cvg_comp; apply.
+exact: is_cvg_series_exp_coeff.
+Qed.
 
+Lemma integral_f_fin_num x Ys n : (\int[mu]_(x0 in Ys) f x x0 n)%E \is a fin_num.
 Admitted.
 
-Lemma lim_normal_probE m Ys : measurable Ys ->
+Lemma cvg_integral_f m Ys : measurable Ys ->
  (\int[mu]_(x in Ys) f m x n)%E @[n --> \oo] --> normal_prob m s Ys.
 Proof.
 move=> mYs.
 rewrite /normal_prob.
 rewrite [X in _ --> X](_ : _ = (\int[mu]_(x in Ys) (limn (f m x)))%E); last first.
   apply: eq_integral => y _.
-  by rewrite -normal_pdfE.
-apply: cvg_monotone_convergence => //.
+  apply/esym/cvg_lim => //.
+  exact: cvg_f.
+apply: cvg_near_monotone_convergence => //.
 move=> n.
 rewrite /f.
 (* ge0_emeasurable_sum *)
 - admit.
-- move=> n x Ysx.
+- near=> n.
+  move=> x Ysx.
   rewrite /f.
 admit.
+near=> n.
 move=> x Ysx.
 Admitted.
 
-Lemma integral_f_fin_num x Ys n : (\int[mu]_(x0 in Ys) f x x0 n)%E \is a fin_num.
-Admitted.
-
 Lemma integrable_f x Ys n : mu.-integrable Ys ((f x)^~ n).
-Abort.
+Admitted.
 
 (* there are three ways:
  * 1. integration by substitution of shift function.
@@ -2494,20 +2598,35 @@ apply: (@measurability _ _ _ _ _ _
   (@pset _ _ _ : set (set (pprobability _ R)))) => //.
 move=> _ -[_ [r r01] [Ys mYs <-]] <-.
 apply: emeasurable_fun_infty_o => //=.
+apply: (@emeasurable_fun_cvg _ _ _ _ (fun n m => (\int[mu]_(x in Ys) f m x n)%E)); last first.
+  move=> x _.
+  exact: cvg_integral_f.
+move=> n/=.
 under [X in _ _ X]eq_fun.
   move=> x.
-  have mf n : measurable_fun Ys ((f x)^~ n).
-    apply: measurable_funTS.
-    exact: measurable_f_second.
-  have:= (@lim_normal_probE x _ mYs).
-  rewrite -(fineK (normal_prob_fin_num _ _)).
-  move/fine_cvg.
-  move/cvg_lim => <-; last exact: Rhausdorff.
-  rewrite -EFin_lim; last first.
-    apply/cvg_ex.
-    exists (fine (\int[mu]_(x0 in Ys) limn [eta f x x0])%E).
-    apply: fine_cvg => //.
-    rewrite fineK.
+  rewrite -(@fineK _ (\int[_]_(_ in Ys) _)%E); last exact: integral_f_fin_num.
+  over.
+apply/measurable_EFinP.
+
+apply: continuous_measurable_fun.
+apply: continuousT_under_integral => //.
+    move=> l.
+    exact: integrable_f.
+  move=> x m.
+  exact: (@f_first_continuous n x).
+move=> l.
+near (@GRing.zero R)^'+ => e.
+exists (ball l e).
+split.
+    apply/set0P.
+    apply/eqP.
+    apply/ball0.
+    apply/negP.
+    by rewrite -ltNge.
+  rewrite inE.
+  exact: nbhsx_ballx.
+admit. (* not true *)
+
 (* (note for 3.)
 have mlimf : measurable_fun Ys (fun x0 => limn [eta f x x0])%E.
   admit.
@@ -2523,12 +2642,7 @@ move=> M x0.
     have [Hdc1 Hdc2 Hdc3] := dominated_convergence mYs mf mlimf H1 H2 H3.
     exact: Hdc3.
 *)
-    apply: cvg_near_monotone_convergence => //.
-      have [N _ H] := near_f_ge0.
-      exists N => //.
-      move=> n/= Nn y Ysy.
-      exact: H.
-    (* have [N _ H] := near_nd_f *)
+
 Admitted.
 
 (* (note for 1.)
