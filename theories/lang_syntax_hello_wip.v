@@ -32,20 +32,28 @@ Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 
-Section normal.
+(* TODO: move to probability? *)
+Section normal_prob_properties.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
 
 Local Open Scope charge_scope.
 
-Lemma beta_pdf_uniq_ae (m s : R) (s0 : (0 < s)%R) :
+Lemma normal_pdf_uniq_ae (m s : R) (s0 : (0 < s)%R) :
   ae_eq mu setT
    ('d ((charge_of_finite_measure (@normal_prob R m s))) '/d mu)
                (EFin \o (@normal_pdf R m s)).
 Proof.
-Admitted.
+apply: integral_ae_eq => //.
+    apply: Radon_Nikodym_integrable => /=.
+    exact: normal_prob_dominates.
+  apply/measurable_EFinP.
+  exact: measurable_normal_pdf.
+move=> /= E _ mE.
+by rewrite -Radon_Nikodym_integral//=; apply: normal_prob_dominates.
+Qed.
 
-End normal.
+End normal_prob_properties.
 
 (*
 Section disintegration_measure.
@@ -144,13 +152,30 @@ Definition helloRight2 : @exp R _ [:: ("y0", Real)] _ :=
                    {(Num.sqrt (4 * pi))^-1}:R in
   Sample {exp_normal_3Vsqrt2 [#{"y0"} * {2^-1}:R]}].
 
-(* TODO: prove *)
-Axiom integral_normal_prob : forall (m s : R) (s0 : (0 < s)%R) f U,
+Lemma integral_normal_prob (m s : R) (s0 : (0 < s)%R) f U :
   measurable U ->
-  measurable_fun U f ->
-  \int[@normal_prob _ m s]_(x in U) `|f x| < +oo ->
+  (normal_prob m s).-integrable U f ->
   \int[@normal_prob _ m s]_(x in U) f x =
   \int[mu]_(x in U) (f x * (normal_pdf m s x)%:E).
+Proof.
+move=> mU intf.
+move/integrableP : (intf) => [mf intf_lty].
+rewrite -(Radon_Nikodym_change_of_variables (normal_prob_dominates m s))//=.
+apply: ae_eq_integral => //=.
+    apply: emeasurable_funM => //.
+    apply: measurable_funTS.
+    have : charge_of_finite_measure (normal_prob m s) `<< mu.
+      exact: normal_prob_dominates m s.
+    move/Radon_Nikodym_integrable.
+    by move/integrableP => [].
+  apply: emeasurable_funM => //.
+  apply/measurable_EFinP.
+  apply: measurable_funTS.
+  exact: measurable_normal_pdf.
+apply: ae_eq_mul2l.
+apply: (ae_eq_subset (@subsetT _ U)).
+exact: (normal_pdf_uniq_ae m s0).
+Qed.
 
 (*
 Definition tail1 : @exp R _ [:: ("x", Real)] _ :=
@@ -170,13 +195,33 @@ execP [let "x" := Sample {exp_normal ltr01 (exp_real 0)} in
   {tail1}].
 *)
 
-Lemma integral_normal_prob_dirac (m : R) V : \int[normal_prob m 1]_x0 (\d_x0 V)
-   = normal_prob m 1 V.
+Lemma integral_normal_prob_dirac (m : R) V : measurable V ->
+  \int[normal_prob m 1]_x0 (\d_x0 V) = normal_prob m 1 V.
 Proof.
+move=> mV.
 rewrite integral_normal_prob; first last.
-- under eq_integral.
-
-- admit.
+- rewrite -(setUv V).
+  rewrite ge0_integral_setU => //; first last.
+        exact/disj_setPCl.
+      rewrite setUv.
+      apply: measurableT_comp => //.
+      exact: measurable_fun_dirac.
+    exact: measurableC.
+  under eq_integral.
+    move=> x Vx.
+    rewrite diracE Vx/= normr1.
+    over.
+  under [X in _ + X < _]eq_integral.
+    move=> x.
+    rewrite inE/= => nVx.
+    have {}nVx := (memNset nVx).
+    rewrite indicE nVx/= normr0.
+    over.
+  rewrite !integral_cst//=; last exact: measurableC.
+  rewrite mul1e mul0e adde0.
+  apply: (le_lt_trans (probability_le1 (normal_prob m 1) mV)).
+  exact: ltey.
+- exact: measurable_fun_dirac.
 - exact: measurableT.
 - exact: ltr01.
 under eq_integral do rewrite diracE.
@@ -186,7 +231,7 @@ under [in RHS]eq_integral do rewrite patchE.
 rewrite /=.
 apply: eq_integral => x _.
 by case: ifP => xV/=; rewrite ?mul1e ?mul0e.
-Admitted.
+Qed.
 
 (* ref: https://homes.luddy.indiana.edu/ccshan/rational/equational-handout.pdf
  * p.2, equation (7)
