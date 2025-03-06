@@ -32,6 +32,52 @@ Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 
+(*
+Section eq_lebesgue_measure_measurable.
+Context {R : realType}.
+
+Local Notation mu := lebesgue_measure.
+
+Variable f : cumulative R.
+Hypothesis intf : integrable mu setT (EFin \o f).
+
+Local Notation lsmf := (lebesgue_stieltjes_measure f).
+
+Let fin_lsmf : fin_num_fun lsmf.
+Proof.
+apply: lty_fin_num_fun.
+rewrite /=/lsmf/measure_extension/mu_ext.
+Admitted.
+
+HB.instance Definition _ := @Measure_isFinite.Build _ _ _ lsmf fin_lsmf.
+
+Lemma Radon_Nikodym_ae_unique :
+  ae_eq mu setT (EFin \o f) ('d lsmf '/d mu).
+Proof.
+apply: integral_ae_eq => //.
+  admit.
+move=> E _ mE.
+rewrite -Radon_Nikodym_integral//; last first.
+  admit.
+
+
+Lemma eq_lebesgue_measure_measurable (m' : measure _ R) :
+sigma_additive m' ->
+(forall U : set _, measurable U -> m' U = mu U) ->
+m' = mu.
+Proof.
+move=> sm' H.
+apply: eq_measure.
+apply/funext => U.
+have : setT U by [].
+rewrite -(setUv measurable).
+move=> [mU|nmU]; first exact: H.
+pose e := m' U.
+have : m' U = e by [].
+Abort.
+
+End eq_lebesgue_measure_measurable.
+*)
 (* TODO: move to probability? *)
 Section normal_prob_properties.
 Context {R : realType}.
@@ -140,7 +186,7 @@ Local Notation exp_normal_3Vsqrt2 := (exp_normal neq03Vsqrt2).
 
 Definition helloRight1 : @exp R _ [:: ("y0", Real)] _ :=
  [Normalize
-  let "_" := Score {expR 1} `^ ({0}:R - #{"y0"} ^+ {2} * {4^-1}:R) *
+  let "_" := Score ({expR 1} `^ ({0}:R - #{"y0"} ^+ {2} * {4^-1}:R)) *
                    {(Num.sqrt (4 * pi))^-1}:R in
   let "x" := Sample {exp_normal_Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
   let "z" := Sample {exp_normal1 [#{"x"}]} in
@@ -151,6 +197,24 @@ Definition helloRight2 : @exp R _ [:: ("y0", Real)] _ :=
   let "_" := Score {expR 1} `^ ({0}:R - #{"y0"} ^+ {2} * {4^-1}:R) *
                    {(Num.sqrt (4 * pi))^-1}:R in
   Sample {exp_normal_3Vsqrt2 [#{"y0"} * {2^-1}:R]}].
+
+(* TODO: move *)
+Lemma emeasurable_normal_prob (s : R) U : s != 0%R -> measurable U ->
+   measurable_fun setT (fun x => normal_prob x s U).
+Proof.
+move=> s0 mU.
+under [X in _ _ X]eq_fun.
+  move=> x.
+  rewrite -(@fineK _ (_ x _ _)); last first.
+    rewrite ge0_fin_numE//.
+    apply: (@le_lt_trans _ _ (normal_prob x s setT)).
+      by apply: le_measure; rewrite ?inE.
+    by rewrite probability_setT ltry.
+  over.
+apply/measurable_EFinP.
+apply: (continuous_measurable_fun).
+exact: normal_prob_continuous.
+Qed.
 
 Lemma integral_normal_prob (m s : R) (s0 : (0 < s)%R) f U :
   measurable U ->
@@ -195,35 +259,39 @@ execP [let "x" := Sample {exp_normal ltr01 (exp_real 0)} in
   {tail1}].
 *)
 
+Lemma normal_prob_integrable_dirac (m s : R) (V : set R): measurable V ->
+  (normal_prob m s).-integrable setT (fun x => \d_x V).
+Proof.
+move=> mV.
+apply/integrableP; split; first exact: measurable_fun_dirac.
+rewrite -(setUv V).
+rewrite ge0_integral_setU => //; first last.
+      exact/disj_setPCl.
+    rewrite setUv.
+    apply: measurableT_comp => //.
+    exact: measurable_fun_dirac.
+  exact: measurableC.
+under eq_integral.
+  move=> x Vx.
+  rewrite diracE Vx/= normr1.
+  over.
+under [X in _ + X < _]eq_integral.
+  move=> x.
+  rewrite inE/= => nVx.
+  have {}nVx := (memNset nVx).
+  rewrite indicE nVx/= normr0.
+  over.
+rewrite !integral_cst//=; last exact: measurableC.
+rewrite mul1e mul0e adde0.
+apply: (le_lt_trans (probability_le1 (normal_prob m s) mV)).
+exact: ltey.
+Qed.
+
 Lemma integral_normal_prob_dirac (m : R) V : measurable V ->
   \int[normal_prob m 1]_x0 (\d_x0 V) = normal_prob m 1 V.
 Proof.
 move=> mV.
-rewrite integral_normal_prob; first last.
-- rewrite -(setUv V).
-  rewrite ge0_integral_setU => //; first last.
-        exact/disj_setPCl.
-      rewrite setUv.
-      apply: measurableT_comp => //.
-      exact: measurable_fun_dirac.
-    exact: measurableC.
-  under eq_integral.
-    move=> x Vx.
-    rewrite diracE Vx/= normr1.
-    over.
-  under [X in _ + X < _]eq_integral.
-    move=> x.
-    rewrite inE/= => nVx.
-    have {}nVx := (memNset nVx).
-    rewrite indicE nVx/= normr0.
-    over.
-  rewrite !integral_cst//=; last exact: measurableC.
-  rewrite mul1e mul0e adde0.
-  apply: (le_lt_trans (probability_le1 (normal_prob m 1) mV)).
-  exact: ltey.
-- exact: measurable_fun_dirac.
-- exact: measurableT.
-- exact: ltr01.
+rewrite integral_normal_prob => //; last exact: (normal_prob_integrable_dirac m 1).
 under eq_integral do rewrite diracE.
 rewrite /normal_prob.
 rewrite [in RHS]integral_mkcond.
@@ -233,10 +301,209 @@ apply: eq_integral => x _.
 by case: ifP => xV/=; rewrite ?mul1e ?mul0e.
 Qed.
 
+(* NB: exp_powR level setting is mistaken? *)
+(*     ((_ `^ _) * _) cannot write as (_ `^ _ * _) *)
+Definition helloRightP : @exp R P [:: ("y0", Real)] Real :=
+[let "x" := Sample {exp_normal1 (exp_real 0)} in
+ let "_" := Score ({expR 1} `^
+                     ({0}:R - (#{"y0"} - #{"x"}) ^+ {2} * {2^-1}:R))
+                   * {(Num.sqrt (2 * pi))^-1}:R in
+ let "z" := Sample {exp_normal1 [#{"x"}]} in
+ return #{"z"}].
+
+Definition helloRight1P
+ : @exp R _ [:: ("y0", Real)] Real :=
+ [let "_" := Score ({expR 1} `^ ({0}:R - #{"y0"} ^+ {2} * {4^-1}:R)) *
+                   {(Num.sqrt (4 * pi))^-1}:R in
+  let "x" := Sample {exp_normal_Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
+  let "z" := Sample {exp_normal1 [#{"x"}]} in
+ return #{"z"}].
+
 (* ref: https://homes.luddy.indiana.edu/ccshan/rational/equational-handout.pdf
  * p.2, equation (7)
  * change sampling order by bayes' theorem.
  *)
+Lemma execP_helloRight0_to_1 y V:
+measurable V ->
+execP helloRightP y V = execP helloRight1P y V.
+Proof.
+move=> mV.
+(* lhs *)
+rewrite ![in LHS]execP_letin.
+rewrite [in LHS]execP_sample.
+rewrite [in LHS]execD_normal/=.
+rewrite [in LHS]execD_real/=.
+rewrite [in LHS]execP_score.
+rewrite [in LHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in LHS]execD_pow_real/=.
+rewrite [in LHS](@execD_bin _ _ binop_minus)/=.
+rewrite [in LHS]execD_real/=.
+rewrite [in LHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in LHS]execD_pow/=.
+rewrite [in LHS](@execD_bin _ _ binop_minus)/=.
+rewrite [in LHS]exp_var'E/= (execD_var_erefl "y0")/=.
+rewrite [in LHS]exp_var'E/= (execD_var_erefl "x")/=.
+rewrite [in LHS]execD_real/=.
+rewrite [in LHS]execD_real/=.
+rewrite [in LHS]execP_sample.
+rewrite [in LHS]execD_normal/=.
+rewrite [in LHS]exp_var'E/= (execD_var_erefl "x")/=.
+rewrite [in LHS]execP_return/=.
+rewrite [in LHS]exp_var'E/= (execD_var_erefl "z")/=.
+(* rhs *)
+rewrite [in RHS]execP_letin.
+rewrite [in RHS]execP_score.
+rewrite [in RHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in RHS]execD_pow_real/=.
+rewrite [in RHS](@execD_bin _ _ binop_minus)/=.
+rewrite [in RHS]execD_real/=.
+rewrite [in RHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in RHS]execD_pow/=.
+rewrite [in RHS]exp_var'E/= (execD_var_erefl "y0")/=.
+rewrite [in RHS]execD_real/=.
+rewrite [in RHS]execD_real/=.
+rewrite [in RHS]execP_letin.
+rewrite [in RHS]execP_sample.
+rewrite [in RHS]execD_normal/=.
+rewrite [in RHS](@execD_bin _ _ binop_mult)/=.
+rewrite [in RHS]exp_var'E/= (execD_var_erefl "y0")/=.
+rewrite [in RHS]execD_real/=.
+rewrite [in RHS]execP_letin.
+rewrite [in RHS]execP_sample.
+rewrite [in RHS]execD_normal/=.
+rewrite [in RHS]exp_var'E/= (execD_var_erefl "x")/=.
+rewrite [in RHS]execP_return.
+rewrite [in RHS]exp_var'E/= (execD_var_erefl "z")/=.
+(* lhs *)
+rewrite [in LHS]letin'E/=.
+under [in LHS]eq_integral.
+  move=> x _.
+  rewrite letin'E/=.
+  under eq_integral.
+    move=> u _.
+    rewrite letin'E/=.
+    rewrite integral_normal_prob_dirac; last exact: mV.
+    over.
+  rewrite /=.
+  rewrite ge0_integral_mscale/=; first last.
+  - by move=> ? _.
+  - by [].
+  - exact: measurableT.
+  rewrite integral_dirac; first last.
+  - by [].
+  - exact: measurableT.
+  rewrite diracT mul1e.
+  rewrite sub0r.
+  rewrite -expRM mul1r.
+  over.
+rewrite /=.
+rewrite [in LHS]integral_normal_prob//; first last.
+  apply: integrableMr => //.
+      apply: (@measurableT_comp _ _ _ _ _ _ (@normr _ R^o)) => //.
+      apply: measurable_funM => //.
+      apply: measurableT_comp => //.
+      apply: measurableT_comp => //.
+      apply: measurable_funM => //.
+      apply: (@measurableT_comp _ _ _ _ _ _ (fun t : R => (t ^+ 2%R)%R)) => //.
+      exact: measurable_funB.
+    exists (Num.sqrt (2 * pi))^-1%R; split; first exact: num_real.
+    move=> x x_gt.
+    move=> p _.
+    rewrite /= normr_id.
+    have /normr_idP -> : (0 <= expR (- ((y.1 - p) ^+ 2%R / 2)) / (Num.sqrt (2 * pi)))%R.
+      apply: mulr_ge0; first exact: expR_ge0.
+      by rewrite invr_ge0 sqrtr_ge0// mulr_ge0// pi_ge0.
+    apply/ltW.
+    apply: le_lt_trans x_gt.
+    rewrite -[leRHS]mul1r ler_pM//.
+      exact: expR_ge0.
+    by rewrite -expR0 ler_expR oppr_le0 mulr_ge0// ?sqr_ge0// expR0 invr_ge0.
+  apply/integrableP; split.
+    exact: emeasurable_normal_prob.
+  apply/abse_integralP => //.
+    exact: emeasurable_normal_prob.
+  have/gee0_abs -> : 0 <= \int[normal_prob 0 1]_x normal_prob x 1 V.
+    exact: integral_ge0.
+  apply: (@le_lt_trans _ _ (\int[normal_prob 0 1]_x (cst 1%R x)%:E)).
+    apply: ge0_le_integral => //.
+        exact: emeasurable_normal_prob.
+      apply/measurable_EFinP.
+      exact: measurable_cst.
+    move=> x _.
+    exact: probability_le1.
+  by rewrite /= integral_cst// mul1e probability_setT ltry.
+(* rhs *)
+rewrite [in RHS]letin'E/=.
+under [in RHS]eq_integral.
+  move=> u _.
+  rewrite letin'E/=.
+  under eq_integral.
+    move=> x _.
+    rewrite letin'E/=.
+    rewrite integral_normal_prob_dirac//.
+    over.
+  over.
+rewrite ge0_integral_mscale//; first last.
+  move=> ? _.
+  exact: integral_ge0.
+rewrite integral_dirac//.
+rewrite diracT mul1e.
+rewrite sub0r -expRM mul1r.
+rewrite [in RHS]integral_normal_prob//; first last.
+  apply/integrableP; split; first exact: emeasurable_normal_prob.
+  apply: (@le_lt_trans _ _
+            (\int[normal_prob (y.1 / 2) (Num.sqrt 2)^-1]_x (cst 1%R x)%:E)).
+  apply: ge0_le_integral => //.
+      apply: measurableT_comp => //.
+      exact: emeasurable_normal_prob.
+    exact/measurable_EFinP.
+    move=> x _/=.
+    rewrite (gee0_abs (measure_ge0 _ _)).
+    exact: probability_le1.
+  by rewrite /= integral_cst// mul1e probability_setT ltry.
+(* eq_integral *)
+rewrite /=.
+rewrite -ge0_integralZl//; first last.
+    move=> x _.
+    apply: mule_ge0 => //.
+    rewrite lee_fin.
+    exact: normal_pdf_ge0.
+  apply: emeasurable_funM.
+    exact: emeasurable_normal_prob.
+  apply/measurable_EFinP.
+  exact: measurable_normal_pdf.
+apply: eq_integral.
+move=> x _.
+rewrite [in LHS]muleAC.
+rewrite [in RHS](muleC (normal_prob x 1 V)) muleA.
+congr (fun t => (t * normal_prob x 1 V)%E).
+rewrite [in LHS]ger0_norm; last first.
+- by rewrite mulr_ge0// expR_ge0.
+rewrite [in RHS]ger0_norm; last first.
+- by rewrite mulr_ge0// expR_ge0.
+rewrite -!EFinM; congr EFin.
+rewrite !normal_pdfE// /normal_pdf0.
+rewrite mulrA.
+rewrite mulrAC.
+rewrite -(@sqrtrV _ 2)//.
+rewrite sqr_sqrtr; last by rewrite invr_ge0.
+rewrite subr0.
+rewrite [X in X / _ = _]mulrC mulrA -expRD -mulrA -invfM.
+rewrite [RHS]mulrAC [X in _ = _ * X / _]mulrC mulrA -mulrA -expRD -invfM.
+congr *%R.
+  congr expR; lra.
+congr GRing.inv.
+rewrite expr1n mul1r -mulrnAr -(mulr_natl pi) mulrA mulVf// mul1r -expr2.
+rewrite sqr_sqrtr; last by rewrite mulr_ge0// pi_ge0.
+rewrite !sqrtrM// mulrCA -expr2 sqr_sqrtr; last exact: pi_ge0.
+congr *%R.
+have /normr_idP <- : (@GRing.zero R <= 2)%R by [].
+rewrite -(sqrtr_sqr 2%R).
+congr Num.sqrt.
+lra.
+Qed.
+
+(*
 Lemma helloRight0_to_1 :
 execD helloRight = execD helloRight1.
 Proof.
@@ -295,7 +562,8 @@ under [in LHS]eq_integral.
   under eq_integral.
     move=> u _.
     rewrite letin'E/=.
-    rewrite integral_normal_prob_dirac.
+    rewrite integral_normal_prob_dirac; last first.
+      admit. (* ? *)
     over.
   rewrite /=.
   rewrite ge0_integral_mscale/=; first last.
@@ -311,7 +579,17 @@ under [in LHS]eq_integral.
   over.
 rewrite /=.
 rewrite [in LHS]integral_normal_prob; first last.
-- (* ? *) admit.
+- apply: integrableMr => //.
+      admit.
+    exists (Num.sqrt 2 * pi)^-1; split; first exact: num_real.
+    move=> x x_ge_Vsq2pi.
+    move=> p _.
+    rewrite /= normr_id.
+    have /normr_idP -> : 0 <= expR (- ((y.1 - p) ^+ 2%R / 2) / (Num.sqrt 2 * pi)).
+red.
+    admit.
+have := (@integrableZl _ _ _ (normal_prob 0 1) _ (@measurableT _ R) _ (fun x => normal_prob x 1 V)).
+(* ? *) admit.
 - apply: emeasurable_funM; last first.
 (* TODO: Define instance of normal_prob is kernel *)
     (* apply: measurable_kernel. *)
@@ -396,6 +674,7 @@ congr *%R.
   admit.
 admit.
 Admitted.
+*)
 
 Lemma int_normal_prob_normal_pdf (y0 : R) U:
   \int[mu]_x
