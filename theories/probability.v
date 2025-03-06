@@ -2549,7 +2549,7 @@ have := measurable_normal_prob2 (integral_normal^~ s) mYs.
 Qed.
 *)
 
-End normal_probability_s.
+End normal_probability.
 
 Section dirac_delta.
 Local Open Scope ereal_scope.
