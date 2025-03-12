@@ -540,6 +540,15 @@ rewrite normal_pdfE// /normal_pdf0.
 evar (C : Real.sort R).
 transitivity (((2 * pi * Num.sqrt 2)^-1)%:E *
   \int[mu]_x0 (expR (- (3 / 2)%R * (x0 - C) ^+ 2 - (x - y.1 / 2) ^+ 2 / (3 / 2 *+ 2)))%:E).
+  congr *%E.
+  apply: eq_integral.
+  move=> z _.
+  rewrite -expRD.
+  congr EFin.
+  congr expR.
+  rewrite .
+  rewrite mulrn2.
+  lra.
   admit.
 (* gauss integral *)
 admit.
