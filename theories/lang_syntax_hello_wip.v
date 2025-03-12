@@ -446,29 +446,41 @@ Proof.
 move=> mV.
 rewrite /int_normal_helloRight2P.
 rewrite /int_mu_helloRight2P.
-transitivity (\int[mu]_(x0 in V) (\int[mu]_x ((normal_pdf x 1 x0)%:E * (normal_pdf (y.1 / 2) (Num.sqrt 2)^-1 x)%:E))).
+(* rewrite by fubini *)
+transitivity (\int[mu]_(x in V) ((normal_prob x 1 V) * (normal_pdf (y.1 / 2) (Num.sqrt 2)^-1 x)%:E)).
   rewrite integral_normal_prob//; last first.
     apply: ge0_fin_measurable_probability_integrable => //.
-      exists 1%R => x.
-      exact: probability_le1.
+      exists 1%R => ?; exact: probability_le1.
     exact: emeasurable_normal_prob.
   under eq_integral.
     move=> x _.
-    rewrite -ge0_integralZr//=; first last.
-          by rewrite lee_fin normal_pdf_ge0.
-        by move=> ? _; rewrite lee_fin normal_pdf_ge0.
-      apply/measurable_EFinP.
-      apply: measurable_funTS.
-      exact: measurable_normal_pdf.
-    under eq_integral.
-      move=> z _.
-      rewrite -EFinM !normal_pdfE//.
+    rewrite /normal_prob.
+    rewrite -integralZr//; last first.
+      apply: (integrableS measurableT) => //.
+      exact: integrable_normal_pdf.
+      under eq_integral.
+        move=> z _.
+        rewrite -EFinM.
+        rewrite [X in X%:E](_:_=
+   (fun xz : R * R => (normal_pdf xz.1 1 xz.2 * normal_pdf (y.1 / 2)
+                             (Num.sqrt 2)^-1 xz.1)%R) (x, z)); last by [].
+        over.
+      rewrite integral_mkcond.
+      rewrite restrict_EFin.
+      rewrite patch_indic/=.
       over.
-    rewrite integral_mkcond.
-    over.
-  (* rewrite fubini_tonelli? *)
-  admit.
-Abort.
+    rewrite /=.
+  
+(*
+    rewrite (@fubini_tonelli _ _ _ _ _ _ mu
+(EFin \o (fun xz : R * R => (normal_pdf x 1 x0 *
+ normal_pdf (y.1 / 2) (Num.sqrt 2)^-1 x * \1_V x0)%:E
+(normal_pdf xz.1 1 xz.2 * normal_pdf (y.1 / 2)
+                             (Num.sqrt 2)^-1 xz.1)%R) \_ V)).
+
+
+*)
+Admitted.
 
 
 End helloRight_subproofs.
@@ -535,78 +547,9 @@ rewrite !letin'E/=.
 under eq_integral do rewrite letin'E/=.
 rewrite /=.
 (* *)
-rewrite -[RHS]integral_normal_prob_dirac; first last.
-    by [].
-  by [].
-set m1 := normal_prob (y.1 / 2) (Num.sqrt 2)^-1.
-set m2 := normal_prob (y.1 / 2) (Num.sqrt (3 / 2)).
-have h1 : (0 <= (@Num.sqrt R 3)^-1)%R.
-  admit.
-have H f : \int[m1]_x f x =
-   \int[mscale (NngNum h1) (normal_prob (y.1 / (2 * Num.sqrt 3)) (Num.sqrt 2)^-1)]_x f x.
-  admit.
-rewrite H.
-rewrite ge0_integral_mscale//=; first last.
-    admit.
-  admit.
-have : normal_prob (y.1 / 2) (Num.sqrt (3 / 2)) =
-   (mscale (Num.sqrt 3%R)^-1)
 under eq_integral do rewrite integral_normal_prob_dirac//.
-rewrite [RHS]/normal_prob/=.
-rewrite integral_normal_prob//=; first last.
-- admit.
-under eq_integral do rewrite letin'E/=.
-rewrite /=.
-(* *)
-under eq_integral.
-  move=> x _.
-  rewrite integral_normal_prob_dirac//.
-(*  rewrite -ge0_integralZr//=; first last.
-        by rewrite lee_fin normal_pdf_ge0.
-      by move=> ? _; rewrite lee_fin normal_pdf_ge0.
-    apply: measurable_funTS.
-    apply/measurable_EFinP.
-    exact: measurable_normal_pdf.
-*)
-  over.
-rewrite /=.
-(* fubini_tonelli *)
-transitivity (\int[mu]_(x0 in V)
-     \int[mu]_x
-        ((normal_pdf x 1 x0)%:E * (normal_pdf (y.1 / 2) (Num.sqrt 2)^-1 x)%:E)).
-  admit.
-apply: eq_integral => z _.
-rewrite indicE.
-have [Vy|nVy] := boolP (y.1 \in V); rewrite /=.
-  under eq_integral.
-    move=> x _.
-    rewrite -EFinM.
-    rewrite !normal_pdfE// /normal_pdf0.
-    rewrite !expr1n mul1r.
-    rewrite mulrAC mulrA.
-    rewrite exprVn.
-    rewrite sqr_sqrtr//.
-    rewrite (_:(2^-1 *+ 2) = 1)%R; last first.
-      rewrite -[X in (X = 1)%R](mulr_natr _ 2).
-      by rewrite mulVf.
-    rewrite divr1.
-    rewrite (_:(2^-1 * pi *+ 2) = pi)%R; last first.
-      rewrite -mulrnAl.
-      rewrite -[X in (X * _)%R](mulr_natr _ 2).
-      by rewrite mulVf ?mul1r.
-    rewrite -invfM.
-    rewrite -(mulr_natr _ 2) sqrtrM ?pi_ge0//.
-    rewrite (mulrAC (Num.sqrt pi)).
-    rewrite -expr2.
-    rewrite sqr_sqrtr ?pi_ge0//.
-    rewrite -mulrA -expRD EFinM.
-    over.
-  rewrite /=.
-  rewrite ge0_integralZl/=; first last.
-          admit.
-        admit.
-      admit.
-    admit.
+have := (int_change_helloRight2P y mV).
+rewrite /int_normal_helloRight2P => ->.
     
 (* exact: int_normal_prob_normal_pdf. *)
 Abort.
@@ -736,7 +679,7 @@ under [in LHS]eq_integral.
   under eq_integral.
     move=> u _.
     rewrite letin'E/=.
-    rewrite integral_normal_prob_dirac; last exact: mV.
+    rewrite integral_normal_prob_dirac//.
     over.
   rewrite /=.
   rewrite ge0_integral_mscale/=; first last.
@@ -1025,6 +968,7 @@ Abort.
  * p.2, equation (9)
  * sum independent random variables that are normally distributed
  *)
+(*
 Lemma helloRight1_to_2 : execD helloRight1 = execD helloRight2.
 Proof.
 apply: congr_normalize => y V.
@@ -1073,7 +1017,7 @@ under eq_integral.
   under eq_integral.
     move=> z _.
     rewrite letin'E/=.
-    rewrite integral_normal_prob_dirac; last first.
+    rewrite integral_normal_prob_dirac//; .
       admit.
     over.
   over.
@@ -1086,6 +1030,7 @@ rewrite letin'E/=.
 rewrite ge0_integral_mscale//=.
 rewrite integral_dirac//= diracT mul1e.
 Abort.
+*)
 
 End helloRight_proof.
 
