@@ -447,7 +447,9 @@ move=> mV.
 rewrite /int_normal_helloRight2P.
 rewrite /int_mu_helloRight2P.
 (* rewrite by fubini *)
-transitivity (\int[mu]_(x in V) ((normal_prob x 1 V) * (normal_pdf (y.1 / 2) (Num.sqrt 2)^-1 x)%:E)).
+transitivity (\int[mu]_(z in V)
+     \int[mu]_x (
+          (normal_pdf x 1 z * normal_pdf (y.1 / 2) (Num.sqrt 2)^-1 x)%:E)).
   rewrite integral_normal_prob//; last first.
     apply: ge0_fin_measurable_probability_integrable => //.
       exists 1%R => ?; exact: probability_le1.
@@ -458,28 +460,80 @@ transitivity (\int[mu]_(x in V) ((normal_prob x 1 V) * (normal_pdf (y.1 / 2) (Nu
     rewrite -integralZr//; last first.
       apply: (integrableS measurableT) => //.
       exact: integrable_normal_pdf.
-      under eq_integral.
-        move=> z _.
-        rewrite -EFinM.
-        rewrite [X in X%:E](_:_=
+    under eq_integral.
+      move=> z _.
+      rewrite -EFinM.
+      rewrite [X in X%:E](_:_=
    (fun xz : R * R => (normal_pdf xz.1 1 xz.2 * normal_pdf (y.1 / 2)
                              (Num.sqrt 2)^-1 xz.1)%R) (x, z)); last by [].
-        over.
-      rewrite integral_mkcond.
-      rewrite restrict_EFin.
-      rewrite patch_indic/=.
       over.
+    rewrite integral_mkcond.
+    rewrite epatch_indic.
+    over.
+  rewrite /=.
+  rewrite (@fubini_tonelli _ _ _ _ _ mu mu
+(EFin \o ((fun xz : R * R => (normal_pdf xz.1 1 xz.2 *
+           normal_pdf (y.1 / 2) (Num.sqrt 2)^-1 xz.1)%R * \1_V xz.2)%R)));
+  first last.
+    move=> x.
+    rewrite lee_fin/=.
+    apply: mulr_ge0 => //.
+    apply: mulr_ge0; exact: normal_pdf_ge0.
+  apply/measurable_EFinP.
+  apply: measurable_funM; last first.
+    apply: measurable_indic.
+      rewrite -[X in measurable X]setTX.
+      exact: measurableX.
+    apply: measurable_funM.
+      under [X in measurable_fun _ X]eq_fun.
+        move=> x.
+        rewrite normal_pdfE//.
+        rewrite normal_pdf0_center/=.
+        over.
+      rewrite /=.
+      apply: measurableT_comp.
+        exact: measurable_normal_pdf0.
+      exact: measurable_funB.
+    apply: measurableT_comp => //.
+    exact: measurable_normal_pdf.
+  under eq_integral.
+    move=> x _.
     rewrite /=.
-  
-(*
-    rewrite (@fubini_tonelli _ _ _ _ _ _ mu
-(EFin \o (fun xz : R * R => (normal_pdf x 1 x0 *
- normal_pdf (y.1 / 2) (Num.sqrt 2)^-1 x * \1_V x0)%:E
-(normal_pdf xz.1 1 xz.2 * normal_pdf (y.1 / 2)
-                             (Num.sqrt 2)^-1 xz.1)%R) \_ V)).
+    under eq_integral do rewrite EFinM.
+    rewrite -epatch_indic.
+    over.
+  rewrite /=.
+  rewrite [RHS]integral_mkcond/=.
+  apply: eq_integral.
+  move=> /= x _.
+  rewrite patchE.
+  case: ifPn => xV.
+    apply: eq_integral => z _/=.
+    by rewrite ifT.
+  apply: integral0_eq => /= z _.
+  rewrite ifF//.
+  apply/negbTE.
+  rewrite notin_setE/=.
+  move/negP in xV.
+  by move/mem_set.
+apply: eq_integral.
+move=> x _.
+transitivity ((2 * pi * (Num.sqrt 2))^-1%:E *
+                \int[mu]_x0 ((expR (- (x - x0) ^+ 2 / 2))%R * expR (- (x0 - (y.1 / 2)) ^+ 2 ))%:E).
+  under eq_integral.
+    move=> z _.
+    rewrite !normal_pdfE//.
+    rewrite /normal_pdf0.
 
-
-*)
+    over.
+  admit.
+rewrite normal_pdfE// /normal_pdf0.
+evar (C : Real.sort R).
+transitivity (((2 * pi * Num.sqrt 2)^-1)%:E *
+  \int[mu]_x0 (expR (- (3 / 2)%R * (x0 - C) ^+ 2 - (x - y.1 / 2) ^+ 2 / (3 / 2 *+ 2)))%:E).
+  admit.
+(* gauss integral *)
+admit.
 Admitted.
 
 
@@ -529,12 +583,12 @@ Local Definition helloRightP_line1 :
  {t}]).
 *)
 
-Lemma helloRight12' y V : measurable V ->
- @execP R [:: ("y0", Real)] _
+Lemma execP_helloRight12 y V : measurable V ->
+ @execP R [:: ("_", Unit); ("y0", Real)] _
    [let "x" := Sample {exp_normal_Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
     let "z" := Sample {exp_normal1 [#{"x"}]} in
     return #{"z"}] y V =
- @execP R [:: ("y0", Real)] _
+ @execP R [:: ("_", Unit); ("y0", Real)] _
  [Sample {exp_normal_sqrt32 [#{"y0"} * {2^-1}:R]}] y V.
 Proof.
 move=> mV.
@@ -548,11 +602,8 @@ under eq_integral do rewrite letin'E/=.
 rewrite /=.
 (* *)
 under eq_integral do rewrite integral_normal_prob_dirac//.
-have := (int_change_helloRight2P y mV).
-rewrite /int_normal_helloRight2P => ->.
-    
-(* exact: int_normal_prob_normal_pdf. *)
-Abort.
+exact: (int_change_helloRight2P _ mV).
+Qed.
 
 (* ref: https://homes.luddy.indiana.edu/ccshan/rational/equational-handout.pdf
  * p.2, equation (7)
@@ -768,6 +819,17 @@ congr Num.sqrt.
 lra.
 Qed.
 
+Lemma helloRight0_to_2 y V : measurable V ->
+execP helloRightP y V = execP helloRight2P y V.
+Proof.
+move=> mV.
+rewrite execP_helloRight0_to_1//.
+rewrite /helloRight1P/helloRight2P.
+rewrite execP_letin/= [in RHS]execP_letin/=.
+rewrite letin'E [RHS]letin'E.
+by under eq_integral do rewrite execP_helloRight12//.
+Qed.
+
 (*
 Lemma helloRight0_to_1 :
 execD helloRight = execD helloRight1.
@@ -940,29 +1002,6 @@ congr *%R.
 admit.
 Admitted.
 *)
-
-Lemma helloRight12' y V : measurable V ->
- @execP R [:: ("y0", Real)] _
-   [let "x" := Sample {exp_normal_Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
-    let "z" := Sample {exp_normal1 [#{"x"}]} in
-    return #{"z"}] y V =
- @execP R [:: ("y0", Real)] _
-   [Sample {exp_normal_sqrt32 [#{"y0"} * {2^-1}:R]}] y V.
-Proof.
-rewrite !execP_letin.
-rewrite !execP_sample !execD_normal/=.
-rewrite (@execD_bin _ _ binop_mult) execD_real/=.
-rewrite execP_return.
-rewrite !exp_var'E (execD_var_erefl "y0") (execD_var_erefl "x") (execD_var_erefl "z")/=.
-rewrite !letin'E/=.
-(* rhs *)
-rewrite [RHS]/normal_prob.
-rewrite integral_normal_prob//=; first last.
-- admit.
-under eq_integral do rewrite letin'E/=.
-rewrite /=.
-(* exact: int_normal_prob_normal_pdf. *)
-Abort.
 
 (* ref : https://homes.luddy.indiana.edu/ccshan/rational/equational-handout.pdf
  * p.2, equation (9)
