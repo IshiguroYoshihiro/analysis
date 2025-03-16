@@ -9,9 +9,13 @@ From mathcomp Require Import lebesgue_integral exp kernel trigo prob_lang.
 From mathcomp Require Import realfun charge probability derive ftc.
 From mathcomp Require Import gauss_integral.
 
-(******************************************************************************)
-(*  Semantics of a probabilistic programming language using s-finite kernels  *)
-(*            (wip about the definition of Lebesgue measure)                  *)
+(**md**************************************************************************)
+(* # Semantics of a probabilistic programming language using s-finite kernels *)
+(*                                                                            *)
+(* First example of Section 4.1 in [Equation (10), Staton, ESOP 2017].        *)
+(* Another example from Section 4.2 in [Equation (13), Staton, ESOP 2017].    *)
+(* (The latter is wip.)                                                       *)
+(*                                                                            *)
 (******************************************************************************)
 
 Set Implicit Arguments.
@@ -60,7 +64,8 @@ Let f1 (x : g_sigma_algebraType (R.-ocitv.-measurable)) := (gauss_pdf x)^-1.
 
 Let f1E (x : R) : f1 x = (Num.sqrt (pi *+ 2) * expR (- (- x ^+ 2 / 2)))%R.
 Proof.
-rewrite /f1 /gauss_pdf /normal_pdf oner_eq0 subr0 expr1n mul1r.
+rewrite /f1 /gauss_pdf /normal_pdf oner_eq0 /normal_pdf0.
+rewrite /normalpi expr1n mul1r /normalexp subr0 expr1n.
 by rewrite invfM invrK -expRN.
 Qed.
 
@@ -111,8 +116,7 @@ apply: ae_eq_integral => //=.
   + exact: integrableS h3.
   + apply/measurable_funTS/measurableT_comp => //.
     exact: measurable_normal_pdf.
-  + move=> E EU mE.
-    by rewrite -gauss_probE.
+  + by move=> E EU mE; rewrite -gauss_probE.
 Qed.
 
 Let mf1 : measurable_fun setT f1.
