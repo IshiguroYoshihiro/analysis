@@ -65,7 +65,7 @@ Let f1 (x : g_sigma_algebraType (R.-ocitv.-measurable)) := (gauss_pdf x)^-1.
 Let f1E (x : R) : f1 x = (Num.sqrt (pi *+ 2) * expR (- (- x ^+ 2 / 2)))%R.
 Proof.
 rewrite /f1 /gauss_pdf /normal_pdf oner_eq0 /normal_pdf0.
-rewrite /normalpi expr1n mul1r /normalexp subr0 expr1n.
+rewrite /normal_peak expr1n mul1r /normal_fun subr0 expr1n.
 by rewrite invfM invrK -expRN.
 Qed.
 
