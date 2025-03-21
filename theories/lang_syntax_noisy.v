@@ -151,7 +151,7 @@ apply: ae_eq_integral => //=.
   apply/measurable_EFinP.
   apply: measurable_funTS.
   exact: measurable_normal_pdf.
-apply: ae_eq_mul2l.
+apply: ae_eqe_mul2l.
 apply: (ae_eq_subset (@subsetT _ U)).
 exact: (normal_pdf_uniq_ae m s0).
 Qed.
@@ -245,8 +245,9 @@ rewrite (@fubini_tonelli _ _ _ _ _ mu mu (EFin \o
     rewrite [X in measurable_fun _  X](_ : _ = (fun x0 =>
         normal_pdf0 0 s2 (x0.2 - (m2 + x0.1)%E))) /=; last first.
       apply/funext=> x0.
+      rewrite /normal_pdf0.
       rewrite normal_pdfE//.
-      by rewrite normal_pdf0_center/=.
+      by rewrite normal_fun_center.
     apply: measurableT_comp.
       exact: measurable_normal_pdf0.
     rewrite /=.
@@ -306,7 +307,7 @@ rewrite /normal_fun.
 by congr EFin.
 Qed.
 
-Lemma normal_peak1 : normal_peak 1 = (Num.sqrt (pi *+ 2))^-1 :> R.
+Lemma normal_peak1 : normal_peak 1 = ((Num.sqrt (pi *+ 2))^-1)%R :> R.
 Proof. by rewrite /normal_peak expr1n mul1r. Qed.
 
 (* Variable elimination and integration [Shan, Section 3.5, (9)],
@@ -341,10 +342,10 @@ transitivity (((Num.sqrt S1 * Num.sqrt S2 * pi *+ 2)^-1)%:E *
     rewrite !(sqrtrM 2) ?(@mulr_ge0 _ _ pi) ?sqr_ge0 ?pi_ge0//.
     rewrite !(sqrtrM pi) ?sqr_ge0//.
     rewrite ![in LHS]invfM.
-    rewrite mulrACA -(@sqrtrV _ 2)// -(expr2 (_ _^-1)).
+    rewrite mulrACA -(@sqrtrV _ 2)// -(expr2 (_ _^-1)%R).
     rewrite (@sqr_sqrtr _ 2^-1) ?invr_ge0//.
     rewrite mulrACA -(@sqrtrV _ pi) ?pi_ge0//.
-    rewrite -(expr2 (_ _^-1)) (@sqr_sqrtr _ pi^-1) ?invr_ge0// ?pi_ge0//.
+    rewrite -(expr2 (_ _^-1)%R) (@sqr_sqrtr _ pi^-1) ?invr_ge0// ?pi_ge0//.
     rewrite -!invfM; congr GRing.inv.
     by rewrite -[in RHS]mulr_natr (mulrC _ (Num.sqrt _)).
   apply: eq_integral.
@@ -359,18 +360,16 @@ transitivity (((Num.sqrt S1 * Num.sqrt S2 * pi *+ 2)^-1)%:E *
 
 set DS12 := S1 + S2.
 set MS12 := (S1 * S2)%R.
-set C := (((y * s1 ^+ 2)%R + (m1 * s2 ^+ 2)%R)%E - m2 * s1 ^+ 2) / DS12.
+set C := ((((y * s1 ^+ 2) + (m1 * s2 ^+ 2)) - m2 * s1 ^+ 2) / DS12)%R.
 
 under eq_integral do rewrite expRD EFinM.
-rewrite ge0_integralZr//=; last 3 first.
-      apply/measurable_EFinP.
-      apply: measurableT_comp => //.
-      apply: measurable_funM => //.
-      apply: measurableT_comp => //.
-      apply: (@measurableT_comp _ _ _ _ _ _ (fun t : R => t ^+ 2)%R) => //.
-      exact: measurable_funD.
-    by move=> z _; rewrite lee_fin ?expR_ge0.
-  by rewrite lee_fin expR_ge0.
+rewrite ge0_integralZr//=; last first.
+  apply/measurable_EFinP.
+  apply: measurableT_comp => //.
+  apply: measurable_funM => //.
+  apply: measurableT_comp => //.
+  apply: (@measurableT_comp _ _ _ _ _ _ (fun t : R => t ^+ 2)%R) => //.
+  exact: measurable_funD.
 rewrite /normal_peak /normal_fun.
 rewrite [in RHS]EFinM.
 rewrite [in RHS]sqr_sqrtr//; last first.
@@ -695,8 +694,8 @@ rewrite sqr_sqrtr; last by rewrite invr_ge0.
 rewrite /normal_fun.
 rewrite subr0.
 rewrite sqr_sqrtr; last by rewrite invr_ge0.
-rewrite [X in X / _ = _]mulrC mulrA -expRD -mulrA -invfM.
-rewrite [RHS]mulrAC [X in _ = _ * X / _]mulrC mulrA -mulrA -expRD -invfM.
+rewrite [X in (X / _ = _)%R]mulrC mulrA -expRD -mulrA -invfM.
+rewrite [RHS]mulrAC [X in _ = (_ * X / _)%R]mulrC mulrA -mulrA -expRD -invfM.
 congr *%R.
   congr expR.
   lra.
