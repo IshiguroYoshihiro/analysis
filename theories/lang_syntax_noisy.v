@@ -245,8 +245,9 @@ rewrite (@fubini_tonelli _ _ _ _ _ mu mu (EFin \o
     rewrite [X in measurable_fun _  X](_ : _ = (fun x0 =>
         normal_pdf0 0 s2 (x0.2 - (m2 + x0.1)%E))) /=; last first.
       apply/funext=> x0.
+      rewrite /normal_pdf0.
       rewrite normal_pdfE//.
-      by rewrite normal_pdf0_center/=.
+      by rewrite normal_fun_center.
     apply: measurableT_comp.
       exact: measurable_normal_pdf0.
     rewrite /=.
@@ -362,15 +363,13 @@ set MS12 := (S1 * S2)%R.
 set C := (((y * s1 ^+ 2)%R + (m1 * s2 ^+ 2)%R)%E - m2 * s1 ^+ 2) / DS12.
 
 under eq_integral do rewrite expRD EFinM.
-rewrite ge0_integralZr//=; last 3 first.
-      apply/measurable_EFinP.
-      apply: measurableT_comp => //.
-      apply: measurable_funM => //.
-      apply: measurableT_comp => //.
-      apply: (@measurableT_comp _ _ _ _ _ _ (fun t : R => t ^+ 2)%R) => //.
-      exact: measurable_funD.
-    by move=> z _; rewrite lee_fin ?expR_ge0.
-  by rewrite lee_fin expR_ge0.
+rewrite ge0_integralZr//=; last first.
+  apply/measurable_EFinP.
+  apply: measurableT_comp => //.
+  apply: measurable_funM => //.
+  apply: measurableT_comp => //.
+  apply: (@measurableT_comp _ _ _ _ _ _ (fun t : R => t ^+ 2)%R) => //.
+  exact: measurable_funD.
 rewrite /normal_peak /normal_fun.
 rewrite [in RHS]EFinM.
 rewrite [in RHS]sqr_sqrtr//; last first.
