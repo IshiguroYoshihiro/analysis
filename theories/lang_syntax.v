@@ -561,7 +561,7 @@ Inductive exp : flag -> ctx -> typ -> Type :=
 | exp_bool g : bool -> exp D g Bool
 | exp_nat g : nat -> exp D g Nat
 | exp_real g : R -> exp D g Real
-| exp_pow g : nat -> exp D g Real -> exp D g Real (* TODO: nat should be at second *)
+| exp_pow g : exp D g Real -> nat -> exp D g Real
 | exp_pow_real g : R (* base *) -> exp D g Real -> exp D g Real
 | exp_bin (b : binop) g : exp D g (type_of_binop b) ->
     exp D g (type_of_binop b) -> exp D g (type_of_binop b)
@@ -578,7 +578,7 @@ Inductive exp : flag -> ctx -> typ -> Type :=
 | exp_uniform g (a b : R) (ab : (a < b)%R) : exp D g (Prob Real)
 | exp_beta g (a b : nat) : exp D g (Prob Real)
 | exp_poisson g : nat -> exp D g Real -> exp D g Real
-| exp_normal g (s : R) (s0 : (s != 0)%R) : exp D g Real -> exp D g (Prob Real)
+| exp_normal g : exp D g Real -> forall (s : R), (s != 0)%R -> exp D g (Prob Real)
 | exp_normalize g t : exp P g t -> exp D g (Prob t)
 | exp_letin g t1 t2 str : exp P g t1 -> exp P ((str, t1) :: g) t2 ->
     exp P g t2
@@ -616,7 +616,7 @@ Arguments exp_binomial {R g} &.
 Arguments exp_uniform {R g} &.
 Arguments exp_beta {R g} &.
 Arguments exp_poisson {R g}.
-Arguments exp_normal {R g} s &.
+Arguments exp_normal {R g} &.
 Arguments exp_normalize {R g _}.
 Arguments exp_letin {R g} & {_ _}.
 Arguments exp_sample {R g} & {t}.
@@ -635,7 +635,7 @@ Notation "n ':N'" := (@exp_nat _ _ n%N)
   (in custom expr at level 1) : lang_scope.
 Notation "r ':R'" := (@exp_real _ _ r%R)
   (in custom expr at level 1, format "r :R") : lang_scope.
-Notation "e ^+ n" := (exp_pow n e)
+Notation "e ^+ n" := (exp_pow e n)
   (in custom expr at level 1) : lang_scope.
 Notation "e `^ r" := (exp_pow_real e r)
   (in custom expr at level 1) : lang_scope.
@@ -695,7 +695,7 @@ Notation "'Uniform' a b ab" := (exp_uniform a b ab)
   (in custom expr at level 6) : lang_scope.
 Notation "'Beta' a b" := (exp_beta a b)
   (in custom expr at level 6) : lang_scope.
-Notation "'Normal' s s0 m" := (exp_normal s s0 m)
+Notation "'Normal' m s s0" := (exp_normal m s s0)
   (in custom expr at level 6) : lang_scope.
 Notation "'if' e1 'then' e2 'else' e3" := (exp_if e1 e2 e3)
   (in custom expr at level 7) : lang_scope.
@@ -711,7 +711,7 @@ Fixpoint free_vars k g t (e : @exp R k g t) : seq string :=
   | exp_bool _ _            => [::]
   | exp_nat _ _             => [::]
   | exp_real _ _            => [::]
-  | exp_pow _ _ e           => free_vars e
+  | exp_pow _ e _           => free_vars e
   | exp_pow_real _ _ e      => free_vars e
   | exp_bin _ _ e1 e2       => free_vars e1 ++ free_vars e2
   | exp_rel _ _ e1 e2       => free_vars e1 ++ free_vars e2
@@ -725,7 +725,7 @@ Fixpoint free_vars k g t (e : @exp R k g t) : seq string :=
   | exp_uniform _ _ _ _     => [::]
   | exp_beta _ _ _          => [::]
   | exp_poisson _ _ e       => free_vars e
-  | exp_normal _ _ _ e      => free_vars e
+  | exp_normal _ e _ _      => free_vars e
   | exp_normalize _ _ e     => free_vars e
   | exp_letin _ _ _ x e1 e2 => free_vars e1 ++ rem x (free_vars e2)
   | exp_sample _ _ _        => [::]
@@ -897,7 +897,7 @@ Inductive evalD : forall g t, exp D g t ->
 
 | eval_normal g s (s0 : (s != 0)%R) (e : exp D g _) r mr :
   e -D> r ; mr ->
-  ([Normal s s0 e] : exp D g _) -D> (fun x => @normal_prob _ (r x) s) ;
+  ([Normal e s s0] : exp D g _) -D> (fun x => @normal_prob _ (r x) s) ;
  measurableT_comp (measurable_normal_prob2 s0) mr
 
 | eval_normalize g t (e : exp P g t) k :
@@ -981,7 +981,7 @@ all: (rewrite {g t e u v mu mv hu}).
 - move=> g n e f mf ev IH {}v {}mv.
   inversion 1; subst g0 n0.
   inj_ex H4; subst v.
-  inj_ex H2; subst e0.
+  inj_ex H0; subst e0.
   by move: H3 => /IH <-.
 - move=> g e r f mf ev IH {}v {}mv.
   inversion 1; subst g0 r0.
@@ -1054,7 +1054,7 @@ all: (rewrite {g t e u v mu mv hu}).
   by rewrite (IH _ _ H3).
 - move=> g s s0 e r mr ev IH {}v {}mv.
   inversion 1; subst g0 s1.
-  inj_ex H2; subst e0.
+  inj_ex H0; subst e0.
   inj_ex H3; subst v.
   by rewrite (IH _ _ H5).
 - move=> g t e k ev IH f mf.
@@ -1145,7 +1145,7 @@ all: rewrite {g t e u v eu}.
 - move=> g n e f mf ev IH {}v {}mv.
   inversion 1; subst g0 n0.
   inj_ex H4; subst v.
-  inj_ex H2; subst e0.
+  inj_ex H0; subst e0.
   by move: H3 => /IH <-.
 - move=> g e b f mf ev IH {}v {}mv.
   inversion 1; subst g0 r.
@@ -1220,7 +1220,7 @@ all: rewrite {g t e u v eu}.
   by rewrite (IH _ _ H3).
 - move=> g s s0 e r mr ev IH {}v {}mv.
   inversion 1; subst g0 s1.
-  inj_ex H2; subst e0.
+  inj_ex H0; subst e0.
   inj_ex H3; subst v.
   by rewrite (IH _ _ H5).
 - move=> g t e k ev IH {}v {}mv.
@@ -1297,7 +1297,7 @@ all: rewrite {z g t}.
 - by do 2 eexists; exact: eval_bool.
 - by do 2 eexists; exact: eval_nat.
 - by do 2 eexists; exact: eval_real.
-- move=> g n e [f [mf H]].
+- move=> g e [f [mf H]] n.
   by exists (fun x => (f x ^+ n)%R); eexists; exact: eval_pow.
 - move=> g r e [f [mf H]].
   by exists (fun x => (r `^ (f x))%R); eexists; exact: eval_pow_real.
@@ -1324,7 +1324,7 @@ all: rewrite {z g t}.
 - by eexists; eexists; exact: eval_beta.
 - move=> g h e [f [mf H]].
   by exists (poisson_pdf h \o f); eexists; exact: eval_poisson.
-- move=> g s s0 e [r [mr H]].
+- move=> g e [r [mr H]] s s0.
   exists (fun x => @normal_prob _ (r x) s : pprobability _ _).
   by eexists; exact: eval_normal.
 - move=> g t e [k ek].
@@ -1430,7 +1430,7 @@ Proof. exact/execD_evalD/eval_real. Qed.
 
 Lemma execD_pow g (e : exp D g _) n :
   let f := projT1 (execD e) in let mf := projT2 (execD e) in
-  execD (exp_pow n e) =
+  execD (exp_pow e n) =
   @existT _ _ (fun x => f x ^+ n) (measurable_funX n mf).
 Proof.
 by move=> f mf; apply/execD_evalD/eval_pow/evalD_execD.
@@ -1534,7 +1534,7 @@ Proof. exact/execD_evalD/eval_beta. Qed.
 
 Lemma execD_normal g s s0 e :
   let f := projT1 (execD e) in let mf := projT2 (execD e) in
-  @execD g _ [Normal s s0 e] =
+  @execD g _ [Normal e s s0] =
     existT _ (fun x => @normal_prob _ (f x) s : pprobability _ R)
        (measurableT_comp (measurable_normal_prob2 s0) mf).
 Proof. exact/execD_evalD/eval_normal/evalD_execD. Qed.
@@ -1612,5 +1612,4 @@ f_equal.
 apply: eq_kernel => y V.
 exact: He.
 Qed.
-
 Local Close Scope lang_scope.
