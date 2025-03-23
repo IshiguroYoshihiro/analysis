@@ -428,7 +428,8 @@ Local Open Scope lang_scope.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
 
-Definition exp_normal1 {R g} := @exp_normal R g _ (@oner_neq0 R).
+Definition exp_normal1 {g} (e : exp D g Real) :=
+  [Normal e {1%R} {oner_neq0 R}].
 
 (* NB: exp_powR level setting is mistaken? *)
 (*     ((_ `^ _) * _) cannot write as (_ `^ _ * _) *)
@@ -573,10 +574,12 @@ Local Notation mu := lebesgue_measure.
 (* definition of intermediate programs *)
 Definition neq0Vsqrt2 : ((Num.sqrt 2)^-1 != 0 :> R)%R.
 Proof. exact: lt0r_neq0. Qed.
-Definition exp_normal_Vsqrt2 {g} := @exp_normal R g _ neq0Vsqrt2.
+
+Definition exp_normal_Vsqrt2 {g} (e : exp D g Real) :=
+  [Normal e {(Num.sqrt 2)^-1} {neq0Vsqrt2}].
 
 Definition tailB : @exp R _ [:: ("_", Unit); ("y0", Real)] Real :=
-  [let "x" := Sample {exp_normal_Vsqrt2 [#{"y0"} * {2^-1}:R ]} in
+  [let "x" := Sample {exp_normal_Vsqrt2 [#{"y0"} * {2^-1}:R]} in
    let "z" := Sample {exp_normal1 [#{"x"}]} in
    return #{"z"}].
 Definition noisyB' : @exp R _ [:: ("y0", Real)] Real :=
@@ -587,7 +590,8 @@ Definition noisyB : @exp R _ [:: ("y0", Real)] _ := [Normalize {noisyB'}].
 
 Definition neq0sqrt32 : (Num.sqrt (3 / 2) != 0 :> R)%R.
 Proof. exact: lt0r_neq0. Qed.
-Definition exp_normal_sqrt32 {g} := @exp_normal R g _ neq0sqrt32.
+Definition exp_normal_sqrt32 {g} (e : exp D g Real) :=
+  [Normal e {Num.sqrt (3 / 2)} {neq0sqrt32}].
 
 Definition tailC : @exp R _ [:: ("_", Unit); ("y0", Real)] Real :=
  [Sample {exp_normal_sqrt32 [#{"y0"} * {2^-1}:R]}].
