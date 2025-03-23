@@ -576,10 +576,9 @@ Inductive exp : flag -> ctx -> typ -> Type :=
 | exp_bernoulli g : exp D g Real -> exp D g (Prob Bool)
 | exp_binomial g (n : nat) : exp D g Real -> exp D g (Prob Nat)
 | exp_uniform g (a b : R) (ab : (a < b)%R) : exp D g (Prob Real)
-| exp_beta g (a b : nat) (* NB: should be R *) : exp D g (Prob Real)
+| exp_beta g (a b : nat) : exp D g (Prob Real)
 | exp_poisson g : nat -> exp D g Real -> exp D g Real
-| exp_normal g (s : R) (s0 : (s != 0)%R)
-    : exp D g Real -> exp D g (Prob Real) (* NB: 0 < s *)
+| exp_normal g (s : R) (s0 : (s != 0)%R) : exp D g Real -> exp D g (Prob Real)
 | exp_normalize g t : exp P g t -> exp D g (Prob t)
 | exp_letin g t1 t2 str : exp P g t1 -> exp P ((str, t1) :: g) t2 ->
     exp P g t2
@@ -617,7 +616,7 @@ Arguments exp_binomial {R g} &.
 Arguments exp_uniform {R g} &.
 Arguments exp_beta {R g} &.
 Arguments exp_poisson {R g}.
-Arguments exp_normal {R g _} &.
+Arguments exp_normal {R g} s &.
 Arguments exp_normalize {R g _}.
 Arguments exp_letin {R g} & {_ _}.
 Arguments exp_sample {R g} & {t}.
@@ -688,6 +687,16 @@ Notation "'Score' e" := (exp_score e)
   (in custom expr at level 6) : lang_scope.
 Notation "'Normalize' e" := (exp_normalize e)
   (in custom expr at level 0) : lang_scope.
+Notation "'Bernoulli' p" := (exp_bernoulli p)
+  (in custom expr at level 6) : lang_scope.
+Notation "'Binomial' n k" := (exp_binomial n k)
+  (in custom expr at level 6) : lang_scope.
+Notation "'Uniform' a b ab" := (exp_uniform a b ab)
+  (in custom expr at level 6) : lang_scope.
+Notation "'Beta' a b" := (exp_beta a b)
+  (in custom expr at level 6) : lang_scope.
+Notation "'Normal' s s0 m" := (exp_normal s s0 m)
+  (in custom expr at level 6) : lang_scope.
 Notation "'if' e1 'then' e2 'else' e3" := (exp_if e1 e2 e3)
   (in custom expr at level 7) : lang_scope.
 Notation "( e )" := e
@@ -704,19 +713,19 @@ Fixpoint free_vars k g t (e : @exp R k g t) : seq string :=
   | exp_real _ _            => [::]
   | exp_pow _ _ e           => free_vars e
   | exp_pow_real _ _ e      => free_vars e
-  | exp_bin _ _ e1 e2    => free_vars e1 ++ free_vars e2
-  | exp_rel _ _ e1 e2    => free_vars e1 ++ free_vars e2
-  | exp_rel_real _ _ e1 e2    => free_vars e1 ++ free_vars e2
+  | exp_bin _ _ e1 e2       => free_vars e1 ++ free_vars e2
+  | exp_rel _ _ e1 e2       => free_vars e1 ++ free_vars e2
+  | exp_rel_real _ _ e1 e2  => free_vars e1 ++ free_vars e2
   | exp_pair _ _ _ e1 e2    => free_vars e1 ++ free_vars e2
   | exp_proj1 _ _ _ e       => free_vars e
   | exp_proj2 _ _ _ e       => free_vars e
   | exp_var _ x _ _         => [:: x]
-  | exp_bernoulli _ e     => free_vars e
-  | exp_binomial _ _ e     => free_vars e
+  | exp_bernoulli _ e       => free_vars e
+  | exp_binomial _ _ e      => free_vars e
   | exp_uniform _ _ _ _     => [::]
-  | exp_beta _ _ _ => [::]
+  | exp_beta _ _ _          => [::]
   | exp_poisson _ _ e       => free_vars e
-  | exp_normal _ _ _ e          => free_vars e
+  | exp_normal _ _ _ e      => free_vars e
   | exp_normalize _ _ e     => free_vars e
   | exp_letin _ _ _ x e1 e2 => free_vars e1 ++ rem x (free_vars e2)
   | exp_sample _ _ _        => [::]
@@ -867,30 +876,28 @@ Inductive evalD : forall g t, exp D g t ->
   exp_var x H -D> acc_typ (map snd g) i ; measurable_acc_typ (map snd g) i
 
 | eval_bernoulli g e r mr :
-  e -D> r ; mr -> (exp_bernoulli e : exp D g _) -D> bernoulli_prob \o r ;
+  e -D> r ; mr -> ([Bernoulli e] : exp _ g _) -D> bernoulli_prob \o r ;
                   measurableT_comp measurable_bernoulli_prob mr
 
 | eval_binomial g n e r mr :
-  e -D> r ; mr -> (exp_binomial n e : exp D g _) -D> binomial_prob n \o r ;
+  e -D> r ; mr -> ([Binomial n e] : exp _ g _) -D> binomial_prob n \o r ;
                    measurableT_comp (measurable_binomial_prob n) mr
 
 | eval_uniform g (a b : R) (ab : (a < b)%R) :
-  (exp_uniform a b ab : exp D g _) -D> cst (uniform_prob ab) ;
+  ([Uniform a b ab] : exp D g _) -D> cst (uniform_prob ab) ;
                                        measurable_cst _
 
 | eval_beta g (a b : nat) :
-  (exp_beta a b : exp D g _) -D> cst (beta_prob a b) ; measurable_cst _
+  ([Beta a b] : exp D g _) -D> cst (beta_prob a b) ; measurable_cst _
 
 | eval_poisson g n (e : exp D g _) f mf :
   e -D> f ; mf ->
   exp_poisson n e -D> poisson_pdf n \o f ;
                       measurableT_comp (measurable_poisson_pdf n) mf
 
-(* TODO *)
 | eval_normal g s (s0 : (s != 0)%R) (e : exp D g _) r mr :
   e -D> r ; mr ->
-  (exp_normal s0 e : exp D g _) -D>
-     (fun x => @normal_prob _ (r x) s) ;
+  ([Normal s s0 e] : exp D g _) -D> (fun x => @normal_prob _ (r x) s) ;
  measurableT_comp (measurable_normal_prob2 s0) mr
 
 | eval_normalize g t (e : exp P g t) k :
@@ -1504,31 +1511,31 @@ Lemma execD_var g x (H : nth Unit (map snd g) (index x (dom g)) = lookup Unit g 
 Proof. by move=> i; apply/execD_evalD; exact: eval_var. Qed.
 
 Lemma execD_bernoulli g e :
-  @execD g _ (exp_bernoulli e) =
+  @execD g _ [Bernoulli e] =
     existT _ ((bernoulli_prob : R -> pprobability bool R) \o projT1 (execD e))
              (measurableT_comp measurable_bernoulli_prob (projT2 (execD e))).
 Proof. exact/execD_evalD/eval_bernoulli/evalD_execD. Qed.
 
 Lemma execD_binomial g n e :
-  @execD g _ (exp_binomial n e) =
+  @execD g _ [Binomial n e] =
     existT _ ((binomial_prob n : R -> pprobability nat R) \o projT1 (execD e))
              (measurableT_comp (measurable_binomial_prob n) (projT2 (execD e))).
 Proof. exact/execD_evalD/eval_binomial/evalD_execD. Qed.
 
 Lemma execD_uniform g a b ab0 :
-  @execD g _ (exp_uniform a b ab0) =
-    existT _ (cst [the probability _ _ of uniform_prob ab0]) (measurable_cst _).
+  @execD g _ [Uniform a b ab0] =
+    existT _ (cst (uniform_prob ab0 : pprobability _ R)) (measurable_cst _).
 Proof. exact/execD_evalD/eval_uniform. Qed.
 
 Lemma execD_beta g a b :
-  @execD g _ (exp_beta a b) =
-    existT _ (cst [the probability _ _ of beta_prob a b]) (measurable_cst _).
+  @execD g _ [Beta a b] =
+    existT _ (cst (beta_prob a b : pprobability _ R)) (measurable_cst _).
 Proof. exact/execD_evalD/eval_beta. Qed.
 
 Lemma execD_normal g s s0 e :
   let f := projT1 (execD e) in let mf := projT2 (execD e) in
-  @execD g _ (@exp_normal _ _ s s0 e) =
-    existT _ (fun x => [the probability _ _ of @normal_prob _ (f x) s])
+  @execD g _ [Normal s s0 e] =
+    existT _ (fun x => @normal_prob _ (f x) s : pprobability _ R)
        (measurableT_comp (measurable_normal_prob2 s0) mf).
 Proof. exact/execD_evalD/eval_normal/evalD_execD. Qed.
 
