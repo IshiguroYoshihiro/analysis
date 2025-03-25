@@ -71,15 +71,13 @@ Reserved Notation "e -P> k" (at level 40).
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
-(* In this module, we use our lemma continuous_FTC2 to compute the value of
- * integration of the indicator function over the interval [0, 1].
- * we can use our lemma continuous_FTC2 because it requires continuous
- * within [0, 1], which the indicator function satisfies.
- * we also shows that the indicator function is not continuous in [0, 1],
- * required by previous version of lemma continuous_FTC2. This shows that
- * our lemma continuous_FTC2 is
- * enough weak to be usable in practice.
- *)
+(* In this module, we use the lemma continuous_FTC2 to compute the value of
+   integration of the indicator function over the interval [0, 1].
+   We can use the lemma continuous_FTC2 because it requires continuity within
+   [0, 1], which the indicator function satisfies.
+   We also show that the indicator function is not continuous in [0, 1].
+   This shows that the lemma continuous_FTC2 is * enough weak to be usable
+   in practice. *)
 Module integral_indicator_function.
 Section integral_indicator_function.
 
@@ -194,139 +192,6 @@ Qed.
 
 End integral_indicator_function.
 End integral_indicator_function.
-
-(* TODO: move? *)
-Lemma derivable_oo_bnd_id {R : numFieldType} (a b : R) :
-  derivable_oo_continuous_bnd (@id R^o) a b.
-Proof.
-by split => //;
-  [exact/cvg_at_right_filter/cvg_id|exact/cvg_at_left_filter/cvg_id].
-Qed.
-
-Lemma derivable_oo_bndN {R : realFieldType} (f : R -> R^o) a b :
-  derivable_oo_continuous_bnd f (- a) (- b) ->
-  derivable_oo_continuous_bnd (f \o -%R) b a.
-Proof.
-move=> [dF cFa cFb].
-have oppK : (-%R \o -%R) = @id R by apply/funext => x/=; rewrite opprK.
-split.
-- move=> x xba; apply/derivable1_diffP.
-  apply/(@differentiable_comp _ _ R^o _ -%R f x) => //.
-  by apply/derivable1_diffP/dF; rewrite oppr_itvoo 2!opprK.
-- by apply/cvg_at_rightNP; rewrite -compA oppK.
-- by apply/cvg_at_leftNP; rewrite -compA oppK.
-Qed.
-
-(* NB: not used *)
-Lemma continuous_withinN {R : realType} (f : R -> R) a b : (a < b)%R ->
-  {within `[(- b)%R, (- a)%R], continuous (f \o -%R)} ->
-  {within `[a, b], continuous f}.
-Proof.
-move=> ab cf.
-- apply/continuous_within_itvP (* TODO: us [/\ ...] *) => //.
-- split; rewrite -ltrN2 in ab.
-  + move=> x xab.
-    move/continuous_within_itvP : cf => /(_ ab) [cf _ _].
-    rewrite (_ : f = (f \o -%R) \o -%R); last first.
-      by apply/funext => y; rewrite /= opprK.
-    apply: continuous_comp; first exact: (@opp_continuous _ R^o).
-    by apply: cf; rewrite -oppr_itvoo opprK.
-  + move/continuous_within_itvP : cf => /(_ ab) [_ _ cf].
-    apply/cvg_at_rightNP.
-    by rewrite /= opprK in cf.
-  + move/continuous_within_itvP : cf => /(_ ab) [_ cf _].
-    apply/cvg_at_leftNP.
-    by rewrite /= opprK in cf.
-Qed.
-
-Section factD.
-
-Let factD' n m : (n`! * m`! <= (n + m).+1`!)%N.
-Proof.
-elim: n m => /= [m|n ih m].
-  by rewrite fact0 mul1n add0n factS leq_pmull.
-rewrite 2!factS [in X in (_ <= _ * X)%N]addSn -mulnA leq_mul//.
-by rewrite ltnS addSnnS leq_addr.
-Qed.
-
-Lemma factD n m : (n`! * m.-1`! <= (n + m)`!)%N.
-Proof.
-case: m => //= [|m].
-  by rewrite fact0 muln1 addn0.
-by rewrite addnS factD'.
-Qed.
-
-End factD.
-
-(* NB: not used? *)
-Lemma bounded_norm_expn_onem {R : realType} (a b : nat) :
-  [bounded `|x ^+ a * (1 - x) ^+ b|%R : R^o | x in (`[0%R, 1%R]%classic : set R)].
-Proof.
-exists 1%R; split; [by rewrite num_real|move=> x x1 /= y].
-rewrite in_itv/= => /andP[y0 y1].
-rewrite ger0_norm// ger0_norm; last first.
-  by rewrite mulr_ge0 ?exprn_ge0// subr_ge0.
-rewrite (le_trans _ (ltW x1))// mulr_ile1 ?exprn_ge0//.
-- by rewrite subr_ge0.
-- by rewrite exprn_ile1.
-- rewrite exprn_ile1 ?subr_ge0//.
-  by rewrite lerBlDl addrC -lerBlDl subrr.
-Qed.
-
-(* NB: not used? *)
-Lemma integral_exprn {R : realType} (n : nat) :
-  fine (\int[lebesgue_measure]_(x in `[0%R, 1%R]) (x ^+ n)%:E) = n.+1%:R^-1 :> R.
-Proof.
-pose F (x : R) : R^o := (n.+1%:R^-1 * x ^+ n.+1)%R.
-have cX m : {in `[0%R, 1%R], continuous (fun x : R => x ^+ m)%R}.
-  by move=> x x01; exact: exprn_continuous.
-have cF0 : {for 0%R, continuous F}.
-  apply: continuousM; first exact: cvg_cst.
-  by apply: cX; rewrite /= in_itv/= lexx ler01.
-have cF1 : {for 1%R, continuous F}.
-  apply: continuousM; first exact: cvg_cst.
-  by apply: cX; rewrite /= in_itv/= lexx ler01.
-have dcF : derivable_oo_continuous_bnd F 0 1.
-  split.
-  - by move=> x x01; apply: derivableM => //; exact: exprn_derivable.
-  - apply: continuous_cvg; first exact: mulrl_continuous.
-    by apply/cvg_at_right_filter/cX; rewrite in_itv/= lexx ler01.
-  - apply: continuous_cvg; first exact: mulrl_continuous.
-    by apply/cvg_at_left_filter/cX; rewrite in_itv/= lexx ler01.
-have dFE : {in `]0%R, 1%R[, F^`() =1 (fun x : R => x ^+ n : R)%R}.
-  move=> x x01.
-  rewrite derive1Ml; last exact: exprn_derivable.
-  by rewrite derive1E exp_derive !mulrA mulVf// mulr1 mul1r.
-rewrite (@continuous_FTC2 _ (fun x : R => x ^+ n)%R F)//.
-  by rewrite /F/= expr1n expr0n/= mulr1 mulr0 subr0.
-by apply: continuous_subspaceT; exact: exprn_continuous.
-Qed.
-
-Section beta_pdf_prob.
-Local Open Scope charge_scope.
-
-(* NB: not used *)
-(* beta_pdf is almost density function of beta_prob *)
-Lemma beta_pdf_uniq_ae {R : realType} (a b : nat) :
-  let mu := @lebesgue_measure R in
-  ae_eq mu `[0%R, 1%R]%classic
-   ('d ((charge_of_finite_measure (@beta_prob R a b))) '/d mu)
-               (EFin \o (beta_pdf a b)).
-Proof.
-apply: integral_ae_eq => //.
-- apply: (@integrableS _ _ _ _ setT) => //=.
-  apply: Radon_Nikodym_integrable => //=.
-  exact: beta_prob_dom.
-- apply/measurable_funTS/measurableT_comp => //.
-  exact: measurable_beta_pdf.
-- move=> E E01 mE.
-  rewrite integral_beta_pdf//.
-  apply/esym.
-  rewrite -Radon_Nikodym_integral//=.
-  exact: beta_prob_dom.
-Qed.
-
-End beta_pdf_prob.
 
 Declare Scope lang_scope.
 Delimit Scope lang_scope with P.
@@ -508,8 +373,7 @@ Defined.
 
 End binop.
 
-(* TODO: rename *)
-(* TODO: generalize? *)
+(* TODO: rename, generalize? *)
 Section relop.
 Inductive relop :=
 | relop_le | relop_lt | relop_eq .
