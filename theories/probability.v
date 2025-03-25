@@ -1743,488 +1743,6 @@ Qed.
 
 End normal_probability.
 
-(*
-From mathcomp Require Import charge.
-
-Section radon_nikodym_mrestr.
-Variable R : realType.
-
-Local Open Scope charge_scope.
-
-Local Notation mu := lebesgue_measure.
-Variable (nu : {charge set R -> \bar R}).
-Check ('d nu '/d sigma_mu).
-
-*)
-
-Section near_lt_lim.
-Variable R : realFieldType.
-Implicit Types u : R ^nat.
-
-Lemma near_lt_lim u (M : R) :
-  (\forall N \near \oo, {in [set n | (N <= n)%N] &, nondecreasing_seq u}) ->
-  cvgn u -> M < limn u -> \forall n \near \oo, M <= u n.
-Proof.
-move=> [] N _ Hnear.
-move=> cu Ml; have [[n Mun]|/forallNP Mu] := pselect (exists n, M <= u n).
-  exists (maxn N n) => //.
-  move=> k/=.
-  rewrite geq_max => /andP.
-(*
-  near=> m; suff : u n <= u m by exact: le_trans.
-  apply/(Hnear m).
-  near: m; exists n.+1 => // p q; apply/(Hnear n)/ltnW => //.
-
- 
-have {}Mu : forall x, M > u x by move=> x; rewrite ltNge; apply/negP.
-have : limn u <= M by apply: limr_le => //; near=> m; apply/ltW/Mu.
-by move/(lt_le_trans Ml); rewrite ltxx.
-Unshelve. all: by end_near. Qed.
-*)
-Abort.
-
-End near_lt_lim.
-
-Section near_ereal_nondecreasing_is_cvgn.
-
-Let G N := ([set n | (N <= n)%N]).
-
-Lemma ereal_shiftn_nondecreasing_cvgn (R : realType) (u_ : (\bar R)^nat)
- (N : nat) :
-(* \forall N \near \oo, {in G N &, nondecreasing_seq u_ }
-      -> u_ @ \oo --> ereal_sup (range (fun n => u_ (n + N))).
-*)
-{in G N &, nondecreasing_seq u_ }
-      -> u_ @ \oo --> ereal_sup (range (fun n => u_ (n + N))).
-Proof.
-move=> H.
-rewrite -(cvg_shiftn N).
-apply: ereal_nondecreasing_cvgn.
-move=> k m km.
-apply: H; rewrite /G ?inE//=.
-- exact: leq_addl.
-- exact: leq_addl.
-- exact: leq_add.
-Qed.
-
-Lemma near_ereal_nondecreasing_is_cvgn (R : realType) (u_ : (\bar R) ^nat) :
-  (\forall N \near \oo, {in G N &, nondecreasing_seq u_ }) -> cvgn u_.
-Proof.
-move=> [] N _ H.
-apply/cvg_ex.
-exists (ereal_sup (range (fun n =>  u_ (n + N)))).
-apply: ereal_shiftn_nondecreasing_cvgn.
-by apply: (H N); rewrite /G ?inE/=.
-Qed.
-
-End near_ereal_nondecreasing_is_cvgn.
-
-(* TODO: move as another PR *)
-Section near_monotone_convergence.
-Local Open Scope ereal_scope.
-
-Context d (T : measurableType d) (R : realType).
-Variable mu : {measure set T -> \bar R}.
-Variables (D : set T) (mD : measurable D) (g' : (T -> \bar R)^nat).
-Hypothesis mg' : forall n, measurable_fun D (g' n).
-Hypothesis near_g'0 : \forall n \near \oo, forall x, D x -> 0 <= g' n x.
-Hypothesis near_nd_g' : \forall N \near \oo, (forall x : T, D x ->
-  {in [set k| (N <= k)%N]&,  {homo g'^~ x : n m / (n <= m)%N >-> (n <= m)%E}}).
-Let f' := fun x => limn (g'^~ x).
-
-Lemma near_monotone_convergence :
-(\int[mu]_(x in D) (fun x0 : T => limn (g'^~ x0)) x)%E =
-limn (fun n : nat => (\int[mu]_(x in D) g' n x)%E).
-Proof.
-have [N0 _ H0] := near_g'0.
-have [N1 _ H1] := near_nd_g'.
-pose N := maxn N0 N1.
-under eq_integral.
-  move=> x; rewrite inE/= => Dx.
-  have <- : limn (fun n : nat => g' (n + N) x) = limn (g'^~ x).
-    apply/cvg_lim => //.
-    rewrite (cvg_shiftn _ (g'^~ x) _).
-    apply: (@near_ereal_nondecreasing_is_cvgn _ (g'^~ x)).
-    exists N1 => //.
-    move=> n /= N1n.
-    exact: H1.
-  over.
-apply/esym/cvg_lim => //.
-rewrite -(cvg_shiftn N).
-apply: cvg_monotone_convergence => //.
-  move=> n x Dx.
-  apply: H0 => //=.
-  apply: (leq_trans (leq_maxl N0 N1)).
-  exact: leq_addl.
-move=> x Dx n m nm.
-apply: (H1 N) => //; rewrite ?inE/=.
-- exact: leq_maxr.
-- exact: leq_addl.
-- exact: leq_addl.
-- exact: leq_add.
-Qed.
-
-Lemma cvg_near_monotone_convergence :
-  \int[mu]_(x in D) g' n x @[n \oo] --> \int[mu]_(x in D) f' x.
-Proof.
-have [N0 _ Hg'0] := near_g'0.
-have [N1 _ Hndg'] := near_nd_g'.
-pose N := maxn N0 N1.
-have N0N : (N0 <= N)%N by apply: (leq_maxl N0 N1).
-have N1N : (N1 <= N)%N by apply: (leq_maxr N0 N1).
-have g'_ge0 n x : D x -> (N <= n)%N -> 0 <= g' n x.
-  move=> + Nn.
-  apply: Hg'0 => /=.
-  exact: (leq_trans N0N).
-have ndg' n m x : D x -> (N <= n)%N -> (n <= m)%N -> g' n x <= g' m x.
-  move=> Dx Nn nm.
-  apply: (Hndg' N); rewrite ?inE//=.
-  exact: leq_trans nm.
-rewrite near_monotone_convergence.
-apply: near_ereal_nondecreasing_is_cvgn.
-exists N => //.
-move=> k/= Nk n m; rewrite !inE/= => kn km nm.
-apply: ge0_le_integral => // t Dt; [| |].
-- apply: g'_ge0 => //.
-  exact: leq_trans kn.
-- apply: g'_ge0 => //.
-  exact: leq_trans km.
-- apply: ndg' => //.
-  exact: leq_trans kn.
-Qed.
-
-End near_monotone_convergence.
-
-Section exp_coeff_properties.
-Context {R : realType}.
-
-(* not used, TODO:PR *)
-Lemma exp_coeff_gt0 (x : R) n : 0 < x -> 0 < exp_coeff x n.
-Proof.
-move=> x0.
-rewrite /exp_coeff/=.
-apply: divr_gt0.
-  exact: exprn_gt0.
-rewrite (_:0%R = 0%:R)// ltr_nat.
-exact: fact_gt0.
-Abort.
-
-Lemma series_exp_coeff_near_ge0 (x : R) :
-  \forall n \near \oo, 0 <= (series (exp_coeff x)) n.
-Proof.
-apply: (cvgr_ge (expR x)); last exact: expR_gt0.
-exact: is_cvg_series_exp_coeff.
-Abort.
-
-Lemma normr_exp_coeff_near_nonincreasing (x : R) :
-  \forall n \near \oo,
-  `|exp_coeff x n.+1| <= `|exp_coeff x n|.
-Proof.
-exists `|archimedean.Num.Def.ceil x |%N => //.
-move=> n/= H.
-rewrite exp_coeffE.
-rewrite exprS mulrA normrM [leRHS]normrM ler_pM//.
-rewrite factS mulnC natrM invfM -mulrA normrM ger_pMr; last first.
-  rewrite normr_gt0.
-  by rewrite invr_neq0//.
-rewrite normrM normfV.
-rewrite ler_pdivrMl; last first.
-  rewrite normr_gt0.
-  by rewrite lt0r_neq0.
-rewrite mulr1.
-apply: (le_trans (abs_ceil_ge _)).
-rewrite gtr0_norm//.
-by rewrite ler_nat ltnS.
-Qed.
-
-Lemma exp_coeff2_near_nondecreasing (x : R) :
- \forall N \near \oo, nondecreasing_seq (fun n => (series (exp_coeff x) (2 * (n + N))%N)).
-Proof.
-have := normr_exp_coeff_near_nonincreasing x.
-move=> [N _] Hnear.
-exists N => //n/= Nn.
-apply/nondecreasing_seqP => k.
-rewrite /series/=.
-have N0 : (0 <= N)%N by [].
-rewrite addSn mulnS add2n.
-rewrite !big_nat_recr//=.
-rewrite -addrA lerDl.
-rewrite -[X in _ <= _ + X]opprK subr_ge0.
-rewrite (le_trans (ler_norm _))// normrN.
-have : (N <= (2 * (k + n)))%N.
-  rewrite mulnDr -(add0n N) leq_add//.
-  by rewrite mulSn mul1n -(add0n N) leq_add.
-move/Hnear => H.
-apply: (le_trans H).
-rewrite ler_norml lexx andbT.
-suff Hsuff : 0 <= exp_coeff x (2 * (k + n))%N.
-  by apply: (le_trans _ Hsuff); rewrite lerNl oppr0.
-rewrite /exp_coeff/=.
-apply: mulr_ge0 => //.
-apply: exprn_even_ge0.
-by rewrite mul2n odd_double.
-Abort.
-
-Lemma exp_coeff2_near_in_increasing (x : R) :
- \forall N \near \oo, {in [set k | (N <= k)%N] &,
-nondecreasing_seq (fun n => (series (exp_coeff x) (2 * n)%N))}.
-Proof.
-have := normr_exp_coeff_near_nonincreasing x.
-move=> [N _] Hnear.
-exists N => //k/= Nk.
-move=> n m; rewrite !inE/= => kn km nm.
-have kn2 : (2 * k <= 2 * n)%N by rewrite leq_pmul2l.
-have km2 : (2 * k <= 2 * m)%N by rewrite leq_pmul2l.
-rewrite /series/=.
-rewrite (big_cat_nat _ _ _ _ kn2)//=.
-rewrite (big_cat_nat _ _ _ _ km2)//=.
-rewrite lerD2.
-have nm2 : (2 * n <= 2 * m)%N by rewrite leq_pmul2l.
-rewrite (big_cat_nat _ _ _ _ nm2)//=.
-rewrite lerDl.
-rewrite -(add0n (2 * n)%N).
-rewrite big_addn.
-rewrite -mulnBr.
-elim: (m - n)%N.
-  rewrite muln0.
-  rewrite big_mkord.
-  by rewrite big_ord0.
-move=> {km nm km2 nm2} {}m IH.
-rewrite mul2n.
-rewrite doubleS.
-rewrite big_nat_recr//=.
-rewrite big_nat_recr//=.
-rewrite -addrA.
-rewrite addr_ge0//.
-  by rewrite -mul2n.
-rewrite -[X in _ <= _ + X]opprK subr_ge0.
-rewrite (le_trans (ler_norm _))// normrN.
-rewrite -mul2n addSn -mulnDr.
-have : (N <= (2 * (m + n)))%N.
-  rewrite mulnDr -(add0n N) leq_add//.
-  by rewrite (leq_trans _ kn2)// (leq_trans Nk)// leq_pmull.
-move/Hnear => H.
-apply: (le_trans H).
-rewrite ler_norml lexx andbT.
-suff Hsuff : 0 <= exp_coeff x (2 * (m + n))%N.
-  by apply: (le_trans _ Hsuff); rewrite lerNl oppr0.
-rewrite /exp_coeff/=.
-apply: mulr_ge0 => //.
-apply: exprn_even_ge0.
-by rewrite mul2n odd_double.
-Qed.
-
-End exp_coeff_properties.
-
-(* TODO: move to ftc.v *)
-Section continuous_under_integral.
-Context {R : realType} d {Y : measurableType d}
-  {mu : {measure set Y -> \bar R}}.
-
-Variable f : R -> Y -> R.
-Variable B : set Y.
-Hypothesis mB : measurable B.
-
-Variable a u v : R.
-Let I : set R := `]u, v[.
-
-Hypothesis Ia : I a.
-Hypothesis int_f : forall x, I x -> mu.-integrable B (EFin \o (f x)).
-Hypothesis cf : forall y, B y -> continuous (f ^~ y).
-
-Variable g : Y -> R.
-
-Hypothesis int_g : mu.-integrable B (EFin \o g).
-Hypothesis g_ub : forall x y, I x -> B y -> `|f x y| <= g y.
-
-Let F x := \int[mu]_(y in B) f x y.
-
-Lemma continuousT_under_integral :
-  continuous_at a (fun l => \int[mu]_(x in B) f l x).
-Proof.
-have [vu|uv] := lerP v u.
-  move: Ia.
-  by rewrite /I set_itv_ge// -leNgt bnd_simp.
-apply/cvg_nbhsP => u_ ur.
-have auv : a \in `]u, v[ by rewrite inE.
-have [e /= e0 Huv] := near_in_itvoo auv.
-move/(@cvgrPdist_lt _ R^o) : (ur) => /(_ _ e0)[N _ aue].
-rewrite -(cvg_shiftn N).
-apply: fine_cvg.
-rewrite fineK; last first.
-  rewrite fin_num_abs.
-  have /integrableP[? ?] := int_f Ia.
-  exact/abse_integralP.
-apply: (@lebesgue_integral_dominated_convergence.dominated_cvg _ _ _ mu _ _
-   (fun n x => (f (u_ (n + N)%N) x)%:E) _ (EFin \o g)) => //=.
-- move=> n; apply: measurable_int; apply: int_f.
-  rewrite /I/=.
-  by apply: Huv => /=; apply: aue => /=; exact: leq_addl.
-- move=> x Bx. (* TODO: forall x in V -> a.e. V *)
-  apply: cvg_EFin; first exact: nearW.
-  have /cvg_nbhsP := @cf x Bx a.
-  apply.
-  by rewrite (cvg_shiftn N).
-- move=> n x Vx.
-  apply: g_ub => //.
-  by apply: Huv; apply: aue; exact: leq_addl.
-Qed.
-
-End continuous_under_integral.
-
-Section normal_density.
-Context {R : realType}.
-Local Open Scope ring_scope.
-Local Import Num.ExtraDef.
-Implicit Types m s x : R.
-
-Definition normal_pdf0 m s x : R := normal_peak s * normal_fun m s x.
-
-Lemma normal_pdf0_center m s : normal_pdf0 m s = normal_pdf0 0 s \o center m.
-Proof. by rewrite /normal_pdf0 normal_fun_center. Qed.
-
-Lemma normal_pdf0_ge0 m s x : 0 <= normal_pdf0 m s x.
-Proof. by rewrite mulr_ge0 ?normal_peak_ge0 ?expR_ge0. Qed.
-
-Lemma normal_pdf0_gt0 m s x : s != 0 -> 0 < normal_pdf0 m s x.
-Proof. by move=> s0; rewrite mulr_gt0 ?expR_gt0// normal_peak_gt0. Qed.
-
-Lemma measurable_normal_pdf0 m s : measurable_fun setT (normal_pdf0 m s).
-Proof. by apply: measurable_funM => //=; exact: measurable_normal_fun. Qed.
-
-Lemma continuous_normal_pdf0 m s : continuous (normal_pdf0 m s).
-Proof.
-move=> x; apply: cvgM; first exact: cvg_cst.
-apply: (@cvg_comp _ R^o _ _ _ _
-   (nbhs (- (x - m) ^+ 2 / (s ^+ 2 *+ 2)))); last exact: continuous_expR.
-apply: cvgM; last exact: cvg_cst; apply: (@cvgN _ R^o).
-apply: (@cvg_comp _ _ _ _ (@GRing.exp R^~ 2) _ (nbhs (x - m))).
-  apply: (@cvgB _ R^o) => //; exact: cvg_cst.
-exact: sqr_continuous.
-Qed.
-
-Lemma normal_pdf0_ub m s x : normal_pdf0 m s x <= normal_peak s.
-Proof.
-rewrite /normal_pdf0 ler_piMr ?normal_peak_ge0//.
-rewrite -[leRHS]expR0 ler_expR mulNr oppr_le0 mulr_ge0// ?sqr_ge0//.
-by rewrite invr_ge0 mulrn_wge0// sqr_ge0.
-Qed.
-
-End normal_density.
-
-Section normal_probability.
-Variables (R : realType) (m sigma : R).
-Local Open Scope ring_scope.
-Notation mu := lebesgue_measure.
-
-Local Notation normal_peak := (normal_peak sigma).
-Local Notation normal_fun := (normal_fun m sigma).
-
-Let measurable_normal_fun : measurable_fun setT normal_fun.
-Proof.
-apply: measurableT_comp => //=; apply: measurable_funM => //=.
-apply: measurableT_comp => //=; apply: measurable_funX => //=.
-exact: measurable_funD.
-Qed.
-
-Let F (x : R^o) := (x - m) / (Num.sqrt (sigma ^+ 2 *+ 2)).
-Lemma F'E : F^`()%classic = cst (Num.sqrt (sigma ^+ 2 *+ 2))^-1.
-Proof.
-apply/funext => x; rewrite /F derive1E deriveM// deriveD// derive_cst scaler0.
-by rewrite add0r derive_id derive_cst addr0 scaler1.
-Qed.
-
-Let int_gaussFE : sigma != 0 ->
-  (\int[mu]_x ((((gauss_fun \o F) *
-     (F^`())%classic) x)%:E * (Num.sqrt (sigma ^+ 2 *+ 2))%:E))%E =
-  (Num.sqrt (sigma ^+ 2 * pi *+ 2))%:E.
-Proof.
-move=> s0.
-rewrite -mulrnAr -[in RHS]mulr_natr sqrtrM ?(sqrtrM 2) ?sqr_ge0 ?pi_ge0// !EFinM.
-rewrite muleCA ge0_integralZr//=; last first.
-  by move=> x _; rewrite lee_fin mulr_ge0//= ?gauss_fun_ge0// F'E/= invr_ge0.
-  rewrite F'E; apply/measurable_EFinP/measurable_funM => //.
-  apply/measurableT_comp => //; first exact: measurable_gauss_fun.
-  by apply: measurable_funM => //; exact: measurable_funD.
-congr *%E.
-rewrite -increasing_ge0_integration_by_substitutionT//; first last.
-- by move=> x; rewrite gauss_fun_ge0.
-- exact: continuous_gauss_fun.
-- apply/gt0_cvgMly; last exact: cvg_addrr.
-  by rewrite invr_gt0// sqrtr_gt0 -mulr_natr mulr_gt0// exprn_even_gt0.
-- apply/gt0_cvgMlNy; last exact: cvg_addrr_Ny.
-  by rewrite invr_gt0// sqrtr_gt0 -mulr_natr mulr_gt0// exprn_even_gt0.
-- by rewrite F'E; exact: is_cvg_cst.
-- by rewrite F'E; exact: is_cvg_cst.
-- by rewrite F'E => ?; exact: cvg_cst.
-- move=> x y xy; rewrite /F ltr_pM2r ?ltr_leB//.
-  rewrite invr_gt0 ?sqrtr_gt0 ?pmulrn_lgt0 ?exprn_even_gt0//.
-apply: integralT_gauss.
-by rewrite -(mulr_natr (_ ^+ 2)) sqrtrM ?sqr_ge0.
-Qed.
-
-Let integral_normal_pdf_part : sigma != 0 ->
-  (\int[mu]_x (normal_fun x)%:E =
-  (Num.sqrt (sigma ^+ 2 * pi *+ 2))%:E)%E.
-Proof.
-move=> s0; rewrite -int_gaussFE//; apply: eq_integral => /= x _.
-rewrite F'E !fctE/= EFinM -muleA -EFinM mulVf ?mulr1; last first.
-  by rewrite gt_eqF// sqrtr_gt0 pmulrn_lgt0// exprn_even_gt0.
-congr (expR _)%:E; rewrite mulNr exprMn exprVn; congr (- (_ * _^-1)%R).
-by rewrite sqr_sqrtr// pmulrn_lge0// sqr_ge0.
-Qed.
-
-Let integrable_normal_pdf_part : sigma != 0 ->
-  mu.-integrable setT (EFin \o normal_fun).
-Proof.
-move=> s0; apply/integrableP; split.
-  by apply/measurable_EFinP; apply: measurable_normal_fun.
-under eq_integral do rewrite /= ger0_norm ?expR_ge0//.
-by rewrite /= integral_normal_pdf_part// ltry.
-Qed.
-
-Local Notation normal_pdf := (normal_pdf m sigma).
-Local Notation normal_prob := (normal_prob m sigma).
-
-Let normal0 : normal_prob set0 = 0%E.
-Proof. by rewrite /normal_prob integral_set0. Qed.
-
-Let normal_ge0 A : (0 <= normal_prob A)%E.
-Proof.
-rewrite /normal_prob integral_ge0//= => x _.
-by rewrite lee_fin normal_pdf_ge0 ?ltW.
-Qed.
-
-Let normal_sigma_additive : semi_sigma_additive normal_prob.
-Proof.
-move=> /= A mA tA mUA.
-rewrite /normal_prob/= integral_bigcup//=; last first.
-  apply: (integrableS _ _ (@subsetT _ _)) => //; exact: integrable_normal_pdf.
-apply: is_cvg_ereal_nneg_natsum_cond => n _ _.
-by apply: integral_ge0 => /= x ?; rewrite lee_fin normal_pdf_ge0 ?ltW.
-Qed.
-
-HB.instance Definition _ := isMeasure.Build _ _ _
-  normal_prob normal0 normal_ge0 normal_sigma_additive.
-
-Let normal_setT : normal_prob [set: _] = 1%E.
-Proof. by rewrite /normal_prob integral_normal_pdf. Qed.
-
-HB.instance Definition _ :=
-  @Measure_isProbability.Build _ _ R normal_prob normal_setT.
-
-Lemma integrable_indic_itv (a b : R) (b0 b1 : bool) : a < b ->
-  mu.-integrable setT (EFin \o \1_[set` (Interval (BSide b0 a) (BSide b1 b))]).
-Proof.
-move=> ab.
-apply/integrableP; split; first by apply/measurable_EFinP/measurable_indic.
-apply/abse_integralP => //; first by apply/measurable_EFinP/measurable_indic.
-rewrite integral_indic// setIT/= lebesgue_measure_itv/=.
-by rewrite lte_fin ab -EFinD/= ltry.
-Qed.
-
-End normal_probability.
-
 (* TODO: move *)
 Section shift_properties.
 Variable R : realType.
@@ -2324,6 +1842,29 @@ Local Close Scope ereal_scope.
       So the integral of `g` on ]-oo, +oo[ is the integral of `f` on ]-oo, +oo[
       added by the integral of `normal_pdf a s x` on ]a - e, a + e[
  *)
+
+Let normal_pdf0 m s x : R := normal_peak s * normal_fun m s x.
+
+Let normal_pdf0_ge0 m x : 0 <= normal_pdf0 m s x.
+Proof. by rewrite mulr_ge0 ?normal_peak_ge0 ?expR_ge0. Qed.
+
+Let continuous_normal_pdf0 m : continuous (normal_pdf0 m s).
+Proof.
+move=> x; apply: cvgM; first exact: cvg_cst.
+apply: (@cvg_comp _ R^o _ _ _ _
+   (nbhs (- (x - m) ^+ 2 / (s ^+ 2 *+ 2)))); last exact: continuous_expR.
+apply: cvgM; last exact: cvg_cst; apply: (@cvgN _ R^o).
+apply: (@cvg_comp _ _ _ _ (@GRing.exp R^~ 2) _ (nbhs (x - m))).
+  apply: (@cvgB _ R^o) => //; exact: cvg_cst.
+exact: sqr_continuous.
+Qed.
+
+Let normal_pdf0_ub m x : normal_pdf0 m s x <= normal_peak s.
+Proof.
+rewrite /normal_pdf0 ler_piMr ?normal_peak_ge0//.
+rewrite -[leRHS]expR0 ler_expR mulNr oppr_le0 mulr_ge0// ?sqr_ge0//.
+by rewrite invr_ge0 mulrn_wge0// sqr_ge0.
+Qed.
 
 Let g' a e : R -> R := fun x => if x \in (ball a e : set R^o) then
   normal_peak s else normal_pdf0 e s `|x - a|.
@@ -2536,11 +2077,11 @@ move=> mV a.
 near (0 : R)^'+ => e.
 set g := g' a e.
 have mg := mg' a e.
-apply: (@continuousT_under_integral _ _ _ mu _ _ _ _ (a - e) (a + e) _ _ _ g) => //=.
+apply: (@continuity_under_integral _ _ _ mu _ _ _ _ (a - e) (a + e) _ _ _ g) => //=.
 - by rewrite in_itv/= ltrDl gtrBl andbb.
 - move=> x _.
   by apply: (integrableS measurableT) => //=; exact: integrable_normal_pdf.
-- move=> y _ x.
+- apply/aeW; move=> y _ x.
   under [X in _ _ X]eq_fun.
     move=> x0.
     rewrite normal_pdfE// /normal_pdf0 /normal_fun -(sqrrN (y - _)) opprB.
@@ -2585,7 +2126,9 @@ apply: (@continuousT_under_integral _ _ _ mu _ _ _ _ (a - e) (a + e) _ _ _ g) =>
   apply/abse_integralP => //=.
     by apply/measurable_EFinP; exact: measurable_normal_pdf.
   by rewrite integral_normal_pdf ltry.
-move=> x y ax Ysy.
+move=> x.
+rewrite !in_itv/= => /andP[aex xae].
+apply/aeW => y Vy.
 rewrite ger0_norm; last exact: normal_pdf_ge0.
 rewrite normal_pdfE// /g /g'.
 case: ifPn => [_|]; first exact: normal_pdf0_ub.
@@ -2596,7 +2139,6 @@ rewrite /normal_pdf0 ler_pM//.
 rewrite ler_expR !mulNr lerN2 ler_pM //.
   exact: sqr_ge0.
   by rewrite invr_ge0 mulrn_wge0// sqr_ge0.
-move: ax; rewrite in_itv/= => /andP[aex xae].
 move: aey; move/negP/nandP; rewrite -!leNgt => -[yae|aey].
   rewrite -normrN opprB ger0_norm; last first.
     by rewrite subr_ge0 (le_trans yae)// gerBl.
@@ -2661,21 +2203,6 @@ apply: H => /=.
 by rewrite (lt_le_trans grze)// ge_min lexx.
 Qed.
 
-Lemma derive1Mr [R : realFieldType] [f : R^o -> R^o] [x r : R^o] :
-  derivable f x 1 -> ((fun x => f x * r)^`()%classic x = (r * f^`()%classic x)%R :> R)%R.
-Proof.
-move=> fx1.
-rewrite derive1E (deriveM fx1); last by [].
-by rewrite -derive1E derive1_cst scaler0 add0r derive1E.
-Qed.
-
-Lemma derive1Ml [R : realFieldType] [f : R^o -> R^o] [x r : R^o] :
-  derivable f x 1 -> ((fun x => r * f x)^`()%classic x = (r * f^`()%classic x)%R :> R)%R.
-Proof.
-under eq_fun do rewrite mulrC.
-exact: derive1Mr.
-Qed.
-
 Lemma continuous_onemXn {R : realType} (n : nat) x :
   {for x, continuous (fun y : R => `1-y ^+ n)%R}.
 Proof.
@@ -2736,8 +2263,9 @@ rewrite (@continuous_FTC2 _ _ (fun x : R => ((1 - x) ^+ n.+1 / - n.+1%:R))%R)//=
 - by move=> x x01; exact: continuous_onemXn.
 - exact: derivable_oo_continuous_bnd_onemXnMr.
 - move=> x x01.
-  rewrite derive1Mr//; last  exact: onemXn_derivable.
-  by rewrite derive_onemXn mulrA mulVf// mul1r.
+  rewrite derive1Mr//; last exact: onemXn_derivable.
+  rewrite derive_onemXn.
+  by rewrite mulrAC divff// mul1r.
 Qed.
 
 End move.
@@ -2978,7 +2506,7 @@ rewrite (@Rintegration_by_parts _ _
   exact: derivable_oo_continuous_bnd_onemXnMr.
   move=> x x01.
   rewrite derive1Mr; last exact: onemXn_derivable.
-  by rewrite derive_onemXn mulrA mulVf// mul1r.
+  by rewrite derive_onemXn mulrAC divff// mul1r.
 rewrite {1}/onem !(expr1n,mul1r,expr0n,subr0,subrr,mul0r,oppr0)/=.
 rewrite sub0r.
 transitivity (a.+1%:R / b.+1%:R * (\int[mu]_(x in `[0, 1]) (XMonemX a b.+1 x)) : R)%R.
@@ -3706,7 +3234,7 @@ Proof.
 move=> z; rewrite in_itv/= andbT => z0.
 rewrite derive1_comp// derive1N// derive1_id derive1_comp//.
 rewrite derive1Mr// derive1N// derive1_id.
-rewrite mulNr mul1r -2!mulrN opprK mulr1 mulrC derive1E.
+rewrite mulNr mul1r -!mulrN mulN1r opprK mulrC derive1E.
 have/funeqP -> := @derive_expR R.
 by rewrite exponential_pdfE ?ltW.
 Qed.
