@@ -206,6 +206,11 @@ Section conjugate_normal_property.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
 
+Let normal_pdf0 m s x : R := normal_peak s * normal_fun m s x.
+
+Let measurable_normal_pdf0 m s : measurable_fun setT (normal_pdf0 m s).
+Proof. by apply: measurable_funM => //=; exact: measurable_normal_fun. Qed.
+
 Lemma conjugate_normal1 (m1 m2 s1 s2 : R) V : measurable V ->
   s1 != 0%R -> s2 != 0%R ->
   \int[normal_prob m1 s1]_x normal_prob (m2 + x) s2 V =
@@ -549,7 +554,7 @@ Local Definition noisyB'_part
 Lemma noisyAB'_rearrange (y : (@mctx R [:: ("y0", Real)])) x :
   noisyA'_part y x = noisyB'_part y x.
 Proof.
-rewrite /noisyA'_part/noisyB'_part !normal_pdfE// /normal_pdf0.
+rewrite /noisyA'_part/noisyB'_part !normal_pdfE//.
 rewrite mulrA mulrAC -(@sqrtrV _ 2)//.
 rewrite /normal_peak sqr_sqrtr; last by rewrite invr_ge0.
 rewrite /normal_fun subr0 sqr_sqrtr; last by rewrite invr_ge0.
