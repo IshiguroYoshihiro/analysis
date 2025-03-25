@@ -64,6 +64,61 @@ Import numFieldNormedType.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+Section continuous_under_integral.
+Context {R : realType} d {Y : measurableType d}
+  {mu : {measure set Y -> \bar R}}.
+
+Variable f : R -> Y -> R.
+Variable B : set Y.
+Hypothesis mB : measurable B.
+
+Variable a u v : R.
+Let I : set R := `]u, v[.
+
+Hypothesis Ia : I a.
+Hypothesis int_f : forall x, I x -> mu.-integrable B (EFin \o (f x)).
+Hypothesis cf : forall y, B y -> continuous (f ^~ y).
+
+Variable g : Y -> R.
+
+Hypothesis int_g : mu.-integrable B (EFin \o g).
+Hypothesis g_ub : forall x y, I x -> B y -> `|f x y| <= g y.
+
+Let F x := \int[mu]_(y in B) f x y.
+
+Lemma continuousT_under_integral :
+  continuous_at a (fun l => \int[mu]_(x in B) f l x).
+Proof.
+have [vu|uv] := lerP v u.
+  move: Ia.
+  by rewrite /I set_itv_ge// -leNgt bnd_simp.
+apply/cvg_nbhsP => u_ ur.
+have auv : a \in `]u, v[ by rewrite inE.
+have [e /= e0 Huv] := near_in_itvoo auv.
+move/(@cvgrPdist_lt _ R^o) : (ur) => /(_ _ e0)[N _ aue].
+rewrite -(cvg_shiftn N).
+apply: fine_cvg.
+rewrite fineK; last first.
+  rewrite fin_num_abs.
+  have /integrableP[? ?] := int_f Ia.
+  exact/abse_integralP.
+apply: (@lebesgue_integral.dominated_cvg _ _ _ mu _ _
+   (fun n x => (f (u_ (n + N)%N) x)%:E) _ (EFin \o g)) => //=.
+- move=> n; apply: measurable_int; apply: int_f.
+  rewrite /I/=.
+  by apply: Huv => /=; apply: aue => /=; exact: leq_addl.
+- move=> x Bx. (* TODO: forall x in V -> a.e. V *)
+  apply: cvg_EFin; first exact: nearW.
+  have /cvg_nbhsP := @cf x Bx a.
+  apply.
+  by rewrite (cvg_shiftn N).
+- move=> n x Vx.
+  apply: g_ub => //.
+  by apply: Huv; apply: aue; exact: leq_addl.
+Qed.
+
+End continuous_under_integral.
+
 Section differentiation_under_integral.
 
 Definition partial1of2 {R : realType} {T : Type} (f : R -> T -> R) : R -> T -> R := fun x y => (f ^~ y)^`() x.

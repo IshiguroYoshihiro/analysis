@@ -156,30 +156,6 @@ Qed.
 
 End gauss_lebesgue.
 
-Notation left_continuous f :=
-  (forall x, f%function @ at_left x --> f%function x).
-
-Lemma left_continuousW (R : numFieldType) (f : R -> R) :
-  continuous f -> left_continuous f.
-Proof. by move=> cf x; exact/cvg_at_left_filter/cf. Qed.
-
-Section derivable_oy_continuous_bnd.
-Context {R : realType}.
-
-Lemma derivable_oy_continuous_bnd_within (f : R -> R^o) (x : R) :
-  derivable_oy_continuous_bnd f x -> {within `[x, +oo[, continuous f}.
-Proof.
-move=> [/= df fx]; apply/subspace_continuousP => z /=.
-rewrite in_itv/= andbT; rewrite le_eqVlt => /predU1P[<-{z}|xz].
-  have := cvg_at_right_within fx; apply: cvg_trans; apply: cvg_app.
-  by apply: within_subset => z/=; rewrite in_itv/= => /andP[].
-apply: cvg_within_filter.
-have := df z; rewrite in_itv/= andbT => /(_ xz) /derivable1_diffP.
-exact/differentiable_continuous.
-Qed.
-
-End derivable_oy_continuous_bnd.
-
 Section Gamma.
 Context {R : realType}.
 
@@ -189,6 +165,7 @@ Definition Gamma (a : R) : \bar R :=
   (\int[mu]_(x in `[0%R, +oo[) (x`^  (a - 1) * expR (- x))%:E)%E.
 
 Let I n := \int[mu]_(x in `[0%R, +oo[) (x ^+ n * expR (- x))%:E.
+(* wip *)
 
 End Gamma.
 
@@ -201,7 +178,6 @@ Notation mu := (@lebesgue_measure R).
 Hypothesis integral_poisson_density : forall k,
   (\int[mu]_x (@poisson_pdf R k x)%:E = 1%E)%E.
 
-(* density function for poisson *)
 Definition poisson1 := @poisson_pdf R 1%N.
 
 Lemma poisson1_ge0 (x : R) : 0 <= poisson1 x.

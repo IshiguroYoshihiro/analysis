@@ -1422,62 +1422,6 @@ Qed.
 
 End uniform_probability.
 
-(* TODO: move to ftc.v *)
-Section continuous_under_integral.
-Context {R : realType} d {Y : measurableType d}
-  {mu : {measure set Y -> \bar R}}.
-
-Variable f : R -> Y -> R.
-Variable B : set Y.
-Hypothesis mB : measurable B.
-
-Variable a u v : R.
-Let I : set R := `]u, v[.
-
-Hypothesis Ia : I a.
-Hypothesis int_f : forall x, I x -> mu.-integrable B (EFin \o (f x)).
-Hypothesis cf : forall y, B y -> continuous (f ^~ y).
-
-Variable g : Y -> R.
-
-Hypothesis int_g : mu.-integrable B (EFin \o g).
-Hypothesis g_ub : forall x y, I x -> B y -> `|f x y| <= g y.
-
-Let F x := \int[mu]_(y in B) f x y.
-
-Lemma continuousT_under_integral :
-  continuous_at a (fun l => \int[mu]_(x in B) f l x).
-Proof.
-have [vu|uv] := lerP v u.
-  move: Ia.
-  by rewrite /I set_itv_ge// -leNgt bnd_simp.
-apply/cvg_nbhsP => u_ ur.
-have auv : a \in `]u, v[ by rewrite inE.
-have [e /= e0 Huv] := near_in_itvoo auv.
-move/(@cvgrPdist_lt _ R^o) : (ur) => /(_ _ e0)[N _ aue].
-rewrite -(cvg_shiftn N).
-apply: fine_cvg.
-rewrite fineK; last first.
-  rewrite fin_num_abs.
-  have /integrableP[? ?] := int_f Ia.
-  exact/abse_integralP.
-apply: (@lebesgue_integral.dominated_cvg _ _ _ mu _ _
-   (fun n x => (f (u_ (n + N)%N) x)%:E) _ (EFin \o g)) => //=.
-- move=> n; apply: measurable_int; apply: int_f.
-  rewrite /I/=.
-  by apply: Huv => /=; apply: aue => /=; exact: leq_addl.
-- move=> x Bx. (* TODO: forall x in V -> a.e. V *)
-  apply: cvg_EFin; first exact: nearW.
-  have /cvg_nbhsP := @cf x Bx a.
-  apply.
-  by rewrite (cvg_shiftn N).
-- move=> n x Vx.
-  apply: g_ub => //.
-  by apply: Huv; apply: aue; exact: leq_addl.
-Qed.
-
-End continuous_under_integral.
-
 Section normal_density.
 Context {R : realType}.
 Local Open Scope ring_scope.
@@ -1512,7 +1456,7 @@ Qed.
 
 Definition normal_pdf0 m s x : R := normal_peak s * normal_fun m s x.
 
- (* NB: dirac delta function may be proper for s = 0
+ (* NB: dirac delta function may be better for s = 0
   *     but it has problem when prove some properties includes (s = 0) case
   *     and not used (s = 0) case in our examples *)
 Definition normal_pdf (m s x : R) : R :=
@@ -1703,7 +1647,7 @@ HB.instance Definition _ :=
 
 (* TODO: PR? *)
 Lemma integrable_indic_itv (a b : R) (b0 b1 : bool) : a < b ->
-  mu.-integrable setT (EFin \o \1_[set` (Interval (BSide b0 a) (BSide b1 b))]).
+  mu.-integrable setT (EFin \o \1_[set` Interval (BSide b0 a) (BSide b1 b)]).
 Proof.
 move=> ab.
 apply/integrableP; split; first by apply/measurable_EFinP/measurable_indic.
@@ -1809,9 +1753,6 @@ Local Definition normal_prob2 :=
   (fun m => normal_prob m s) : _ -> pprobability _ _.
 
 Local Open Scope classical_set_scope.
-Local Open Scope ereal_scope.
-
-Local Close Scope ereal_scope.
 
 (* outline of proof:
    1. It is enough to prove that `(fun x => normal_prob x s Ys)` is continuous for
@@ -1853,7 +1794,7 @@ rewrite ball_itv/= in_itv/=; apply/negP/andP/not_andP; right.
 by apply/negP; rewrite -leNgt.
 Qed.
 
-Lemma g'a0 (a : R) : g' a 0 = normal_pdf0 a s.
+Let g'a0 (a : R) : g' a 0 = normal_pdf0 a s.
 Proof.
 apply/funext => x; rewrite /g'.
 have /orP [x0|x0] := le_total x a.
@@ -1863,7 +1804,7 @@ rewrite ballFE_ge; last by rewrite addr0.
 by rewrite /normal_pdf0 /normal_fun subr0 real_normK// num_real.
 Qed.
 
-Lemma mg' a e : measurable_fun setT (g' a e).
+Let mg' a e : measurable_fun setT (g' a e).
 Proof.
 apply: measurable_fun_if => //.
   apply: (measurable_fun_bool true) => /=.
@@ -1874,13 +1815,13 @@ apply: measurableT_comp => //; first exact: measurable_normal_fun.
 by apply: measurableT_comp => //; exact: measurable_funD.
 Qed.
 
-Lemma g'_ge0 a e x : 0 <= g' a e x.
+Let g'_ge0 a e x : 0 <= g' a e x.
 Proof.
 rewrite /g'; case: ifP => _; first by rewrite normal_peak_ge0.
 exact: normal_pdf0_ge0.
 Qed.
 
-Lemma continuous_g' (a e : R) : 0 <= e -> continuous (g' a e).
+Let continuous_g' (a e : R) : 0 <= e -> continuous (g' a e).
 Proof.
 move=> e0.
 have aNe k : k < a - e -> (`|k - a| - e) ^+ 2 = (k - (a - e)) ^+ 2.
@@ -1992,7 +1933,7 @@ apply: withinU_continuous.
     exact: continuous_normal_pdf0.
 Unshelve. all: end_near. Qed.
 
-Lemma gE_Ny a e : 0 <= e ->
+Let gE_Ny a e : 0 <= e ->
   (\int[mu]_(x in `]-oo, (a - e)%R]) `|g' a e x|%:E =
    \int[mu]_(x in `]-oo, a]) `|normal_pdf a s x|%:E)%E.
 Proof.
@@ -2015,7 +1956,7 @@ under eq_integral.
 by apply: eq_integral => /= x xay; rewrite /normal_pdf (negbTE s0).
 Qed.
 
-Lemma gE_y a e : 0 <= e ->
+Let gE_y a e : 0 <= e ->
   (\int[mu]_(x in `[a + e, +oo[) `|g' a e x|%:E =
    \int[mu]_(x in `[a, +oo[) `|normal_pdf a s x|%:E)%E.
 Proof.
@@ -2140,6 +2081,7 @@ Qed.
 
 End normal_kernel.
 
+(* TODO: move to derive.v, etc. *)
 Section move.
 
 Lemma cvg_comp_filter {R : realType} (f g : R -> R) (r l : R) :
@@ -2248,6 +2190,7 @@ rewrite (@continuous_FTC2 _ _ (fun x : R => ((1 - x) ^+ n.+1 / - n.+1%:R))%R)//=
 Qed.
 
 End move.
+(* /TODO: move to derive.v, etc. *)
 
 (* we define a function to help formalizing the beta distribution *)
 Section XMonemX.
@@ -2380,6 +2323,7 @@ Qed.
 
 Local Close Scope ereal_scope.
 
+(* TODO: consider moving elsewhere if this is a useful specialization *)
 Section change_of_variables_onem.
 Context {R : realType}.
 Let mu := (@lebesgue_measure R).
@@ -2589,10 +2533,10 @@ Proof. exact/ltW/beta_fun_gt0. Qed.
 Lemma beta_fun11 : beta_fun 1 1 = 1%R :> R.
 Proof. by rewrite (beta_fun1S O) invr1. Qed.
 
-(* NB: this is not exactly betafun because EFin *)
+(* NB: this is not exactly beta_fun because EFin *)
 Definition beta_funEFin a b : \bar R := \int[mu]_x (XMonemX01 a b x)%:E.
 
-(* TODO: rev eq *)
+(* TODO: consider reversing the equality *)
 Lemma beta_funEFinT a b :
   (beta_funEFin a b = \int[mu]_(x in `[0%R, 1%R]) (XMonemX01 a b x)%:E)%E.
 Proof. by rewrite /beta_funEFin integral_XMonemX01/= setTI. Qed.
@@ -2648,7 +2592,7 @@ Qed.
 
 Local Notation mu := lebesgue_measure.
 
-(* TODO: really useful? *)
+(* TODO: consider again the usefulness of this lemma *)
 Lemma int_beta_pdf01 :
   (\int[mu]_(x in `[0%R, 1%R]) (beta_pdf x)%:E =
    \int[mu]_x (beta_pdf x)%:E :> \bar R)%E.
@@ -2710,9 +2654,9 @@ Lemma invr_nonneg_proof (R : numDomainType) (p : {nonneg R}) :
   (0 <= (p%:num)^-1)%R.
 Proof. by rewrite invr_ge0. Qed.
 
-(* TODO: move *)
 Definition invr_nonneg (R : numDomainType) (p : {nonneg R}) :=
   NngNum (invr_nonneg_proof p).
+(* /TODO: move *)
 
 Section beta.
 Local Open Scope ring_scope.
@@ -2972,7 +2916,7 @@ Qed.
 
 End integral_beta_prob.
 
-
+(* TODO: move *)
 Lemma leq_prod2 (x y n m : nat) : (n <= x)%N -> (m <= y)%N ->
   (\prod_(m <= i < y) i * \prod_(n <= i < x) i <= \prod_(n + m <= i < x + y) i)%N.
 Proof.
@@ -3001,13 +2945,13 @@ do 2 rewrite -addSn -addnS.
 exact: leq_prod2.
 Qed.
 
-(* TODO: move *)
 Lemma normr_onem {R : realType} (x : R) : (0 <= x <= 1 -> `| `1-x | <= 1)%R.
 Proof.
 move=> /andP[x0 x1]; rewrite ler_norml; apply/andP; split.
   by rewrite lerBrDl lerBlDr (le_trans x1)// lerDl.
 by rewrite lerBlDr lerDl.
 Qed.
+(* /TODO: move *)
 
 Section beta_prob_bernoulliE.
 Context {R : realType}.
