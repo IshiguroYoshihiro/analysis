@@ -2014,7 +2014,7 @@ Qed.
 
 End exp_coeff_properties.
 
-(* TODO: move *)
+(* TODO: move to ftc.v *)
 Section continuous_under_integral.
 Context {R : realType} d {Y : measurableType d}
   {mu : {measure set Y -> \bar R}}.
@@ -2223,7 +2223,7 @@ Qed.
 
 End normal_probability.
 
-(* TODO: PR *)
+(* TODO: move *)
 Section shift_properties.
 Variable R : realType.
 
@@ -2231,21 +2231,6 @@ Local Open Scope ring_scope.
 
 Notation mu := lebesgue_measure.
 
-(* PR in progress *)
-Lemma derive_shift (v k : R) : 'D_v (shift k : R^o -> R^o) = cst v.
-Proof.
-apply/funext => x/=.
-by rewrite deriveD// derive_id derive_cst addr0.
-Qed.
-
-(* PR in progress *)
-Lemma is_derive_shift x v (k : R) : is_derive x v (shift k : R^o -> R^o) v.
-Proof.
-split => //.
-by rewrite derive_val addr0.
-Qed.
-
-(* TODO: In integration_by_substitution, (f : R -> R) => (f : R -> \bar R) *)
 Lemma ge0_integration_by_substitution_shift_itvNy (f : R -> R) (r e : R) :
   {within `]-oo, r + e], continuous f} ->
   {in `]-oo, r + e[, forall x : R, 0 <= f x} ->
