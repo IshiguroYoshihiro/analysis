@@ -514,7 +514,8 @@ rewrite beta_fun11 divff ?mule1//.
 rewrite beta_funE.
 rewrite ( _ : 5`! = 120)//.
 rewrite ( _ : 3`! = 6)//.
-rewrite ( _ : 9`! = 362880)//.
+rewrite 2!factS.
+rewrite ( _ : 7`! = 5040)//.
 rewrite /=.
 rewrite -EFinM.
 congr EFin.
