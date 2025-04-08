@@ -3321,6 +3321,7 @@ Qed.
 
 End cvgr_cvgn.
 
+(* TODO: PR *)
 Section measurable_fun_itvP.
 Context {R : realType}.
 Implicit Type (f : R -> R).
@@ -3640,6 +3641,145 @@ apply: fG0; rewrite inE/=.
 exact/itvSay/anx.
 Qed.
 
+Lemma integration_by_partsy_npsfG_nngFg F G FGoo f g a :
+    {within `[a, +oo[, continuous f} ->
+    derivable_oy_continuous_bnd F a ->
+    {in `]a, +oo[%R, F^`() =1 f} ->
+    {within `[a, +oo[, continuous g} ->
+    derivable_oy_continuous_bnd G a ->
+    {in `]a, +oo[%R, G^`() =1 g} ->
+    (F \* G)%R x @[x --> +oo%R] --> FGoo ->
+  {in `]a, +oo[%R, forall x, (f x * G x)%:E <= 0} ->
+  {in `]a, +oo[%R, forall x, 0%R <= (F x * g x)%:E} ->
+  \int[mu]_(x in `[a, +oo[) (F x * g x)%:E = (FGoo - F a * G a)%:E +
+  \int[mu]_(x in `[a, +oo[) (- (f x * G x)%:E).
+Proof.
+move=> cf Fay Ff cg Gay Gg cvgFG fG0 Fg0.
+have mFg : measurable_fun `]a, +oo[ (fun x => (F x * g x)%R).
+  apply: (@measurable_funS _ _ _ _ `[a, +oo[) => //.
+    by apply: subset_itvr; rewrite bnd_simp.
+  apply: measurable_funM; apply: subspace_continuous_measurable_fun => //.
+  exact: (@derivable_oy_continuous_within_itvcy _ R^o).
+have cfG : {within `[a, +oo[, continuous (fun x : R => (- (f x * G x))%R)}.
+  have/continuous_within_itvcyP[aycf cfa] := cf.
+  have/derivable_oy_continuous_within_itvcy/continuous_within_itvcyP[] := Gay.
+  move=> aycG cGa.
+  apply/continuous_within_itvcyP; split; last first.
+    by apply: (@cvgN _ R^o); apply: cvgM.
+  move=> x ax; apply: (@cvgN _ R^o); apply: continuousM; first exact: aycf.
+  exact: aycG.
+have mfG : measurable_fun `]a, +oo[ (fun x => (- (f x * G x))%R).
+  apply/measurable_fun_itv_obnd_cbndP.
+  exact: subspace_continuous_measurable_fun.
+rewrite -integral_itv_obnd_cbnd// -[in RHS]integral_itv_obnd_cbnd//.
+rewrite itv_bndy_bigcup_BRight.
+rewrite seqDU_bigcup_eq.
+rewrite 2?ge0_integral_bigcup//=; last 6 first.
+- by move=> k; apply: measurableD => //; apply: bigsetU_measurable.
+- rewrite -seqDU_bigcup_eq -itv_bndy_bigcup_BRight.
+  exact/measurable_EFinP.
+- rewrite -seqDU_bigcup_eq -itv_bndy_bigcup_BRight.
+  by move=> ? ?; rewrite EFinN oppe_ge0 fG0// inE.
+- by move=> k; apply: measurableD => //; apply: bigsetU_measurable.
+- rewrite -seqDU_bigcup_eq -itv_bndy_bigcup_BRight.
+  exact/measurable_EFinP.
+- rewrite -seqDU_bigcup_eq -itv_bndy_bigcup_BRight.
+  by move=> ? ?; rewrite Fg0// inE.
+transitivity (limn (fun n => ((F (a + n.-1%:R) * G (a + n.-1%:R) - F a * G a)%:E
+  + \big[+%R/0%R]_(0 <= i < n) - \int[mu]_(x in
+        seqDU (fun k : nat => `]a, (a + k%:R)]) i) (f x * G x)%:E))).
+  apply: congr_lim.
+  apply/funext => n.
+  case: n.
+    rewrite big_nat_cond [in RHS]big_nat_cond.
+    rewrite 2?big_pred0//=.
+    by rewrite 2!addr0 subrr.
+  case.
+    rewrite 2!big_nat1 seqDUE -pred_Sn addr0 subrr add0r.
+    by rewrite set_itvoc0 2!integral_set0 oppe0.
+  move=> n.
+  rewrite big_nat_recl// [in RHS]big_nat_recl//=.
+  rewrite seqDUE/= addr0 set_itvoc0 2!integral_set0 oppe0 2!add0r.
+  have subset_ai_ay (b b' : bool) i :
+    [set` Interval (BSide b (a + i%:R)) (BSide b' (a + i.+1%:R))] `<=`
+      [set` Interval (BSide b a) (BInfty _ false)].
+    apply/subitvP; rewrite subitvE bnd_simp; apply/andP; split => //.
+    by rewrite ler_wpDr.
+  under eq_bigr.
+    move=> i _.
+    rewrite seqDUE/=.
+    rewrite integral_itv_obnd_cbnd; last first.
+      exact: (@measurable_funS _ _ _ _ `]a, +oo[).
+    have Ffai: {in `]a + i%:R, a + i.+1%:R[%R, F^`() =1 f}.
+      exact/(in1_subset_itv _ Ff)/itvSay.
+    have Ggai: {in `]a + i%:R, a + i.+1%:R[%R, G^`() =1 g}.
+      exact/(in1_subset_itv _ Gg)/itvSay.
+    rewrite (integration_by_parts _ _ _ Ffai _ _ Ggai); last 5 first.
+    - by rewrite ltrD2l ltr_nat.
+    - exact: continuous_subspaceW cf.
+    - (* lemma? *)
+      have cFaS k : continuous_at (a + k.+1%:R)%R F.
+        have [/derivable_within_continuous + _] := Fay.
+        rewrite continuous_open_subspace//.
+        by apply; rewrite inE/= in_itv/= andbT ltrDl.
+      split.
+      + by move=> x aix; have [+ _] := Fay; apply; apply: itvSay; exact: aix.
+      + case: {Ffai Ggai} i => [|i]; first by rewrite addr0; have [] := Fay.
+        exact/cvg_at_right_filter/cFaS.
+      + exact/cvg_at_left_filter/cFaS.
+    - exact: continuous_subspaceW cg.
+    - (* lemma? *)
+      have cGaS k : continuous_at (a + k.+1%:R)%R G.
+        have [/derivable_within_continuous + _] := Gay.
+        rewrite continuous_open_subspace//.
+        by apply; rewrite inE/= in_itv/= andbT ltrDl.
+      split.
+      + by move=> x aix; have [+ _] := Gay; apply; apply: itvSay; exact: aix.
+      + case: {Ffai Ggai} i => [|i]; first by rewrite addr0; have [_] := Gay.
+        exact/cvg_at_right_filter/cGaS.
+      + exact/cvg_at_left_filter/cGaS.
+    over.
+  rewrite big_split/=.
+  under eq_bigr do rewrite EFinB.
+  rewrite telescope_sume// addr0.
+  congr +%E.
+  apply: eq_bigr => k _.
+  rewrite seqDUE/=.
+  rewrite integral_itv_obnd_cbnd//.
+  under [X in _ _ X]eq_fun do rewrite -(opprK (f _ * G _)%R).
+  apply: measurableT_comp; first exact: oppr_measurable.
+  exact: measurable_funS mfG.
+apply/cvg_lim => //.
+apply: cvgeD; first exact: fin_num_adde_defr.
+  apply: cvg_EFin; first exact: nearW.
+  apply: (@cvgB _ R^o); last exact: cvg_cst.
+  rewrite -cvg_shiftS/=.
+  apply: (@cvg_comp _ _ _ _ (F \* G)%R _ +oo%R).
+    apply: (cvg_trans (@cvgr_cvgn_addrl _ a)).
+    exact: cvg_addrl.
+  exact: cvgFG.
+under eq_cvg.
+  move=> n.
+  rewrite big_nat_cond.
+  under eq_bigr => i.
+    rewrite andbT => i0n.
+    rewrite -integralN/=; last first.
+      apply: fin_num_adde_defr.
+      rewrite integral0_eq// => x.
+      rewrite seqDUE /= in_itv/= => /andP[aix _].
+      apply: (le0_funeposE fG0).
+      by rewrite inE/= in_itv/= andbT (le_lt_trans _ aix)// lerDl.
+    over.
+  rewrite -big_nat_cond.
+  over.
+apply: is_cvg_nneseries_cond => n _ _.
+apply: integral_ge0 => x.
+rewrite seqDUE => anx.
+rewrite EFinN oppe_ge0.
+apply: fG0; rewrite inE/=.
+exact/itvSay/anx.
+Qed.
+
 End integration_by_parts.
 
 (* TODO: PR *)
@@ -3740,6 +3880,37 @@ apply: ex_derive.
 exact: is_derive1_ln.
 Unshelve. end_near. Qed.
 
+Lemma powR_derive1 a : {in `]0, +oo[%R,
+  (fun x : R => x `^ a : R^o) ^`()%classic =1 (fun x => a * x `^ (a - 1))}.
+Proof.
+move=> x; rewrite in_itv/= andbT => x0.
+rewrite derive1E.
+rewrite (@near_eq_derive _ R^o R^o _ (fun x => expR (a * ln x)))//; last first.
+  near=> z; rewrite /powR gt_eqF//; near: z.
+  exact: lt_nbhsr.
+rewrite -derive1E.
+rewrite derive1_comp//=; last first.
+  apply: derivableM => //.
+  apply: ex_derive.
+  exact: is_derive1_ln.
+rewrite 2!derive1E.
+rewrite deriveM//; last first.
+  apply: ex_derive.
+  exact: is_derive1_ln.
+rewrite !derive_val scaler0 addr0.
+have [_ ->] := (is_derive1_ln x0).
+rewrite mulrC.
+rewrite powRB; last by rewrite (@gt_eqF _ _ x)//; apply: implybT.
+rewrite powRr1 ?ltW//.
+rewrite mulrA [in RHS]mulrAC.
+by rewrite /powR gt_eqF.
+Unshelve. end_near. Qed.
+
+(* TODO *)
+(* Lemma is_derive1_powR (a x : R^o) : 0 < x ->
+  is_derive x 1 (fun x => x `^ a : R^o) (fun x => (a * x `^ (a - 1))%R).
+*)
+
 End powR_properties.
 
 Section Gamma.
@@ -3771,29 +3942,38 @@ Qed.
 Lemma Gamma_add1 a : 1 < a -> (Gamma (a + 1) = a%:E * Gamma a)%E.
 Proof.
 move=> a1.
-(* (!) x `^ a @[x --> +oo] --> +oo. *)
 have dxa1 : {in `]0, +oo[%R,
-  (fun x : R => x `^ a : R^o) ^`()%classic =1 (fun x => x `^ (a - 1))}.
-  admit.
+  (fun x : R => x `^ a : R^o) ^`()%classic =1 (fun x => a * x `^ (a - 1))}.
+  exact: powR_derive1.
 have dexp : {in `]0, +oo[%R,
   (fun x => - expR (- x) : R^o) ^`()%classic =1 (fun x => expR (- x))}.
-  admit.
+  by move=> x _; rewrite derive1E derive_val mulrN mulr1 opprK.
 rewrite/Gamma addrK.
 have xaNexp0 : (x `^ a * - expR (- x))%R @[x --> +oo%R] --> @GRing.zero R.
+  
   admit.
-rewrite (integration_by_partsy _ _ dxa1 _ _ dexp xaNexp0); last 6 first.
+have powRMexpR_ge0 b : {in `]0, +oo[,
+     forall x, (0 <= (x `^ b * expR (- x))%:E)%E}.
+  move=> x; rewrite in_itv/= andbT => x0.
+  by rewrite lee_fin mulr_ge0// ltW// ?powR_gt0// expR_gt0.
+rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp xaNexp0); last 6 first.
 - apply/continuous_within_itvcyP; split.
     move=> x; rewrite in_itv/= andbT => x0.
     rewrite /continuous_at/=.
     rewrite /powR gt_eqF//=; last by rewrite subr_gt0.
-    apply: (@cvg_trans _ ((expR ((a - 1) * ln x1)) @[x1 --> x])).
+    apply: (@cvg_trans _ ((a * expR ((a - 1) * ln x1)) @[x1 --> x])).
       apply: near_eq_cvg.
-      admit.
+      near=> z.
+      rewrite gt_eqF//.
+      near: z.
+      exact: lt_nbhsr.
+    apply: (@cvgM _ _ (nbhs x)); first exact: cvg_cst.
     apply: (@cvg_comp _ _ _ _ expR _ (nbhs ((a - 1) * ln x))).
       apply: cvgM; first exact: cvg_cst.
       exact: continuous_ln.
     rewrite ifF; last by rewrite gt_eqF.
     exact: continuous_expR.
+  apply: cvgM; first exact: cvg_cst.
   rewrite powR0; last by rewrite gt_eqF// subr_gt0.
   by apply: (@powR_cvg0 _ (a - 1)); rewrite subr_gt0.
 - split; last first.
@@ -3819,10 +3999,22 @@ rewrite (integration_by_partsy _ _ dxa1 _ _ dexp xaNexp0); last 6 first.
   apply: cvg_at_right_filter.
   apply/(cvg_compNP (expR : R^o -> R^o)).
   exact: continuous_expR.
+- move=> ? ?; rewrite mulrN EFinN oppe_le0.
+  rewrite -mulrA EFinM mule_ge0//; last exact: powRMexpR_ge0.
+  rewrite lee_fin ltW// (lt_trans _ a1)//.
+- exact: powRMexpR_ge0.
+rewrite sub0r powR0 ?mul0r ?oppr0 ?add0r; last first.
+  by rewrite gt_eqF// (lt_trans _ a1).
+under eq_integral do rewrite -EFinN mulrN opprK -mulrA EFinM.
+rewrite ge0_integralZl//=.
+- apply/measurable_EFinP.
+  apply: measurable_funTS.
+  apply: measurable_funM; first exact: measurable_powR.
+  exact: measurableT_comp.
 - move=> x; rewrite in_itv/= andbT => x0.
-  (* ? *)
--
-Abort.
+  by rewrite lee_fin mulr_ge0// ?powR_ge0 ?expR_ge0.
+- by rewrite lee_fin ltW// (lt_trans _ a1).
+Admitted.
 
 Let I n : \bar R := \int[mu]_(x in `[0%R, +oo[) (x ^+ n * expR (- x))%:E.
 (* wip *)
@@ -3830,3 +4022,5 @@ Let I n : \bar R := \int[mu]_(x in `[0%R, +oo[) (x ^+ n * expR (- x))%:E.
 End Gamma.
 
 Definition Rfact {R : realType} (x : R) := Gamma (x + 1)%R.
+
+Lemma RfactE {R : realType} (n : nat) : @Rfact R n.+1%:R = n`!%:R%:E.
