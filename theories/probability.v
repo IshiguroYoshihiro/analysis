@@ -3907,11 +3907,54 @@ by rewrite /powR gt_eqF.
 Unshelve. end_near. Qed.
 
 (* TODO *)
-(* Lemma is_derive1_powR (a x : R^o) : 0 < x ->
+(* Global Instance is_derive1_powR (a x : R^o) : 0 < x ->
   is_derive x 1 (fun x => x `^ a : R^o) (fun x => (a * x `^ (a - 1))%R).
 *)
 
 End powR_properties.
+
+Section expR_properties.
+Context {R : realType}.
+
+Let f n (x : R) (i : nat) : R := ((i == 0%nat)%:R + x ^+ n / n`!%:R *+ (i == n)).
+
+Local Lemma F n x m : (n.+1 < m)%nat ->
+  \sum_(0 <= i < m) (f n.+1 x i) = 1 + x ^+ n.+1 / n.+1`!%:R.
+Proof.
+move=> n1m.
+rewrite (@big_cat_nat _ _ _ n.+2)//=.
+rewrite big_nat_recr// big_nat_recl//=.
+rewrite big_nat_cond big1 ?addr0; last first.
+  move=> i; rewrite /f andbT => /andP[_ iltn].
+  by rewrite add0r lt_eqF.
+rewrite big_nat_cond big1 ?addr0; last first.
+  move=> i; rewrite /f andbT => /andP[Sngti iltm].
+  rewrite 2?gt_eqF ?add0r//.
+  exact: ltn_trans Sngti.
+by rewrite /f/= add0r mulr0n addr0 eq_refl 2!mulr1n.
+Qed.
+
+Lemma expR_ge1Dxn' (x : R) (n : nat) : 0 <= x ->
+   1 + x ^+ n.+1 / n.+1`!%:R <= expR x.
+Proof.
+move=> x_ge0; rewrite /expR.
+have -> : 1 + x ^+ n.+1 / n.+1`!%:R = limn (series (f n.+1 x)).
+  by apply/esym/(@lim_near_cst R^o) => //; near=> k; apply: F; near:k.
+apply: ler_lim; first by apply: is_cvg_near_cst; near=> k; apply: F; near: k.
+  exact: is_cvg_series_exp_coeff.
+near=> k; apply: ler_sum => -[|[|i]] _; rewrite /f/exp_coeff/=.
+- by rewrite !(mulr0n, expr0, addr0, divr1).
+- case: n; first by rewrite !(mulr0n, mulr1n, expr0, addr0, add0r, divr1).
+  by move=> n; rewrite addr0 mulr0n expr1 divr1.
+- rewrite add0r.
+  case H : (i.+2 == n.+1); move: H; [move/eqP ->| move=> _].
+    by rewrite mulr1n.
+  rewrite mulr0n.
+  rewrite divr_ge0//.
+  by rewrite exprn_ge0.
+Unshelve. all: by end_near. Qed.
+
+End expR_properties.
 
 Section Gamma.
 Context {R : realType}.
@@ -3949,14 +3992,20 @@ have dexp : {in `]0, +oo[%R,
   (fun x => - expR (- x) : R^o) ^`()%classic =1 (fun x => expR (- x))}.
   by move=> x _; rewrite derive1E derive_val mulrN mulr1 opprK.
 rewrite/Gamma addrK.
-have xaNexp0 : (x `^ a * - expR (- x))%R @[x --> +oo%R] --> @GRing.zero R.
-  
+set f := (fun x => (x `^ a * - expR (- x))) : R^o -> R^o.
+have fcvg0 : f x @[x --> +oo%R] --> @GRing.zero R.
+  apply/cvgrPdistC_lep.
+  near=> e; near=> x.
+  rewrite subr0.
+  rewrite /f/= mulrN normrN.
+  have /normr_idP -> : 0 <= (x `^ a * expR (- x)).
+    by rewrite mulr_ge0 1?expR_ge0 1?powR_ge0.
   admit.
 have powRMexpR_ge0 b : {in `]0, +oo[,
      forall x, (0 <= (x `^ b * expR (- x))%:E)%E}.
   move=> x; rewrite in_itv/= andbT => x0.
   by rewrite lee_fin mulr_ge0// ltW// ?powR_gt0// expR_gt0.
-rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp xaNexp0); last 6 first.
+rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp fcvg0); last 6 first.
 - apply/continuous_within_itvcyP; split.
     move=> x; rewrite in_itv/= andbT => x0.
     rewrite /continuous_at/=.
