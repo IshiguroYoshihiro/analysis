@@ -3370,6 +3370,7 @@ move=> x/=; rewrite 2!in_itv/= andbT => /andP[+ _].
 by case: b0 => /= H; [apply: le_trans H|apply: le_lt_trans H]; rewrite lerDl.
 Qed.
 
+(*
 Lemma integration_by_partsy_old F Foo G Goo f g a :
     {within `[a, +oo[, continuous f} ->
     derivable_oy_continuous_bnd F a ->
@@ -3507,6 +3508,7 @@ rewrite seqDUE => anx.
 apply: fG0; rewrite inE/=.
 exact/itvSay/anx.
 Qed.
+*)
 
 Lemma integration_by_partsy F G FGoo f g a :
     {within `[a, +oo[, continuous f} ->
@@ -3782,7 +3784,7 @@ Qed.
 
 End integration_by_parts.
 
-(* TODO: PR *)
+(* PRed *)
 Section gt0_cvgMlNy_new.
 
 Lemma gt0_cvgMlNy_new {R : realFieldType} (F : set_system R)
@@ -3822,7 +3824,7 @@ Abort.
 
 End gt0_cvgMlNy_new.
 
-(* TODO: PR *)
+(* PRed *)
 Section Ln_properties.
 Context {R : realType}.
 
@@ -3840,7 +3842,7 @@ Unshelve. end_near. Qed.
 
 End Ln_properties.
 
-(* TODO: PR *)
+(* PRed *)
 Section powR_properties.
 Context {R : realType}.
 
@@ -4000,7 +4002,64 @@ have fcvg0 : f x @[x --> +oo%R] --> @GRing.zero R.
   rewrite /f/= mulrN normrN.
   have /normr_idP -> : 0 <= (x `^ a * expR (- x)).
     by rewrite mulr_ge0 1?expR_ge0 1?powR_ge0.
-  admit.
+  rewrite expRN.
+  set A := `|archimedean.Num.Def.ceil a|.+1%N.
+  have H1DxAgt0 : 0 < (1%R + x `^ A%:R / A`!%:R)%E.
+    rewrite addr_gt0 ?powR_gt0 ?divr_gt0 ?powR_gt0//.
+    by rewrite -(mulr0n 1) ltr_nat fact_gt0.
+  apply: (@le_trans _ _ (x `^ a / (1 + x `^ A%:R / A`!%:R))).
+    rewrite ler_pM2l; last exact: powR_gt0.
+    rewrite ler_pV2//; last 2 first.
+    - rewrite inE/=; apply/andP; split; last by rewrite expR_gt0.
+      rewrite unitfE gt_eqF ?expR_gt0//.
+      rewrite inE/=; apply/andP; split => //.
+      by rewrite unitfE gt_eqF//.
+    rewrite powR_mulrn//.
+    exact: expR_ge1Dxn'.
+  apply: (@le_trans _ _ (x `^ a / (x `^ A%:R / A`!%:R))).
+    rewrite ler_pM2l; last first.
+      exact: powR_gt0.
+    rewrite ler_pV2; last 2 first.
+    - rewrite inE/=; apply/andP; split => //.
+      by rewrite unitfE gt_eqF ?expR_gt0//.
+    - have HxAgt0 : 0 < x `^ A%:R / A`!%:R.
+        rewrite mulr_gt0 ?powR_gt0 ?invr_gt0//.
+        by rewrite -(mulr0n 1) ltr_nat fact_gt0.
+      rewrite inE/=; apply/andP; split => //.
+      by rewrite unitfE gt_eqF//.
+    by rewrite lerDr.
+  rewrite invfM mulrA.
+  rewrite ler_pdivrMr; last by rewrite invr_gt0 -(mulr0n 1) ltr_nat fact_gt0.
+  rewrite -powRB ?(@gt_eqF _ _ x) ?implybT//.
+  rewrite -(@opprK _ (a - A%:R)).
+  rewrite powRN.
+  rewrite invf_ple//; last 2 first.
+  - rewrite posrE.
+    by rewrite powR_gt0.
+  - rewrite posrE.
+    rewrite divr_gt0//.
+    rewrite -(mulr0n 1).
+    rewrite ltr_nat.
+    by rewrite fact_gt0.
+  rewrite (@le_trans _ _ x)//.
+    near: x.
+    apply: nbhs_pinfty_ge.
+    rewrite realV.
+    rewrite ger0_real//.
+    by rewrite divr_ge0.
+  apply: le1r_powR.
+    near: x.
+    exact: nbhs_pinfty_ge.
+  rewrite lerNr.
+  rewrite lerBlDl.
+  rewrite /A.
+  rewrite -natr1 addrK.
+  rewrite natr_absz.
+  rewrite intr_norm.
+  rewrite -RceilE.
+  have /normr_idP -> : 0 <= Rceil a.
+    by rewrite Rceil_ge0// ltW// (lt_trans _ a1).
+  exact: Rceil_ge.
 have powRMexpR_ge0 b : {in `]0, +oo[,
      forall x, (0 <= (x `^ b * expR (- x))%:E)%E}.
   move=> x; rewrite in_itv/= andbT => x0.
@@ -4063,7 +4122,7 @@ rewrite ge0_integralZl//=.
 - move=> x; rewrite in_itv/= andbT => x0.
   by rewrite lee_fin mulr_ge0// ?powR_ge0 ?expR_ge0.
 - by rewrite lee_fin ltW// (lt_trans _ a1).
-Admitted.
+Unshelve. all: end_near. Qed.
 
 Let I n : \bar R := \int[mu]_(x in `[0%R, +oo[) (x ^+ n * expR (- x))%:E.
 (* wip *)
