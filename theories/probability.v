@@ -3842,10 +3842,10 @@ Unshelve. end_near. Qed.
 
 End Ln_properties.
 
-(* PRed *)
 Section powR_properties.
 Context {R : realType}.
 
+(* PRed *)
 Lemma powR_cvg0 (x : R) : 0 < x ->
   a `^ x @[a --> (@GRing.zero R)^'+] --> @GRing.zero R.
 Proof.
@@ -3861,6 +3861,7 @@ apply: (@cvg_comp _ _ _ _ _ _ (@ninfty_nbhs R)).
   exact/cvgNy_compNP/cvgr_expR.
 Unshelve. end_near. Qed.
 
+(* PRed *)
 Lemma derivable_powR v x : v != 0 ->
   {in `]0, +oo[, forall a,
     derivable ((@powR R : R^o -> _ -> R^o) ^~ x) a v}.
@@ -3882,6 +3883,7 @@ apply: ex_derive.
 exact: is_derive1_ln.
 Unshelve. end_near. Qed.
 
+(* PRed *)
 Lemma powR_derive1 a : {in `]0, +oo[%R,
   (fun x : R => x `^ a : R^o) ^`()%classic =1 (fun x => a * x `^ (a - 1))}.
 Proof.
@@ -3907,11 +3909,6 @@ rewrite powRr1 ?ltW//.
 rewrite mulrA [in RHS]mulrAC.
 by rewrite /powR gt_eqF.
 Unshelve. end_near. Qed.
-
-(* TODO *)
-(* Global Instance is_derive1_powR (a x : R^o) : 0 < x ->
-  is_derive x 1 (fun x => x `^ a : R^o) (fun x => (a * x `^ (a - 1))%R).
-*)
 
 End powR_properties.
 
@@ -3984,7 +3981,7 @@ transitivity (@exponential_prob R 1 setT).
 exact: probability_setT.
 Qed.
 
-Lemma Gamma_add1 a : 1 < a -> (Gamma (a + 1) = a%:E * Gamma a)%E.
+Lemma Gamma_add1 a : 1 <= a -> (Gamma (a + 1) = a%:E * Gamma a)%E.
 Proof.
 move=> a1.
 have dxa1 : {in `]0, +oo[%R,
@@ -4058,14 +4055,19 @@ have fcvg0 : f x @[x --> +oo%R] --> @GRing.zero R.
   rewrite intr_norm.
   rewrite -RceilE.
   have /normr_idP -> : 0 <= Rceil a.
-    by rewrite Rceil_ge0// ltW// (lt_trans _ a1).
+    by rewrite Rceil_ge0// (le_trans _ a1).
   exact: Rceil_ge.
 have powRMexpR_ge0 b : {in `]0, +oo[,
      forall x, (0 <= (x `^ b * expR (- x))%:E)%E}.
   move=> x; rewrite in_itv/= andbT => x0.
   by rewrite lee_fin mulr_ge0// ltW// ?powR_gt0// expR_gt0.
 rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp fcvg0); last 6 first.
-- apply/continuous_within_itvcyP; split.
+- move: a1.
+  rewrite le_eqVlt => /predU1P[<- |a1].
+    apply: continuous_subspaceT => x.
+    under [X in continuous_at _ X]eq_fun do rewrite mul1r subrr powRr0.
+    exact: cvg_cst.
+  apply/continuous_within_itvcyP; split.
     move=> x; rewrite in_itv/= andbT => x0.
     rewrite /continuous_at/=.
     rewrite /powR gt_eqF//=; last by rewrite subr_gt0.
@@ -4084,7 +4086,25 @@ rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp fcvg0); last 6 firs
   apply: cvgM; first exact: cvg_cst.
   rewrite powR0; last by rewrite gt_eqF// subr_gt0.
   by apply: (@powR_cvg0 _ (a - 1)); rewrite subr_gt0.
-- split; last first.
+- move: a1; rewrite le_eqVlt => /predU1P[<- |a1].
+    split.
+      move=> x; rewrite in_itv/= andbT => x0.
+      apply: (@near_eq_derivable _ _ _ id).
+        - by rewrite gt_eqF.
+        - near=> z.
+          rewrite powRr1// ltW//.
+          near: z.
+          exact: lt_nbhsr.
+        - exact: derivable_id.
+      rewrite powR0.
+      apply: (@cvg_trans _ (id x @[x --> 0^'+])).
+        apply: near_eq_cvg.
+        near=> x.
+        by rewrite powRr1.
+      apply: cvg_at_right_filter.
+      exact: cvg_id.
+    by rewrite gt_eqF.
+  split; last first.
     rewrite powR0; last first.
       rewrite gt_eqF//.
       exact: lt_trans a1.
@@ -4109,9 +4129,13 @@ rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp fcvg0); last 6 firs
   exact: continuous_expR.
 - move=> ? ?; rewrite mulrN EFinN oppe_le0.
   rewrite -mulrA EFinM mule_ge0//; last exact: powRMexpR_ge0.
-  rewrite lee_fin ltW// (lt_trans _ a1)//.
+  by rewrite lee_fin (le_trans _ a1).
 - exact: powRMexpR_ge0.
-rewrite sub0r powR0 ?mul0r ?oppr0 ?add0r; last first.
+rewrite sub0r.
+move: a1; rewrite le_eqVlt => /orP[/eqP<- |a1].
+  rewrite powRr1// mul0r oppr0 add0r mul1e.
+  by under eq_integral do rewrite mulrN EFinN oppeK mul1r.
+rewrite powR0 ?mul0r ?oppr0 ?add0r; last first.
   by rewrite gt_eqF// (lt_trans _ a1).
 under eq_integral do rewrite -EFinN mulrN opprK -mulrA EFinM.
 rewrite ge0_integralZl//=.
@@ -4131,4 +4155,14 @@ End Gamma.
 
 Definition Rfact {R : realType} (x : R) := Gamma (x + 1)%R.
 
-Lemma RfactE {R : realType} (n : nat) : @Rfact R n.+1%:R = n`!%:R%:E.
+Lemma RfactE {R : realType} (n : nat) : @Rfact R n%:R = n`!%:R%:E.
+Proof.
+rewrite /Rfact.
+elim: n.
+  rewrite /Rfact add0r.
+  exact: Gamma1'.
+move=> n IH.
+rewrite Gamma_add1; last first.
+  by rewrite -[leLHS](mulr1n 1) ler_nat.
+by rewrite -{2}natr1 IH factS natrM EFinM.
+Qed.
