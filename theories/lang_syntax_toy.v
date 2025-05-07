@@ -1,4 +1,4 @@
-From Coq Require Import String Classical.
+From Stdlib Require Import String Classical.
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg.
 From mathcomp Require Import mathcomp_extra boolp.
@@ -30,6 +30,7 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
+Local Open Scope string_scope.
 
 Section type.
 Variables (R : realType).

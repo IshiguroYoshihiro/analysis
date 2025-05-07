@@ -2508,7 +2508,7 @@ case: a => [|a].
   by rewrite beta_fun00 eqxx ltnn/= fact0 mul1r divr1.
 case: b => [|b].
   by rewrite beta_fun_sym beta_fun0// fact0 addn0/= mulr1 divff.
-by rewrite beta_fun_fact/= natrM// -addnE addnS.
+by rewrite beta_fun_fact/= natrM// addnS.
 Qed.
 
 Lemma beta_fun_gt0 a b : 0 < beta_fun a b :> R.

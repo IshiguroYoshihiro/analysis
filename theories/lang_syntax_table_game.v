@@ -1,4 +1,4 @@
-Require Import String.
+From Stdlib Require Import String.
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval.
 From mathcomp Require Import ring lra.
@@ -39,6 +39,7 @@ Import numFieldTopology.Exports.
 
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
+Local Open Scope string_scope.
 
 Section execP_letin_uniform.
 Local Open Scope ereal_scope.
@@ -568,7 +569,17 @@ under eq_integral.
   rewrite /XMonemX01 patchE x0 XMonemX0.
   over.
 rewrite /= => ->; congr bernoulli_prob.
-by rewrite /div_beta_fun addn0 !beta_funE/= !factE/= ?factE; field.
+rewrite /div_beta_fun addn0 !beta_funE/=.
+(* temporary measure to avoid stack overflow *)
+rewrite mulrAC -mulrA mulrAC 2!invfM 3!mulrA mulfV ?gt_eqF// 2!div1r.
+rewrite 17!addnS 2!addn0.
+rewrite (factS 11) (factS 10) (factS 9).
+rewrite [9`!]lock !factE; field.
+rewrite gt_eqF// -(mulr0n 1) ltr_nat.
+by unlock.
+(*
+rewrite !factE/= ?factE; field.
+*)
 Qed.
 
 Lemma dirac_bool {R : realType} (U : set bool) :
