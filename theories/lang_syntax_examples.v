@@ -701,8 +701,7 @@ rewrite beta_prob_bernoulli_probE// !bernoulli_probE//=; last 2 first.
 suff : div_beta_fun 6 4 1 0 = 3 / 5 :> R by move->.
 rewrite /div_beta_fun/= /onem !beta_funE/=.
 rewrite 2!addn0 invfM mulrCA invrK addn1 8!addnS 2!addn0.
-rewrite (factS 9) [9`!]lock !factE/=; field.
-rewrite gt_eqF// -(mulr0n 1) ltr_nat; by unlock.
+by rewrite (factS 9) !factS fact0; field.
 Qed.
 (*
 congr (_ * _ + _ * _)%:E.

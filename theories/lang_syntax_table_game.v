@@ -575,9 +575,7 @@ rewrite /div_beta_fun addn0 !beta_funE/=.
 rewrite mulrAC -mulrA mulrAC 2!invfM 3!mulrA mulfV ?gt_eqF// 2!div1r.
 rewrite 17!addnS 2!addn0.
 rewrite (factS 11) (factS 10) (factS 9).
-rewrite [9`!]lock !factE; field.
-rewrite gt_eqF// -(mulr0n 1) ltr_nat.
-by unlock.
+by rewrite !factE; field.
 (*
 rewrite !factE/= ?factE; field.
 *)
