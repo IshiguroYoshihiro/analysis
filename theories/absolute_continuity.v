@@ -16,9 +16,12 @@ From mathcomp Require Import realfun exp derive.
 (*   Gdelta (S ; set R) == S is a set of countable intersection of open sets  *)
 (*   abs_cont ==                                                              *)
 (* ```                                                                        *)
-(* ref: An Elementary Proof of the Banach–Zarecki Theorem                     *)
+(* refs:
+      - An Elementary Proof of the Banach–Zarecki Theorem                     *)
 (* https://projecteuclid.org/journals/real-analysis-exchange/volume-23/issue-1/
         An-Elementary-Proof-of-the-Banach-Zarecki-Theorem/rae/1337086099.full *)
+
+(*    - I. P. Natanson, theory of functions of a real variable                *)
 (*                                                                            *)
 (******************************************************************************)
 Set Implicit Arguments.
@@ -1307,20 +1310,6 @@ move=> _/posnumP[e]; have [d de] := abf e.
 Abort.
 
 End absolute_continuity_lemmas.
-
-(*
-Section total_variation_lim.
-Context {R : realType}.
-Context (a b : R) (f : R -> R).
-Context (ab : a < b).
-
-(* subdivide itv_partition by mean *)
-Let regular_itv_partition (n : nat) : seq R :=
- [seq (fun (j : nat) => (a + ((b - a) * j))) i | i <- iota 1 n].
-
-Lemma total_variation_lim :
-End.
-*)
 
 Section wip.
 Context {R : realType}.
@@ -2840,6 +2829,33 @@ have cK1 : compact K1.
 Admitted.
 
 End lemma3.
+
+Section lemma5.
+Context {R : realType}.
+Context {a b : R} {ab : a < b}.
+Context {f : R -> R} (cf : {within `[a, b], continuous f}).
+
+Local Definition F : R -> R := fun l =>
+  sup [set (variation a b f p) | p in [set s |
+  itv_partition a b s /\
+ (\big[maxr/0%R]_(0 <= n < size s)
+      (nth b (a :: s) n.+1 - nth b (a :: s) n) <= l)]].
+
+Lemma lemma5 :
+  (EFin \o F) l @[l --> 0^'+] --> total_variation a b f.
+Proof.
+Admitted.
+
+Lemma lemma5' : forall s : nat -> seq R,
+  (forall k, itv_partition a b (s k)) ->
+  ((\big[maxr/0%R]_(0 <= n < size (s k))
+    (nth b (a :: (s k)) n.+1 - nth b (a :: (s k)) n))%R @[k --> \oo]
+        --> @GRing.zero R) ->
+  (variation a b f (s n))%:E @[n --> \oo] --> total_variation a b f.
+Proof.
+Admitted.
+
+End lemma5.
 
 Section lemma6.
 Context (R : realType).
