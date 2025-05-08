@@ -17,6 +17,9 @@ From mathcomp Require Import realfun exp derive.
 (*   abs_cont ==                                                              *)
 (* ```                                                                        *)
 (* ref: An Elementary Proof of the Banach–Zarecki Theorem                     *)
+(* https://projecteuclid.org/journals/real-analysis-exchange/volume-23/issue-1/
+        An-Elementary-Proof-of-the-Banach-Zarecki-Theorem/rae/1337086099.full *)
+(*                                                                            *)
 (******************************************************************************)
 Set Implicit Arguments.
 Unset Strict Implicit.
