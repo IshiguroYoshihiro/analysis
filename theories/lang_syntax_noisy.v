@@ -1,4 +1,4 @@
-From Coq Require Import String.
+Require Import String.
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval.
 From mathcomp.classical Require Import mathcomp_extra boolp.
@@ -39,7 +39,7 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
-
+Local Open Scope string_scope.
 (* TODO: PR *)
 Section ge0_bounded_measurable_probability_integrable.
 Context d {T : measurableType d} {R : realType} {p : probability T R}
