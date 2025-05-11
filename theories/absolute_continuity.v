@@ -1319,6 +1319,8 @@ Lemma itv_partition_undup_merge (a b : R) (s t : seq R) :
   itv_partition a b s -> itv_partition a b t ->
   itv_partition a b (undup (merge <%R s t)).
 Proof.
+split.
+
 Abort.
 
 Lemma abs_cont_bounded_variation (a b : R) (f : R -> R) :
@@ -2830,20 +2832,83 @@ Admitted.
 
 End lemma3.
 
+Section lemma5_subproofs.
+Context {R : realType}.
+Context {a b : R} {ab : a < b}.
+
+Definition itv_partitions_meshed (l : R) :=
+ [set s | itv_partition a b s /\
+   \big[maxr/0%R]_(0 <= n < size s)
+      (nth b (a :: s) n.+1 - nth b (a :: s) n) <= l].
+
+Context {f : R -> R} (cf : {within `[a, b], continuous f}).
+
+Definition F : R -> R := fun l =>
+  sup [set (variation a b f p) | p in itv_partitions_meshed l].
+
+Lemma lemma5' : forall A : R, (A%:E < total_variation a b f)%E ->
+  forall s', itv_partition a b s' ->
+        (A < variation a b f s') ->
+  forall d : R, 0 < d ->
+    (forall x' x'' : R, `|x' - x''| < d ->
+     `|f x' - f x''| < (variation a b f s' - A) / 4 * (size s')%:R) ->
+  forall l, l < d -> forall s, s \in itv_partitions_meshed l ->
+    A < variation a b f s.
+Proof.
+move=> A Atvf s' parts' Avs' d d0 fdom l dl s.
+rewrite inE /itv_partitions_meshed/= => -[] parts sl.
+set sVs' := undup (merge <%R s s').
+have itvsVs' : itv_partition a b sVs'.
+  (* apply: itv_partition_undup_merge. *)
+  admit.
+have subs'sVs' : subseq s' sVs'.
+  (* lemma *)
+  admit.
+have vars'sVs' : variation a b f s' <= variation a b f sVs'.
+  exact: variation_subseq.
+apply: (@lt_trans _ _ (variation a b f s' - (variation a b f s' - A) / 2)).
+  admit.
+apply: (@le_lt_trans _ _ (variation a b f sVs' - (variation a b f s' - A) / 2)).
+  rewrite lerD2r.
+  exact: variation_subseq.
+rewrite -ltrBrDl.
+rewrite ltrNl opprB.
+(* lemma *)
+admit.
+Admitted.
+
+End lemma5_subproofs.
+
+
 Section lemma5.
 Context {R : realType}.
 Context {a b : R} {ab : a < b}.
 Context {f : R -> R} (cf : {within `[a, b], continuous f}).
 
-Local Definition F : R -> R := fun l =>
-  sup [set (variation a b f p) | p in [set s |
-  itv_partition a b s /\
- (\big[maxr/0%R]_(0 <= n < size s)
-      (nth b (a :: s) n.+1 - nth b (a :: s) n) <= l)]].
+Local Notation F := (@F R a b f).
+
 
 Lemma lemma5 :
   (EFin \o F) l @[l --> 0^'+] --> total_variation a b f.
 Proof.
+case H : (total_variation a b f); first last; first
+    by have := total_variation_ge0 f (ltW ab); by rewrite H.
+  apply/cvgeyPger.
+  move=> A _.
+  near=> eps.
+  admit.
+near (@GRing.zero R)^'+ => eps.
+set A := (total_variation a b f - eps%:E)%E.
+have Afin : A \is a fin_num.
+  rewrite ge0_fin_numE; first by rewrite /A H -EFinB ltry.
+  rewrite sube_ge0// H lee_fin.
+  near: eps.
+  apply: nbhs_right_le.
+  rewrite -lee_fin -H.
+  apply: total_variation_gt0.
+have AltV : (A < total_variation a b f)%E.
+
+  
 Admitted.
 
 Lemma lemma5' : forall s : nat -> seq R,
