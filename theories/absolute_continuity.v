@@ -2832,7 +2832,7 @@ Admitted.
 
 End lemma3.
 
-Section lemma5_subproofs.
+Section lemma5.
 Context {R : realType}.
 Context {a b : R} {ab : a < b}.
 
@@ -2877,26 +2877,23 @@ rewrite ltrNl opprB.
 admit.
 Admitted.
 
-End lemma5_subproofs.
-
-
-Section lemma5.
-Context {R : realType}.
-Context {a b : R} {ab : a < b}.
-Context {f : R -> R} (cf : {within `[a, b], continuous f}).
-
-Local Notation F := (@F R a b f).
-
-
 Lemma lemma5 :
   (EFin \o F) l @[l --> 0^'+] --> total_variation a b f.
 Proof.
-case H : (total_variation a b f); first last; first
-    by have := total_variation_ge0 f (ltW ab); by rewrite H.
-  apply/cvgeyPger.
+case H : (total_variation a b f); last first.
+- admit.
+- apply/cvgeyPger.
   move=> A _.
   near=> eps.
   admit.
+rewrite -H /total_variation.
+(*
+
+apply: nonincreasing_at_right_cvge.
+apply: cvg_EFin => //; first exact: nearW.
+apply/cvg_at_rightP.
+move=> u [u0 cvgu].
+
 near (@GRing.zero R)^'+ => eps.
 set A := (total_variation a b f - eps%:E)%E.
 have Afin : A \is a fin_num.
@@ -2908,16 +2905,7 @@ have Afin : A \is a fin_num.
   apply: total_variation_gt0.
 have AltV : (A < total_variation a b f)%E.
 
-  
-Admitted.
-
-Lemma lemma5' : forall s : nat -> seq R,
-  (forall k, itv_partition a b (s k)) ->
-  ((\big[maxr/0%R]_(0 <= n < size (s k))
-    (nth b (a :: (s k)) n.+1 - nth b (a :: (s k)) n))%R @[k --> \oo]
-        --> @GRing.zero R) ->
-  (variation a b f (s n))%:E @[n --> \oo] --> total_variation a b f.
-Proof.
+*)
 Admitted.
 
 End lemma5.
@@ -2958,6 +2946,155 @@ Proof.
 Abort.
 
 End lemma4.
+
+Section isolated_point.
+Context {R : realType}.
+
+Definition isolated_point (A : set R) :=
+   [set x | exists2 I, open I & A `&` I = [set x]].
+
+Lemma isolated_pointE (A : set R) :
+  isolated_point A = A `\` (limit_point A).
+Proof.
+rewrite eqEsubset; split => x/=.
+  move=> [/= U oU AUx].
+  have Ux : U x.
+    apply/set_mem.
+    rewrite -sub1set -AUx.
+    exact: subIsetr.
+  split => //.
+    apply/set_mem.
+    rewrite -sub1set -AUx.
+    exact: subIsetr.
+  rewrite limit_pointEonbhs/=.
+  rewrite meets_globallyl.
+  apply/existsNP.
+  exists U.
+  rewrite not_implyE; split => //.
+  apply/set0P/negP.
+  rewrite negbK; apply/eqP.
+  by rewrite setDE setIAC AUx -setDE setDv.
+move=> [Ax].
+rewrite limit_pointEonbhs/= meets_globallyl.
+move/existsNP => [U /not_implyP[[oU Ux] /set0P/negP]].
+rewrite negbK => /eqP AxU0.
+exists U => //.
+rewrite eqEsubset; split => [|_ -> //].
+move=> y/=[Ay Uy].
+apply: contrapT => yx.
+move/seteqP: AxU0.
+case.
+by move=> + _ => /(_ y); apply.
+Qed.
+
+Lemma limit_pointE (A : set R) :
+  limit_point A = closure A `\` (isolated_point A).
+Proof.
+rewrite isolated_pointE setDDr/=.
+rewrite closure_limit_point [X in _ = _ `|` X `&` _]setUC setUK.
+by rewrite setDE setUIl -setUA setUid -setUIl setICr set0U.
+Qed.
+
+End isolated_point.
+
+Section cantor_bendixson.
+Context {R : realType}.
+
+Definition condensation_point (A : set R) :=
+  [set x | forall B, open_nbhs x B -> ~ countable (B `&` A)].
+
+Lemma sublemma (A B C : set R) : (A `\` B) `&` C = set0 -> A `&` C `<=` B.
+Proof.
+rewrite setDE setIAC.
+by rewrite subsets_disjoint.
+Qed.
+
+Lemma condensation_point_limit_point (A : set R) :
+  condensation_point A `<=` limit_point A.
+Proof.
+move=> /= x cndA.
+rewrite limit_pointEonbhs/=.
+rewrite meets_globallyl => U onbhsU.
+apply/set0P/negP.
+move: (cndA U onbhsU).
+apply: contra_not.
+move/eqP.
+rewrite setDE setIAC.
+move/subsets_disjoint; rewrite setIC.
+by move/(@subset_set1 R); case => ->.
+Qed.
+
+Lemma closed_condensation_point (A : set R) :
+  closed (condensation_point A).
+Proof.
+move=> /= x clAx U [oU Ux] ctblUA.
+move: (clAx U).
+case; first exact: open_nbhs_nbhs.
+move=> /= y [cndAy Uy].
+exact: (cndAy U).
+Qed.
+
+(* ref:
+ https://math.stackexchange.com/questions/270856/cantor-bendixson-theorem-proof
+ *)
+(* well-ordered recursion? *)
+Theorem cantor_bendixson (X : set R) : ~ countable X -> closed X ->
+  exists Z C, [/\ perfect_set Z, countable C & X = Z `|` C].
+Proof.
+move=> NctblC clC.
+(* Let Z denote the set of condensation points of X. *)
+set Z := condensation_point X.
+(* Let C=X−Z. *)
+set C := X `\` Z.
+exists Z; exists C; split.
+(* Z is perfect because for any x∈X, take any open set x∈V.
+By definition of x∈Z, V contains uncountable many points. *)
+- split; first exact: closed_condensation_point.
+  rewrite eqEsubset; split => x.
+    rewrite limit_pointE.
+    rewrite /isolated_point/= exists2E => -[+ _] V [oV Vx] ctblVX.
+    rewrite closure_limit_point/=; case.
+      rewrite /Z/condensation_point/=.
+      by move/(_ V); case.
+    move /(_ V); case => /=; first exact: open_nbhs_nbhs.
+    move=> y [yx + Vy].
+    move /(_ V).
+    exact.
+  move=> Zx.
+  rewrite limit_pointE/=; split.
+    admit.
+  move=> [V oV ZVx].
+  have Vx : V x.
+    admit.
+  apply: (Zx V) => //.
+  admit.
+(* (i.e. take a countable basis for R and intersect it with your closed set X).
+ By definition of Z, C is the union of all Un such that Un is countable.
+ A countable union of countable set is countable, hence, C is countable.
+ C=X−Z is countable, so V actually contains uncountable many points of Z.
+*)
+- set U_ := fun (n : nat) => `[n%:R, n.+1%:R] `&` C.
+  rewrite (_ : C = \bigcup_n U_ n).
+    apply: bigcup_countable => // i _.
+    rewrite /U_/C/=.
+    admit.
+  admit.
+- admit.
+Admitted.
+(*
+The claim is that X=Z∪C where C is countable and Z is perfect.
+ Let Un be a countable basis for X
+Thus X=Z∪C, where Z is perfect and C is countable. 
+*)
+
+(* ref: The Higher Infinite, A.Kanamori *)
+Theorem cantor_bendixson_alternative_proof (C : set R) : ~ countable C -> closed C ->
+  exists P, P `<=` C /\ countable (C `\` P).
+Proof.
+move=> NcntC clC.
+Abort.
+
+End cantor_bendixson.
 
 Section lemma6.
 Context (R : realType).
@@ -3003,8 +3140,13 @@ have compactH : compact (H @` Z).
 pose c : R := inf Z.
 pose d : R := sup Z.
 wlog : Z Zab cZ muZ0 muHZ_gt0 compactH c d / perfect_set Z.
+  (* Cantor-Bendixson theorem *)
   admit.
-move=> perfectZ.
+rewrite /perfect_set.
+move: cZ.
+
+rewrite compact_cover cover_compactE/=.
+move/(_ nat [set: nat]).
 
 pose TV := (fine \o (total_variation a)^~ f).
 have : exists n : nat, (0 < n)%N /\ exists Z_ : `I_ n -> interval R, trivIset setT (fun i => [set` (Z_ i)])
