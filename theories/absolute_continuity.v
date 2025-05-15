@@ -1848,7 +1848,7 @@ exists U_, Z; split.
     apply: sub_bigcap => n _.
     exact: EU_.
   exact: subIsetr.
-Unshelve. all: end_near. Admitted.
+Unshelve. all: end_near. Abort.
 
 End lebesgue_measurable.
 
@@ -2046,7 +2046,7 @@ apply/left_right_continuousP.
 split. (* f r = lim ... by squeeze *)
   admit.
 admit.
-Admitted.
+Abort.
 
 (* Section image_interval_contnuous. *)
 (* Context {R : realType}. *)
@@ -3034,9 +3034,60 @@ move=> /= y [cndAy Uy].
 exact: (cndAy U).
 Qed.
 
+Lemma subset_condensation_point (A : set R) :
+  condensation_point A `<=` closure A.
+Proof.
+apply: (subset_trans (@condensation_point_limit_point A)).
+exact: subset_limit_point.
+Qed.
+
+Lemma closed_subset_condensation_point (A : set R) :
+  closed A -> condensation_point A `<=` A.
+Proof.
+move=> clA.
+rewrite {2}((closure_id _).1 clA).
+exact: subset_condensation_point.
+Qed.
+
 (* ref:
  https://math.stackexchange.com/questions/270856/cantor-bendixson-theorem-proof
  *)
+Lemma perfect_set_condensation_point (A : set R) :
+  ~ countable A -> closed A ->
+  perfect_set (condensation_point A).
+Proof.
+move=> NctblA clA.
+split; first exact: closed_condensation_point.
+rewrite eqEsubset; split => x.
+  rewrite limit_pointE.
+  rewrite /isolated_point/= exists2E => -[+ _] V [oV Vx] ctblVX.
+  rewrite closure_limit_point/=; case.
+    rewrite /condensation_point/=.
+    by move/(_ V); case.
+  move /(_ V); case => /=; first exact: open_nbhs_nbhs.
+  move=> y [yx + Vy].
+  move /(_ V).
+  exact.
+move=> cndAx.
+rewrite limit_pointE/=; split.
+  rewrite -(closure_id _).1//; exact: closed_condensation_point.
+
+move=> [V oV cndAVx].
+have Vx : V x.
+  apply: set_mem.
+  rewrite -sub1set -cndAVx.
+  exact: subIsetr.
+
+apply: (cndAx V) => //.
+Admitted.
+
+Lemma countable_setD_condensation_point (A : set R) :
+  closed A ->
+  countable (A `\` (condensation_point A)).
+Proof.
+move=> cA.
+Admitted.
+
 (* well-ordered recursion? *)
 Theorem cantor_bendixson (X : set R) : ~ countable X -> closed X ->
   exists Z C, [/\ perfect_set Z, countable C & X = Z `|` C].
@@ -3062,25 +3113,35 @@ By definition of x∈Z, V contains uncountable many points. *)
     exact.
   move=> Zx.
   rewrite limit_pointE/=; split.
-    admit.
+    rewrite -(closure_id Z).1//.
+    exact: closed_condensation_point.
   move=> [V oV ZVx].
   have Vx : V x.
-    admit.
+    apply: set_mem.
+    rewrite -sub1set -ZVx.
+    exact: subIsetr.
+
   apply: (Zx V) => //.
   admit.
+
 (* (i.e. take a countable basis for R and intersect it with your closed set X).
  By definition of Z, C is the union of all Un such that Un is countable.
  A countable union of countable set is countable, hence, C is countable.
  C=X−Z is countable, so V actually contains uncountable many points of Z.
 *)
-- set U_ := fun (n : nat) => `[n%:R, n.+1%:R] `&` C.
-  rewrite (_ : C = \bigcup_n U_ n).
-    apply: bigcup_countable => // i _.
-    rewrite /U_/C/=.
+- set U_ := fun (k : int) => `](k - 1)%:~R, (k + 1)%:~R[ `&` C : set R.
+  case H : (C == set0).
+    by move /eqP : H => ->.
+  apply/notP => NcC.
+  move /negP/negP/set0P : H.
+  move=> [x [Xx ]].
+  rewrite {1}/Z/condensation_point/=.
+  move/existsNP => [V].
+  apply => -[oV Vx] ctblVX.
+  
     admit.
-  admit.
 - admit.
-Admitted.
+Abort.
 (*
 The claim is that X=Z∪C where C is countable and Z is perfect.
  Let Un be a countable basis for X
@@ -3094,7 +3155,44 @@ Proof.
 move=> NcntC clC.
 Abort.
 
+Lemma measure_eq_perfect_set (A : set R) : measurable A ->
+  ~ countable A -> closed A ->
+  lebesgue_measure A = lebesgue_measure (condensation_point A).
+Proof.
+move=> mA ctbleA cldA.
+rewrite -{1}(setUIDK A (condensation_point A)).
+rewrite setIidr; last first.
+  exact: closed_subset_condensation_point.
+rewrite measureU=> /=; last 3 first.
+- have -> : condensation_point A = A `\` (A `\` condensation_point A).
+    rewrite 2!setDE setCI setCK setIUr (subsets_disjoint _ _).1// set0U.
+    apply/esym/setIidr.
+    exact: closed_subset_condensation_point.
+  apply: measurableD => //.
+  apply: countable_measurable => //.
+  exact: countable_setD_condensation_point.
+- apply: countable_measurable => //.
+  exact: countable_setD_condensation_point.
+- exact: setDIK.
+rewrite [X in _ + X = _]countable_lebesgue_measure0 ?addr0//.
+exact: countable_setD_condensation_point.
+Qed.
+
 End cantor_bendixson.
+
+(*
+Section outer_measure_of_content.
+Context d (R : realType) (T : semiRingOfSetsType d).
+Variable mu : {measure set T -> \bar R}.
+
+HB.instance Definition _ := isOuterMeasure.Build
+  R T _ (@mu_ext0 _ _ _ _ (measure0 mu) (measure_ge0 mu))
+      (mu_ext_ge0 (measure_ge0 mu))
+      (le_mu_ext mu)
+      (mu_ext_sigma_subadditive (measure_ge0 mu)).
+
+End outer_measure_of_content.
+*)
 
 Section lemma6.
 Context (R : realType).
@@ -3139,9 +3237,70 @@ have compactH : compact (H @` Z).
   exact: cZ.
 pose c : R := inf Z.
 pose d : R := sup Z.
-wlog : Z Zab cZ muZ0 muHZ_gt0 compactH c d / perfect_set Z.
+wlog pZ : Z Zab cZ muZ0 muHZ_gt0 compactH c d / perfect_set Z.
   (* Cantor-Bendixson theorem *)
+  move=> HH.
+  set B : set R := condensation_point Z.
+  have BZ : B `<=` Z.
+    have : closed Z by apply: compact_closed _ cZ => //; exact: Rhausdorff.
+    move/closure_id ->.
+    exact: subset_condensation_point.
+  have Bab : B `<=` `[a, b].
+    apply: (subset_trans (@subset_condensation_point _ _)).
+    have : closed Z by apply: compact_closed _ cZ => //; exact: Rhausdorff.
+    by move/closure_id <-.
+  have cptB : compact B.
+    apply: (subclosed_compact _ cZ) => //.
+    exact: closed_condensation_point.
+  have ctbl_HZDHB : countable ((H @` Z) `\` (H @` B)).
+    apply: (@card_le_trans _ _ _ (Z `\` B)); last first.
+      apply: countable_setD_condensation_point.
+      by apply: compact_closed => //; exact: Rhausdorff.
+    apply: (@card_le_trans _ _ _ (H @` (Z `\` B))).
+      apply: subset_card_le.
+      move=> x/=[[y Zy <-]].
+      rewrite exists2E=> /forallNP/(_ y).
+      rewrite not_andP; case => // NBy.
+      by exists y; split.
+    exact: card_image_le.
+  apply: (HH B) => //.
+  - apply/eqP; rewrite eq_le; apply/andP; split => //.
+    apply: (@le_trans _ _ (mu Z)); first exact: le_outer_measure.
+    by rewrite muZ0.
+  - have -> //: mu (H @` B) = mu (H @` Z).
+    rewrite -(setUIDK (H @` Z) (H @` B)).
+    rewrite setIidr; last exact: image_subset.
+    rewrite completed_lebesgue_measureE.
+    rewrite measureU//; last 3 first.
+    + apply: compact_measurable.
+      apply: continuous_compact => //.
+      apply: (continuous_subspaceW Bab).
+      exact: total_variation_continuous.
+    + exact: countable_measurable.
+    + exact: setDIK.
+    by rewrite [X in _ = _ + X]countable_lebesgue_measure0 ?addr0.
+  - apply: continuous_compact => //.
+    apply: (continuous_subspaceW Bab).
+    exact: total_variation_continuous.
+  - apply: perfect_set_condensation_point; last first.
+    by apply: compact_closed cZ; apply: Rhausdorff.
+  move=> ctblZ.
+  move: muHZ_gt0.
+  move/gt_eqF/negP; apply.
+  apply/eqP.
+  apply: countable_lebesgue_measure0.
+  apply: (@card_le_trans _ _ _ Z) => //.
+  exact: card_image_le.
+have [a_ [b_ [anbn trivab contiguousZ]]] : exists a_ b_ : nat -> R,
+   [/\ (forall n, a_ n < b_ n),
+     trivIset [set: nat] (fun n => `[a_ n, b_ n]%classic) &
+      Z `|` \bigcup_n `]a_ n, b_ n[%classic = `[a, b]%classic].
   admit.
+set Rel := fun (x y : R) => true.
+have : forall (n : nat), {c_ : nat -> nat -> R |
+   c_ n 0%N = \big[minr/b]_(i < n) b_ n /\ (forall i, Rel (c_ n i) (c_ n i.+1))}.
+  move=> n.
+  apply: dependent_choice.
 rewrite /perfect_set.
 move: cZ.
 
@@ -3164,6 +3323,8 @@ have rct : right_continuous TV.
   admit.
 have monot : {in `[a, b]&, {homo TV : x y / x <= y}}.
   admit.
+
+
 (*
 have : exists n, exists I : (R * R)^nat,
  [/\ (forall i, (I i).1 < (I i).2 /\ `[(I i).1, (I i).2] `<=` `[a, b] ),
