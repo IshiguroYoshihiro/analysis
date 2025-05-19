@@ -2549,6 +2549,20 @@ Qed.
 
 End lemma2iicontinuous.
 
+Section countableU.
+
+Lemma countableU T (A B : set T) : countable A -> countable B ->
+  countable (A `|` B).
+Proof.
+move=> cA cB.
+rewrite -bigcup2E.
+apply: bigcup_countable => // n _.
+rewrite /bigcup2.
+by case: ifP => // _; case: ifP.
+Qed.
+
+End countableU.
+
 Section lemma3.
 Context (R : realType).
 Context (a b : R) (ab : a < b).
@@ -2697,6 +2711,79 @@ Qed.
   (*     admit. *)
   (*   by apply: sub_Rhullr. *)
 
+Lemma image_measure0_Lusin_increasing (f : R -> R) :
+  {within `[a, b], continuous f} ->
+  {in `[a, b] &, {homo f : x y / x < y}} ->
+  (forall Z : set R, Z `<=` `[a, b]%classic ->
+      compact Z ->
+      mu Z = 0 ->
+      mu (f @` Z) = 0) ->
+  lusinN `[a, b] f.
+Proof.
+move=> cf incf muf0.
+apply: contrapT.
+move=> /existsNP[Z]/not_implyP[Zab].
+move=> /not_implyP/=[mZ]/not_implyP/=[Z0].
+move/eqP; rewrite neq_lt ltNge measure_ge0/= => fZ_gt0.
+wlog gdeltaZ : Z Zab mZ Z0 fZ_gt0 / exists U_ : nat -> set R,
+  [/\ (forall n, open (U_ n)), (forall n, U_ n `<=` `]a, b[),
+    (forall n, Z `<=` U_ n)& Z `<=` \bigcap_n U_ n].
+  move=> H.
+  have Zlty : (lebesgue_measure Z < +oo)%E.
+  apply: (@le_lt_trans _ _ (lebesgue_measure `[a, b])).
+    exact: le_outer_measure.
+  by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
+
+  have [U_ [ZU oU ZIU]] := lebesgue_measure_Gdelta_approx Zlty.
+  have {}ZIU : mu Z = mu (\bigcap_n U_ n) by [].
+  set Z1 := \bigcap_n ((U_ n) `&` `]a - n.+1%:R^-1, b + n.+1%:R^-1[).
+  have mZ1 : (((wlength idfun)^*)%mu).-cara.-measurable Z1.
+    apply: sub_caratheodory.
+    rewrite /Z1.
+    apply: bigcap_measurable => // n _.
+    apply: measurableI => //.
+    exact: open_measurable.
+  have ab_approx : `[a, b]%classic
+     = \bigcap_n `]a - n.+1%:R^-1, b + n.+1%:R^-1[%classic.
+    rewrite eqEsubset; split.
+    - apply: sub_bigcap => n _ /=.
+      by apply: subset_itv; rewrite bnd_simp// ?gtrBl ?ltrDl.
+    - 
+  apply: (H Z1) => //.
+  - rewrite -(@bigcap_const _ _ [set: nat] `[a, b])//.
+    apply: subset_bigcap => n _.
+    apply: (@subset_trans _ `]a, b[).
+      exact: subIsetr.
+    exact: subset_itv_oo_cc.
+  - rewrite -Z0.
+    apply/eqP; rewrite eq_le; apply/andP; split.
+      rewrite -[leLHS]addr0 -lee_suber_addl; last by rewrite ge0_fin_numE.
+      rewrite ZIU /Z1.
+      rewrite -(@leeD2lE _ (mu `]a, b[)) ?adde0; last first.
+        rewrite ge0_fin_numE// completed_lebesgue_measure_itv/=.
+        by rewrite lte_fin ab -EFinD ltry.
+      rewrite bigcapIl// setIC addeA.
+      rewrite -measureUfinl//=; last 3 first.
+      + exact: sub_caratheodory.
+      + apply: sub_caratheodory.
+        apply: Gdelta_measurable.
+        by exists U_.
+      + by rewrite completed_lebesgue_measure_itv lte_fin ab -EFinD ltry.
+      apply: le_measure => //=; rewrite ?inE.
+        exact: sub_caratheodory.
+      apply: sub_caratheodory.
+      apply: measurableU => //.
+      apply: Gdelta_measurable.
+      by exists U_.
+    apply: le_measure => //=; rewrite ?inE//.
+    apply: sub_bigcap => n _.
+    apply: (subset_trans (ZU n)).
+    
+    rewrite subsetI; split => //.
+    
+  -
+  -
+
 (* lemma3 (converse) *)
 Lemma image_measure0_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
@@ -2719,6 +2806,7 @@ have ndfo : {in `]a, b[ &, {homo f : x y / x <= y}}.
   move: ndf; apply: itv_sub_in2.
   exact: subset_itv_oo_cc.
 have [b0 [b1 imab]]:= continuous_nondecreasing_image_itvoo_itv ab cf ndfo.
+
 have Hf : set_fun `[a, b] [set: R] f by [].
 pose F : {fun `[a, b] >-> [set: R]} := HB.pack f (isFun.Build _ _ _ _ f Hf).
 have ndF : {in `[a, b] &, {homo F : n m / n <= m}} by [].
@@ -2728,12 +2816,15 @@ have surjF : set_surj `[a, b] `[f a, f b] F.
     exact: ltW.
   by apply: ndf; rewrite ?in_itv/= ?lexx ?ltW.
 
+
 have Uabab n : (fun n => (U_ n) `&` `]a, b[) n `<=` `]a, b[ by exact: subIsetr.
 have oUab n : open (U_ n `&` `]a, b[).
   exact: openI.
 pose Z1 := \bigcap_k (U_ k `&` `]a, b[).
 have Z1ab : Z1 `<=` `]a, b[.
   by rewrite /Z1 bigcapIl.
+
+
 have H := measure_image_nondecreasing_fun ab ndF cF Uabab oUab.
 have mZ1 : measurable Z1.
   apply: Gdelta_measurable.
@@ -2809,8 +2900,14 @@ have e0 : 0 < e.
 (* how to get K1 such that
    e < lebesgue_measure K < lebesgue_measure Z1 ? *)
 have : exists K, [/\ compact K, K `<=` (f @` Z1) & (0 < lebesgue_measure K)%E].
+  
+
   admit.
 move=> [K [cK KfZ1 mK0]].
+pose K1 := (f @^-1` K) `&` `[a, b].
+
+
+(*
 pose K1 := ('pinv_(fun=> 0) `[a, b] F) @` K.
 have K1E : K1 = (f @^-1` K) `&` `[a, b].
   rewrite eqEsubset; split.
@@ -2825,9 +2922,12 @@ have K1ab : K1 `<=` `[a, b].
   apply: subset_itv.
     by case: b0 imab; rewrite //bnd_simp.
   by case: b1 imab; rewrite //bnd_simp.
+*)
 have cK1 : compact K1.
-  apply: continuous_compact=> //.
-
+  (* apply : bounded_closed_compact．*)
+  admit.
+have fK1 : f @` K1 = K.
+  
 Admitted.
 
 End lemma3.
