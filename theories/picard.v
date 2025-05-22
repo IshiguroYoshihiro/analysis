@@ -5,7 +5,7 @@ From mathcomp Require Import mathcomp_extra unstable boolp classical_sets.
 From mathcomp Require Import functions reals interval_inference topology.
 From mathcomp Require Import prodnormedzmodule tvs normedtype landau forms.
 From mathcomp Require Import sequences derive measure lebesgue_measure.
-From mathcomp Require Import lebesgue_measure lebesgue_integral ftc.
+From mathcomp Require Import lebesgue_measure lebesgue_integral ereal ftc.
 
 (**md**************************************************************************)
 (* # ODE                                                                      *)
@@ -20,6 +20,126 @@ Import numFieldNormedType.Exports.
 
 Local Open Scope ring_scope.
 Local Open Scope classical_set_scope.
+
+Section setInterval.
+Context {R : realType}.
+
+Definition itv_bound_swap (i : interval R) :=
+match i.1 with
+| BSide b0 x =>
+  match i.2 with
+  | BSide b1 y => (Interval (BSide b0 y) (BSide b1 x))
+  | BInfty b1 => (Interval (@BInfty _ b1) (BSide b1 x))
+  end
+| BInfty b0 =>
+  match i.2 with
+  | BSide b1 y => (Interval (BSide b0 y) (@BInfty _ b0))
+  | BInfty b1 => (Interval (@BInfty _ b1) (@BInfty _ b0))
+  end
+end.
+
+Definition setInterval (i : interval R) :=
+  [set` i] `|` [set` itv_bound_swap i].
+
+Lemma setInterval_le (i : interval R) :
+  (i.1 <= i.2)%O ->
+  setInterval i = [set` i].
+Proof.
+rewrite /setInterval.
+case i => /=.
+case=> [b0 x|b0]; case=> [b1 y|b1]; case: b0; case: b1.
+all: rewrite bnd_simp /itv_bound_swap.
+all: rewrite ?set_itvxx ?set_itv_ybnd ?set_itv_bndNy ?setU0//=.
+- move=> xy; suff : `[y, x[ = set0 by (move=> ->; rewrite setU0).
+  by rewrite set_itv_ge ?bnd_simp ?le_gtF.
+- rewrite le_eqVlt => /predU1P[<- |xy].
+    by rewrite set_itv1 setUid.
+  suff : `[y, x] = set0 by (move=> ->; rewrite setU0).
+  by rewrite set_itv_ge ?bnd_simp ?lt_geF.
+- move=> xy; suff : `]y, x[ = set0 by (move=> ->; rewrite setU0).
+  by rewrite set_itv_ge ?bnd_simp ?le_gtF ?ltW.
+- move=> xy; suff : `]y, x] = set0 by (move=> ->; rewrite setU0).
+  by rewrite set_itv_ge ?bnd_simp ?le_gtF.
+Qed.
+
+Lemma setInterval_ge (i : interval R) :
+  (i.2 <= i.1)%O ->
+  setInterval i = [set` itv_bound_swap i].
+Proof.
+rewrite /setInterval.
+case i => /=.
+case=> [b0 x|b0]; case=> [b1 y|b1]; case: b0; case: b1.
+all: rewrite bnd_simp /itv_bound_swap.
+all: rewrite ?set_itvxx ?set_itv_ybnd ?set_itv_bndNy ?set0U//=.
+- move=> yx; suff : `[x, y[ = set0 by (move=> ->; rewrite set0U).
+  by rewrite set_itv_ge ?bnd_simp ?le_gtF.
+- move=> yx; suff : `[x, y] = set0 by (move=> ->; rewrite set0U).
+  by rewrite set_itv_ge ?bnd_simp ?lt_geF.
+- move=> yx; suff : `]x, y[ = set0 by (move=> ->; rewrite set0U).
+  by rewrite set_itv_ge ?bnd_simp ?le_gtF.
+- move=> yx; suff : `]x, y] = set0 by (move=> ->; rewrite set0U).
+  by rewrite set_itv_ge ?bnd_simp ?le_gtF.
+Qed.
+
+End setInterval.
+
+Notation "`[| x , y |]" := (setInterval (Interval (BLeft x) (BRight y))).
+Notation "`]| x , y |[" := (setInterval (Interval (BRight x) (BLeft y))).
+
+Section inteitv.
+Local Open Scope ereal_scope.
+
+Context {R : realType}.
+Let mu := (@lebesgue_measure R).
+
+Definition inteitv (a b : R) f :=
+  if (a < b)%R then \int[mu]_(x in `[a, b]) f x
+               else - \int[mu]_(x in `[b, a]) f x.
+
+Definition derivable_oo_within_continuous (f : R -> R) a b :=
+  {in `]|a, b|[, forall x : R, derivable f x 1} /\
+  {within `[|a, b|], continuous f}.
+
+Lemma continuous_FTC2_inteitv (f F : R -> R) a b :
+  {within `[|a, b|], continuous f} ->
+  derivable_oo_within_continuous F a b -> (* not derivable_oo_continuous_bnd *)
+  {in `]|a, b|[%R, F^`()%classic =1 f} ->
+  inteitv a b (EFin \o f) = (F b)%:E - (F a)%:E.
+Proof.
+have [] := ltP a b.
+  move=> ab.
+  rewrite setInterval_le ?bnd_simp ?ltW// => cf.
+  move=> [].
+  rewrite setInterval_le ?bnd_simp// => dF.
+  rewrite setInterval_le ?bnd_simp ?ltW//.
+  move/continuous_within_itvP => -[] // _ Fa Fb dFf.
+  rewrite /inteitv ab.
+  rewrite (@continuous_FTC2 _ f F)//.
+    by split => // x xab; apply: dF; rewrite inE/=.
+  by move=> x xab; apply: dFf; rewrite inE/=.
+rewrite le_eqVlt => /predU1P[-> |ba].
+  by rewrite /inteitv ltxx set_itv1 integral_set1 oppe0 subee.
+rewrite setInterval_ge ?bnd_simp// => cf.
+move=> [].
+rewrite setInterval_ge ?bnd_simp ?ltW// => dF.
+rewrite setInterval_ge ?bnd_simp//.
+move/continuous_within_itvP => -[] // _ Fa Fb dFf.
+rewrite /inteitv ifF; last first.
+  by apply/negP/negP; rewrite le_gtF ?ltW.
+rewrite (@continuous_FTC2 _ f F)// ?oppeB 1?addeC//.
+  by split => // x xab; apply: dF; rewrite inE/=.
+by move=> x xab; apply: dFf; rewrite inE/=.
+Qed.
+
+End inteitv.
+
+Reserved Notation "\int [ mu ]_( x $ a ~ b ) F"
+  (at level 36, F at level 36, mu at level 10,
+  format "'[' \int [ mu ]_( x $ a ~ b )  '/  '  F ']'").
+
+Notation "\int [ mu ]_( x $ a ~ b ) f" :=
+  (inteitv a b (fun x => f)).
+
 
 (*
 HB.factory Record isNormedModule (K : realType) M
@@ -308,3 +428,87 @@ Lemma picard : exists (i : interval R) (y : R -> R), solution i y.
 Proof.
 pose f (y : R -> R) (t : R) := y0 + \int[mu]_(x $ t0 ~ t) rhs x (y x).
 have : is_contraction f.
+
+
+Section picard_sketch.
+Context {R : realType}.
+Local Notation mu := lebesgue_measure.
+
+Variables (f : R -> R -> R) (y_ : R -> R) (a b c d k : R).
+Hypotheses (ab : a < b) (cd : c < d).
+Hypothesis (lcf_x : {in `[c, d], forall y, k.-lipschitz (f^~ y)}).
+Hypothesis (cf_y : {in `[a, b], forall x, {within `[c, d], continuous f x}}).
+Variable (init_t init_y : R).
+Hypothesis (init_t_ab : init_t \in `]a, b[).
+Hypothesis (init_y_cd : init_y \in `]c, d[).
+Hypothesis (y_init_t : y_ init_t = init_y).
+
+Definition picard_method : {fun [set: (R -> R)] >-> [set: (R -> R)]}.
+apply: mkfun_fun.
+Proof.
+(*
+  (fun g : R -> R => fun t => init_y
+     + (\int[mu]_(x in `[init_t - e, t]) f x (g x))%R
+       - (\int[mu]_(x in `[init_t - e, init_t]) f x (g x))%R).
+*)
+admit.
+(* Defined *)
+Admitted.
+
+(* Let ctr_picard : is_contraction picard_method *)
+
+Lemma picard : exists e : R, exists Y_ : R -> R,
+  Y_ init_t = init_y /\
+  ({in `]init_t - e, init_t + e[, forall x, Y_^`() x = f x (Y_ x)}).
+Proof.
+near (@GRing.zero R)^'+ => e.
+exists e.
+set phi0 := (fun t : R => init_y).
+set rel := (fun (g h : R -> R) =>
+   ({in `]init_t - e, init_t + e[, continuous g} /\
+   (forall t, h t =
+   init_y
+     + (\int[mu]_(x in `[init_t - e, t]) f x (g x))%R
+       - (\int[mu]_(x in `[init_t - e, init_t]) f x (g x))%R)
+   (* add properties which should be preserved *))
+).
+have : (forall g , {h | rel g h}).
+  admit.
+move/dependent_choice/(_ phi0); rewrite /rel => -[phi_ [phi0eq /all_and2[cphi iter_phi]]].
+(* phioo should be (limn (fun n => iter n picard_method phi0). *)
+set phioo := (fun x => lim ((phi_ n x) @[n --> \oo])).
+have cphioo : {in `]init_t - e, init_t + e[, continuous phioo}.
+  move=> x xte.
+  apply/cvgrPdist_le => eps eps0.
+  near \oo => N. (* forall n > N satisfies
+       (forall x, `|phi_ N x - phioo x| < eps / 3 *)
+  near (@GRing.zero R)^'+ => dlt. (* forall t in ball x t satisfies
+       ( `|phi_ N x - phi_ N t| < eps / 3 *)
+  exists dlt.
+    admit.
+  move=> t/= tadlt.
+  rewrite (_ : eps = eps / 3 + (eps / 3 + eps / 3)); last first.
+    admit.
+  rewrite -[phioo x](subrK (phi_ N x)).
+  rewrite -[_ + _]addrA.
+  rewrite -{2}[phi_ N x](subrK (phi_ N t)).
+  rewrite -[X in _ + X]addrA.
+  apply: (le_trans (ler_normD (phioo x - phi_ N x)%R _)); apply: lerD.
+    admit.
+  apply: (le_trans (ler_normD (phi_ N x - phi_ N t)%R _)); apply: lerD.
+    admit.
+  admit.
+exists phioo.
+split.
+  apply/cvg_lim => //.
+  apply: cvg_near_cst.
+  apply/nearW => n.
+  elim: n.
+    by rewrite phi0eq.
+  by move=> n IH; rewrite iter_phi -addrA subrr addr0.
+move=> x xte.
+(* exact: contraction_cvg_fixed *)
+admit.
+Admitted.
+
+End picard_sketch.
