@@ -629,8 +629,9 @@ HB.end.
 Section picard_sketch.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
-Variables (f : R -> R -> R) (y_ : R -> R) (a b : R).
-Local Notation contabType := (contFunType a b).
+Variables (f : R -> R -> R) (y_ : R -> R) (d : R).
+Hypothesis (d0 : 0< D).
+Local Notation contabType := (contFunType (- d) d).
 
 HB.instance Definition _ := PseudoMetric.copy contabType (pseudometric contabType).
 HB.instance Definition _ := isPointed.Build contabType 0.
@@ -655,8 +656,8 @@ HB.instance Definition _ := Num.Zmodule_isNormed.Build
 
 HB.instance Definition _ := coucou.
 
-Variables (c d k : R).
-Hypotheses (ab : a < b) (cd : c < d).
+Variables ( k : R).
+
 Hypothesis (lcf_x : {in `[c, d], forall y, k.-lipschitz (f^~ y)}).
 Hypothesis (cf_y : {in `[a, b], forall x, {within `[c, d], continuous f x}}).
 Variable (init_t init_y : R).
@@ -721,13 +722,15 @@ Let phi0 := (@cst R R init_y).
 
 Check phi0 : contFunType a b.
 
-Lemma picard_theorem : exists Y_ : R -> R,
-  Y_ init_t = init_y /\
-  ({in `]init_t - e, init_t + e[, forall x, Y_^`() x = f x (Y_ x)}).
+Let phioo := (limn (fun n => iter n picard_method phi0)) : R -> R.
+
+Lemma picard_theorem :
+ phioo init_t = init_y /\
+  ({in `]init_t - e, init_t + e[, forall x, phioo^`() x = f x (phioo x)}).
 Proof.
-exists (limn (fun n => iter n picard_method phi0)).
-
-
+split.
+rewrite /phioo.
+apply/cvg_lim.
 (*
 set picard_method : contabType -> contabType := (fun (g : contabType) => (fun t =>
    init_y
