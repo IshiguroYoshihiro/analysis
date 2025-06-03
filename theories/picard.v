@@ -630,87 +630,85 @@ Section picard_sketch.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
 Variables (f : R -> R -> R) (y_ : R -> R) (d : R).
-Hypothesis (d0 : 0< D).
-Local Notation contabType := (contFunType (- d) d).
+Hypothesis (d0 : 0 < d).
+Local Notation contFunType x := (contFunType (- x) x).
 
-HB.instance Definition _ := PseudoMetric.copy contabType (pseudometric contabType).
-HB.instance Definition _ := isPointed.Build contabType 0.
+Variables ( k : R).
+Hypothesis (lcf_x : {in `[- d, d], forall y, k.-lipschitz (f^~ y)}).
+Hypothesis (cf_y : {in `[- d, d], forall x, {within `[-d, d], continuous f x}}).
 
-Lemma whatever : NormedZmod_PseudoMetric_eq R contabType.
+Hypothesis (y_init_t : y_ 0 = 0).
+
+Variable e : R.
+Hypothesis (e0 : 0 < e) (ed : e < d).
+
+(* Let ctr_picard : is_contraction picard_method *)
+
+Definition picard_method'' (g : (contFunType e)) := (fun t =>
+   (\int[mu]_(x in `[- e, t]) f x (g x))%R
+       - (\int[mu]_(x in `[- e, e]) f x (g x))%R).
+
+Local Lemma set_fun_picard g :
+   {homo picard_method'' g : x / `[- e, e] x >-> [set: R] x}.
+Proof. by []. Qed.
+
+HB.instance Definition _ g :=
+    @isFun.Build _ _ `[- e, e] setT (picard_method'' g) (set_fun_picard g).
+
+Local Lemma picard_method_is_contfun (g : (contFunType e)) :
+  @isContFun R (- e) e (picard_method'' g).
+Proof.
+constructor.
+(* *)
+Admitted.
+
+HB.instance Definition _ (g : (contFunType e)) :=
+(@picard_method_is_contfun g).
+
+Local Lemma continuous_picard_method (g : (contFunType e)) :
+  {within `[- e, e], continuous picard_method'' g}.
+Proof.
+exact: contFun.
+Qed.
+
+Local Definition picard_method' (g : (contFunType e)) : (contFunType e)
+    := picard_method'' g.
+
+Local Lemma set_fun_picard_method :
+   {homo picard_method' : g / [set: (contFunType e)] g >-> [set: (contFunType e)] g}.
+Proof. by []. Qed.
+
+HB.instance Definition _ :=
+    @isFun.Build _ _ _ _ picard_method' set_fun_picard_method.
+
+Definition picard_method : {fun [set: (contFunType e)] >-> [set: (contFunType e)]}
+  := picard_method'.
+
+HB.instance Definition _ := PseudoMetric.copy (contFunType e)
+   (pseudometric (contFunType e)).
+HB.instance Definition _ := isPointed.Build (contFunType e) 0.
+
+Lemma is_normZmod_contFunTypee : NormedZmod_PseudoMetric_eq R (contFunType e).
 Proof.
 by constructor.
 Qed.
 
-HB.instance Definition _ := whatever.
+HB.instance Definition _ := is_normZmod_contFunTypee.
 
-Lemma coucou : PseudoMetricNormedZmod_Lmodule_isNormedModule R contabType.
+Lemma is_pmnormedZmod_contFunTypee :
+  PseudoMetricNormedZmod_Lmodule_isNormedModule R (contFunType d).
 Proof.
 constructor.
 Admitted.
 
 (*
 HB.instance Definition _ := Num.Zmodule_isNormed.Build
-  R contabType (@ler_normD R a b) (@normr0_eq0 R a b)
+  R (contFunType d) (@ler_normD R a b) (@normr0_eq0 R a b)
   (@normrMn R a b) (@normrN R a b).
 *)
 
 HB.instance Definition _ := coucou.
 
-Variables ( k : R).
-
-Hypothesis (lcf_x : {in `[c, d], forall y, k.-lipschitz (f^~ y)}).
-Hypothesis (cf_y : {in `[a, b], forall x, {within `[c, d], continuous f x}}).
-Variable (init_t init_y : R).
-Hypothesis (init_t_ab : init_t \in `]a, b[).
-Hypothesis (init_y_cd : init_y \in `]c, d[).
-Hypothesis (y_init_t : y_ init_t = init_y).
-
-Variable e : R.
-Hypothesis (e0 : 0 < e).
-Hypothesis (inc_ball : ball e init_t `<=` `]a, b[ `&` `]c, d[).
-
-(* Let ctr_picard : is_contraction picard_method *)
-
-Definition picard_method'' (g : contabType) := (fun t =>
-   init_y
-     + (\int[mu]_(x in `[init_t - e, t]) f x (g x))%R
-       - (\int[mu]_(x in `[init_t - e, init_t]) f x (g x))%R).
-
-Local Lemma set_fun_picard g :
-   {homo picard_method'' g : x / `[a, b] x >-> [set: R] x}.
-Proof. by []. Qed.
-
-HB.instance Definition _ g :=
-    @isFun.Build _ _ `[a, b] setT (picard_method'' g) (set_fun_picard g).
-
-Local Lemma picard_method_is_contfun (g : contabType) :
-  @isContFun R a b (picard_method'' g).
-Proof.
-constructor.
-(* *)
-Admitted.
-
-HB.instance Definition _ (g : contabType) :=
-(@picard_method_is_contfun g).
-
-Local Lemma continuous_picard_method (g : contabType) :
-  {within `[a, b], continuous picard_method'' g}.
-Proof.
-exact: contFun.
-Qed.
-
-Local Definition picard_method' (g : contabType) : contabType
-    := picard_method'' g.
-
-Local Lemma set_fun_picard_method :
-   {homo picard_method' : g / [set: contabType] g >-> [set: contabType] g}.
-Proof. by []. Qed.
-
-HB.instance Definition _ :=
-    @isFun.Build _ _ _ _ picard_method' set_fun_picard_method.
-
-Definition picard_method : {fun [set: contabType] >-> [set: contabType]}
-  := picard_method'.
 
 Lemma ctr_picard : is_contraction picard_method.
 Proof.
@@ -732,7 +730,7 @@ split.
 rewrite /phioo.
 apply/cvg_lim.
 (*
-set picard_method : contabType -> contabType := (fun (g : contabType) => (fun t =>
+set picard_method : (contFunType d) -> (contFunType d) := (fun (g : (contFunType d)) => (fun t =>
    init_y
      + (\int[mu]_(x in `[init_t - e, t]) f x (g x))%R
        - (\int[mu]_(x in `[init_t - e, init_t]) f x (g x))%R)).
