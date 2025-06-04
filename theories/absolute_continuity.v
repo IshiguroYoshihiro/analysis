@@ -2727,19 +2727,17 @@ move=> /not_implyP/=[mZ]/not_implyP/=[Z0].
 move/eqP; rewrite neq_lt ltNge measure_ge0/= => fZ_gt0.
 wlog gdeltaZ : Z Zab mZ Z0 fZ_gt0 / exists U_ : nat -> set R,
   [/\ (forall n, open (U_ n)), (forall n, U_ n `<=` `]a, b[),
-    (forall n, Z `<=` U_ n)& Z `<=` \bigcap_n U_ n].
+    (forall n, Z `<=` U_ n)& Z = \bigcap_n U_ n].
   move=> H.
   have Zlty : (lebesgue_measure Z < +oo)%E.
-  apply: (@le_lt_trans _ _ (lebesgue_measure `[a, b])).
-    exact: le_outer_measure.
-  by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
-
+    apply: (@le_lt_trans _ _ (lebesgue_measure `[a, b])).
+      exact: le_outer_measure.
+    by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
   have [U_ [ZU oU ZIU]] := lebesgue_measure_Gdelta_approx Zlty.
   have {}ZIU : mu Z = mu (\bigcap_n U_ n) by [].
   set Z1 := \bigcap_n ((U_ n) `&` `]a - n.+1%:R^-1, b + n.+1%:R^-1[).
   have mZ1 : (((wlength idfun)^*)%mu).-cara.-measurable Z1.
     apply: sub_caratheodory.
-    rewrite /Z1.
     apply: bigcap_measurable => // n _.
     apply: measurableI => //.
     exact: open_measurable.
@@ -2748,41 +2746,62 @@ wlog gdeltaZ : Z Zab mZ Z0 fZ_gt0 / exists U_ : nat -> set R,
     rewrite eqEsubset; split.
     - apply: sub_bigcap => n _ /=.
       by apply: subset_itv; rewrite bnd_simp// ?gtrBl ?ltrDl.
-    - 
-  apply: (H Z1) => //.
-  - rewrite -(@bigcap_const _ _ [set: nat] `[a, b])//.
-    apply: subset_bigcap => n _.
-    apply: (@subset_trans _ `]a, b[).
-      exact: subIsetr.
-    exact: subset_itv_oo_cc.
-  - rewrite -Z0.
-    apply/eqP; rewrite eq_le; apply/andP; split.
-      rewrite -[leLHS]addr0 -lee_suber_addl; last by rewrite ge0_fin_numE.
-      rewrite ZIU /Z1.
-      rewrite -(@leeD2lE _ (mu `]a, b[)) ?adde0; last first.
-        rewrite ge0_fin_numE// completed_lebesgue_measure_itv/=.
-        by rewrite lte_fin ab -EFinD ltry.
-      rewrite bigcapIl// setIC addeA.
-      rewrite -measureUfinl//=; last 3 first.
-      + exact: sub_caratheodory.
-      + apply: sub_caratheodory.
-        apply: Gdelta_measurable.
-        by exists U_.
-      + by rewrite completed_lebesgue_measure_itv lte_fin ab -EFinD ltry.
-      apply: le_measure => //=; rewrite ?inE.
-        exact: sub_caratheodory.
-      apply: sub_caratheodory.
-      apply: measurableU => //.
+    - move=> x abx.
+      rewrite /= in_itv/=; apply/andP; split.
+        apply: (@cvgr_to_le nat \oo _ _ (fun n => a - n.+1%:R^-1) a).
+          rewrite -{2}(subr0 a).
+          apply: (@cvgB _ R^o); first exact: cvg_cst.
+          exact: cvg_harmonic.
+        apply: nearW => n; move: (abx n I).
+        by rewrite /= in_itv/= => /andP[/ltW + _].
+      apply: (@cvgr_to_ge nat \oo _ _ (fun n => b + n.+1%:R^-1) b).
+        rewrite -{2}(addr0 b).
+        apply: (@cvgD _ R^o); first exact: cvg_cst.
+        exact: cvg_harmonic.
+      apply: nearW => n; move: (abx n I).
+      by rewrite /= in_itv/= => /andP[_ /ltW].
+    apply: (H Z1).
+    + move=> x Z1x.
+      rewrite /= in_itv/=; apply/andP; split.
+        apply: (@cvgr_to_le nat \oo _ _ (fun n => a - n.+1%:R^-1) a).
+          rewrite -{2}(subr0 a).
+          apply: (@cvgB _ R^o); first exact: cvg_cst.
+          exact: cvg_harmonic.
+        apply: nearW => n.
+        by move: (Z1x n I) => /=[_]; rewrite in_itv/= => /andP[/ltW + _].
+      apply: (@cvgr_to_ge nat \oo _ _ (fun n => b + n.+1%:R^-1) b).
+        rewrite -{2}(addr0 b).
+        apply: (@cvgD _ R^o); first exact: cvg_cst.
+        exact: cvg_harmonic.
+      apply: nearW => n.
+      by move: (Z1x n I) => /=[_]; rewrite in_itv/= => /andP[_ /ltW].
+    + apply: sub_caratheodory.
       apply: Gdelta_measurable.
-      by exists U_.
-    apply: le_measure => //=; rewrite ?inE//.
-    apply: sub_bigcap => n _.
-    apply: (subset_trans (ZU n)).
-    
-    rewrite subsetI; split => //.
-    
-  -
-  -
+      exists (fun n => U_ n `&` `](a - n.+1%:R^-1), (b + n.+1%:R^-1)[) => //n.
+      exact: openI.
+    + apply/eqP; rewrite eq_le; apply/andP; split => //.
+      rewrite -Z0 ZIU le_outer_measure//.
+      move=> x Z1x n _.
+      by move: (Z1x n I) => [+ _].
+    apply: (lt_le_trans fZ_gt0).
+    apply: le_outer_measure.
+    apply: image_subset => x Zx n _; split.
+      exact: ZU.
+    move/eqP : ab_approx; rewrite eq_le => /andP[/subsetPset + _]; apply => //.
+    exact: Zab.
+  admit. (* ? *)
+
+have [U_ [oU Uab ZUn ZIU]] := gdeltaZ.
+have [K [cK KfZ muK0]] : exists K, [/\ compact K, K `<=` f @` Z & (0 < mu K)%E].
+  have [] := (@lebesgue_regularity_inner _ (f @` Z) (fine (mu (f @` Z)) * 2^-1)).
+  - admit.
+  - admit.
+  - admit.
+  admit.
+set K1 := f @^-1` K.
+have : K = f @` K1.
+
+Abort.
 
 (* lemma3 (converse) *)
 Lemma image_measure0_Lusin (f : R -> R) :
@@ -2900,8 +2919,6 @@ have e0 : 0 < e.
 (* how to get K1 such that
    e < lebesgue_measure K < lebesgue_measure Z1 ? *)
 have : exists K, [/\ compact K, K `<=` (f @` Z1) & (0 < lebesgue_measure K)%E].
-  
-
   admit.
 move=> [K [cK KfZ1 mK0]].
 pose K1 := (f @^-1` K) `&` `[a, b].
