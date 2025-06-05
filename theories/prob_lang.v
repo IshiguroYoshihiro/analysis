@@ -2218,7 +2218,7 @@ Section gauss_lebesgue.
 Context d (T : measurableType d) (R : realType).
 Notation mu := (@lebesgue_measure R).
 
-Let f1 (x : g_sigma_algebraType (R.-ocitv.-measurable)) := (gauss_pdf x)^-1.
+Let f1 (x : g_sigma_algebraType (R.-ocitv.-measurable)) := ((gauss_pdf x)^-1)%R.
 
 Let f1E (x : R) : f1 x = (Num.sqrt (pi *+ 2) * expR (- (- x ^+ 2 / 2)))%R.
 Proof.
