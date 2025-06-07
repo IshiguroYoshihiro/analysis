@@ -445,6 +445,7 @@ Inductive exp : flag -> ctx -> typ -> Type :=
 | exp_beta g (a b : nat) : exp D g (Prob Real)
 | exp_poisson g : nat -> exp D g Real -> exp D g Real
 | exp_normal g : exp D g Real -> forall (s : R), (s != 0)%R -> exp D g (Prob Real)
+| exp_exponential g : exp D g Real -> exp D g (Prob Real)
 | exp_normalize g t : exp P g t -> exp D g (Prob t)
 | exp_letin g t1 t2 str : exp P g t1 -> exp P ((str, t1) :: g) t2 ->
     exp P g t2
@@ -483,6 +484,7 @@ Arguments exp_uniform {R g} &.
 Arguments exp_beta {R g} &.
 Arguments exp_poisson {R g}.
 Arguments exp_normal {R g} &.
+Arguments exp_exponential {R g} &.
 Arguments exp_normalize {R g _}.
 Arguments exp_letin {R g} & {_ _}.
 Arguments exp_sample {R g} & {t}.
@@ -561,7 +563,11 @@ Notation "'Uniform' a b ab" := (exp_uniform a b ab)
   (in custom expr at level 6) : lang_scope.
 Notation "'Beta' a b" := (exp_beta a b)
   (in custom expr at level 6) : lang_scope.
+Notation "'Poisson' n r" := (exp_poisson n r)
+  (in custom expr at level 6) : lang_scope.
 Notation "'Normal' m s s0" := (exp_normal m s s0)
+  (in custom expr at level 6) : lang_scope.
+Notation "'Exponential' r" := (exp_exponential r)
   (in custom expr at level 6) : lang_scope.
 Notation "'if' e1 'then' e2 'else' e3" := (exp_if e1 e2 e3)
   (in custom expr at level 7) : lang_scope.
@@ -590,8 +596,9 @@ Fixpoint free_vars k g t (e : @exp R k g t) : seq string :=
   | exp_binomial _ _ e      => free_vars e
   | exp_uniform _ _ _ _     => [::]
   | exp_beta _ _ _          => [::]
-  | exp_poisson _ _ e       => free_vars e
+  | exp_poisson _ _ e     => free_vars e
   | exp_normal _ e _ _      => free_vars e
+  | exp_exponential _ e     => free_vars e
   | exp_normalize _ _ e     => free_vars e
   | exp_letin _ _ _ x e1 e2 => free_vars e1 ++ rem x (free_vars e2)
   | exp_sample _ _ _        => [::]
@@ -765,6 +772,13 @@ Inductive evalD : forall g t, exp D g t ->
   e -D> r ; mr ->
   ([Normal e s s0] : exp D g _) -D> (fun x => @normal_prob _ (r x) s) ;
  measurableT_comp (measurable_normal_prob2 s0) mr
+
+(* TODO
+| eval_exponential g (e : exp D g _) r mr :
+  e -D> r ; mr ->
+  ([Exponential e] : exp D g _) -D> (fun x => @exponential_prob _ (r x)) ;
+ measurableT_comp (measurable_exponential_prob _) mr
+*)
 
 | eval_normalize g t (e : exp P g t) k :
   e -P> k ->
@@ -1193,6 +1207,7 @@ all: rewrite {z g t}.
 - move=> g e [r [mr H]] s s0.
   exists (fun x => @normal_prob _ (r x) s : pprobability _ _).
   by eexists; exact: eval_normal.
+- admit.
 - move=> g t e [k ek].
   by exists (normalize_pt k); eexists; exact: eval_normalize.
 - move=> g t1 t2 x e1 [k1 ev1] e2 [k2 ev2].
@@ -1211,7 +1226,7 @@ all: rewrite {z g t}.
 - case=> [g h t x e [f [mf ef]] xgh|g h st x e [k ek] xgh].
   + by exists (weak _ _ _ f), (measurable_weak _ _ _ _ mf); exact/evalD_weak.
   + by exists (kweak _ _ _ k); exact: evalP_weak.
-Qed.
+Admitted.
 
 Lemma evalD_total g t (e : @exp R D g t) : exists f mf, e -D> f ; mf.
 Proof. exact: (eval_total e). Qed.
@@ -1416,6 +1431,13 @@ Lemma execD_poisson g n (e : exp D g Real) :
     existT _ (poisson_pdf n \o projT1 (execD e))
              (measurableT_comp (measurable_poisson_pdf n) (projT2 (execD e))).
 Proof. exact/execD_evalD/eval_poisson/evalD_execD. Qed.
+
+(* TODO
+Lemma execD_exponential g (e : exp D g Real) :
+  execD (exp_exponential e) =
+    existsT _ (exponential_prob : R -> pprobability nat R) \o projT1 (execD e))
+             (measurableT_comp (measurable_exponential_prob n) (projT2 (execD e))).
+*)
 
 Lemma execP_if g st e1 e2 e3 :
   @execP g st [if e1 then e2 else e3] =
