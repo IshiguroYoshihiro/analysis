@@ -1923,6 +1923,20 @@ HB.instance Definition _ :=
 
 End exponential_prob.
 
+Section exponential_prob_properties.
+Context {R : realType}.
+Local Open Scope ring_scope.
+Notation mu := lebesgue_measure.
+
+(*
+Lemma measurable_exponential_prob :
+  measurable_fun setT (exponential_prob : R -> pprobability _).
+Proof.
+*)
+
+
+End exponential_prob_properties.
+
 Section near_lt_lim.
 Variable R : realFieldType.
 Implicit Types u : R ^nat.
@@ -3697,6 +3711,53 @@ Qed.
 
 End beta_prob_bernoulliE.
 
+(* TODO:PR *)
+
+Section ereal_sup_properties.
+Context {R : realType}.
+Context {f : nat -> R}.
+Hypothesis (f0 : forall n, 0 <= f n).
+
+Lemma ereal_sup_fsets_range :
+ ereal_sup
+   [set (\sum_(i \in x) f i)%:E | x in fsets [set: nat]]
+  =
+ ereal_sup
+   (range
+      (EFin \o (fun n : nat => (\sum_(0 <= k < n) f k)%R))).
+Proof.
+apply/eqP; rewrite eq_le; apply/andP; split; last first.
+  apply: le_ereal_sup => _ [n _ <-]/=.
+  exists `I_n => //.
+  rewrite -fsbig_ord/=.
+  by rewrite big_mkord.
+apply: ub_ereal_sup.
+move=> /= e/= [S [fS _] <-].
+apply: ereal_sup_ge.
+have /finite_fsetP[X SX] := fS.
+set N : nat := \max_(x <- X) x.
+exists ((\sum_(0 <= k < N.+1) f k)%:E) => //.
+rewrite fsbig_finite//=.
+rewrite -sumEFin.
+rewrite [leRHS](_ : _ =
+   (\sum_(i <- fset_set `I_N.+1) (f i)%:E)%R); last first.
+  rewrite -Iiota.
+  rewrite -fsbig_finite; last by rewrite/=.
+  rewrite -fsbig_seq//; last exact: iota_uniq.
+  by rewrite sumEFin.
+apply: lee_sum_nneg_subfset => /=.
+  apply/subsetP.
+  move=> n; rewrite 2!inE.
+  rewrite 2?in_fset_set// 2!inE => Sn/=.
+  rewrite ltnS.
+  apply: leq_bigmax_seq => //.
+  by rewrite SX in Sn.
+move=> n _ _.
+by rewrite lee_fin.
+Qed.
+
+End ereal_sup_properties.
+
 Section poisson_pmf.
 Local Open Scope ring_scope.
 Context {R : realType}.
@@ -3760,59 +3821,22 @@ move=> rate0; rewrite /poisson_pmf.
 have pkn n : 0%R <= (rate ^+ n / n`!%:R * expR (- rate))%:E.
   by rewrite lee_fin poisson_pmf_ge0.
 apply/esym.
-rewrite [LHS](_ : _ = (expR rate)%:E * (expR (- rate))%:E); last first.
-  by rewrite -EFinM expRN divff// gt_eqF ?expR_gt0.
-transitivity
-  ((\esum_(k0 in setT) (rate ^+ k0 / k0`!%:R)%:E) * (expR (- rate))%:E).
-  congr *%E.
-  rewrite -EFin_lim; last exact: is_cvg_series_exp_coeff.
-  transitivity (ereal_sup (range (EFin \o (fun n : nat => (\sum_(0 <= k0 < n) rate ^+ k0 / k0`!%:R)%R)))).
-    apply: cvg_lim => //.
-    rewrite /esum/series/exp_coeff/=.
-    apply: ereal_nondecreasing_cvgn.
-    apply: nondecreasing_series => n _ _.
-    exact: exp_coeff_ge0.
-  apply/eqP; rewrite eq_le; apply/andP; split.
-    apply: le_ereal_sup => _ [n _ <-]/=.
-    exists `I_n => //.
-    rewrite -fsbig_ord/=.
-    rewrite big_mkord.
-    by rewrite sumEFin.
-  apply: ub_ereal_sup.
-  move=> /= e/= [S [fS _] <-].
-  apply: ereal_sup_ge.
-  have /finite_fsetP[X SX] := fS.
-  set N : nat := \max_(x <- X) x.
-  exists ((\sum_(0 <= k0 < N.+1) rate ^+ k0 / k0`!%:R)%:E) => //.
-  rewrite fsbig_finite//=.
-  rewrite -sumEFin.
-  rewrite [leRHS](_ : _ =
-     (\sum_(i <- fset_set `I_N.+1) (rate ^+ i / i`!%:R)%:E)%R); last first.
-    rewrite -Iiota.
-    rewrite -fsbig_finite//=.
-    rewrite -fsbig_seq//.
-    rewrite -/(iota 0 N.+1).
-    apply: iota_uniq.
-  apply: lee_sum_nneg_subfset => /=.
-    apply/subsetP.
-    move=> n; rewrite 2!inE.
-    rewrite 2?in_fset_set// 2!inE => Sn/=.
-    rewrite ltnS.
-    apply: leq_bigmax_seq => //.
-    by rewrite SX in Sn.
-  move=> n _ _.
-  by rewrite lee_fin mulr_ge0// exprn_ge0.
-(* TODO: lemma *)
-under [RHS]eq_esum do rewrite mulrC.
-rewrite muleC -ereal_sup_pZl; last exact: expR_gt0.
-apply/eqP; rewrite eq_le; apply/andP; split => /=.
-  apply: le_ereal_sup => _ [_ [N fN <-] <-]; exists N => //.
-  rewrite ge0_mule_fsumr//.
-  by move=> ?; exact: exp_coeff_ge0.
-apply: le_ereal_sup => _ [N fN <-]/=.
-exists (\sum_(x1 \in N) (rate ^+ x1 / x1`!%:R)%:E)%R; first by exists N.
-rewrite ge0_mule_fsumr//.
-by move=> ?; exact: exp_coeff_ge0.
+rewrite [LHS](_ : _ = (expR (- rate))%:E * (expR rate)%:E); last first.
+  by rewrite -EFinM expRN mulVf ?gt_eqF ?expR_gt0.
+under eq_esum do rewrite mulrC.
+rewrite /esum.
+under eq_imagel => A [? _] do rewrite fsumEFin// -fsbig_distrr//= EFinM.
+rewrite -(image_comp _ (fun x => (expR (- rate))%:E * x)).
+rewrite ereal_supZl//; last first.
+  apply/set0P.
+  by exists (\sum_(i \in [set 0%N]) rate ^+ i / i`!%:R)%:E; exists [set 0%N].
+congr *%E.
+rewrite -EFin_lim; last by exact: is_cvg_series_exp_coeff.
+rewrite ereal_sup_fsets_range; last by move=> ?; rewrite mulr_ge0// exprn_ge0.
+apply: cvg_lim => //.
+apply: ereal_nondecreasing_cvgn.
+apply: nondecreasing_series => n _ _.
+exact: exp_coeff_ge0.
 Qed.
 
 HB.instance Definition _ :=
