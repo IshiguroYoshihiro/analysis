@@ -244,6 +244,7 @@ Lemma contfun_rect (K : T -> Type) :
 Proof.
 move=> Ksub [f [[Pf]]]/=.
 suff -> // : Pf = (set_mem (@mem_set _ [set f | _] f Pf)).
+move=> mix.
 admit.
 Admitted.
 
@@ -655,27 +656,62 @@ HB.instance Definition _ g :=
     @isFun.Build _ _ `[- d, d] setT (picard_method'' g) (set_fun_picard g).
 
 Local Lemma picard_method_is_contfun (g : (contFunType d)) :
+  g @` `[-d, d] `<=` `[- d, d] -> (* ? *)
   @isContFun R (- d) d (picard_method'' g).
 Proof.
+move=> gd.
 constructor.
 (* *)
+rewrite /picard_method''.
+move=> x.
+apply: cvgB; last exact: cvg_cst.
+apply: parameterized_integral_continuous; first exact: gtrN.
+apply: continuous_compact_integrable; first exact: segment_compact.
+move{x}.
+apply/continuous_within_itvP; first exact: gtrN; split.
+- move=> x; rewrite in_itv/= => /andP[ndx dx].
+  apply/cvgrPdistC_lep.
+  near=> e.
+  near=> t.
+  admit.
+- apply/cvgrPdistC_lep.
+  admit.
+- admit.
 Admitted.
 
-HB.instance Definition _ (g : (contFunType d)) :=
-(@picard_method_is_contfun g).
+HB.instance Definition _ (g : (contFunType d))
+  (imageg : g @` `[- d, d] `<=` `[- d, d]) :=
+(@picard_method_is_contfun g imageg).
 
-Local Lemma continuous_picard_method (g : (contFunType d)) :
+Local Lemma continuous_picard_method (g : (contFunType d))
+  (imageg : g @` `[- d, d] `<=` `[- d, d]) :
   {within `[- d, d], continuous picard_method'' g}.
 Proof.
 exact: contFun.
 Qed.
 
-Local Definition picard_method' (g : (contFunType d)) : (contFunType d)
-    := picard_method'' g.
+Local Definition contFun_imaged  : set (contFunType d) :=
+  [set f : contFunType d | f @` `[- d, d] `<=` `[- d, d]].
 
+Definition picard_method' (g : (contFunType d))
+  (imageg : g @` `[- d, d] `<=` `[- d, d]) : (contFunType d).
+Proof.
+apply: picard_method''.
+exact: imageg.
+Defined.
+
+HB.about isFun.
+
+(* TODO: imageg? *)
+Fail Local Lemma set_fun_picard_method (g : contFunType d)
+  (imageg : g @` `[- d, d] `<=` `[- d, d])
+: @isFun _ _ [set: contFunType d] [set: contFunType d]
+   (@picard_method' g imageg).
+
+(*
 Local Lemma set_fun_picard_method :
    {homo picard_method' : g /
-       [set: (contFunType d)] g >-> [set: (contFunType d)] g}.
+       contFun_imaged g >-> contFun_imaged g}.
 Proof. by []. Qed.
 
 HB.instance Definition _ :=
@@ -684,6 +720,7 @@ HB.instance Definition _ :=
 Definition picard_method :
     {fun [set: (contFunType d)] >-> [set: (contFunType d)]}
   := picard_method'.
+*)
 
 End picard_method.
 
@@ -730,6 +767,7 @@ Lemma ctr_picard : is_contraction picard_method.
 Proof.
 red.
 rewrite /contraction.
+
 Admitted.
 
 Let phi0 := (@cst R R 0%R). (* 0 is init_y *)
@@ -738,13 +776,14 @@ Check phi0 : contFunType d.
 
 Let phioo := (limn (fun n => iter n picard_method phi0)) : R -> R.
 
+(* not d, some smaller e *)
 Lemma picard_theorem :
  phioo 0 = 0 /\
   ({in `]- d, d[, forall x, phioo^`() x = f x (phioo x)}).
 Proof.
 split.
 rewrite /phioo.
-
+(* contraction_cvg_fixed *)
 (*
 set picard_method : (contFunType d) -> (contFunType d) := (fun (g : (contFunType d)) => (fun t =>
    init_y
@@ -793,7 +832,6 @@ admit.
 Admitted.
 
 End picard_sketch.
-
 
 (* dy = f(t, y(t)), y(t0) = y0 *)
 Record IVP (R : realType) := {
