@@ -1912,7 +1912,7 @@ HB.instance Definition _ :=
 
 End exponential_prob.
 
-(* TODO: move to realfun.v and PR *)
+(* PRed *)
 Section derivable_oy_continuous_within_itvcy.
 Context {R : numFieldType} {V : normedModType R}.
 
@@ -1931,11 +1931,24 @@ apply/(@differentiable_continuous _ R^o); rewrite -derivable1_diffP.
 by apply: df; rewrite in_itv/= xz.
 Qed.
 
-(* TODO: derivable_Nyo_continuous_within_itvNyc *)
+Lemma derivable_oy_continuous_within_itvNyc (f : R -> V) (x : R) :
+  derivable_Nyo_continuous_bnd f x -> {within `]-oo, x], continuous f}.
+Proof.
+move=> [df cfx].
+apply/subspace_continuousP => z /=.
+rewrite in_itv/=; rewrite le_eqVlt => /predU1P[->{z}|].
+  have := cvg_at_left_within cfx; apply: cvg_trans; apply: cvg_app.
+  by apply: within_subset => z/=; rewrite in_itv/=.
+move=> cx.
+apply: cvg_within_filter.
+  (* not need ^o when in realfun.v ? *)
+apply/(@differentiable_continuous _ R^o); rewrite -derivable1_diffP.
+by apply: df; rewrite in_itv/=.
+Qed.
 
 End derivable_oy_continuous_within_itvcy.
 
-(* TODO: move *)
+(* PRed *)
 Section cvgr_cvgn.
 Context {R : realType}.
 
@@ -1953,7 +1966,7 @@ Qed.
 
 End cvgr_cvgn.
 
-(* TODO: PR *)
+(* TODO: PRed *)
 Section measurable_fun_itvP.
 Context {R : realType}.
 Implicit Type (f : R -> R).
@@ -2448,7 +2461,7 @@ apply/(@cvgrPdistC_lep _ R^o).
     by rewrite mulr_ge0 1?expR_ge0 1?powR_ge0.
   rewrite expRN.
   set A := `|archimedean.Num.Def.ceil a|.+1%N.
-  have H1DxAgt0 : 0 < (1%R + x `^ A%:R / A`!%:R)%E.
+  have H1DxAgt0 : 0 < 1%R + x `^ A%:R / A`!%:R.
     by rewrite addr_gt0 ?powR_gt0 ?divr_gt0 ?powR_gt0.
   apply: (@le_trans _ _ (x `^ a / (1 + x `^ A%:R / A`!%:R))).
     rewrite ler_pM2l; last exact: powR_gt0.
@@ -2510,7 +2523,8 @@ have powRMexpR_ge0 b : {in `]0, +oo[,
      forall x, (0 <= (x `^ b * expR (- x))%:E)%E}.
   move=> x; rewrite in_itv/= andbT => x0.
   by rewrite lee_fin mulr_ge0// ltW// ?powR_gt0// expR_gt0.
-rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp fcvg0); last 6 first.
+have a0 := (le_trans ler01 a1).
+rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp (fcvg0 a0)); last 6 first.
 - move: a1.
   rewrite le_eqVlt => /predU1P[<- |a1].
     apply: continuous_subspaceT => x.
@@ -2563,7 +2577,7 @@ rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp fcvg0); last 6 firs
 - apply: continuous_subspaceT.
   move=> x.
   apply: continuous_comp.
-    apply: (@opp_continuous _ R^o).
+    apply: (@opp_continuous R^o).
   exact: continuous_expR.
 - split.
     move=> x _.
@@ -2577,8 +2591,7 @@ rewrite (integration_by_partsy_npsfG_nngFg _ _ dxa1 _ _ dexp fcvg0); last 6 firs
   apply/(cvg_compNP (expR : R^o -> R^o)).
   exact: continuous_expR.
 - move=> ? ?; rewrite mulrN EFinN oppe_le0.
-  rewrite -mulrA EFinM mule_ge0//; last exact: powRMexpR_ge0.
-  by rewrite lee_fin (le_trans _ a1).
+  by rewrite -mulrA EFinM mule_ge0//; last exact: powRMexpR_ge0.
 - exact: powRMexpR_ge0.
 rewrite sub0r.
 move: a1; rewrite le_eqVlt => /orP[/eqP<- |a1].
@@ -2594,7 +2607,6 @@ rewrite ge0_integralZl//=.
   exact: measurableT_comp.
 - move=> x; rewrite in_itv/= andbT => x0.
   by rewrite lee_fin mulr_ge0// ?powR_ge0 ?expR_ge0.
-- by rewrite lee_fin ltW// (lt_trans _ a1).
 Unshelve. all: end_near. Qed.
 
 Let I n : \bar R := \int[mu]_(x in `[0%R, +oo[) (x ^+ n * expR (- x))%:E.
