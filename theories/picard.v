@@ -209,7 +209,7 @@ HB.mixin Record isContFun (R : realType) (a b : R)
 (* TODO: rename to contFunSegmentType *)
 #[short(type="contFunType")]
 HB.structure Definition ContFun (R : realType) (a b : R) :=
-  {f of isContFun R a b f &  @Fun R R `[a, b] [set: R] f}.
+  {f of isContFun R a b f & @Fun R R `[a, b] [set: R] f}.
 
 (* TODO: factory Lmodule is normed *)
 
@@ -631,6 +631,14 @@ Check M : normedModType R.
 HB.end.
 *)
 
+(* picard_method is mapping from a continuous function to a function by
+ * integration. (limn n picard_method (cst 0)) is solution of ODE.
+ * For the proof of Picard-Linderl{\"o}f theorem, we should give a instance
+ * picard_method : {fun U >-> U} for some subset U of contFunType.
+ * the U satisfies
+ * * U `<=` `[- d, d],
+ * * g @` U `<=` `[- d, d],
+ *)
 Section picard_method.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
@@ -644,7 +652,7 @@ Hypothesis (cf_y : {in `[- d, d], forall x, {within `[-d, d], continuous f x}}).
 
 Hypothesis (y_init_t : y_ 0 = 0).
 
-Definition picard_method'' (g : (contFunType d)) := (fun t =>
+Definition picard_method'' (g : R -> R) := (fun t =>
    (\int[mu]_(x in `[- d, t]) f x (g x))%R
        - (\int[mu]_(x in `[- d, d]) f x (g x))%R).
 
@@ -670,12 +678,26 @@ apply: continuous_compact_integrable; first exact: segment_compact.
 move{x}.
 apply/continuous_within_itvP; first exact: gtrN; split.
 - move=> x; rewrite in_itv/= => /andP[ndx dx].
-  apply/cvgrPdistC_lep.
-  near=> e.
-  near=> t.
-  admit.
-- apply/cvgrPdistC_lep.
-  admit.
+  apply: continuous2_cvg => //.
+  + apply/cvgrPdistC_lep.
+    near=> e.
+    rewrite /=.
+    near_simpl; near=> t.
+    admit.
+  + suff : {in `]- d, d[, continuous g}.
+      by apply; rewrite inE/= in_itv/= ndx dx.
+    have : {within `[- d, d], continuous g}.
+      apply: isContFun.contFun.
+      exact: ContFun.class.
+    have ndd : - d < d by rewrite gtrN.
+    move/(continuous_within_itvP _ ndd) => [cg _ _].
+    by move=> r; rewrite inE/=; exact: cg.
+- rewrite (_ : (fun x => f x (g x)) = (fun x => f (- x) (g (- x))) \o -%R); last first.
+    admit.
+  apply/cvg_at_leftNP.
+  apply: (@cvg_comp _ _ _ -%R (fun x => f x (g x)) _ ((- d)^'+)).
+  + by rewrite at_rightN.
+  + admit.
 - admit.
 Admitted.
 
@@ -693,22 +715,36 @@ Qed.
 Local Definition contFun_imaged  : set (contFunType d) :=
   [set f : contFunType d | f @` `[- d, d] `<=` `[- d, d]].
 
-Definition picard_method' (g : (contFunType d))
-  (imageg : g @` `[- d, d] `<=` `[- d, d]) : (contFunType d).
-Proof.
-apply: picard_method''.
-exact: imageg.
-Defined.
+Definition picard_method' (g : R -> R)
+   :=
+match pselect (g @` `[- d, d] `<=` `[- d, d]) with
+| left imageg => picard_method'' g
+| _ => cst 0
+end.
 
 HB.about isFun.
 
-(* TODO: imageg? *)
-Fail Local Lemma set_fun_picard_method (g : contFunType d)
-  (imageg : g @` `[- d, d] `<=` `[- d, d])
-: @isFun _ _ [set: contFunType d] [set: contFunType d]
-   (@picard_method' g imageg).
+Lemma isfun_picard' g : set_fun `[- d, d] `[- d, d] (picard_method' g).
+Proof.
+Admitted.
+
+Lemma iscontfun_picard' g : {within `[- d, d], continuous (picard_method' g)}.
+Proof.
+Admitted.
+
+HB.instance Definition _ (g : (contFunType d)) :=
+  @isContFun.Build R (- d) d (picard_method' g) (@iscontfun_picard' g).
+
+
+HB.instance Definition _ (g : (contFunType d)) :=
+  @isFun.Build _ _ _ _ (picard_method' g) (isfun_picard' g).
 
 (*
+Local Lemma set_fun_picard_method (g : contFunType d)
+: @isFun _ _ [set: contFunType d] [set: contFunType d]
+   picard_method'.
+
+
 Local Lemma set_fun_picard_method :
    {homo picard_method' : g /
        contFun_imaged g >-> contFun_imaged g}.
@@ -724,6 +760,7 @@ Definition picard_method :
 
 End picard_method.
 
+(*
 Section picard_sketch.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
@@ -761,6 +798,7 @@ HB.instance Definition _ := Num.Zmodule_isNormed.Build
 
 HB.instance Definition _ := is_pmnormedZmod_contFunTypee.
 
+(*
 Notation picard_method := (picard_method d0 lcf_x cf_y y_init_t).
 
 Lemma ctr_picard : is_contraction picard_method.
@@ -830,8 +868,10 @@ move=> x xte.
 admit.
 *)
 Admitted.
+*)
 
 End picard_sketch.
+*)
 
 (* dy = f(t, y(t)), y(t0) = y0 *)
 Record IVP (R : realType) := {
