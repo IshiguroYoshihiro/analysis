@@ -545,18 +545,18 @@ move: f g => [f [[cf]] [funf]] [g [[cg]] [fung]].
 move=> /= fg.
 Admitted.
 
-Local Lemma ler_normD (x y : V) : norm (x + y) <= norm x + norm y :> R.
+Let ler_normD (x y : V) : norm (x + y) <= norm x + norm y :> R.
 Proof.
 Admitted.
 
-Local Lemma normr0_eq0 (x : V) : norm x = 0 -> x = 0.
+Let normr0_eq0 (x : V) : norm x = 0 -> x = 0.
 Proof.
 Admitted.
 
-Local Lemma normrMn (x : V) n : norm (x *+ n) = norm x *+ n.
+Let normrMn (x : V) n : norm (x *+ n) = norm x *+ n.
 Admitted.
 
-Local Lemma normrN (x : V) : norm (- x) = norm x.
+Let normrN (x : V) : norm (- x) = norm x.
 Admitted.
 (* TODO: dev the theory of sup following the theory of ess_sup *)
 
@@ -642,35 +642,38 @@ HB.end.
 Section picard_method.
 Context {R : realType}.
 Local Notation mu := lebesgue_measure.
-Variables (f : R -> R -> R) (y_ : R -> R) (d : R).
-Hypothesis (d0 : 0 < d).
+Variables (f : R -> R -> R) (d0 : {posnum R}).
+
+Local Notation d := d0%:num.
 Local Notation contFunType x := (contFunType (- x) x).
 
-Variables ( k : R).
+Variables (k : R).
 Hypothesis (lcf_x : {in `[- d, d], forall y, k.-lipschitz (f^~ y)}).
 Hypothesis (cf_y : {in `[- d, d], forall x, {within `[-d, d], continuous f x}}).
 
-Hypothesis (y_init_t : y_ 0 = 0).
-
-Definition picard_method'' (g : R -> R) := (fun t =>
+Definition picard_method_def (g : R -> R)
+  (imageg : g @` `[- d, d] `<=` `[- d, d])
+ := (fun t =>
    (\int[mu]_(x in `[- d, t]) f x (g x))%R
-       - (\int[mu]_(x in `[- d, d]) f x (g x))%R).
+       - (\int[mu]_(x in `[- d, 0%R]) f x (g x))%R).
 
-Local Lemma set_fun_picard g :
-   {homo picard_method'' g : x / `[- d, d] x >-> [set: R] x}.
+Local Lemma set_fun_picard (g : R -> R)
+  (imageg : g @` `[- d, d] `<=` `[- d, d]) :
+   {homo picard_method_def imageg : x / `[- d, d] x >-> [set: R] x}.
 Proof. by []. Qed.
 
-HB.instance Definition _ g :=
-    @isFun.Build _ _ `[- d, d] setT (picard_method'' g) (set_fun_picard g).
+HB.instance Definition _ (g : R -> R)
+  (imageg : g @` `[- d, d] `<=` `[- d, d]) :=
+    @isFun.Build _ _ `[- d, d] setT (picard_method_def imageg)
+   (set_fun_picard imageg).
 
-Local Lemma picard_method_is_contfun (g : (contFunType d)) :
-  g @` `[-d, d] `<=` `[- d, d] -> (* ? *)
-  @isContFun R (- d) d (picard_method'' g).
+Local Lemma picard_method_is_contfun (g : (contFunType d))
+ (imageg : g @` `[-d, d] `<=` `[- d, d]) :
+  @isContFun R (- d) d (picard_method_def imageg).
 Proof.
-move=> gd.
 constructor.
 (* *)
-rewrite /picard_method''.
+rewrite /picard_method_def.
 move=> x.
 apply: cvgB; last exact: cvg_cst.
 apply: parameterized_integral_continuous; first exact: gtrN.
@@ -683,12 +686,28 @@ apply/continuous_within_itvP; first exact: gtrN; split.
     near=> e.
     rewrite /=.
     near_simpl; near=> t.
+    apply: (@le_trans _ _ ( `|f t.1 t.2 - f t.1 (g x)| + `|f t.1 (g x) - f x (g x)|)).
+      rewrite (le_trans _ (Num.Theory.ler_normD _ _))//.
+      by rewrite addrA subrK.
+    rewrite (splitr e) lerD//.
+      have : {within `[(- d), d], continuous f t.1}.
+        apply: cf_y.
+        admit.
+      move/(_ t.2).
+      move/cvgrPdist_le.
+      move/(_ (e / 2)).
+      rewrite divr_gt0//; move/(_ isT).
+      rewrite /prop_near1/= !nbhsE/=.
+      rewrite /nbhs/=.
+      case.
+      move=> A oA.
+      apply.
+      admit.
     admit.
   + suff : {in `]- d, d[, continuous g}.
       by apply; rewrite inE/= in_itv/= ndx dx.
     have : {within `[- d, d], continuous g}.
-      apply: isContFun.contFun.
-      exact: ContFun.class.
+      exact: contFun.
     have ndd : - d < d by rewrite gtrN.
     move/(continuous_within_itvP _ ndd) => [cg _ _].
     by move=> r; rewrite inE/=; exact: cg.
@@ -703,47 +722,60 @@ Admitted.
 
 HB.instance Definition _ (g : (contFunType d))
   (imageg : g @` `[- d, d] `<=` `[- d, d]) :=
-(@picard_method_is_contfun g imageg).
+(picard_method_is_contfun imageg).
 
 Local Lemma continuous_picard_method (g : (contFunType d))
   (imageg : g @` `[- d, d] `<=` `[- d, d]) :
-  {within `[- d, d], continuous picard_method'' g}.
+  {within `[- d, d], continuous picard_method_def imageg}.
 Proof.
 exact: contFun.
 Qed.
 
-Local Definition contFun_imaged  : set (contFunType d) :=
-  [set f : contFunType d | f @` `[- d, d] `<=` `[- d, d]].
+End picard_method.
 
-Definition picard_method' (g : R -> R)
-   :=
-match pselect (g @` `[- d, d] `<=` `[- d, d]) with
-| left imageg => picard_method'' g
+Definition picard_method {R : realType} (f : R -> R -> R) (d0 : {posnum R})
+  ( k : R) (lcf_x : {in `[- d0%:num, d0%:num], forall y, k.-lipschitz (f^~ y)})
+  (cf_y : {in `[- d0%:num, d0%:num], forall x, {within `[-d0%:num, d0%:num], continuous f x}})
+ (g : contFunType (- d0%:num) d0%:num)
+  (imageg : g @` `[- d0%:num, d0%:num] `<=` `[- d0%:num, d0%:num]) :=
+match pselect (g @` `[- d0%:num, d0%:num] `<=` `[- d0%:num, d0%:num]) with
+| left imageg => @picard_method_def R f d0 g imageg
 | _ => cst 0
 end.
 
-HB.about isFun.
+Section picard_method_def.
+Context {R : realType}.
+Local Notation mu := lebesgue_measure.
+Variables (f : R -> R -> R) (d0 : {posnum R}).
+Local Notation d := d0%:num.
+Local Notation contFunType x := (contFunType (- x) x).
 
-Lemma isfun_picard' g : set_fun `[- d, d] `[- d, d] (picard_method' g).
+Variables ( k : R).
+Hypothesis (lcf_x : {in `[- d, d], forall y, k.-lipschitz (f^~ y)}).
+Hypothesis (cf_y : {in `[- d, d], forall x, {within `[-d, d], continuous f x}}).
+
+Lemma iscontfun_picard (g : contFunType d)
+ (imageg : g @` `[- d, d] `<=` `[- d, d])
+ : {within `[- d, d],
+ continuous (@picard_method R f d0 k lcf_x cf_y g imageg)}.
 Proof.
 Admitted.
 
-Lemma iscontfun_picard' g : {within `[- d, d], continuous (picard_method' g)}.
-Proof.
-Admitted.
+HB.about ContFun.
 
-HB.instance Definition _ (g : (contFunType d)) :=
-  @isContFun.Build R (- d) d (picard_method' g) (@iscontfun_picard' g).
+HB.instance Definition _ (g : (contFunType d))
+(imageg : g @` `[- d, d] `<=` `[- d, d]) :=
+  @isContFun.Build R (- d) d
+     (@picard_method R f d0 k lcf_x cf_y g imageg)
+     (@iscontfun_picard g imageg).
 
-
+(*
 HB.instance Definition _ (g : (contFunType d)) :=
   @isFun.Build _ _ _ _ (picard_method' g) (isfun_picard' g).
 
-(*
 Local Lemma set_fun_picard_method (g : contFunType d)
-: @isFun _ _ [set: contFunType d] [set: contFunType d]
+   : @isFun _ _ [set: contFunType d] [set: contFunType d]
    picard_method'.
-
 
 Local Lemma set_fun_picard_method :
    {homo picard_method' : g /
@@ -758,7 +790,7 @@ Definition picard_method :
   := picard_method'.
 *)
 
-End picard_method.
+End picard_method_def.
 
 (*
 Section picard_sketch.
