@@ -229,37 +229,31 @@ case: i => [[[] a|[]] [[] b|[]]] => //; do ?by rewrite set_itv_ge.
 Qed.
 #[local] Hint Resolve measurable_itv : core.
 
-Lemma measurable_fun_itv_bndo_bndc (a : itv_bound R) (b : R)
+Lemma measurable_fun_itv_bndo_bndcP (a : itv_bound R) (b : R)
     (f : R -> R) :
-  measurable_fun [set` Interval a (BLeft b)] f ->
+  measurable_fun [set` Interval a (BLeft b)] f <->
   measurable_fun [set` Interval a (BRight b)] f.
 Proof.
-have [ab|ab] := leP a (BLeft b).
-- move: a => [a0 a|[|//]] in ab *;
-    move=> mf; rewrite -setUitv1//; apply/measurable_funU => //;
-    by split => //; exact: measurable_fun_set1.
-- move: a => [[|] a|[|]//] in ab *; rewrite bnd_simp in ab.
-  + move=> _; rewrite set_itv_ge// ?bnd_simp -?ltNge//.
-    exact: measurable_fun_set0.
-  + move=> _; rewrite set_itv_ge// ?bnd_simp -?leNgt//.
-    exact: measurable_fun_set0.
+split; [have [ab ?|ab _] := leP a (BLeft b) |have [ab _|ab] := leP (BLeft b) a].
+- by rewrite -setUitv1//; apply/measurable_funU => //;
+       split => //; exact: measurable_fun_set1.
+- by rewrite set_itv_ge -?leNgt//; exact: measurable_fun_set0.
+- by rewrite set_itv_ge -?leNgt//; exact: measurable_fun_set0.
+- by rewrite -setUitv1 ?ltW//; move/measurable_funU => []//.
 Qed.
 
-Lemma measurable_fun_itv_obnd_cbnd (a : R) (b : itv_bound R)
+Lemma measurable_fun_itv_obnd_cbndP (a : R) (b : itv_bound R)
     (f : R -> R) :
-  measurable_fun [set` Interval (BRight a) b] f ->
+  measurable_fun [set` Interval (BRight a) b] f <->
   measurable_fun [set` Interval (BLeft a) b] f.
 Proof.
-have [ab|ab] := leP (BRight a) b.
-- move: b => [[|] b|[//|]] in ab *;
-    move=> mf; rewrite -setU1itv//; apply/measurable_funU => //;
-    by split => //; exact: measurable_fun_set1.
-- move: b => [[|] b|[|//]] in ab *; rewrite bnd_simp in ab.
-  + move=> _; rewrite set_itv_ge// ?bnd_simp -?leNgt//.
-    exact: measurable_fun_set0.
-  + move=> _; rewrite set_itv_ge// ?bnd_simp -?ltNge//.
-    exact: measurable_fun_set0.
-  + by move=> _; rewrite set_itv_ge//=; exact: measurable_fun_set0.
+split; [have [ab mf|ab _] := leP (BRight a) b|have [ab _|ab] := leP b (BRight a)].
+- by rewrite -setU1itv//; apply/measurable_funU => //;
+       split => //; exact: measurable_fun_set1.
+- by rewrite set_itv_ge; first exact: measurable_fun_set0;
+    rewrite -leNgt; case: b ab; case => b//.
+- by rewrite set_itv_ge// -?leNgt//; exact: measurable_fun_set0.
+- by rewrite -setU1itv ?ltW//; move/measurable_funU => []//.
 Qed.
 
 #[deprecated(since="mathcomp-analysis 1.9.0", note="use `measurable_fun_itv_obnd_cbnd` instead")]
