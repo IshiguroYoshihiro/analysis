@@ -2835,7 +2835,8 @@ have K1ab : K1 `<=` `[a, b].
   by case: b1 imab; rewrite bnd_simp.
 have cK1 : compact K1.
   apply: continuous_compact=> //.
-
+  apply: (continuous_subspaceW cF).
+  apply/continuous_within_itvP.
 Admitted.
 
 End lemma3.
