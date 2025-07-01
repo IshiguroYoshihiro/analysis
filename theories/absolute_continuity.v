@@ -3,8 +3,8 @@ From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
 From mathcomp Require Import archimedean.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import cardinality fsbigop.
-From mathcomp Require Import set_interval.
-From mathcomp Require Import signed reals ereal topology normedtype sequences real_interval.
+From mathcomp Require Import interval_inference interval set_interval.
+From mathcomp Require Import reals ereal topology normedtype sequences real_interval.
 From mathcomp Require Import esum measure lebesgue_stieltjes_measure lebesgue_measure numfun.
 From mathcomp Require Import realfun exp derive.
 
@@ -614,7 +614,7 @@ rewrite -lim_shift_cst//.
     by rewrite big_mkord.
 - exact: is_cvg_ereal_nneg_natsum_cond.
 - by move=> m; exact: sume_ge0.
-- by rewrite (@lt_le_trans _ _ 0).
+- by rewrite (@lt_le_trans _ _ 0) ?ltNy0.
 Unshelve. all: by end_near. Qed.
 
 End PRme.
@@ -2456,9 +2456,7 @@ have [|] := pselect (Z !=set0); last first.
 move=> Z0 + [/= G' oG'].
 move/[swap]; move:Z0; move/[swap] => /[dup]ZG' -> G'0 G'ab.
 set G_ := fun i => `]a, b[%classic `&` (G' i).
-have {oG'}oG i : open (G_ i).
-  apply: openI => //.
-  exact: interval_open.
+have {oG'}oG i : open (G_ i) by exact: openI.
 have {G'0}IG0 : \bigcap_i G_ i !=set0.
   have [x G'x] := G'0.
   exists x.
@@ -2737,9 +2735,7 @@ have surjF : set_surj `[a, b] `[f a, f b] F.
   by apply: ndf; rewrite ?in_itv/= ?lexx ?ltW.
 
 have Uabab n : (fun n => (U_ n) `&` `]a, b[) n `<=` `]a, b[ by exact: subIsetr.
-have oUab n : open (U_ n `&` `]a, b[).
-  apply: openI => //.
-  exact: interval_open.
+have oUab n : open (U_ n `&` `]a, b[) by exact: openI.
 pose Z1 := \bigcap_k (U_ k `&` `]a, b[).
 have Z1ab : Z1 `<=` `]a, b[.
   by rewrite /Z1 bigcapIl.
@@ -2832,8 +2828,8 @@ have K1ab : K1 `<=` `[a, b].
     exact: image_subset.
   rewrite imab.
   apply: subset_itv.
-    by case: b0 imab.
-  by case: b1 imab.
+    by case: b0 imab; rewrite bnd_simp.
+  by case: b1 imab; rewrite bnd_simp.
 have cK1 : compact K1.
   apply: continuous_compact=> //.
 
