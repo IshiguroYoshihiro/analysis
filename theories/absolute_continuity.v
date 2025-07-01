@@ -25,11 +25,12 @@ Import numFieldTopology.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+Section lemmas.
+
 (* PR? *)
 Lemma ball_is_interval (R : realType) (x e : R) :
   0 < e -> is_interval (ball x e).
 Proof. by move=> e0; rewrite ball_itv; exact: interval_is_interval. Qed.
-
 
 (* TODO: PR near nat_topology.nbhs_infty_ger *)
 Lemma nbhs_infty_gtr {R : realType} (r : R) :
@@ -37,7 +38,7 @@ Lemma nbhs_infty_gtr {R : realType} (r : R) :
 Proof.
 exists (`|(ceil r)|.+1)%N => // n /=; rewrite -(ler_nat R); apply: lt_le_trans.
 rewrite -natr1 -[ltLHS]addr0 ler_ltD//.
-by rewrite (le_trans (ceil_ge _))// natr_absz ler_int ler_norm.
+by rewrite (le_trans (le_ceil _))// natr_absz ler_int ler_norm.
 Qed.
 
 (* TODO:PR in topology_structure? *)
@@ -100,7 +101,7 @@ have Hcap : \bigcap_n F n = \bigcap_n (\bigcap_(i < n.+1) F i).
   by apply: (Fx n) => /=.
 rewrite Hcap.
 apply: nonincreasing_cvg_mu.
-      by rewrite bigcap_mkord zmodp.big_ord1.
+      by rewrite bigcap_mkord big_ord1.
     move=> n.
     by apply: fin_bigcap_measurable.
   by rewrite -Hcap.
@@ -172,6 +173,8 @@ Lemma near_at_left_in_itv {R : realFieldType} [a b : R] :
   {in `]a, b], forall y, \forall x \near y^'-, x \in `]a, b[}.
 Proof.
 Abort.
+
+End lemmas.
 
 Section move_to_realfun.
 Context {R : realType}.
@@ -1033,7 +1036,7 @@ rewrite lerBlDr {}/M.
 move: b ab pb lef ubf => [[|] b|[//|]] ab pb lef ubf; set M := sup _ => Mefp.
 - near=> r; rewrite ler_distl; apply/andP; split.
   + suff: f r <= M by apply: le_trans; rewrite lerBlDr lerDl.
-    apply: sup_ub => //=; exists r => //; rewrite in_itv/=.
+    apply: sup_ubound => //=; exists r => //; rewrite in_itv/=.
     apply/andP; split; near: r; [|exact: nbhs_right_lt].
     exact: nbhs_right_ge.
   + rewrite (le_trans Mefp)// lerD2r lef//=; last 2 first.
@@ -1043,7 +1046,7 @@ move: b ab pb lef ubf => [[|] b|[//|]] ab pb lef ubf; set M := sup _ => Mefp.
     by apply/andP; split; near: r; [exact: nbhs_right_ge|exact: nbhs_right_lt].
 - near=> r; rewrite ler_distl; apply/andP; split.
   + suff: f r <= M by apply: le_trans; rewrite lerBlDr lerDl.
-    apply: sup_ub => //=; exists r => //; rewrite in_itv/=.
+    apply: sup_ubound => //=; exists r => //; rewrite in_itv/=.
     apply/andP; split; near: r; [exact: nbhs_right_ge|].
     by apply: nbhs_right_le.
   + rewrite (le_trans Mefp)// lerD2r lef//=; last 2 first.
@@ -1053,7 +1056,7 @@ move: b ab pb lef ubf => [[|] b|[//|]] ab pb lef ubf; set M := sup _ => Mefp.
     by apply/andP; split; near: r; [exact: nbhs_right_ge|exact: nbhs_right_le].
 - near=> r; rewrite ler_distl; apply/andP; split.
   suff: f r <= M by apply: le_trans; rewrite lerBlDr lerDl.
-  apply: sup_ub => //=; exists r => //; rewrite in_itv/= andbT.
+  apply: sup_ubound => //=; exists r => //; rewrite in_itv/= andbT.
     by near: r; apply: nbhs_right_ge.
   rewrite (le_trans Mefp)// lerD2r lef//.
   - by rewrite in_itv/= andbT; near: r; exact: nbhs_right_ge.
@@ -1161,15 +1164,15 @@ have <- : inf [set g x | x in [set` Interval (BLeft a) b]] = fine l.
     - exists (fine l) => /= _ [m _ <-]; rewrite /g /=.
       case: ifPn => [/andP[am mx]|].
         rewrite fine_le// ?f_fin_num//; first by rewrite axA// am (ltW mx).
-        apply: ereal_inf_lb; exists m => //=.
+        apply: ereal_inf_lbound; exists m => //=.
         (*rewrite in_itv/= -[X in _ && X]/(BLeft m < b)%O am/=.
         by rewrite (le_lt_trans _ xb) ?ltW.*) admit.
       rewrite negb_and -!leNgt => /orP[ma|xm].
         rewrite fine_le// ?f_fin_num ?inE//.
-        apply: ereal_inf_lb; exists x => //=.
+        apply: ereal_inf_lbound; exists x => //=.
 (*        by rewrite in_itv/= -[X in _ && X]/(BLeft x < b)%O ax xb.*) admit.
       rewrite fine_le// ?f_fin_num ?inE//.
-      apply: ereal_inf_lb; exists x => //=.
+      apply: ereal_inf_lbound; exists x => //=.
 (*      by rewrite in_itv/= -[X in _ && X]/(BLeft x < b)%O ax xb.*) admit.
     - rewrite {}/l in lnoo lpoo l_fin_num *.
       rewrite {}/S in Snoo lnoo lpoo l_fin_num *.
@@ -1198,12 +1201,12 @@ have <- : inf [set g x | x in [set` Interval (BLeft a) b]] = fine l.
   apply: lb_ereal_inf => /= y [m] /=.
   rewrite in_itv/= -[X in _ && X]/(BLeft m < b)%O => /andP[am mb] <-{y}.
   have [mx|xm] := ltP m x.
-    apply: ereal_inf_lb => /=; exists (fine (f m)); last first.
+    apply: ereal_inf_lbound => /=; exists (fine (f m)); last first.
 (*      by rewrite fineK// f_fin_num// axA// am (ltW mx).*) admit.
 (*    by exists m; [rewrite in_itv/= am|rewrite /g am mx].*) admit.
   rewrite (@le_trans _ _ (f x))//; last first.
 (*    by apply: ndf => //; rewrite in_itv//= ?ax ?am.*) admit.
-  apply: ereal_inf_lb => /=; exists (fine (f x)); last first.
+  apply: ereal_inf_lbound => /=; exists (fine (f x)); last first.
     by rewrite fineK// f_fin_num ?inE.
 (*  by exists x; [rewrite in_itv/= ax|rewrite /g ltxx andbF].*) admit.
 suff: g x @[x --> a^'+] --> inf [set g x | x in [set` Interval (BLeft a) b]].
@@ -1237,7 +1240,7 @@ suff: g x @[x --> a^'+] --> inf [set g x | x in [set` Interval (BLeft a) b]].
   rewrite negb_and -!leNgt => /orP[|xm]; first by rewrite leNgt am.
   by rewrite (lt_le_trans am mn)/= ltNge (le_trans xm mn).
 - exists (fine l) => /= _ [m _ <-]; rewrite /g /=.
-  rewrite -lee_fin (fineK l_fin_num); apply: ereal_inf_lb.
+  rewrite -lee_fin (fineK l_fin_num); apply: ereal_inf_lbound.
   case: ifPn => [/andP[am mn0]|].
     rewrite fineK//; last by rewrite f_fin_num// axA// am (ltW mn0).
     exists m => //=.
@@ -1339,7 +1342,7 @@ End wip.
 
 (* TODO: move to lebesgue_measure.v *)
 Lemma lebesgue_measureT {R : realType} : (@lebesgue_measure R) setT = +oo%E.
-Proof. by rewrite -set_itv_infty_infty lebesgue_measure_itv. Qed.
+Proof. by rewrite -set_itvNyy lebesgue_measure_itv. Qed.
 
 Lemma completed_lebesgue_measureE {R : realType} :
   (@completed_lebesgue_measure R) = (@lebesgue_measure R).
@@ -1357,7 +1360,7 @@ Qed.
 Lemma completed_lebesgue_measureT {R : realType} :
   (@completed_lebesgue_measure R) setT = +oo%E.
 Proof.
-by rewrite -set_itv_infty_infty completed_lebesgue_measure_itv.
+by rewrite -set_itvNyy completed_lebesgue_measure_itv.
 Qed.
 
 Lemma wlength_idfun_le {R : realType} : forall A, R.-ocitv.-measurable A ->
