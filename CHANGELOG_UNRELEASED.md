@@ -102,6 +102,12 @@
 - in `lebesgue_integral_nonneg.v`:
   + lemma `ge0_integral_ereal_sup` (was a `Let`)
 
+- in `ftc.v`:
+  + lemmas `integration_by_partsy_ge0_ge0`,
+           `integration_by_partsy_le0_ge0`,
+           `integration_by_partsy_le0_le0`,
+           `integration_by_partsy_ge0_le0`
+
 ### Changed
 
 - in `convex.v`:
