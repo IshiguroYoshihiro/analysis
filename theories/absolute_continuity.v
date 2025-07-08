@@ -2683,6 +2683,24 @@ apply: (@squeeze_cvge _ _ _ _ (cst (mu Z)) _ (fun n => (mu Z + (delta0 n)%:E)%E)
     exact: cvg_half.
 Qed.
 
+Definition Gdelta_type_set (T : set R) (X : set R) :=
+  (exists U_ : nat -> set R,
+      [/\ (forall n, U_ n `<=` T),
+        (forall n, open (U_ n)) &
+        X = \bigcap_n (T `&` U_ n)]).
+
+Lemma image_measure0_Lusin (f : R -> R) :
+  {within `[a, b], continuous f} ->
+  {in `[a, b] &, {homo f : x y / x <= y}} ->
+  (forall Z : set R, Z `<=` `[a, b]%classic ->
+      Gdelta_type_set `[a, b] Z ->
+      compact Z ->
+      mu Z = 0 ->
+      mu (f @` Z) = 0) ->
+  lusinN `[a, b] f.
+Proof.
+
+
   (* Lemma open_subset_itvoocc S : open S -> S `<=` `[a, b] -> S `<=` `]a, b[. *)
   (*   move=> oS Sab. *)
   (*   apply: (@subset_trans _ [set` Rhull S]). *)
@@ -2719,10 +2737,10 @@ Proof.
 move=> cf ndf HZ; apply: contrapT.
 move=> /existsNP[Z]/not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
 move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
-have Zoo : (lebesgue_measure Z < +oo)%E.
-  apply: (@le_lt_trans _ _ (b - a)%:E).
-    admit.
-  exact: ltry.
+have Zoo : (mu Z < +oo)%E.
+  apply: (@le_lt_trans _ _ (mu `[a, b])); first exact: le_outer_measure.
+  rewrite completed_lebesgue_measureE.
+  by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
 have [U_ [ZU oU mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
 have ndfo : {in `]a, b[ &, {homo f : x y / x <= y}}.
   move: ndf; apply: itv_sub_in2.
@@ -2737,6 +2755,11 @@ have surjF : set_surj `[a, b] `[f a, f b] F.
     exact: ltW.
   by apply: ndf; rewrite ?in_itv/= ?lexx ?ltW.
 
+have Uabab n : (fun n => (U_ n) `&` `[a, b]) n `<=` `[a, b] by exact: subIsetr.
+have oUab n : @open (subspace `[a, b]%classic) (`[a, b] `&` U_ n).
+  rewrite open_setSI.
+  
+(* *)
 have Uabab n : (fun n => (U_ n) `&` `]a, b[) n `<=` `]a, b[ by exact: subIsetr.
 have oUab n : open (U_ n `&` `]a, b[) by exact: openI.
 pose Z1 := \bigcap_k (U_ k `&` `]a, b[).
@@ -2816,27 +2839,73 @@ have e0 : 0 < e.
   by case: ifP=> //; rewrite -EFinB ltry.
 (* how to get K1 such that
    e < lebesgue_measure K < lebesgue_measure Z1 ? *)
-have : exists K, [/\ compact K, K `<=` (f @` Z1) & (0 < lebesgue_measure K)%E].
+have : exists K, [/\ compact K, K `<=` (f @` Z1) & (0 < mu K)%E].
   admit.
 move=> [K [cK KfZ1 mK0]].
 pose K1 := ('pinv_(fun=> 0) `[a, b] F) @` K.
+have cK1 : compact K1.
+  apply: continuous_compact=> //.
+  apply: (@continuous_subspaceW _ _ _ `[F a, F b]%classic).
+    admit.
+  admit.
 have K1E : K1 = (f @^-1` K) `&` `[a, b].
   rewrite eqEsubset; split.
 
-have K1ab : K1 `<=` `[a, b].
-  apply: surjpinv_image_sub.
-  apply: subr_surj surjF.
-  apply: (subset_trans KfZ1).
-  apply: (@subset_trans _ (f @` `]a, b[)).
-    exact: image_subset.
-  rewrite imab.
-  apply: subset_itv.
-    by case: b0 imab; rewrite bnd_simp.
-  by case: b1 imab; rewrite bnd_simp.
-have cK1 : compact K1.
-  apply: continuous_compact=> //.
-  apply: (continuous_subspaceW cF).
-  apply/continuous_within_itvP.
+    have K1ab : K1 `<=` `[a, b].
+      apply: surjpinv_image_sub.
+      apply: subr_surj surjF.
+      apply: (subset_trans KfZ1).
+      apply: (@subset_trans _ (f @` `]a, b[)).
+        exact: image_subset.
+      rewrite imab.
+      apply: subset_itv.
+        by case: b0 imab; rewrite bnd_simp.
+      by case: b1 imab; rewrite bnd_simp.
+    admit.
+  admit.
+have ZZ1ab : Z `<=` Z1 `|` [set a; b].
+  admit.
+have muZ10 : mu Z1 = 0.
+  rewrite -muZ0.
+  admit.
+have := HZ K1.
+apply/not_implyP; split.
+  rewrite K1E.
+  exact: subIsetr.
+apply/not_implyP; split => //.
+apply/not_implyP; split => //.
+  apply/eqP; rewrite eq_le; apply/andP; split => //.
+  rewrite -muZ10 le_outer_measure//.
+  rewrite K1E.
+  apply: (subset_trans (@subIsetl _ _ `[a, b])).
+  rewrite (_ : Z1 = (f @^-1` (f @` Z1))); last first.
+    admit.
+  apply: preimage_subset.
+  exact: (subset_trans KfZ1).
+apply/eqP.
+rewrite gt_eqF//.
+apply: (lt_le_trans mK0).
+apply: le_outer_measure.
+have injf : {in `[a, b], injective f}.
+  admit.
+rewrite (_ : [set f x | x in K1] = [set f x | x in f @^-1` K] `&` f @` `[a, b]); last first.
+  rewrite eqEsubset; split.
+    by rewrite K1E; exact: sub_image_setI.
+  move=> _ [[k Kk <-] [x /= xab /(injf _ xab) xk]].
+  exists k => //.
+  rewrite /K1/=.
+  exists (f k) => //.
+  apply: pinvKV.
+    by move=> ? ?/=; rewrite inE/= => ? ?; exact: injf.
+  by rewrite -xk inE/=.
+move=> x Kx.
+have [z z1x fzx] := (KfZ1 x Kx).
+split => /=.
+  exists z => //.
+  by rewrite fzx.
+exists z => //.
+have := Z1ab z z1x.
+exact: subset_itv_oo_cc.
 Admitted.
 
 End lemma3.
