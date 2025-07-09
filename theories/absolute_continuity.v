@@ -2683,23 +2683,76 @@ apply: (@squeeze_cvge _ _ _ _ (cst (mu Z)) _ (fun n => (mu Z + (delta0 n)%:E)%E)
     exact: cvg_half.
 Qed.
 
-Definition Gdelta_type_set (T : set R) (X : set R) :=
-  (exists U_ : nat -> set R,
-      [/\ (forall n, U_ n `<=` T),
-        (forall n, open (U_ n)) &
-        X = \bigcap_n (T `&` U_ n)]).
+Lemma continuous_increasing_set_bij (f : R -> R) :
+  {within `[a, b], continuous f} ->
+  {in `[a, b] &, {homo f : x y / x < y}} ->
+  set_bij `[a, b] `[f a, f b] f.
+Proof.
+move=> cf incf.
+split.
+- move=> x/=; rewrite 2!in_itv/= => /andP[ax xb]; apply/andP; split.
+  + move: ax; rewrite le_eqVlt => /predU1P[-> //|ax].
+    apply/ltW/incf; rewrite ?in_itv//=.
+    * by rewrite lexx (ltW ab).
+    * by rewrite xb andbT ltW.
+  + move: xb; rewrite le_eqVlt => /predU1P[-> //|xb].
+    apply/ltW/incf; rewrite ?in_itv//=.
+    * by rewrite ax/= ltW.
+    * by rewrite lexx (ltW ab).
+- move=> x y; rewrite 2!inE/= 2!in_itv/= => /andP[ax xb]/andP[ay yb].
+  move/eqP; rewrite eq_le => /andP[fxy fyx].
+  apply/notP => /eqP.
+  rewrite neq_lt => /orP[xy|yx].
+  + move: fyx => /notP; apply.
+    apply/negP; rewrite lt_geF//.
+    apply: incf; rewrite ?in_itv//=.
+    * by rewrite ax xb.
+    * by rewrite ay yb.
+  + move: fxy => /notP; apply.
+    apply/negP; rewrite lt_geF//.
+    apply: incf; rewrite ?in_itv//=.
+    * by rewrite ay yb.
+    * by rewrite ax xb.
+- apply: segment_continuous_le_surjective => //.
+  + exact: ltW.
+  + by apply/ltW/incf; rewrite //?boundl_in_itv ?boundr_in_itv bnd_simp/= ltW.
+Qed.
+
+Lemma continuous_increasing_image_itv (f : R -> R) :
+  {within `[a, b], continuous f} ->
+  {in `[a, b] &, {homo f : x y / x < y}} ->
+  f @` `[a, b] = `[f a, f b]%classic.
+Proof.
+move=> cf incf.
+rewrite eqEsubset; split.
+  apply: set_bij_sub.
+  exact: continuous_increasing_set_bij.
+rewrite -surjE.
+apply: set_bij_surj.
+exact: continuous_increasing_set_bij.
+Qed.
 
 Lemma image_measure0_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
-  {in `[a, b] &, {homo f : x y / x <= y}} ->
+  {in `[a, b] &, {homo f : x y / x < y}} ->
   (forall Z : set R, Z `<=` `[a, b]%classic ->
-      Gdelta_type_set `[a, b] Z ->
       compact Z ->
       mu Z = 0 ->
       mu (f @` Z) = 0) ->
   lusinN `[a, b] f.
 Proof.
+move=> cf incf lusinN'.
+apply: contrapT.
+move=> /existsNP[Z]/not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
+move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
+have Zoo : (mu Z < +oo)%E.
+  apply: (@le_lt_trans _ _ (mu `[a, b])); first exact: le_outer_measure.
+  rewrite completed_lebesgue_measureE.
+  by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
+have [U_ [ZU oU mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
 
+
+Qed.
 
   (* Lemma open_subset_itvoocc S : open S -> S `<=` `[a, b] -> S `<=` `]a, b[. *)
   (*   move=> oS Sab. *)
