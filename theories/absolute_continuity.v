@@ -2732,6 +2732,18 @@ apply: set_bij_surj.
 exact: continuous_increasing_set_bij.
 Qed.
 
+Lemma GdeltaIr (U S : set R) :
+  open U ->
+  Gdelta S ->
+  Gdelta (U `&` S).
+Proof.
+move=> oU [V_ oV {S}->].
+exists (fun n => if n == 0 then U else (V_ n.-1)).
+- by case.
+- rewrite [RHS](bigcap_splitn 1)/=; congr setI.
+  by rewrite big_ord1/=.
+Qed.
+
 Lemma image_measure0_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b] &, {homo f : x y / x < y}} ->
@@ -2750,6 +2762,20 @@ have Zoo : (mu Z < +oo)%E.
   rewrite completed_lebesgue_measureE.
   by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
 have [U_ [ZU oU mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
+set Z1 := `]a, b[ `&` \bigcap_n U_ n.
+have gZ1 : Gdelta Z1.
+  apply: GdeltaIr => //.
+  by exists U_.
+have cZ1 : precompact Z1.
+  rewrite precompactE.
+  apply: (@subclosed_compact _ _ `[a, b]).
+  - exact: closed_closure.
+  - exact: segment_compact.
+  rewrite /Z1.
+  apply: (@subset_trans _ ((closure `[a, b]) `&` (closure (\bigcap_n U_ n)))).
+    rewrite closure_neitv -?closure_neitv_oo//; exact: closureI.
+  rewrite -((closure_id _).1 _)//.
+  exact: interval_closed.
 
 
 Qed.
@@ -2778,7 +2804,7 @@ Qed.
   (*   by apply: sub_Rhullr. *)
 
 (* lemma3 (converse) *)
-Lemma image_measure0_Lusin (f : R -> R) :
+Lemma image_measure0_Lusin_nondecreasing (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b] &, {homo f : x y / x <= y}} ->
   (forall Z : set R, Z `<=` `[a, b]%classic ->
