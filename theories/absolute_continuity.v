@@ -2099,6 +2099,9 @@ Context {R : realType}.
 Variable a b : R.
 Variable f : R -> R.
 
+Let homof : {homo f : x / `[a, b]%classic x >-> [set: R] x}.
+Proof. by []. Qed.
+
 Local Notation preimages_gt1 := (preimages_gt1 `[a, b] [set: R]).
 
 Let infpre y := inf (`[a, b] `&` f @^-1` [set y]).
@@ -2135,7 +2138,7 @@ Qed.
 (* Qed. *)
 
 Hypotheses ab : a < b.
-Variable ndF : {in `[a, b]%R &, nondecreasing_fun f}.
+Variable ndf : {in `[a, b]%R &, nondecreasing_fun f}.
 
 Let B_nonempty r : preimages_gt1 f r
    -> `[a, b] `&` f @^-1` [set r] !=set0.
@@ -2163,8 +2166,8 @@ rewrite !in_itv/= => -[/andP[ap pb] Fpy] [/andP[aq qb] Fqy].
 move=> r /andP[pr rq].
 rewrite in_itv/= (le_trans ap pr)/= (le_trans rq qb)/=; split => //.
 apply/eqP; rewrite eq_le; apply/andP; split.
-  by rewrite -Fqy ndF// in_itv/= ?aq//= (le_trans ap pr) (le_trans rq qb).
-by rewrite -Fpy ndF// in_itv/= ?ap//= (le_trans ap pr) (le_trans rq qb).
+  by rewrite -Fqy ndf// in_itv/= ?aq//= (le_trans ap pr) (le_trans rq qb).
+by rewrite -Fpy ndf// in_itv/= ?ap//= (le_trans ap pr) (le_trans rq qb).
 Qed.
 
 Let X n :=
@@ -2262,14 +2265,14 @@ rewrite preimages_gt1_bigcup.
 by apply: bigcup_countable => // n _; exact: finite_set_countable.
 Qed.
 
-End lemma2i.
-
-(* see lebesgue_measure_rat in lebesgue_measure.v *)
-Lemma is_borel_preimages_gt1_nondecreasing_fun : measurable (preimages_gt1 F). (*TODO: right measurable inferred? *)
+Lemma is_borel_preimages_gt1_nondecreasing_fun : measurable (preimages_gt1 f).
+ (*TODO: right measurable inferred? *)
 Proof.
 apply: countable_measurable => //.
 by apply: is_countable_preimages_gt1_nondecreasing_fun.
 Qed.
+
+End lemma2i.
 
 (* (* unprovable *) *)
 (* have bigcapFG : \bigcap_n (F @` (G_ n)) = \bigcap_n (F @` (G' n)). *)
@@ -2318,61 +2321,47 @@ Qed.
 (* apply: nFGy. *)
 (* apply: (eq1 y) => /=; by split. *)
 
-End lemma2.
-
 Section image_interval_continuous.
-Context {R : realType}.
-Variable a b : R.
-Variable F : R -> R.
-Hypotheses ab : a < b.
-Variable ndF : {in `[a, b]&, nondecreasing_fun F}.
-Hypothesis cF : {within `[a, b] , continuous F}.
+Variables (x y : R).
+Hypothesis (xy : x < y).
+Hypothesis (xyab : `]x, y[ `<=` `]a, b[).
+Hypothesis cfxy : {within `[x, y], continuous f}.
 
-Lemma image_interval : exists s : nat -> set R,
+Lemma image_itv_bigcup : exists s : nat -> set R,
   (forall i, is_interval (s i)) /\
-  F @` `]a, b[ = \bigcup_i (s i).
+  f @` `]x, y[ = \bigcup_i (s i).
 Proof.
-have ndFoo: {in `]a, b[ &, {homo F : n m / n <= m}}.
-  move: ndF.
+have ndf_itvoo: {in `]x, y[ &, {homo f : n m / n <= m}}.
+  move: ndf.
   apply: itv_sub_in2.
+  apply: (subset_trans xyab).
   exact: subset_itv_oo_cc.
-have [b0 [b1 FabE]] := continuous_nondecreasing_image_itvoo_itv ab cF ndFoo.
-exists (bigcup2 [set` Interval (BSide b0 (F a)) (BSide b1 (F b))] set0).
+have [b0 [b1 FxyE]] :=
+        continuous_nondecreasing_image_itvoo_itv xy cfxy ndf_itvoo.
+exists (bigcup2 [set` Interval (BSide b0 (f x)) (BSide b1 (f y))] set0).
 split.
   case => /=.
     exact: interval_is_interval.
   case => //.
   by move=> ?.
-by rewrite FabE bigcup2E setU0.
+by rewrite FxyE bigcup2E setU0.
 Qed.
 
 End image_interval_continuous.
 
 Section lemma2iicontinuous.
-Context {R : realType}.
-Variable a b : R.
-Variable F : {fun `[a, b]%classic >-> [set: R]}.
-Hypotheses ab : a < b.
-Variable ndF : {in `[a, b]&, nondecreasing_fun F}.
-Hypothesis cF : {within `[a, b] , continuous F}.
 
 Lemma measurable_image_ooitv_nondecreasing_fun (x y : R) :
   x < y -> `]x, y[ `<=` `]a, b[ ->
-  measurable (F @` `]x, y[).
+  {within `[x, y] , continuous f} ->
+  measurable (f @` `]x, y[).
 Proof.
-move=> xy xyab.
-have := (@image_interval _ x y F xy).
-have ndFxy : {in `[x, y]&, {homo F : n m / n <= m}}.
+move=> xy xyab cf.
+have := (@image_itv_bigcup x y xy xyab cf).
+have ndfxy : {in `[x, y]&, {homo f : n m / n <= m}}.
   apply: (@itv_sub_in2 _ _ _ `[a, b]) => //.
   apply: subset_neitv_oocc => //.
   exact: subset_trans (@subset_itv_oo_cc _ _ a b).
-move/(_ ndFxy).
-have cFxy : {within `[x, y], continuous F}.
-  move: cF.
-  apply: continuous_subspaceW.
-  apply: subset_neitv_oocc => //.
-  exact: subset_trans (@subset_itv_oo_cc _ _ a b).
-move/(_ cFxy).
 move=> [I_ [itvI_ ->]].
 apply: bigcup_measurable => n _.
 have := @RhullK R (I_ n).
@@ -2382,10 +2371,11 @@ exact: measurable_itv.
 Qed.
 
 Lemma measurable_image_open_nondecreasing_fun Z :
+  {within `[a, b], continuous f} -> (* too strong? *)
   Z `<=` `]a, b[%classic -> open Z ->
-  measurable (F @` Z).
+  measurable (f @` Z).
 Proof.
-move=> Zab oZ.
+move=> cf Zab oZ.
 rewrite (open_bigcup_rat oZ).
 rewrite image_bigcup.
 have := (card_esym card_rat).
@@ -2461,22 +2451,16 @@ have : exists l r, [/\ a <= l, l <= r, r <= b & bigcup_ointsub Z (index n) = `]l
 move=> [l [r [al + rb]]] ->.
 rewrite le_eqVlt => /orP[/eqP ->|lr].
   by rewrite set_itvoo0 image_set0.
-have := @image_interval _ l r F lr.
-have ndflr : {in `[l, r] &, {homo F : n0 m / n0 <= m}}.
-  apply: (@itv_sub_in2 _ _ _ `[a, b]).
-    move=> x/=; rewrite !in_itv/= => /andP[lx xr]; apply/andP; split.
-      exact: le_trans lx.
-    exact: le_trans rb.
-  move=> x y xab yab.
-  by apply: ndF; rewrite inE/=.
-move/(_ ndflr).
-have cFlr : {within `[l, r], continuous F}.
-  move: cF.
-  apply: continuous_subspaceW.
-  apply: subset_neitv_oocc => //.
-  apply: subset_trans (@subset_itv_oo_cc _ _ a b).
-  exact: subset_itvW.
-move/(_ cFlr).
+have lrab : `]l, r[ `<=` `]a, b[.
+  move=> x/=; rewrite 2!in_itv/= => /andP[lx xr]; apply/andP; split.
+  - exact: le_lt_trans lx.
+  - exact: lt_le_trans rb.
+have cflr : {within `[l, r], continuous f}.
+  apply: continuous_subspaceW cf.
+  move=> x/=; rewrite 2!in_itv/= => /andP[lx xr]; apply/andP; split.
+  - exact: le_trans lx.
+  - exact: le_trans rb.
+have := @image_itv_bigcup l r lr lrab cflr.
 move=> [lrs_ [lrs_itv ->]].
 apply: bigcupT_measurable => m.
 rewrite -(RhullK (mem_set (lrs_itv m))).
@@ -2485,18 +2469,19 @@ Unshelve. all: end_near. Qed.
 
 (* lemma2 (ii) *)
 Lemma measurable_image_delta_set_nondecreasing_fun Z :
+  {within `[a, b], continuous f} ->
   Z `<=` `]a, b[%classic -> Gdelta Z ->
-  measurable (F @` Z). (* not mu.-cara.-measurable (f @` Z) *)
+  measurable (f @` Z). (* not mu.-cara.-measurable (f @` Z) *)
 Proof.
 (* TODO: lemma *)
-have ndF' : {in `[a, b]%classic &, {homo F : n m / n <= m}}.
+have ndf' : {in `[a, b]%classic &, {homo f : n m / n <= m}}.
   move=> x y.
   rewrite !inE/= => xab yab.
-  exact: ndF.
+  exact: ndf.
 have [|] := pselect (Z !=set0); last first.
   move/set0P/negP/negPn/eqP => -> _ _.
   by rewrite image_set0.
-move=> Z0 + [/= G' oG'].
+move=> Z0 cf + [/= G' oG'].
 move/[swap]; move:Z0; move/[swap] => /[dup]ZG' -> G'0 G'ab.
 set G_ := fun i => `]a, b[%classic `&` (G' i).
 have {oG'}oG i : open (G_ i) by exact: openI.
@@ -2520,11 +2505,11 @@ have Gab_cc i : G_ i `<=` `[a, b].
   apply: (@subset_trans _ `]a, b[%classic).
     exact: subIsetl.
   exact: subset_itv_oo_cc.
-have mFG k : 'measurable [set F x | x in G_ k].
+have mFG k : 'measurable [set f x | x in G_ k].
   apply: measurable_image_open_nondecreasing_fun => //.
   exact: subIsetl.
-have mIFG : 'measurable (\bigcap_i [set F x | x in G_ i]) by apply: bigcap_measurable.
-have [eq1 eq2] := (@lemma1 _ _ _ F nat G_ Gab_cc).
+have mIFG : 'measurable (\bigcap_i [set f x | x in G_ i]) by apply: bigcap_measurable.
+have [eq1 eq2] := (@lemma1 _ _ _ f nat G_ homof Gab_cc).
 apply: measure_squeeze_measurable eq1 eq2.
 - apply: measurableD.
     exact: bigcap_measurable.
@@ -2532,7 +2517,7 @@ apply: measure_squeeze_measurable eq1 eq2.
   exact: is_countable_preimages_gt1_nondecreasing_fun.
 - exact: mIFG.
 - rewrite setDD.
-  apply: (@sub_countable _ _ _ (preimages_gt1 F)); last first.
+  apply: (@sub_countable _ _ _ (preimages_gt1 f)); last first.
     exact: is_countable_preimages_gt1_nondecreasing_fun.
   apply: subset_card_le.
   exact: subIsetr.
@@ -2542,54 +2527,51 @@ Notation mu := (@lebesgue_measure R).
 
 Lemma measure_image_nondecreasing_fun (G : (set R)^nat) :
   (*  \bigcap_k (G k) `<=` `]a, b[ -> *)
+  {within `[a, b], continuous f} ->
   (forall k, G k `<=` `]a, b[) ->
   (forall k, open (G k)) ->
   let Z := \bigcap_k (G k) in
-  mu (F @` Z) = mu (\bigcap_k F @` G k).
+  mu (f @` Z) = mu (\bigcap_k f @` G k).
 Proof.
-have ndF' : {in `[a, b]%classic &, {homo F : n m / n <= m}}.
+have ndF' : {in `[a, b]%classic &, {homo f : n m / n <= m}}.
   move=> x y.
   rewrite !inE/=.
-  exact: ndF.
-move=> Gab oG.
+  exact: ndf.
+move=> cf Gab oG.
 have Gab' : forall k, G k `<=` `[a, b].
   move=> k.
   apply: (@subset_trans _ `]a, b[%classic) => //.
   exact: subset_itv_oo_cc.
-have [HSl HSr] := lemma1 F Gab'.
+have [HSl HSr] := lemma1 homof Gab'.
 move=> Z.
 apply/eqP; rewrite eq_le; apply/andP; split.
   apply: le_outer_measure.
   apply: (subset_trans HSr).
   apply: subset_bigcap => /= i _.
   exact: image_subset.
-rewrite [leLHS](_:_= mu (\bigcap_i [set F x | x in G i] `\` preimages_gt1 F)); last first.
+rewrite [leLHS](_:_= mu (\bigcap_i [set f x | x in G i] `\` preimages_gt1 f)); last first.
   rewrite measureD /=; last 3 first.
         apply: bigcap_measurable => // k _.
-        apply: measurable_image_open_nondecreasing_fun.
-          exact: Gab.
-        exact: oG.
+        exact: measurable_image_open_nondecreasing_fun.
       exact: is_borel_preimages_gt1_nondecreasing_fun => //.
-    apply: (@le_lt_trans _ _ (mu (F @` G 0%N))).
+    apply: (@le_lt_trans _ _ (mu (f @` G 0%N))).
       apply: le_outer_measure.
       exact: (@bigcap_inf _ _ _ setT).
-    apply: (@le_lt_trans _ _ (mu (F @` `]a, b[))).
+    apply: (@le_lt_trans _ _ (mu (f @` `]a, b[))).
       apply: le_outer_measure.
       apply: image_subset.
       exact: Gab.
     rewrite integral_continuous_nondecreasing_itv //; last first.
-      move: ndF.
+      move: ndf.
       apply: itv_sub_in2.
       exact: subset_itv_oo_cc.
     by rewrite -EFinB ltey.
   rewrite [X in (_ - X)%E](_:_ = 0) ?sube0//.
   apply/eqP; rewrite eq_le; apply/andP; split.
-    rewrite [leRHS](_:_ = mu (preimages_gt1 F)); last first.
+    rewrite [leRHS](_:_ = mu (preimages_gt1 f)); last first.
       apply: esym.
       rewrite countable_lebesgue_measure0//.
-      apply: is_countable_preimages_gt1_nondecreasing_fun.
-        exact: ab.
-      exact: ndF'.
+      exact: is_countable_preimages_gt1_nondecreasing_fun.
     apply: le_outer_measure.
     exact: subIsetr.
   exact: outer_measure_ge0.
@@ -2597,6 +2579,8 @@ exact: le_outer_measure.
 Qed.
 
 End lemma2iicontinuous.
+
+End lemma2.
 
 Section lemma3.
 Context (R : realType).
@@ -2816,9 +2800,7 @@ have cZ1 : precompact Z1.
     rewrite closure_neitv -?closure_neitv_oo//; exact: closureI.
   rewrite -((closure_id _).1 _)//.
   exact: interval_closed.
-
-
-Qed.
+Admitted.
 
   (* Lemma open_subset_itvoocc S : open S -> S `<=` `[a, b] -> S `<=` `]a, b[. *)
   (*   move=> oS Sab. *)
@@ -2874,10 +2856,6 @@ have surjF : set_surj `[a, b] `[f a, f b] F.
     exact: ltW.
   by apply: ndf; rewrite ?in_itv/= ?lexx ?ltW.
 
-have Uabab n : (fun n => (U_ n) `&` `[a, b]) n `<=` `[a, b] by exact: subIsetr.
-have oUab n : @open (subspace `[a, b]%classic) (`[a, b] `&` U_ n).
-  rewrite open_setSI.
-  
 (* *)
 have Uabab n : (fun n => (U_ n) `&` `]a, b[) n `<=` `]a, b[ by exact: subIsetr.
 have oUab n : open (U_ n `&` `]a, b[) by exact: openI.
@@ -3096,7 +3074,7 @@ have ndt : {in `[a, b] &, nondecreasing_fun H}.
 have cH : {within `[a, b], continuous H}.
   exact: total_variation_continuous.
 apply: contrapT => ababsurdo.
-have := image_measure0_Lusin ab cH ndt.
+have := image_measure0_Lusin_nondecreasing ab cH ndt.
 move/contra_not => /(_ ababsurdo).
 move/existsNP => [Z /not_implyP [Zab /not_implyP[cZ /not_implyP[muZ0]]]].
 move/eqP; rewrite neq_lt ltNge measure_ge0/= => muHZ_gt0.
@@ -3802,7 +3780,7 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     rewrite open_subsetE.
       by rewrite interior_itv.
     exact: interval_open.
-  have := @measure_image_nondecreasing_fun R a b F ab nndf cf G_ Gab Gopen.
+  have := @measure_image_nondecreasing_fun R a b F ab nndf G_ cf Gab Gopen.
   by rewrite /= -/A -completed_lebesgue_measureE mfA0.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
   apply: lime_ge; last exact: nearW.
