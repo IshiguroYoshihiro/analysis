@@ -1911,7 +1911,7 @@ End lusinN.
 Section lemma1.
 Context {R : realType}.
 
-Definition preimages_gt1 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
+Definition preimages_gt1 (X : set R) (Y : set R) (f : R -> R) : set R :=
   Y `&` [set y | (* (X `&` f @^-1` [set y] !=set0) /\ *)
          ~ is_subset1 (X `&` f @^-1` [set y])].
 
@@ -1922,20 +1922,21 @@ Definition preimages_gt1 (X : set R) (Y : set R) (f : {fun X >-> Y}) : set R :=
 (*       x1 \in (Y `&` [set y | (X `&` f @^-1` [set y])]) & *)
 (*       x0 != x1]). *)
 
-Lemma lemma1 (X : set R) (Y : set R) (f : {fun X >-> Y}) (I : pointedType)
+Lemma lemma1 (X : set R) (Y : set R) (f : R -> R) (I : pointedType)
     (X_ : I -> set R) :
+    {homo f : x / X x >-> Y x} ->
     (forall i, X_ i `<=` X) ->
-  (\bigcap_i (f @` X_ i)) `\` preimages_gt1 f `<=` f @` (\bigcap_i X_ i) /\
+  (\bigcap_i (f @` X_ i)) `\` preimages_gt1 X Y f `<=` f @` (\bigcap_i X_ i) /\
   f @` (\bigcap_i X_ i) `<=` \bigcap_i (f @` X_ i).
 Proof.
-move=> X_x; split; last first.
+move=> fXY X_x; split; last first.
   (* TODO: lemma? *)
   move=> _/= [x fX_x] <- i _; exists x => //.
   exact: fX_x.
 move=> y [bigcap_y fy01].
 have Yy : Y y.
   have [x X_pointx <-] := bigcap_y point Logic.I.
-  by apply/funS/X_x; exact: X_pointx.
+  by apply: fXY; apply: X_x; exact: X_pointx.
 have [x [Xx yfx x_unique]] :
     exists x, [/\ X x, y = f x & forall x', X x' -> y = f x' -> x' = x].
   move/not_andP : fy01=> [//|(*\not_andP[|]*)].
@@ -2096,12 +2097,15 @@ Admitted.
 Section lemma2.
 Context {R : realType}.
 Variable a b : R.
-Variable F : {fun `[a, b]%classic >-> [set: R]}.
+Variable f : R -> R.
 
-Let infpre y := inf (`[a, b] `&` F @^-1` [set y]).
-Let suppre y := sup (`[a, b] `&` F @^-1` [set y]).
+Local Notation preimages_gt1 := (preimages_gt1 `[a, b] [set: R]).
 
-Lemma preimages_gt1_inf_sup y : preimages_gt1 F y -> infpre y < suppre y.
+Let infpre y := inf (`[a, b] `&` f @^-1` [set y]).
+Let suppre y := sup (`[a, b] `&` f @^-1` [set y]).
+
+Lemma preimages_gt1_inf_sup y : preimages_gt1 f y
+   -> infpre y < suppre y.
 Proof.
 move=> [_ /= (* [_ +]*)].
 apply: has_bound_not_subset1_inf_sup.
@@ -2131,98 +2135,134 @@ Qed.
 (* Qed. *)
 
 Hypotheses ab : a < b.
-Variable ndF : {in `[a, b]%classic &, nondecreasing_fun F}.
+Variable ndF : {in `[a, b]%R &, nondecreasing_fun f}.
 
-Let B_nonempty r : preimages_gt1 F r -> `[a, b] `&` F @^-1` [set r] !=set0.
+Let B_nonempty r : preimages_gt1 f r
+   -> `[a, b] `&` f @^-1` [set r] !=set0.
 Proof. by move=> [_ /=/existsNP[x]/existsNP[_ /not_implyP[xr _]]]; exists x. Qed.
 
 (* Lemma 2 (i) *)
-Lemma is_countable_preimages_gt1_nondecreasing_fun : countable (preimages_gt1 F).
+Section lemma2i.
+Notation mu := lebesgue_measure.
+
+Let ubb r : ubound (`[a, b] `&` f @^-1` [set r]) b.
+Proof. by move=> s /= [+ _]; rewrite in_itv/= => /andP[]. Qed.
+Let lba r : lbound (`[a, b] `&` f @^-1` [set r]) a.
+Proof. by move=> s /= [+ _]; rewrite in_itv/= => /andP[]. Qed.
+
+Let infsuppref y : `]infpre y, suppre y[ `<=` f @^-1` [set y].
 Proof.
-have ubb r : ubound (`[a, b] `&` F @^-1` [set r]) b.
-  by move=> s /= [+ _]; rewrite in_itv/= => /andP[].
-have lba r : lbound (`[a, b] `&` F @^-1` [set r]) a.
-  by move=> s /= [+ _]; rewrite in_itv/= => /andP[].
-have infsuppreF y : `]infpre y, suppre y[ `<=` F @^-1` [set y].
-  apply: (@subset_trans _ (`[a, b] `&` F @^-1` [set y])); last exact: subIsetr.
-  rewrite -[X in _ `<=` X]RhullK.
-    rewrite /Rhull /= -/(infpre _) -/(suppre _) !ifT; last 2 first.
-      by apply: asboolT; exists b; exact: ubb.
-      by apply: asboolT; exists a; exact: lba.
-    by apply: subset_itvW; rewrite lexx.
-  rewrite inE => p q/=.
-  rewrite !in_itv/= => -[/andP[ap pb] Fpy] [/andP[aq qb] Fqy].
-  move=> r /andP[pr rq].
-  rewrite in_itv/= (le_trans ap pr)/= (le_trans rq qb)/=; split => //.
-  apply/eqP; rewrite eq_le; apply/andP; split.
-    by rewrite -Fqy ndF// inE/= in_itv/= ?aq//= (le_trans ap pr) (le_trans rq qb).
-  by rewrite -Fpy ndF// inE/= in_itv/= ?ap//= (le_trans ap pr) (le_trans rq qb).
-pose X n :=
-  preimages_gt1 F `&` [set y | suppre y - infpre y > (b - a) / n.+1%:R].
-have infsuppre n y : X n y -> infpre y < suppre y.
-  move=> [By] /=; rewrite ltrBrDr; apply: lt_trans.
-  by rewrite ltrDr divr_gt0// subr_gt0.
-have -> : preimages_gt1 F = \bigcup_n (X n).
-  apply/seteqP; split; last by move=> ? [? _ []].
-  move=> x Fx.
-  near \oo => n.
-  exists n => //; split => //=.
-  rewrite ltr_pdivrMr// -ltr_pdivrMl; last first.
-    by rewrite subr_gt0 preimages_gt1_inf_sup.
-  rewrite -addn1 natrD -ltrBlDr.
-  by near: n; exact: nbhs_infty_gtr.
-have Uab n : \bigcup_(y in X n) `]infpre y, suppre y[%classic `<=` `[a, b].
-  apply: bigcup_sub => r B_nr; apply: subset_itvW.
-    by apply: lb_le_inf; [apply: B_nonempty; case: B_nr|exact: lba].
-  by apply: sup_le_ub; [apply: B_nonempty; case: B_nr|exact: ubb].
-have finXn n : finite_set (X n).
-  apply: contrapT => /infiniteP/pcard_surjP[/= g surjg].
-  set h := 'pinv_(fun=> 0) (X n) g.
-  have Xnh m : X n (h m) by exact: (surjpinv_image_sub surjg).
-  have Bh m : preimages_gt1 F (h m) by have [] := Xnh m.
-  have ty : trivIset [set: nat] (fun n => `]infpre (h n), suppre (h n)[%classic).
-    apply: ltn_trivIset => m1 m2 m12.
-    have neqhm12 : h m1 != h m2.
-      apply/eqP => /(f_equal g).
-      rewrite !pinvK => //; [|by rewrite inE; exact: surjg..].
-      by apply/eqP; rewrite gt_eqF.
-    apply: (subsetI_eq0 (infsuppreF (h m2)) (infsuppreF (h m1))).
-    apply: (@preimage_setI_eq0 _ _ F [set h m2] [set h m1]).1.
-    apply: preimage0eq.
-    rewrite set1I ifF//.
-    by apply/negbTE => /=; rewrite notin_setE/=; apply/nesym/eqP.
-  have : (\sum_(n <oo) ((suppre (h n) - infpre (h n))%:E) <= (b - a)%:E)%E.
-    (* by Uab, ty *)
-    rewrite (@eq_eseriesr _ _
+apply: (@subset_trans _ (`[a, b] `&` f @^-1` [set y])); last exact: subIsetr.
+rewrite -[X in _ `<=` X]RhullK.
+  rewrite /Rhull /= -/(infpre _) -/(suppre _) !ifT; last 2 first.
+  - by apply: asboolT; exists b; exact: ubb.
+  - by apply: asboolT; exists a; exact: lba.
+  by apply: subset_itvW; rewrite lexx.
+rewrite inE => p q/=.
+rewrite !in_itv/= => -[/andP[ap pb] Fpy] [/andP[aq qb] Fqy].
+move=> r /andP[pr rq].
+rewrite in_itv/= (le_trans ap pr)/= (le_trans rq qb)/=; split => //.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  by rewrite -Fqy ndF// in_itv/= ?aq//= (le_trans ap pr) (le_trans rq qb).
+by rewrite -Fpy ndF// in_itv/= ?ap//= (le_trans ap pr) (le_trans rq qb).
+Qed.
+
+Let X n :=
+  preimages_gt1 f `&` [set y | suppre y - infpre y > (b - a) / n.+1%:R].
+
+Let infsuppre n y : X n y -> infpre y < suppre y.
+Proof.
+move=> [By] /=; rewrite ltrBrDr; apply: lt_trans.
+by rewrite ltrDr divr_gt0// subr_gt0.
+Qed.
+
+Let preimages_gt1_bigcup : preimages_gt1 f = \bigcup_n (X n).
+Proof.
+apply/seteqP; split; last by move=> ? [? _ []].
+move=> x Fx.
+near \oo => n.
+exists n => //; split => //=.
+rewrite ltr_pdivrMr// -ltr_pdivrMl; last first.
+  by rewrite subr_gt0 preimages_gt1_inf_sup.
+rewrite -addn1 natrD -ltrBlDr.
+by near: n; exact: nbhs_infty_gtr.
+Unshelve. end_near. Qed.
+
+Let Uab n : \bigcup_(y in X n) `]infpre y, suppre y[%classic `<=` `[a, b].
+Proof.
+apply: bigcup_sub => r B_nr; apply: subset_itvW.
+  by apply: lb_le_inf; [apply: B_nonempty; case: B_nr|exact: lba].
+by apply: sup_le_ub; [apply: B_nonempty; case: B_nr|exact: ubb].
+Qed.
+
+Let finXn n : finite_set (X n).
+Proof.
+apply: contrapT => /infiniteP/pcard_surjP[/= g surjg].
+set h := 'pinv_(fun=> 0) (X n) g.
+
+have Xnh m : X n (h m) by   exact: (surjpinv_image_sub surjg).
+have Bh m : preimages_gt1 f (h m) by have [] := Xnh m.
+
+have : (\sum_(n <oo) ((suppre (h n) - infpre (h n))%:E) <= mu `[a, b])%E.
+(* by Uab, ty *)
+  rewrite (@eq_eseriesr _ _
         (fun n => lebesgue_measure `]infpre (h n), suppre (h n)[)); last first.
-      move=> k _.
-      by rewrite lebesgue_measure_itv /= lte_fin (infsuppre _ _ (Xnh k)) EFinD.
-    rewrite [leLHS](_ : _ = lebesgue_measure
+    move=> k _.
+    by rewrite lebesgue_measure_itv /= lte_fin (@infsuppre _ _ (Xnh k)) EFinD.
+  rewrite [leLHS](_ : _ = lebesgue_measure
         (\bigcup_i `]infpre (h i), suppre (h i)[%classic)); last first.
-      apply: cvg_lim => //.
-      by apply: measure_semi_sigma_additive => //; exact: bigcup_measurable.
-    have -> : (b - a)%:E = lebesgue_measure `[a, b].
-      by rewrite lebesgue_measure_itv lte_fin ab.
-    rewrite le_measure//= ?inE//=; first exact: bigcup_measurable.
-    move=> /= r [m _ infpresupprer].
-    by apply: (Uab n); exists (h m).
-  suff : (\sum_(n <oo) ((suppre (h n) - infpre (h n))%:E) = +oo)%E by move=> ->.
-  (* by ty, def of B_ n *)
-  have Hsum : (\sum_(0 <= s <oo) ((b - a) / n.+1%:R)%:E = +oo)%E.
     apply: cvg_lim => //.
-    under eq_cvg do rewrite sumEFin.
-    apply/cvgeryP.
-    apply/cvgryPge => r.
-    near=> m.
-    rewrite sumr_const_nat subn0 -[X in _ <= X]mulr_natr -ler_pdivrMl; last first.
-      by rewrite divr_gt0// subr_gt0.
-    by near: m; exact: nbhs_infty_ger.
-  apply/eqP; rewrite eq_le; apply/andP; split; first exact: leey.
-  rewrite -Hsum lee_nneseries => // k _.
-    by rewrite lee_fin divr_ge0 // subr_ge0 ltW.
-  by have [_ /= /ltW] := Xnh k.
+    apply: measure_semi_sigma_additive; last exact: bigcup_measurable.
+    - by [].
+    - apply: ltn_trivIset => m1 m2 m12.
+      have neqhm12 : h m1 != h m2.
+        apply/eqP => /(f_equal g).
+        rewrite !pinvK => //; [|by rewrite inE; exact: surjg..].
+        by apply/eqP; rewrite gt_eqF.
+      apply: (subsetI_eq0 (@infsuppref (h m2)) (@infsuppref (h m1))).
+      apply: (@preimage_setI_eq0 _ _ f [set h m2] [set h m1]).1.
+      apply: preimage0eq.
+      rewrite set1I ifF//.
+      by apply/negbTE => /=; rewrite notin_setE/=; apply/nesym/eqP.
+  rewrite le_measure//= ?inE//=; first exact: bigcup_measurable.
+  move=> /= r [m _ infpresupprer].
+  by apply: (@Uab n); exists (h m).
+suff : (\sum_(n <oo) ((suppre (h n) - infpre (h n))%:E) = +oo)%E.
+  by rewrite lebesgue_measure_itv lte_fin ab/= => ->.
+have ty : trivIset [set: nat] (fun n => `]infpre (h n), suppre (h n)[%classic).
+  apply: ltn_trivIset => m1 m2 m12.
+  have neqhm12 : h m1 != h m2.
+    apply/eqP => /(f_equal g).
+    rewrite !pinvK => //; [|by rewrite inE; exact: surjg..].
+    by apply/eqP; rewrite gt_eqF.
+  apply: (subsetI_eq0 (@infsuppref (h m2)) (@infsuppref (h m1))).
+  apply: (@preimage_setI_eq0 _ _ f [set h m2] [set h m1]).1.
+  apply: preimage0eq.
+  rewrite set1I ifF//.
+  by apply/negbTE => /=; rewrite notin_setE/=; apply/nesym/eqP.
+(* by ty, def of B_ n *)
+have Hsum : (\sum_(0 <= s <oo) ((b - a) / n.+1%:R)%:E = +oo)%E.
+  apply: cvg_lim => //.
+  under eq_cvg do rewrite sumEFin.
+  apply/cvgeryP.
+  apply/cvgryPge => r.
+  near=> m.
+  rewrite sumr_const_nat subn0 -[X in _ <= X]mulr_natr -ler_pdivrMl; last first.
+    by rewrite divr_gt0// subr_gt0.
+  by near: m; exact: nbhs_infty_ger.
+apply/eqP; rewrite eq_le; apply/andP; split; first exact: leey.
+rewrite -Hsum lee_nneseries => // k _.
+  by rewrite lee_fin divr_ge0 // subr_ge0 ltW.
+by have [_ /= /ltW] := Xnh k.
+Unshelve. end_near. Qed.
+
+Lemma is_countable_preimages_gt1_nondecreasing_fun : countable (preimages_gt1 f).
+Proof.
+rewrite preimages_gt1_bigcup.
 by apply: bigcup_countable => // n _; exact: finite_set_countable.
-Unshelve. all: end_near. Qed.
+Qed.
+
+End lemma2i.
 
 (* see lebesgue_measure_rat in lebesgue_measure.v *)
 Lemma is_borel_preimages_gt1_nondecreasing_fun : measurable (preimages_gt1 F). (*TODO: right measurable inferred? *)
