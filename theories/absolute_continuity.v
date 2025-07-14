@@ -2787,9 +2787,13 @@ have Zoo : (mu Z < +oo)%E.
   by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
 have [U_ [ZU oU mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
 set Z1 := `]a, b[ `&` \bigcap_n U_ n.
+have Z1ab : Z1 `<=` `]a, b[.
+  exact: subIsetl.
 have gZ1 : Gdelta Z1.
   apply: GdeltaIr => //.
   by exists U_.
+have : measurable (f @` Z1).
+  apply: measurable_image_delta_set_nondecreasing_fun Z1ab gZ1 => //.
 have cZ1 : precompact Z1.
   rewrite precompactE.
   apply: (@subclosed_compact _ _ `[a, b]).
@@ -2800,6 +2804,8 @@ have cZ1 : precompact Z1.
     rewrite closure_neitv -?closure_neitv_oo//; exact: closureI.
   rewrite -((closure_id _).1 _)//.
   exact: interval_closed.
+have : Z `\ a `\ b `<=` Z1.
+
 Admitted.
 
   (* Lemma open_subset_itvoocc S : open S -> S `<=` `[a, b] -> S `<=` `]a, b[. *)
