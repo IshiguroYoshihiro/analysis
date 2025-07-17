@@ -2768,6 +2768,21 @@ exists (fun n => if n == 0 then U else (V_ n.-1)).
   by rewrite big_ord1/=.
 Qed.
 
+Let measurable_image_setI_set1 (f : R -> R) (A : set R) (x : R) :
+  measurable (f @` (A `&` [set x])).
+Proof.
+rewrite setI1; case: ifP; rewrite ?image_set0// image_set1 => _.
+exact:measurable_set1.
+Qed.
+
+Let measure0_image_setI_set1 (f : R -> R) (A : set R) (x : R) :
+  mu (f @` (A `&` [set x])) = 0.
+Proof.
+rewrite setI1; case: ifP; rewrite ?image_set0// image_set1 => _.
+exact: lebesgue_measure_set1.
+Qed.
+
+(* testing strict increasing version *)
 Lemma image_measure0_Lusin (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b] &, {homo f : x y / x < y}} ->
@@ -2821,6 +2836,8 @@ have ZZ1 : Z `\ a `\ b `<=` Z1.
    rewrite setDDl.
    exact: subDsetl.
 set e := fine (mu (f @` Z1)) / 2.
+have : measurable (f @` (Z `\ a `\ b)).
+  
 have e0 : 0 < e.
   rewrite /e mulr_gt0//.
   apply: fine_gt0; rewrite Z1oo andbT.
@@ -2830,10 +2847,14 @@ have e0 : 0 < e.
     exact: image_subset.
   rewrite -{1}(setUIDK Z [set a]) -{1}(setUIDK (Z `\ a) [set b]).
   rewrite 2!image_setU.
-  
-  rewrite 2?measureU/=; last 6 first.
-  apply: sub_caratheodory.
-have := lebesgue_regularity_inner mfZ1 Z1oo.
+  rewrite [X in mu (_ `|` X) = _]setUC setUC.
+  rewrite 2?measureU0//=.
+  - admit.
+  -  apply: sub_caratheodory; apply: measurable_image_setI_set1.
+  - apply: measurableU.
+      admit.
+    by apply: sub_caratheodory; apply: measurable_image_setI_set1.
+  - by apply: sub_caratheodory; apply: measurable_image_setI_set1.
 
 have cZ1 : precompact Z1.
   rewrite precompactE.
@@ -2845,7 +2866,6 @@ have cZ1 : precompact Z1.
     rewrite closure_neitv -?closure_neitv_oo//; exact: closureI.
   rewrite -((closure_id _).1 _)//.
   exact: interval_closed.
-
 
 Abort.
 
