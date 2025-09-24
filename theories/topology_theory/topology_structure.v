@@ -800,6 +800,24 @@ move=> finA cF; rewrite -bigsetU_fset_set//; apply: closed_bigsetU => i.
 by rewrite in_fset_set// inE; exact: cF.
 Qed.
 
+Lemma bigcap_open (T : topologicalType) (I : choiceType) (D : set I)
+  (f : I -> set T)  :
+  finite_set D ->
+  (forall i : I, D i -> open (f i)) ->
+  open (\bigcap_(i in D) f i).
+Proof.
+move=> finD dof; rewrite -closedC setC_bigcap; apply: closed_bigcup => // i Ai.
+by rewrite closedC; exact: dof.
+Qed.
+
+Lemma closed_bigcap (T : topologicalType) (I : Type) (A : set I)
+ (F : I -> set T) :
+  (forall i, A i -> closed (F i)) -> closed (\bigcap_(i in A) F i).
+Proof.
+move=> cF; rewrite -openC setC_bigcap; apply: bigcup_open => i Ai.
+by rewrite openC; exact: cF.
+Qed.
+
 Section closure_lemmas.
 Variable T : topologicalType.
 Implicit Types E A B U : set T.

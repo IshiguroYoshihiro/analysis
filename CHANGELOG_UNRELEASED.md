@@ -58,6 +58,9 @@
   + `measurable_function.v`
   + `measure.v`
 
+- in topology_theory/topology_structure.v
+  + lemmas `open_bigcap`, `closed_bigcup`
+
 ### Changed
 
 - in `lebesgue_stieltjes_measure.v` specialized from `numFieldType` to `realFieldType`:
