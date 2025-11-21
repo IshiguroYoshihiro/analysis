@@ -1832,13 +1832,41 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">End</span><span class="id"> seq_itv_partitionLR_lemmas</span>.<br/>
 <br/>
+<span class="vernacular">Section</span><span class="id"> monoid_nonnegR</span>.<br/>
+<span class="vernacular">Context</span><span class="id"> {R</span><span class="id"> :</span><span class="id"> numDomainType}</span>.<br/>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> maxr0</span><span class="id"> :</span><span class="id"> right_id</span> (<span class="id">0%:nng</span><span class="id"> :</span><span class="id"> {nonneg</span><span class="id"> R}</span>)<span class="id"> maxr</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move=&gt;</span><span class="id"> /=</span><span class="id"> x</span>.<br/>
+<span class="id">have</span><span class="id"> [|]</span><span class="id"> :=</span><span class="id"> leP</span><span class="id"> 0%:nng</span><span class="id"> x</span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> []</span>.<br/>
+<span class="id">rewrite</span><span class="id"> -num_lt/=</span>.<br/>
+<span class="id">rewrite</span><span class="id"> lt0F//</span>.<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> max0r</span><span class="id"> :</span><span class="id"> left_id</span> (<span class="id">0%:nng</span><span class="id"> :</span><span class="id"> {nonneg</span><span class="id"> R}</span>)<span class="id"> maxr</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move=&gt;</span><span class="id"> x</span>.<br/>
+<span class="id">rewrite</span><span class="id"> maxC</span>.<br/>
+<span class="id">exact:</span><span class="id"> maxr0</span>.<br/>
+Qed.</div></details>
+<br/>
+<span class="id">HB</span>.<span class="id">instance</span><span class="vernacular"> Definition</span><span class="id"> _</span><span class="id"> :=</span><br/>
+&nbsp;&nbsp;<span class="id">Monoid</span>.<span class="id">isLaw</span>.<span class="id">Build</span><span class="id"> {nonneg</span><span class="id"> R}</span><span class="id"> 0%:nng</span><span class="id"> maxr</span><span class="id"> maxA</span><span class="id"> max0r</span><span class="id"> maxr0</span>.<br/>
+<br/>
+<span class="vernacular">End</span><span class="id"> monoid_nonnegR</span>.<br/>
+<br/>
 <span class="vernacular">Section</span><span class="id"> itv_partition_length</span>.<br/>
 <span class="vernacular">Context</span><span class="id"> {R</span><span class="id"> :</span><span class="id"> realType}</span>.<br/>
 <span class="vernacular">Implicit</span><span class="id"> Types</span> (<span class="id">a</span><span class="id"> b</span><span class="id"> :</span><span class="id"> R</span>) (<span class="id">f</span><span class="id"> :</span><span class="id"> R</span><span class="id"> -&gt;</span><span class="id"> R</span>).<br/>
 <span class="vernacular">Implicit</span><span class="id"> Types</span> (<span class="id">s</span><span class="id"> :</span><span class="id"> seq</span><span class="id"> R</span>) (<span class="id">x</span><span class="id"> :</span><span class="id"> R</span>).<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> itv_partition_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> :</span><span class="id"> R</span><span class="id"> :=</span><span class="gallina-kwd"> let</span><span class="id"> pnth</span><span class="id"> :=</span><span class="id"> nth</span><span class="id"> b</span> (<span class="id">a</span><span class="id"> ::</span><span class="id"> s</span>)<span class="gallina-kwd"> in</span><br/>
-&nbsp;&nbsp;<span class="id">\big[maxr/0%R]_</span>(<span class="id">0</span><span class="id"> &lt;=</span><span class="id"> n</span><span class="id"> &lt;</span><span class="id"> size</span><span class="id"> s</span>)<span class="id"> `|pnth</span><span class="id"> n</span>.<span class="id">+1</span><span class="id"> -</span><span class="id"> pnth</span><span class="id"> n|%R</span>.<br/>
+&nbsp;&nbsp;(<span class="id">\big[maxr/0%:nng]_</span>(<span class="id">0</span><span class="id"> &lt;=</span><span class="id"> n</span><span class="id"> &lt;</span><span class="id"> size</span><span class="id"> s</span>)<span class="id"> `|pnth</span><span class="id"> n</span>.<span class="id">+1</span><span class="id"> -</span><span class="id"> pnth</span><span class="id"> n|%:nng</span>)<span class="id">%:num</span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> itv_partition_with_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> l</span><span class="id"> s</span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="id">itv_partition</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> /\</span><span class="id"> itv_partition_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> =</span><span class="id"> l</span>.<br/>
@@ -1849,6 +1877,120 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> omega_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> f</span><span class="id"> s</span><span class="id"> :</span><span class="id"> \bar</span><span class="id"> R</span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;&nbsp;<span class="id">\big[maxe/0%E]_</span>(<span class="id">0</span><span class="id"> &lt;=</span><span class="id"> n</span><span class="id"> &lt;</span><span class="id"> size</span><span class="id"> s</span>)<span class="id"> oscillation</span><span class="id"> f</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">`[</span>(<span class="id">nth</span><span class="id"> b</span> (<span class="id">a</span><span class="id"> ::</span><span class="id"> s</span>))<span class="id"> n,</span> (<span class="id">nth</span><span class="id"> b</span> (<span class="id">a</span><span class="id"> ::</span><span class="id"> s</span>))<span class="id"> n</span>.<span class="id">+1]</span>.<br/>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_max_nil</span><span class="id"> a</span><span class="id"> b</span><span class="id"> :</span><span class="id"> itv_partition_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> [::]</span><span class="id"> =</span><span class="id"> 0</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> /itv_partition_max</span><span class="id"> big_nil</span>. Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_rcons</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> t</span><span class="id"> :</span><span class="id"> itv_partition</span><span class="id"> a</span><span class="id"> b</span> (<span class="id">rcons</span><span class="id"> s</span><span class="id"> t</span>)<span class="id"> -&gt;</span><span class="id"> t</span><span class="id"> =</span><span class="id"> b</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id"> move=&gt;</span><span class="id"> [_</span><span class="id"> /=];</span><span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> last_rcons=&gt;</span><span class="id"> /eqP</span>. Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_mem_last</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> :</span><span class="id"> s</span><span class="id"> !=</span><span class="id"> [::]</span><span class="id"> -&gt;</span><span class="id"> itv_partition</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> -&gt;</span><br/>
+&nbsp;&nbsp;<span class="id">b</span><span class="id"> \in</span><span class="id"> s</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move:</span><span class="id"> s;</span><span class="id"> apply:</span><span class="id"> last_ind</span><span class="id"> =&gt;</span><span class="id"> //</span><span class="id"> s</span><span class="id"> t</span><span class="id"> _</span><span class="id"> _</span>.<br/>
+<span class="gallina-kwd">by</span><span class="id"> move/itv_partition_rcons</span><span class="id"> -&gt;;</span><span class="id"> rewrite</span><span class="id"> mem_rcons</span><span class="id"> mem_head</span>.<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_nonnil_last</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> :</span><span class="id"> s</span><span class="id"> !=</span><span class="id"> [::]</span><span class="id"> -&gt;</span><span class="id"> itv_partition</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> -&gt;</span><br/>
+&nbsp;&nbsp;<span class="gallina-kwd">forall</span><span class="id"> e,</span><span class="id"> last</span><span class="id"> e</span><span class="id"> s</span><span class="id"> =</span><span class="id"> b</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move:</span><span class="id"> s;</span><span class="id"> apply:</span><span class="id"> last_ind</span><span class="id"> =&gt;</span><span class="id"> //</span><span class="id"> s</span><span class="id"> t</span><span class="id"> _</span><span class="id"> _</span><span class="id"> pst</span><span class="id"> e</span>.<br/>
+<span class="id">rewrite</span><span class="id"> last_rcons;</span><span class="id"> exact:</span><span class="id"> itv_partition_rcons</span><span class="id"> pst</span>.<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_last</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> :</span><span class="id"> itv_partition</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> -&gt;</span><br/>
+&nbsp;&nbsp;<span class="id">last</span><span class="id"> a</span><span class="id"> s</span><span class="id"> =</span><span class="id"> b</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">have</span><span class="id"> [s0</span><span class="id"> ps|]</span><span class="id"> :=</span><span class="id"> pselect</span> (<span class="id">s</span><span class="id"> !=</span><span class="id"> [::]</span>).<br/>
+&nbsp;&nbsp;<span class="id">exact:</span> (<span class="id">itv_partition_nonnil_last</span><span class="id"> s0</span><span class="id"> ps</span>).<br/>
+<span class="gallina-kwd">by</span><span class="id"> move/negP/negPn/eqP</span><span class="id"> -&gt;;</span><span class="id"> move/itv_partition_nil</span><span class="id"> &lt;-</span>.<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_lteif</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> :</span><span class="id"> itv_partition</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> -&gt;</span><br/>
+&nbsp;&nbsp;(<span class="id">a</span><span class="id"> &lt;</span><span class="id"> b</span><span class="id"> ?&lt;=</span><span class="gallina-kwd"> if</span><span class="id"> ~~</span> (<span class="id">s</span><span class="id"> !=</span><span class="id"> [::]</span>)).<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move=&gt;</span><span class="id"> ps</span>.<br/>
+<span class="id">have</span><span class="id"> [|]</span><span class="id"> :=</span><span class="id"> boolP</span> (<span class="id">s</span><span class="id"> !=</span><span class="id"> [::]</span>)<span class="id">;</span><span class="id"> move=&gt;</span><span class="id"> s0/=;</span><span class="id"> last</span><span class="id"> exact:</span><span class="id"> itv_partition_le</span><span class="id"> ps</span>.<br/>
+<span class="id">move:</span> (<span class="id">ps</span>).<br/>
+<span class="id">move=&gt;</span><span class="id"> []</span>.<br/>
+<span class="id">move/lt_path_min/allP</span><span class="id"> =&gt;</span><span class="id"> allas</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> lsb</span>.<br/>
+<span class="id">apply:</span><span class="id"> allas</span>.<br/>
+<span class="id">exact:</span> (<span class="id">itv_partition_mem_last</span><span class="id"> s0</span><span class="id"> ps</span>).<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_seq1</span><span class="id"> a</span><span class="id"> b</span><span class="id"> x</span><span class="id"> :</span><br/>
+&nbsp;<span class="id">itv_partition</span><span class="id"> a</span><span class="id"> b</span><span class="id"> [::</span><span class="id"> x]</span><span class="id"> -&gt;</span><span class="id"> x</span><span class="id"> =</span><span class="id"> b</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="gallina-kwd">by</span><span class="id"> move=&gt;</span><span class="id"> abx;</span><span class="id"> rewrite</span><span class="id"> -</span>(<span class="id">itv_partition_last</span><span class="id"> abx</span>).<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_max_cons</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> x</span><span class="id"> :</span><span class="id"> s</span><span class="id"> !=</span><span class="id"> [::]</span><span class="id"> -&gt;</span><br/>
+&nbsp;&nbsp;<span class="id">itv_partition</span><span class="id"> a</span><span class="id"> b</span> (<span class="id">x</span><span class="id"> ::</span><span class="id"> s</span>)<span class="id"> -&gt;</span><br/>
+&nbsp;&nbsp;<span class="id">itv_partition_max</span><span class="id"> a</span><span class="id"> b</span> (<span class="id">x</span><span class="id"> ::</span><span class="id"> s</span>)<span class="id"> &lt;=</span><span class="id"> itv_partition_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">case:</span><span class="id"> s</span><span class="id"> =&gt;</span><span class="id"> //</span><span class="id"> h</span><span class="id"> tl</span><span class="id"> _</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> [/=</span><span class="id"> /and3P[ax</span><span class="id"> xh]</span><span class="id"> _</span><span class="id"> _]</span>.<br/>
+<br/>
+<span class="id">rewrite</span><span class="id"> /itv_partition_max</span>.<br/>
+<span class="id">rewrite</span><span class="id"> /=</span>.<br/>
+<br/>
+<span class="id">rewrite</span><span class="id"> 3?big_nat_recl//=</span>.<br/>
+<span class="id">rewrite</span><span class="id"> maxA</span>.<br/>
+<span class="id">rewrite</span><span class="id"> !num_max//=</span>.<br/>
+<span class="id">rewrite</span><span class="id"> ge_max/=;</span><span class="id"> apply/andP;</span><span class="id"> split;</span><span class="id"> last</span><span class="id"> first</span>.<br/>
+&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> num_le_max;</span><span class="id"> apply/orP;</span><span class="id"> right</span><span class="id"> =&gt;</span><span class="id"> //</span>.<br/>
+<span class="id">rewrite</span><span class="id"> num_le_max/=;</span><span class="id"> apply/orP;</span><span class="id"> left</span>.<br/>
+<br/>
+<span class="id">have</span><span class="id"> :=</span> (<span class="id">lt_trans</span><span class="id"> ax</span><span class="id"> xh</span>).<br/>
+<span class="id">rewrite</span><span class="id"> -subr_gt0</span><span class="id"> =&gt;</span><span class="id"> ha</span>.<br/>
+<span class="id">rewrite</span> (<span class="id">gtr0_norm</span><span class="id"> ha</span>)<span class="id">//</span>.<br/>
+<br/>
+<span class="id">rewrite</span><span class="id"> -[in</span><span class="id"> leRHS]</span>(<span class="id">subrKC</span><span class="id"> x</span><span class="id"> a</span>).<br/>
+<span class="id">rewrite</span><span class="id"> opprD</span><span class="id"> addrA</span>.<br/>
+<span class="id">rewrite</span><span class="id"> opprB</span>.<br/>
+<br/>
+<span class="id">rewrite</span><span class="id"> -subr_gt0</span><span class="gallina-kwd"> in</span><span class="id"> ax;</span><span class="id"> rewrite</span> (<span class="id">gtr0_norm</span><span class="id"> ax</span>).<br/>
+<span class="id">rewrite</span><span class="id"> -subr_gt0</span><span class="gallina-kwd"> in</span><span class="id"> xh;</span><span class="id"> rewrite</span> (<span class="id">gtr0_norm</span><span class="id"> xh</span>).<br/>
+<br/>
+<span class="id">rewrite</span><span class="id"> /maxr;</span><span class="id"> case:</span><span class="id"> ifP</span><span class="id"> =&gt;</span><span class="id"> _</span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> lerDl</span><span class="id"> ltW</span>.<br/>
+<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> lerDr</span><span class="id"> ltW</span>.<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_with_max_merge1</span><span class="id"> a</span><span class="id"> b</span><span class="id"> l</span><span class="id"> s</span><span class="id"> x</span><span class="id"> :</span><br/>
+&nbsp;&nbsp;<span class="id">itv_partition_with_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> l</span><span class="id"> s</span><span class="id"> -&gt;</span><br/>
+&nbsp;&nbsp;<span class="id">itv_partition_max</span><span class="id"> a</span><span class="id"> b</span> (<span class="id">merge</span><span class="id"> &lt;%R</span><span class="id"> s</span><span class="id"> [::</span><span class="id"> x]</span>)<span class="id"> &lt;=</span><span class="id"> l</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+Admitted.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_with_max_merge</span><span class="id"> a</span><span class="id"> b</span><span class="id"> l</span><span class="id"> s</span><span class="id"> t</span><span class="id"> :</span><br/>
+&nbsp;&nbsp;<span class="id">itv_partition_with_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> l</span><span class="id"> s</span><span class="id"> -&gt;</span><br/>
+&nbsp;&nbsp;<span class="id">itv_partition_max</span><span class="id"> a</span><span class="id"> b</span> (<span class="id">merge</span><span class="id"> &lt;%R</span><span class="id"> s</span><span class="id"> t</span>)<span class="id"> &lt;=</span><span class="id"> l</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+Admitted.</div></details>
 <br/>
 <span class="vernacular">End</span><span class="id"> itv_partition_length</span>.<br/>
 <br/>
@@ -1884,15 +2026,25 @@ Admitted.</div></details>
 <details>
 <summary class="toggleproof">Proof.</summary>
 <div class="proofscript">
-<span class="id">elim:</span><span class="id"> t</span><span class="id"> =&gt;</span><span class="id"> /=</span>.<br/>
-<span class="id">-</span><span class="id"> move=&gt;</span><span class="id"> _</span><span class="id"> _</span>.<br/>
-&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> 2!mul0e</span><span class="id"> adde0</span><span class="id"> allrel_merge</span><span class="id"> ?cats0;</span><span class="id"> last</span><span class="gallina-kwd"> by</span><span class="id"> exact:</span><span class="id"> allrel0r</span>.<br/>
-&nbsp;&nbsp;<span class="id">exact:</span><span class="id"> lexx</span>.<br/>
-<span class="id">move=&gt;</span><span class="id"> h</span><span class="id"> t</span><span class="id"> IH</span><span class="id"> pmaxl</span><span class="id"> partht</span>.<br/>
-<span class="id">rewrite</span><span class="id"> /merge</span>.<br/>
-<span class="id">elim:</span><span class="id"> s</span><span class="id"> IH</span><span class="id"> pmaxl</span><span class="id"> =&gt;</span><span class="id"> /=</span>.<br/>
-<span class="id">rewrite</span><span class="id"> /merge</span>.<br/>
+<span class="id">elim:</span><span class="id"> s</span><span class="id"> t</span><span class="id"> =&gt;</span><span class="id"> /=</span>.<br/>
+<span class="id">-</span><span class="id"> move=&gt;</span><span class="id"> t</span><span class="id"> []</span>.<br/>
+&nbsp;&nbsp;<span class="id">move=&gt;</span><span class="id"> /itv_partition_nil</span><span class="id"> &lt;-</span><span class="id"> _</span>.<br/>
+&nbsp;&nbsp;<span class="id">move/itv_partitionxx</span><span class="id"> -&gt;</span><span class="id"> =&gt;</span><span class="id"> /=</span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> variation_nil</span><span class="id"> add0e</span><span class="id"> 2!mul0e</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> hs</span><span class="id"> s</span><span class="id"> IH</span><span class="id"> t</span>.<br/>
 <br/>
+<br/>
+<span class="comment">(*<br/>
+-&nbsp;move=&gt;&nbsp;+&nbsp;/itv_partition_nil;&nbsp;move/[swap]&nbsp;&lt;-.<br/>
+&nbsp;&nbsp;move=&gt;&nbsp;[/itv_partitionxx&nbsp;-&gt;&nbsp;_]/=.<br/>
+&nbsp;&nbsp;by&nbsp;rewrite&nbsp;2!mul0e&nbsp;adde0.<br/>
+<br/>
+move=&gt;&nbsp;h&nbsp;t&nbsp;IH&nbsp;pmaxl&nbsp;partht/=.<br/>
+elim:&nbsp;s&nbsp;.<br/>
+rewrite&nbsp;/merge.<br/>
+elim:&nbsp;s&nbsp;IH&nbsp;pmaxl&nbsp;=&gt;&nbsp;/=.<br/>
+rewrite&nbsp;/merge.<br/>
+*)</span><br/>
 <br/>
 Admitted.</div></details>
 <br/>
