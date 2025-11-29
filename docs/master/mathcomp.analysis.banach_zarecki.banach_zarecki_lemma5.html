@@ -1883,6 +1883,101 @@ Admitted.</div></details>
 <span class="id">exact:</span> (<span class="id">le_bigmax_seq</span><span class="id"> _</span><span class="id"> 0</span>)<span class="id"> =&gt;</span><span class="id"> //</span>.<br/>
 Qed.</div></details>
 <br/>
+<span class="vernacular">Lemma</span><span class="id"> oscillation_sub</span><span class="id"> f</span><span class="id"> i</span><span class="id"> j</span><span class="id"> :</span><br/>
+<span class="id">i</span><span class="id"> `&lt;=`</span><span class="id"> j</span><span class="id"> -&gt;</span> (<span class="id">oscillation</span><span class="id"> f</span><span class="id"> i</span><span class="id"> &lt;=</span><span class="id"> oscillation</span><span class="id"> f</span><span class="id"> j</span>)<span class="id">%E</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move=&gt;</span><span class="id"> ij</span>.<br/>
+<span class="id">rewrite</span><span class="id"> /oscillation/=</span>.<br/>
+<span class="id">apply:</span><span class="id"> leeB</span>.<br/>
+<span class="id">-</span><span class="id"> apply:</span><span class="id"> ereal_sup_le</span>.<br/>
+&nbsp;&nbsp;<span class="id">exact:</span><span class="id"> image_subset</span>.<br/>
+<span class="id">-</span><span class="id"> apply:</span><span class="id"> ereal_inf_le_tmp</span>.<br/>
+&nbsp;&nbsp;<span class="id">exact:</span><span class="id"> image_subset</span>.<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> lt_path_uniq</span><span class="id"> a</span><span class="id"> s</span><span class="id"> :</span><span class="id"> path</span><span class="id"> &lt;%R</span><span class="id"> a</span><span class="id"> s</span><span class="id"> -&gt;</span><span class="id"> uniq</span> (<span class="id">a</span><span class="id"> ::</span><span class="id"> s</span>).<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move=&gt;</span><span class="id"> pas</span>.<br/>
+<span class="gallina-kwd">by</span><span class="id"> exact:</span><span class="id"> lt_sorted_uniq</span>.<br/>
+Qed.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> itv_partition_in_itv</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> :</span><br/>
+&nbsp;&nbsp;<span class="id">itv_partition</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> -&gt;</span><span class="id"> {in</span><span class="id"> s,</span><span class="gallina-kwd"> forall</span><span class="id"> x,</span><span class="id"> x</span><span class="id"> \in</span><span class="id"> `]a,</span><span class="id"> b]}</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move=&gt;</span><span class="id"> /[dup]parts</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> [/[dup]/lt_path_min/allP</span><span class="id"> sa]</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> /[dup]pas</span>.<br/>
+<span class="id">rewrite</span><span class="id"> lt_path_pairwise</span>.<br/>
+<span class="id">move/pairwiseP</span><span class="id"> =&gt;</span><span class="id"> pwltas</span>.<br/>
+<span class="id">move/eqP</span><span class="id"> =&gt;</span><span class="id"> lsb</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> x</span><span class="id"> xs</span>.<br/>
+<span class="id">rewrite</span><span class="id"> in_itv/=;</span><span class="id"> apply/andP;</span><span class="id"> split;</span><span class="id"> first</span><span class="id"> exact:</span><span class="id"> sa</span>.<br/>
+<span class="id">rewrite</span><span class="id"> -lsb</span> (<span class="id">last_nth</span><span class="id"> a</span>).<br/>
+<span class="id">have</span><span class="id"> xas</span><span class="id"> :</span><span class="id"> x</span><span class="id"> \in</span><span class="id"> a</span><span class="id"> ::</span><span class="id"> s</span><span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> in_cons;</span><span class="id"> apply/orP;</span><span class="id"> right</span>.<br/>
+<span class="id">rewrite</span><span class="id"> -</span>(<span class="id">nth_index</span><span class="id"> a</span><span class="id"> xas</span>).<br/>
+<span class="id">rewrite</span><span class="id"> le_eqVlt;</span><span class="id"> apply/predU1P</span>.<br/>
+<span class="id">rewrite</span><span class="id"> -implyNp</span><span class="id"> =&gt;</span><span class="id"> nlast</span>.<br/>
+<span class="id">apply:</span><span class="id"> pwltas</span>.<br/>
+<span class="id">-</span><span class="id"> rewrite</span><span class="id"> inE/=</span>.<br/>
+&nbsp;&nbsp;<span class="id">case:</span><span class="id"> ifP</span><span class="id"> =&gt;</span><span class="id"> //</span><span class="id"> _</span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> ltnS</span><span class="id"> index_mem</span>.<br/>
+<span class="id">-</span><span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> inE//</span>.<br/>
+<span class="id">-</span><span class="id"> rewrite</span><span class="id"> /=</span>.<br/>
+&nbsp;<span class="id">move:</span><span class="id"> s</span><span class="id"> lsb</span><span class="id"> parts</span><span class="id"> sa</span><span class="id"> pas</span><span class="id"> x</span><span class="id"> nlast</span><span class="id"> xs</span><span class="id"> xas</span>.<br/>
+&nbsp;&nbsp;<span class="id">apply:</span><span class="id"> last_ind</span><span class="id"> =&gt;</span><span class="id"> //</span><span class="id"> s</span><span class="id"> t</span><span class="id"> IH</span>.<br/>
+&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> last_rcons</span><span class="id"> =&gt;</span><span class="id"> -&gt;</span>.<br/>
+<span class="comment">(*<br/>
+&nbsp;&nbsp;move/[swap]/eqP&nbsp;-&gt;.<br/>
+rewrite&nbsp;/=.<br/>
+&nbsp;&nbsp;case:&nbsp;ifP&nbsp;=&gt;&nbsp;_.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;case:&nbsp;s&nbsp;parts&nbsp;sa&nbsp;pas&nbsp;lsb&nbsp;xs&nbsp;xas.<br/>
+&nbsp;&nbsp;rewrite&nbsp;-(@index_last&nbsp;_&nbsp;a);&nbsp;last&nbsp;first.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;exact:&nbsp;lt_path_uniq.<br/>
+&nbsp;&nbsp;rewrite&nbsp;/=.<br/>
+&nbsp;&nbsp;case:&nbsp;ifP.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;rewrite&nbsp;lsb&nbsp;=&gt;&nbsp;/eqP&nbsp;ab.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;move:&nbsp;parts.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;rewrite&nbsp;ab;&nbsp;move/itv_partitionxx&nbsp;=&gt;&nbsp;s0.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;move:&nbsp;xs;&nbsp;rewrite&nbsp;s0.<br/>
+&nbsp;&nbsp;move=&gt;&nbsp;_.<br/>
+&nbsp;&nbsp;rewrite&nbsp;ltnS.<br/>
+*)</span><br/>
+Admitted.</div></details>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> omega_max_le_oscillation</span><span class="id"> a</span><span class="id"> b</span><span class="id"> f</span><span class="id"> s</span><span class="id"> :</span><br/>
+&nbsp;<span class="id">itv_partition</span><span class="id"> a</span><span class="id"> b</span><span class="id"> s</span><span class="id"> -&gt;</span><br/>
+(<span class="id">omega_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> f</span><span class="id"> s</span><span class="id"> &lt;=</span><span class="id"> oscillation</span><span class="id"> f</span><span class="id"> `[a,</span><span class="id"> b]</span>)<span class="id">%E</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<span class="id">move/[dup]/itv_partition_in_itv</span><span class="id"> =&gt;</span><span class="id"> xab</span><span class="id"> parts</span>.<br/>
+<span class="id">rewrite</span><span class="id"> /omega_max</span>.<br/>
+<span class="id">apply:</span><span class="id"> bigmax_le</span>.<br/>
+&nbsp;&nbsp;<span class="id">exact:</span><span class="id"> oscillation_ge0</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> n</span><span class="id"> _</span>.<br/>
+<span class="id">apply:</span><span class="id"> oscillation_sub</span>.<br/>
+<br/>
+<span class="id">rewrite</span><span class="id"> big_mkord</span>.<br/>
+<span class="id">have</span><span class="id"> :=</span> (<span class="id">@bigmax_le</span><span class="id"> _</span> (<span class="id">\bar</span><span class="id"> R</span>)<span class="id"> _</span> (<span class="id">iota</span><span class="id"> 0</span> (<span class="id">size</span><span class="id"> s</span>))<br/>
+&nbsp;(<span class="gallina-kwd">fun</span><span class="id"> n</span><span class="id"> =&gt;</span> (<span class="id">oscillation</span><span class="id"> f</span><span class="id"> `[</span>(<span class="id">nth</span><span class="id"> b</span> (<span class="id">a</span><span class="id"> ::</span><span class="id"> s</span>)<span class="id"> n</span>)<span class="id">,</span> (<span class="id">nth</span><span class="id"> b</span> (<span class="id">a</span><span class="id"> ::</span><span class="id"> s</span>)<span class="id"> n</span>.<span class="id">+1</span>)<span class="id">]</span>))<span class="id"> 0%E</span><br/>
+&nbsp;&nbsp;(<span class="id">oscillation</span><span class="id"> f</span><span class="id"> `[a,</span><span class="id"> b]</span>)).<br/>
+<span class="id">apply</span>.<br/>
+<br/>
+<span class="vernacular">Lemma</span><span class="id"> omega_max_merge</span><span class="id"> a</span><span class="id"> b</span><span class="id"> f</span><span class="id"> s</span><span class="id"> t</span><span class="id"> :</span><br/>
+(<span class="id">omega_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> f</span><span class="id"> s</span><span class="id"> &lt;</span><span class="id"> +oo</span>)<span class="id">%E</span><span class="id"> -&gt;</span><br/>
+(<span class="id">omega_max</span><span class="id"> a</span><span class="id"> b</span><span class="id"> f</span> (<span class="id">merge</span><span class="id"> &lt;%R</span><span class="id"> s</span><span class="id"> t</span>)<span class="id"> &lt;</span><span class="id"> +oo</span>)<span class="id">%E</span>.<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+<br/>
+<br/>
+<br/>
 <span class="vernacular">End</span><span class="id"> itv_partition_length</span>.<br/>
 <br/>
 <span class="vernacular">Section</span><span class="id"> itv_partition_length_lemmas</span>.<br/>
@@ -2061,8 +2156,14 @@ Admitted.</div></details>
 <span class="vernacular">End</span><span class="id"> lt_merge_lemmas</span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> disj_seq</span><span class="id"> {T</span><span class="id"> :</span><span class="id"> eqType}</span>(<span class="id">s</span><span class="id"> t</span><span class="id"> :</span><span class="id"> seq</span><span class="id"> T</span>)<span class="id"> :=</span><br/>
-<span class="id">all</span> (<span class="gallina-kwd">fun</span><span class="id"> x</span><span class="id"> =&gt;</span><span class="id"> x</span><span class="id"> \notin</span><span class="id"> s</span>)<span class="id"> t</span><span class="id"> /\</span><span class="id"> all</span> (<span class="gallina-kwd">fun</span><span class="id"> x</span><span class="id"> =&gt;</span><span class="id"> x</span><span class="id"> \notin</span><span class="id"> t</span>)<span class="id"> s</span>.<br/>
+<span class="id">[disjoint</span><span class="id"> [set`</span><span class="id"> s]</span><span class="id"> &amp;</span><span class="id"> [set`</span><span class="id"> t]]</span>.<br/>
 <br/>
+<span class="vernacular">Lemma</span><span class="id"> disj_seq_allP</span><span class="id"> {T</span><span class="id"> :</span><span class="id"> eqType}</span> (<span class="id">s</span><span class="id"> t</span><span class="id"> :</span><span class="id"> seq</span><span class="id"> T</span>)<span class="id"> :</span><br/>
+&nbsp;&nbsp;<span class="id">disj_seq</span><span class="id"> s</span><span class="id"> t</span><span class="id"> &lt;-&gt;</span> (<span class="id">all</span> (<span class="gallina-kwd">fun</span><span class="id"> x</span><span class="id"> =&gt;</span><span class="id"> x</span><span class="id"> \notin</span><span class="id"> s</span>)<span class="id"> t</span><span class="id"> /\</span><span class="id"> all</span> (<span class="gallina-kwd">fun</span><span class="id"> x</span><span class="id"> =&gt;</span><span class="id"> x</span><span class="id"> \notin</span><span class="id"> t</span>)<span class="id"> s</span>).<br/>
+<details>
+<summary class="toggleproof">Proof.</summary>
+<div class="proofscript">
+Admitted.</div></details>
 <br/>
 <span class="vernacular">Section</span><span class="id"> itv_partition_lemmas</span>.<br/>
 <span class="vernacular">Context</span><span class="id"> {R</span><span class="id"> :</span><span class="id"> realType}</span>.<br/>
@@ -2078,7 +2179,7 @@ Admitted.</div></details>
 <summary class="toggleproof">Proof.</summary>
 <div class="proofscript">
 <span class="id">move=&gt;</span><span class="id"> ps</span><span class="id"> pt</span>.<br/>
-<span class="id">move=&gt;</span><span class="id"> [/allP</span><span class="id"> ts</span><span class="id"> /allP</span><span class="id"> st]</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> /disj_seq_allP[/allP</span><span class="id"> ts</span><span class="id"> /allP</span><span class="id"> st]</span>.<br/>
 Admitted.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> itv_partition_udmerge</span><span class="id"> s</span><span class="id"> t</span><span class="id"> :</span><br/>
@@ -2146,7 +2247,8 @@ Admitted.</div></details>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> merge0r</span><span class="id"> 2!mul0e</span><span class="id"> adde0</span>.<br/>
 <span class="id">move=&gt;</span><span class="id"> h</span><span class="id"> t</span><span class="id"> IH</span><span class="id"> s</span><span class="id"> maxoo</span><span class="id"> ps</span><span class="id"> sl</span><span class="id"> pht</span><span class="id"> disjst</span>.<br/>
 <span class="id">rewrite</span><span class="id"> merge_cons;</span><span class="id"> last</span><span class="id"> first</span>.<br/>
-&nbsp;&nbsp;<span class="id">admit</span>.<br/>
+&nbsp;&nbsp;<span class="id">have</span><span class="id"> [+</span><span class="id"> _]</span><span class="id"> :=</span><span class="id"> pht</span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> /=</span><span class="id"> =&gt;</span><span class="id"> /andP[]</span>.<br/>
 <span class="id">apply:</span> (<span class="id">le_trans</span> (<span class="id">IH</span><span class="id"> _</span><span class="id"> _</span><span class="id"> _</span><span class="id"> _</span><span class="id"> _</span><span class="id"> _</span>)).<br/>
 <span class="id">-</span><span class="id"> admit</span>. <span class="comment">(*&nbsp;lemma&nbsp;*)</span><br/>
 <span class="id">-</span><span class="id"> admit</span>.<br/>
@@ -2167,11 +2269,10 @@ Admitted.</div></details>
 &nbsp;&nbsp;<span class="id">admit</span>.<br/>
 <span class="id">rewrite</span><span class="id"> -addeAC</span><span class="id"> leeD2r//</span>.<br/>
 <span class="id">apply:</span><span class="id"> variation_merge1</span><span class="id"> =&gt;</span><span class="id"> //</span>.<br/>
-<span class="id">have</span><span class="id"> [/allP</span><span class="id"> +</span><span class="id"> _]</span><span class="id"> :=</span><span class="id"> disjst</span>.<br/>
+<span class="id">have</span><span class="id"> /disj_seq_allP[/allP</span><span class="id"> +</span><span class="id"> _]</span><span class="id"> :=</span><span class="id"> disjst</span>.<br/>
 <span class="id">apply</span>.<br/>
 <span class="id">exact:</span><span class="id"> mem_head</span>.<br/>
 Admitted.</div></details>
-<br/>
 <br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> lemma5'</span><span class="id"> :</span><br/>
@@ -2207,6 +2308,7 @@ Admitted.</div></details>
 &nbsp;&nbsp;<span class="id">admit</span>.<br/>
 <span class="id">move/</span>(_<span class="id"> _</span><span class="id"> eps0</span>)<span class="id"> =&gt;</span><span class="id"> [d</span><span class="id"> d0</span><span class="id"> unifcf]</span>.<br/>
 <span class="gallina-kwd">exists</span><span class="id"> d</span><span class="id"> =&gt;</span><span class="id"> p</span><span class="id"> pmaxd</span>.<br/>
+<br/>
 <span class="id">apply:</span> (<span class="id">@lt_le_trans</span><span class="id"> _</span><span class="id"> _</span> ((<span class="id">V'</span><span class="id"> +</span><span class="id"> A</span>)<span class="id"> /</span><span class="id"> 2</span>)).<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;AV'&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id">admit</span>.<br/>
