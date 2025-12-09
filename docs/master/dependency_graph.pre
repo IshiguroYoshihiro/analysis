@@ -1222,6 +1222,19 @@ subgraph cluster_analysis { "theories/banach_zarecki/banach_zarecki_lemma4"[labe
   "theories/realfun" -> "theories/banach_zarecki/banach_zarecki_lemma4";
   "theories/sequences" -> "theories/banach_zarecki/banach_zarecki_lemma4";
   "theories/topology_theory/topology" -> "theories/banach_zarecki/banach_zarecki_lemma4";
+subgraph cluster_analysis { "theories/banach_zarecki/banach_zarecki_lemma5"[label="banach_zarecki_lemma5",URL="mathcomp.analysis.banach_zarecki_lemma5.html",fillcolor=5]}  "classical/boolp" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "classical/classical_sets" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "classical/functions" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "classical/mathcomp_extra" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "reals/reals" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "theories/ereal" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "theories/lebesgue_measure" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "theories/measure_theory/measure" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "theories/normedtype_theory/normedtype" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "theories/realfun" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "theories/sequences" -> "theories/banach_zarecki/banach_zarecki_lemma5";
+  "theories/topology_theory/topology" -> "theories/banach_zarecki/banach_zarecki_lemma5";
 subgraph cluster_analysis { "theories/banach_zarecki/banach_zarecki_lemma6"[label="banach_zarecki_lemma6",URL="mathcomp.analysis.banach_zarecki_lemma6.html",fillcolor=5]}  "classical/boolp" -> "theories/banach_zarecki/banach_zarecki_lemma6";
   "classical/classical_sets" -> "theories/banach_zarecki/banach_zarecki_lemma6";
   "classical/functions" -> "theories/banach_zarecki/banach_zarecki_lemma6";
@@ -1232,6 +1245,7 @@ subgraph cluster_analysis { "theories/banach_zarecki/banach_zarecki_lemma6"[labe
   "theories/banach_zarecki/banach_zarecki_lemma2" -> "theories/banach_zarecki/banach_zarecki_lemma6";
   "theories/banach_zarecki/banach_zarecki_lemma3" -> "theories/banach_zarecki/banach_zarecki_lemma6";
   "theories/banach_zarecki/banach_zarecki_lemma4" -> "theories/banach_zarecki/banach_zarecki_lemma6";
+  "theories/banach_zarecki/banach_zarecki_lemma5" -> "theories/banach_zarecki/banach_zarecki_lemma6";
   "theories/ereal" -> "theories/banach_zarecki/banach_zarecki_lemma6";
   "theories/lebesgue_measure" -> "theories/banach_zarecki/banach_zarecki_lemma6";
   "theories/measure_theory/measure" -> "theories/banach_zarecki/banach_zarecki_lemma6";

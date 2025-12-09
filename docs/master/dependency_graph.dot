@@ -104,6 +104,9 @@ digraph depend {
 		"theories/banach_zarecki/banach_zarecki_lemma4"	[URL="mathcomp.analysis.banach_zarecki_lemma4.html",
 			fillcolor=5,
 			label=banach_zarecki_lemma4];
+		"theories/banach_zarecki/banach_zarecki_lemma5"	[URL="mathcomp.analysis.banach_zarecki_lemma5.html",
+			fillcolor=5,
+			label=banach_zarecki_lemma5];
 		"theories/banach_zarecki/banach_zarecki_lemma6"	[URL="mathcomp.analysis.banach_zarecki_lemma6.html",
 			fillcolor=5,
 			label=banach_zarecki_lemma6];
@@ -585,12 +588,14 @@ digraph depend {
 	"theories/pi_irrational" -> "theories/all_analysis";
 	"theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma1";
 	"theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma4";
+	"theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma5";
 	"theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma8";
 	"theories/banach_zarecki/banach_zarecki_lemma1" -> "theories/banach_zarecki/banach_zarecki_lemma2";
 	"theories/banach_zarecki/banach_zarecki_lemma2" -> "theories/banach_zarecki/banach_zarecki_lemma3";
 	"theories/banach_zarecki/banach_zarecki_lemma2" -> "theories/banach_zarecki/banach_zarecki_lemma7";
 	"theories/banach_zarecki/banach_zarecki_lemma3" -> "theories/banach_zarecki/banach_zarecki_lemma6";
 	"theories/banach_zarecki/banach_zarecki_lemma4" -> "theories/banach_zarecki/banach_zarecki_lemma6";
+	"theories/banach_zarecki/banach_zarecki_lemma5" -> "theories/banach_zarecki/banach_zarecki_lemma6";
 	"theories/banach_zarecki/banach_zarecki_lemma6" -> "theories/banach_zarecki/banach_zarecki_theorem";
 	"theories/banach_zarecki/banach_zarecki_lemma7" -> "theories/banach_zarecki/banach_zarecki_theorem";
 	"theories/banach_zarecki/banach_zarecki_lemma8" -> "theories/banach_zarecki/banach_zarecki_theorem";
