@@ -44,6 +44,9 @@ digraph depend {
 		"theories/derive"	[URL="mathcomp.analysis.derive.html",
 			fillcolor=5,
 			label=derive];
+		"theories/numfun"	[URL="mathcomp.analysis.numfun.html",
+			fillcolor=5,
+			label=numfun];
 		"theories/exp"	[URL="mathcomp.analysis.exp.html",
 			fillcolor=5,
 			label=exp];
@@ -59,9 +62,6 @@ digraph depend {
 		"theories/esum"	[URL="mathcomp.analysis.esum.html",
 			fillcolor=5,
 			label=esum];
-		"theories/numfun"	[URL="mathcomp.analysis.numfun.html",
-			fillcolor=5,
-			label=numfun];
 		"theories/measurable_realfun"	[URL="mathcomp.analysis.measurable_realfun.html",
 			fillcolor=5,
 			label=measurable_realfun];
@@ -89,36 +89,6 @@ digraph depend {
 		"theories/pi_irrational"	[URL="mathcomp.analysis.pi_irrational.html",
 			fillcolor=5,
 			label=pi_irrational];
-		"theories/absolute_continuity"	[URL="mathcomp.analysis.absolute_continuity.html",
-			fillcolor=5,
-			label=absolute_continuity];
-		"theories/banach_zarecki/banach_zarecki_lemma1"	[URL="mathcomp.analysis.banach_zarecki_lemma1.html",
-			fillcolor=5,
-			label=banach_zarecki_lemma1];
-		"theories/banach_zarecki/banach_zarecki_lemma2"	[URL="mathcomp.analysis.banach_zarecki_lemma2.html",
-			fillcolor=5,
-			label=banach_zarecki_lemma2];
-		"theories/banach_zarecki/banach_zarecki_lemma3"	[URL="mathcomp.analysis.banach_zarecki_lemma3.html",
-			fillcolor=5,
-			label=banach_zarecki_lemma3];
-		"theories/banach_zarecki/banach_zarecki_lemma4"	[URL="mathcomp.analysis.banach_zarecki_lemma4.html",
-			fillcolor=5,
-			label=banach_zarecki_lemma4];
-		"theories/banach_zarecki/banach_zarecki_lemma5"	[URL="mathcomp.analysis.banach_zarecki_lemma5.html",
-			fillcolor=5,
-			label=banach_zarecki_lemma5];
-		"theories/banach_zarecki/banach_zarecki_lemma6"	[URL="mathcomp.analysis.banach_zarecki_lemma6.html",
-			fillcolor=5,
-			label=banach_zarecki_lemma6];
-		"theories/banach_zarecki/banach_zarecki_lemma7"	[URL="mathcomp.analysis.banach_zarecki_lemma7.html",
-			fillcolor=5,
-			label=banach_zarecki_lemma7];
-		"theories/banach_zarecki/banach_zarecki_lemma8"	[URL="mathcomp.analysis.banach_zarecki_lemma8.html",
-			fillcolor=5,
-			label=banach_zarecki_lemma8];
-		"theories/banach_zarecki/banach_zarecki_theorem"	[URL="mathcomp.analysis.banach_zarecki_theorem.html",
-			fillcolor=5,
-			label=banach_zarecki_theorem];
 		"theories/all_analysis"	[URL="mathcomp.analysis.all_analysis.html",
 			fillcolor=5,
 			label=all_analysis];
@@ -435,6 +405,10 @@ digraph depend {
 			fillcolor=10,
 			fontcolor=white,
 			label=lebesgue_integral_differentiation];
+		"theories/lebesgue_integral_theory/giry"	[URL="mathcomp.analysis.lebesgue_integral_theory.giry.html",
+			fillcolor=10,
+			fontcolor=white,
+			label=giry];
 	}
 	"classical/all_classical" -> "reals/prodnormedzmodule";
 	"classical/all_classical" -> "theories/topology_theory/topology_structure";
@@ -487,7 +461,7 @@ digraph depend {
 	"theories/topology_theory/discrete_topology" -> "theories/topology_theory/bool_topology";
 	"theories/topology_theory/discrete_topology" -> "theories/topology_theory/nat_topology";
 	"theories/topology_theory/discrete_topology" -> "theories/topology_theory/separation_axioms";
-	"theories/topology_theory/matrix_topology" -> "theories/topology_theory/topology";
+	"theories/topology_theory/matrix_topology" -> "theories/topology_theory/num_topology";
 	"theories/topology_theory/nat_topology" -> "theories/topology_theory/topology";
 	"theories/topology_theory/num_topology" -> "theories/topology_theory/separation_axioms";
 	"theories/topology_theory/one_point_compactification" -> "theories/topology_theory/separation_axioms";
@@ -521,7 +495,6 @@ digraph depend {
 	"theories/lebesgue_measure" -> "theories/borel_hierarchy";
 	"theories/lebesgue_measure" -> "theories/lebesgue_integral_theory/simple_functions";
 	"theories/measure_theory/measure" -> "theories/lebesgue_stieltjes_measure";
-	"theories/sequences" -> "theories/realfun";
 	"theories/sequences" -> "theories/numfun";
 	"theories/sequences" -> "theories/measure_theory/measurable_structure";
 	"theories/sequences" -> "theories/showcase/pnt";
@@ -543,16 +516,18 @@ digraph depend {
 	"theories/realfun" -> "theories/convex";
 	"theories/realfun" -> "theories/lebesgue_stieltjes_measure";
 	"theories/derive" -> "theories/realfun";
+	"theories/numfun" -> "theories/realfun";
+	"theories/numfun" -> "theories/esum";
 	"theories/exp" -> "theories/measurable_realfun";
 	"theories/convex" -> "theories/exp";
 	"theories/trigo" -> "theories/gauss_integral";
 	"theories/trigo" -> "theories/pi_irrational";
 	"theories/ftc" -> "theories/trigo";
+	"theories/lebesgue_integral_theory/lebesgue_integral" -> "theories/lebesgue_integral_theory/giry";
 	"theories/lebesgue_integral_theory/lebesgue_integral" -> "theories/charge";
 	"theories/lebesgue_integral_theory/lebesgue_integral" -> "theories/hoelder";
 	"theories/lebesgue_integral_theory/lebesgue_integral" -> "theories/kernel";
 	"theories/esum" -> "theories/measure_theory/measure_function";
-	"theories/numfun" -> "theories/esum";
 	"theories/measure_theory/measurable_structure" -> "theories/measure_theory/measurable_function";
 	"theories/measure_theory/measure_function" -> "theories/measure_theory/counting_measure";
 	"theories/measure_theory/measure_function" -> "theories/measure_theory/dirac_measure";
@@ -565,7 +540,6 @@ digraph depend {
 	"theories/measure_theory/measure_extension" -> "theories/measure_theory/measure";
 	"theories/measurable_realfun" -> "theories/lebesgue_measure";
 	"theories/lebesgue_stieltjes_measure" -> "theories/measurable_realfun";
-	"theories/borel_hierarchy" -> "theories/absolute_continuity";
 	"theories/lebesgue_integral_theory/simple_functions" -> "theories/lebesgue_integral_theory/lebesgue_integral_definition";
 	"theories/lebesgue_integral_theory/simple_functions" -> "theories/lebesgue_integral_theory/measurable_fun_approximation";
 	"theories/lebesgue_integral_theory/lebesgue_integral_definition" -> "theories/lebesgue_integral_theory/lebesgue_integral_monotone_convergence";
@@ -586,18 +560,5 @@ digraph depend {
 	"theories/gauss_integral" -> "theories/probability";
 	"theories/kernel" -> "theories/probability";
 	"theories/pi_irrational" -> "theories/all_analysis";
-	"theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma1";
-	"theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma4";
-	"theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma5";
-	"theories/absolute_continuity" -> "theories/banach_zarecki/banach_zarecki_lemma8";
-	"theories/banach_zarecki/banach_zarecki_lemma1" -> "theories/banach_zarecki/banach_zarecki_lemma2";
-	"theories/banach_zarecki/banach_zarecki_lemma2" -> "theories/banach_zarecki/banach_zarecki_lemma3";
-	"theories/banach_zarecki/banach_zarecki_lemma2" -> "theories/banach_zarecki/banach_zarecki_lemma7";
-	"theories/banach_zarecki/banach_zarecki_lemma3" -> "theories/banach_zarecki/banach_zarecki_lemma6";
-	"theories/banach_zarecki/banach_zarecki_lemma4" -> "theories/banach_zarecki/banach_zarecki_lemma6";
-	"theories/banach_zarecki/banach_zarecki_lemma5" -> "theories/banach_zarecki/banach_zarecki_lemma6";
-	"theories/banach_zarecki/banach_zarecki_lemma6" -> "theories/banach_zarecki/banach_zarecki_theorem";
-	"theories/banach_zarecki/banach_zarecki_lemma7" -> "theories/banach_zarecki/banach_zarecki_theorem";
-	"theories/banach_zarecki/banach_zarecki_lemma8" -> "theories/banach_zarecki/banach_zarecki_theorem";
 	"analysis_stdlib/Rstruct_topology" -> "analysis_stdlib/showcase/uniform_bigO";
 }
