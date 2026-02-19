@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -280,8 +295,8 @@ compact A ->
 lebesgue_measure.-integrable A (EFin \o f)
 
 continuous_compact_integrable is not universe polymorphic
-Arguments continuous_compact_integrable [rT] [f]%function_scope
-  [A]%classical_set_scope _ _%function_scope
+Arguments continuous_compact_integrable [rT] [f]%_function_scope
+  [A]%_classical_set_scope _ _%_function_scope
 continuous_compact_integrable is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.continuous_compact_integrable
@@ -322,13 +337,26 @@ forall [rT : realType]
 (lebesgue_measure E < +oo)%E ->
 lebesgue_measure.-integrable E (EFin \o f) ->
 exists g_ : (rT -> rT) ^nat,
-  [/\ forall n : nat, continuous (g_ n),
+  [/\ forall (n : nat)
+        (x : filter.Nbhs.sort
+               (numFieldTopology.Real_sort__canonical__filter_Nbhs rT)),
+      filter.continuous_at
+        (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs rT)
+        (U:=numFieldTopology.Real_sort__canonical__filter_Nbhs rT) x 
+        (g_ n),
       forall n : nat, lebesgue_measure.-integrable E (EFin \o g_ n)
-    & ((\int[lebesgue_measure]_(z in E) `|(f z - g_ n z)%:E|)%E @[n --> \oo] --> 0%R)%classic]
+    & filter.cvg_to
+        (filter.nbhs
+           (filter.fmap
+              (fun n : nat =>
+               (\int[lebesgue_measure]_(z in E) `|(f z - g_ n z)%:E|)%E)
+              (filter.nbhs filter.eventually)))
+        (filter.nbhs 0%R)]
 
 approximation_continuous_integrable is not universe polymorphic
 Arguments approximation_continuous_integrable [rT] 
-  [E]%classical_set_scope [f]%function_scope _ _ _
+  [E]%_classical_set_scope [f]%_function_scope _ _ 
+  _
 approximation_continuous_integrable is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.approximation_continuous_integrable
@@ -446,24 +474,41 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="lebesgue_differentiation_continuous" class="id"><a name="lebesgue_differentiation_continuous" class="" title="lebesgue_differentiation_continuous :
 forall [rT : realType] [f : measurableTypeR rT -> rT^o]
   [A : set (measurableTypeR rT)] [x : measurableTypeR rT],
-open A ->
+topology_structure.open A ->
 lebesgue_measure.-integrable A (EFin \o f) ->
-{for x, continuous f} ->
+{for x,
+  forall
+    x0 : filter.Nbhs.sort
+           (numFieldTopology.Real_sort__canonical__filter_Nbhs rT),
+  filter.continuous_at
+    (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs rT)
+    (U:=GRing_regular__canonical__filter_Nbhs rT) x0 f} ->
 A x ->
-(((r *+ 2)^-1 * \int[lebesgue_measure]_(z in ball x r) f z)%R @[r --> 0^'+] --> 
- (f x : (measurableTypeR rT)^o))%classic
+filter.cvg_to
+  (filter.nbhs
+     (filter.fmap
+        (fun r : rT =>
+         ((r *+ 2)^-1 * \int[lebesgue_measure]_(z in ball x r) f z)%R)
+        (filter.nbhs (0^'+)%classic)))
+  (filter.nbhs (f x : (measurableTypeR rT)^o))
 
 lebesgue_differentiation_continuous is not universe polymorphic
 Expanded type for implicit arguments
 lebesgue_differentiation_continuous :
 forall [rT : realType] [f : measurableTypeR rT -> rT^o]
   [A : set (measurableTypeR rT)] [x : measurableTypeR rT],
-open A ->
+topology_structure.open A ->
 lebesgue_measure.-integrable A (EFin \o f) ->
-{for x, continuous f} ->
+{for x,
+  forall
+    x0 : filter.Nbhs.sort
+           (numFieldTopology.Real_sort__canonical__filter_Nbhs rT),
+  filter.continuous_at
+    (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs rT)
+    (U:=GRing_regular__canonical__filter_Nbhs rT) x0 f} ->
 A x ->
 forall [t : set rT],
-nbhs (f x : (measurableTypeR rT)^o) t ->
+filter.nbhs (f x : (measurableTypeR rT)^o) t ->
 exists2 i : rT,
   [set e | (0 < e)%R]%classic i &
   (ball_ [eta normr] 0%R i
@@ -474,8 +519,8 @@ exists2 i : rT,
           t) t0))%classic
 
 Arguments lebesgue_differentiation_continuous [rT] 
-  [f]%function_scope [A]%classical_set_scope [x] _ 
-  _ _ _ [t] _
+  [f]%_function_scope [A]%_classical_set_scope [x] 
+  _ _ _ _ [t] _
 lebesgue_differentiation_continuous is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lebesgue_differentiation_continuous
@@ -483,7 +528,7 @@ Declared in
 library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation, line 190, characters 6-41
 ">lebesgue_differentiation_continuous</a></span> (<span id="f:26" class="id"><a name="f:26" class="">f</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.R">R</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.rT">rT</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#32d8c90f413029fb5c0e82f0559cd7ef">^o</a></span>) (<span id="A:27" class="id"><a name="A:27" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.R">R</a></span>) (<span id="x:28" class="id"><a name="x:28" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.R">R</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#open">open</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#A:27">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.mu">mu</a></span>.<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integrable.html#::type_scope:x_'.-integrable'">-integrable</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integrable.html#::type_scope:x_'.-integrable'"> A</a></span> (<span class="id"><a href="mathcomp.reals.constructive_ereal.html#EFin">EFin</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:26">f</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#7c80fbc9405d98c9b96117793e1b9981">{for</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#7c80fbc9405d98c9b96117793e1b9981"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:28">x</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#7c80fbc9405d98c9b96117793e1b9981">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#7c80fbc9405d98c9b96117793e1b9981"> </a></span><span class="id"><a href="mathcomp.classical.filter.html#continuous">continuous</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:26">f</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#7c80fbc9405d98c9b96117793e1b9981">}</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#A:27">A</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:28">x</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
-&nbsp;&nbsp;(<span class="gallina-kwd">fun</span><span class="id"> </span><span id="r:29" class="id"><a name="r:29" class="">r</a></span><span class="id"> =&gt;</span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:29">r</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#e9001f602764f7896bb1eb34bf606a23"> *+</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#e9001f602764f7896bb1eb34bf606a23"> </a></span><span class="id">2</span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#4e5a4c91ec0aa12de06dfe1cc07ea126">^-1</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#00afd7077fe8d4381a047ef487700a85">\int[</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.mu">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#00afd7077fe8d4381a047ef487700a85">]_</a></span>(<span id="z:30" class="id"><a name="z:30" class="">z</a></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#00afd7077fe8d4381a047ef487700a85"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:28">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:29">r</a></span>)<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#00afd7077fe8d4381a047ef487700a85"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:26">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#z:30">z</a></span>)<span class="id"><a href="mathcomp.classical.filter.html#cd15f258bbfe5f8dd5d2f871f9f5a736"> @</a></span><span class="id"><a href="mathcomp.classical.filter.html#cd15f258bbfe5f8dd5d2f871f9f5a736"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><br/>
+&nbsp;&nbsp;(<span class="gallina-kwd">fun</span><span class="id"> </span><span id="r:29" class="id"><a name="r:29" class="">r</a></span><span class="id"> =&gt;</span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:29">r</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#e9001f602764f7896bb1eb34bf606a23"> *+</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#e9001f602764f7896bb1eb34bf606a23"> </a></span><span class="id">2</span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#4e5a4c91ec0aa12de06dfe1cc07ea126">^-1</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#00afd7077fe8d4381a047ef487700a85">\int[</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.mu">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#00afd7077fe8d4381a047ef487700a85">]_</a></span>(<span id="z:30" class="id"><a name="z:30" class="">z</a></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#00afd7077fe8d4381a047ef487700a85"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:28">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:29">r</a></span>)<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#00afd7077fe8d4381a047ef487700a85"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:26">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#z:30">z</a></span>)<span class="id"><a href="mathcomp.classical.filter.html#cd15f258bbfe5f8dd5d2f871f9f5a736"> @</a></span><span class="id"><a href="mathcomp.classical.filter.html#cd15f258bbfe5f8dd5d2f871f9f5a736"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:26">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:28">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.R">R</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#32d8c90f413029fb5c0e82f0559cd7ef">^o</a></span>).<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -503,7 +548,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.ler_ltD">ler_ltD</a></span><span class="id">//</span><span class="id"> ?rE//</span><span class="id"> -</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#EFinD">EFinD</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.opprB">opprB</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.addrC">addrC</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.subrKA">subrKA</a></span>.<br/>
 <span class="id">move=&gt;</span><span class="id"> oA</span><span class="id"> intf</span><span class="id"> ctsfx</span><span class="id"> Ax</span>.<br/>
 <span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#cvg_zero">cvg_zero</a></span>.<br/>
-<span class="id">apply/</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#cvgrPdist_le">cvgrPdist_le</a></span><span class="id"> =&gt;</span><span class="id"> eps</span><span class="id"> epos;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#filter_app">filter_app</a></span> (<span class="id">@</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_gt">nbhs_right_gt</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.rT">rT</a></span><span class="id"> 0</span>).<br/>
+<span class="id">apply/</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#cvgrPdist_le">cvgrPdist_le</a></span><span class="id"> =&gt;</span><span class="id"> eps</span><span class="id"> epos;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#filter_app">filter_app</a></span> (<span class="id">@</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_gt">nbhs_right_gt</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_differentiation_continuous.rT">rT</a></span><span class="id"> 0</span>).<br/>
 <span class="id">move/</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#cvgrPdist_le">cvgrPdist_le</a></span><span class="id">/</span>(_<span class="id"> eps</span><span class="id"> epos</span>)<span class="id">/</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#at_right_in_segment">at_right_in_segment</a></span><span class="id"> :</span><span class="id"> ctsfx;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#filter_app">filter_app</a></span>.<br/>
 <span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#filter_app">filter_app</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#open_itvcc_subset">open_itvcc_subset</a></span><span class="id"> oA</span><span class="id"> Ax</span>).<br/>
 <span class="id">have</span><span class="id"> mA</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#measurable">measurable</a></span><span class="id"> A</span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#open_measurable">open_measurable</a></span><span class="id"> oA</span>.<br/>
@@ -563,7 +608,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <span class="vernacular">Definition</span><span class="id"> </span><span id="locally_integrable" class="id"><a name="locally_integrable" class="" title="locally_integrable : forall {R : realType}, set R -> (R -> R) -> Prop
 
 locally_integrable is not universe polymorphic
-Arguments locally_integrable {R} D%classical_set_scope f%function_scope
+Arguments locally_integrable {R} D%_classical_set_scope f%_function_scope
 locally_integrable is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.locally_integrable
@@ -574,12 +619,12 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="open_integrable_locally" class="id"><a name="open_integrable_locally" class="" title="open_integrable_locally :
 forall {R : realType} [D : set R] [f : R -> R],
-open D ->
+topology_structure.open D ->
 lebesgue_measure.-integrable D (EFin \o f) -> locally_integrable D f
 
 open_integrable_locally is not universe polymorphic
-Arguments open_integrable_locally {R} [D]%classical_set_scope
-  [f]%function_scope _ _
+Arguments open_integrable_locally {R} [D]%_classical_set_scope
+  [f]%_function_scope _ _
 open_integrable_locally is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.open_integrable_locally
@@ -603,8 +648,8 @@ forall {R : realType} [D : set R] [f : R -> R],
 locally_integrable D f -> locally_integrable D (\- f)%R
 
 locally_integrableN is not universe polymorphic
-Arguments locally_integrableN {R} [D]%classical_set_scope 
-  [f]%function_scope _
+Arguments locally_integrableN {R} [D]%_classical_set_scope
+  [f]%_function_scope _
 locally_integrableN is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.locally_integrableN
@@ -625,8 +670,8 @@ locally_integrable D f ->
 locally_integrable D g -> locally_integrable D (f \+ g)%R
 
 locally_integrableD is not universe polymorphic
-Arguments locally_integrableD {R} [D]%classical_set_scope
-  [f g]%function_scope _ _
+Arguments locally_integrableD {R} [D]%_classical_set_scope
+  [f g]%_function_scope _ _
 locally_integrableD is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.locally_integrableD
@@ -657,8 +702,8 @@ locally_integrable D f ->
 locally_integrable D g -> locally_integrable D (f \- g)%R
 
 locally_integrableB is not universe polymorphic
-Arguments locally_integrableB {R} [D]%classical_set_scope
-  [f g]%function_scope _ _
+Arguments locally_integrableB {R} [D]%_classical_set_scope
+  [f g]%_function_scope _ _
 locally_integrableB is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.locally_integrableB
@@ -675,10 +720,11 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="locally_integrable_indic" class="id"><a name="locally_integrable_indic" class="" title="locally_integrable_indic :
 forall {R : realType} [D A : set R],
-open D -> 'measurable%classic A -> locally_integrable D (\1_A)%R
+topology_structure.open D ->
+'measurable%classic A -> locally_integrable D (\1_A)%R
 
 locally_integrable_indic is not universe polymorphic
-Arguments locally_integrable_indic {R} [D A]%classical_set_scope _ _
+Arguments locally_integrable_indic {R} [D A]%_classical_set_scope _ _
 locally_integrable_indic is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.locally_integrable_indic
@@ -707,8 +753,8 @@ forall {R : realType} [A B : set R] [f : R -> R],
 locally_integrable [set: R] (f \_ B) -> locally_integrable [set: R] (f \_ A)
 
 locally_integrableS is not universe polymorphic
-Arguments locally_integrableS {R} [A B]%classical_set_scope
-  [f]%function_scope _ _ _ _
+Arguments locally_integrableS {R} [A B]%_classical_set_scope
+  [f]%_function_scope _ _ _ _
 locally_integrableS is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.locally_integrableS
@@ -743,8 +789,8 @@ lebesgue_measure.-integrable A (EFin \o f) ->
 locally_integrable [set: R] (f \_ A)
 
 integrable_locally_restrict is not universe polymorphic
-Arguments integrable_locally_restrict {R} [f]%function_scope
-  [A]%classical_set_scope _ _
+Arguments integrable_locally_restrict {R} [f]%_function_scope
+  [A]%_classical_set_scope _ _
 integrable_locally_restrict is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.integrable_locally_restrict
@@ -782,7 +828,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="iavg" class="id"><a name="iavg" class="" title="iavg : forall {R : realType}, (R -> R) -> set R -> \bar R
 
 iavg is not universe polymorphic
-Arguments iavg {R} f%function_scope A%classical_set_scope
+Arguments iavg {R} f%_function_scope A%_classical_set_scope
 iavg is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.iavg
@@ -793,7 +839,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="iavg0" class="id"><a name="iavg0" class="" title="iavg0 : forall {R : realType} (f : R -> R), iavg f set0 = 0%R
 
 iavg0 is not universe polymorphic
-Arguments iavg0 {R} f%function_scope
+Arguments iavg0 {R} f%_function_scope
 iavg0 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.iavg0
@@ -809,7 +855,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 forall {R : realType} (f : R -> R) (A : set R), (0%R <= iavg f A)%E
 
 iavg_ge0 is not universe polymorphic
-Arguments iavg_ge0 {R} f%function_scope A%classical_set_scope
+Arguments iavg_ge0 {R} f%_function_scope A%_classical_set_scope
 iavg_ge0 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.iavg_ge0
@@ -829,7 +875,7 @@ iavg (f \_ D) A =
 ((lebesgue_measure A)^-1 * \int[lebesgue_measure]_(y in D `&` A) `|f y|%:E)%E
 
 iavg_restrict is not universe polymorphic
-Arguments iavg_restrict {R} f%function_scope [D A]%classical_set_scope _ _
+Arguments iavg_restrict {R} f%_function_scope [D A]%_classical_set_scope _ _
 iavg_restrict is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.iavg_restrict
@@ -853,10 +899,10 @@ measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) A f ->
 measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) A g ->
-(iavg (f \+ g)%R A <= iavg f A + iavg g A)%E
+(iavg (f \+ g)%R A <= (iavg f A + iavg g A)%R)%E
 
 iavgD is not universe polymorphic
-Arguments iavgD {R} [f g]%function_scope [A]%classical_set_scope _ _ _ _
+Arguments iavgD {R} [f g]%_function_scope [A]%_classical_set_scope _ _ _ _
 iavgD is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.iavgD
@@ -900,7 +946,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="HL_maximal" class="id"><a name="HL_maximal" class="" title="HL_maximal : forall {R : realType}, (R -> R) -> R -> \bar R
 
 HL_maximal is not universe polymorphic
-Arguments HL_maximal {R} f%function_scope x%ring_scope
+Arguments HL_maximal {R} f%_function_scope x%_ring_scope
 HL_maximal is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.HL_maximal
@@ -916,8 +962,8 @@ forall {R : realType} [f : R -> R] [D : set R],
 locally_integrable D f -> forall x : R, (0%R <= HL_maximal (f \_ D) x)%E
 
 HL_maximal_ge0 is not universe polymorphic
-Arguments HL_maximal_ge0 {R} [f]%function_scope [D]%classical_set_scope 
-  _ x%ring_scope
+Arguments HL_maximal_ge0 {R} [f]%_function_scope [D]%_classical_set_scope 
+  _ x%_ring_scope
 HL_maximal_ge0 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.HL_maximal_ge0
@@ -942,7 +988,7 @@ forall {R : realType} [f : R -> R],
 locally_integrable [set: R] f -> forall x : R, (0%R <= HL_maximal f x)%E
 
 HL_maximalT_ge0 is not universe polymorphic
-Arguments HL_maximalT_ge0 {R} [f]%function_scope _ x%ring_scope
+Arguments HL_maximalT_ge0 {R} [f]%_function_scope _ x%_ring_scope
 HL_maximalT_ge0 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.HL_maximalT_ge0
@@ -979,21 +1025,24 @@ lower_semicontinuous_HL_maximal :
 forall {R : realType} [f : R -> R],
 locally_integrable [set: R] f ->
 forall
-  [x : numFieldTopology.Real_sort__canonical__topology_structure_Topological
-         R]
+  [x : topology_structure.Topological.sort
+         (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+            R)]
   [a : R],
 (a%:E < HL_maximal f x)%E ->
 exists2
   V : set
-        (numFieldTopology.Real_sort__canonical__topology_structure_Topological
-           R),
-  nbhs x V &
+        (topology_structure.Topological.sort
+           (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+              R)),
+  filter.nbhs x V &
   forall
-    y : numFieldTopology.Real_sort__canonical__topology_structure_Topological
-          R,
+    y : topology_structure.Topological.sort
+          (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+             R),
   V y -> (a%:E < HL_maximal f y)%E
 
-Arguments lower_semicontinuous_HL_maximal {R} [f]%function_scope _ [x a] _
+Arguments lower_semicontinuous_HL_maximal {R} [f]%_function_scope _ [x a] _
 lower_semicontinuous_HL_maximal is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lower_semicontinuous_HL_maximal
@@ -1017,7 +1066,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> move:</span><span class="id"> afxr;</span><span class="id"> rewrite</span><span class="id"> k0</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#mule0">mule0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#lte_fin">lte_fin</a></span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.TotalTheory.ltNge">ltNge</a></span><span class="id"> a0</span>.<br/>
 <span class="id">move:</span><span class="id"> a0;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_eqVlt">le_eqVlt</a></span><span class="id"> =&gt;</span><span class="id"> /</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#predU1P">predU1P</a></span><span class="id">[a0|a0]</span>.<br/>
 &nbsp;&nbsp;<span class="id">move:</span><span class="id"> afxr;</span><span class="id"> rewrite</span><span class="id"> -{a}a0</span><span class="id"> =&gt;</span><span class="id"> xrk</span>.<br/>
-&nbsp;&nbsp;<span class="id">near</span> (<span class="id">0%R</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#hardy_littlewood.R">R</a></span>)<span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"> =&gt;</span><span class="id"> d</span>.<br/>
+&nbsp;&nbsp;<span class="id">near</span> (<span class="id">0%R</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#hardy_littlewood.R">R</a></span>)<span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"> =&gt;</span><span class="id"> d</span>.<br/>
 &nbsp;&nbsp;<span class="id">have</span><span class="id"> xrdk</span><span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'&lt;'_x"> &lt;</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span> (<span class="id">r</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> +</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> </a></span><span class="id">d</span>)))<span class="id"><a href="mathcomp.reals.constructive_ereal.html#2e1feae62a5737b40e886e0abeca58dd">^-1</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> *</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> </a></span><span class="id">k</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#mule_gt0">mule_gt0</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_measure.html#lebesgue_measure_ball">lebesgue_measure_ball</a></span><span class="id">;</span><span class="id"> last</span><span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.addr_ge0">addr_ge0</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.ltW">ltW</a></span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#inver">inver</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.mulrn_eq0">mulrn_eq0</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.gt_eqF">gt_eqF</a></span><span class="id">;</span><span class="id"> last</span><span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.addr_gt0">addr_gt0</a></span>.<br/>
@@ -1049,7 +1098,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numfield.html#Num.Theory.ltf_pV2">ltf_pV2</a></span><span class="id"> ?</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.posrE">posrE</a></span><span class="id"> ?</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.pmulrn_lgt0">pmulrn_lgt0</a></span><span class="id">//</span>.<br/>
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> /=</span><span class="id"> -[in</span><span class="id"> X</span><span class="gallina-kwd"> in</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#X:99">X</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id">_]</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.mulr_natl">mulr_natl</a></span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numfield.html#Num.Theory.ltr_pdivlMl">ltr_pdivlMl</a></span><span class="id">//</span>.<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> -[in</span><span class="id"> X</span><span class="gallina-kwd"> in</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#X:100">X</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id">_]</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.subr_gt0">subr_gt0</a></span>.<br/>
-<span class="id">near</span> (<span class="id">0%R</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#hardy_littlewood.R">R</a></span>)<span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"> =&gt;</span><span class="id"> d</span>.<br/>
+<span class="id">near</span> (<span class="id">0%R</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#hardy_littlewood.R">R</a></span>)<span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"> =&gt;</span><span class="id"> d</span>.<br/>
 <span class="id">have</span><span class="id"> axrdk</span><span class="id"> :</span><span class="id"> a</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'&lt;'_x"> &lt;</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span> (<span class="id">r</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> +</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> </a></span><span class="id">d</span>)))<span class="id"><a href="mathcomp.reals.constructive_ereal.html#2e1feae62a5737b40e886e0abeca58dd">^-1</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> *</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> </a></span><span class="id">k</span>.<br/>
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_measure.html#lebesgue_measure_ball">lebesgue_measure_ball</a></span><span class="id">//;</span><span class="id"> last</span><span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.addr_ge0">addr_ge0</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.ltW">ltW</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#inver">inver</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.mulrn_eq0">mulrn_eq0</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.gt_eqF">gt_eqF</a></span><span class="id"> ?</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.addr_gt0">addr_gt0</a></span><span class="id">//</span>.<br/>
@@ -1058,7 +1107,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> -!</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#EFinM">EFinM</a></span><span class="id"> !</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#lte_fin">lte_fin</a></span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.invf_div">invf_div</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numfield.html#Num.Theory.ltf_pV2">ltf_pV2</a></span><span class="id">//;</span><span class="id"> last</span><span class="id"> first</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.posrE">posrE</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.pmulrn_lgt0">pmulrn_lgt0</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.addr_gt0">addr_gt0</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.mulr_natl">mulr_natl</a></span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numfield.html#Num.Theory.ltr_pdivlMl">ltr_pdivlMl</a></span><span class="id">//</span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.ltrBrDl">ltrBrDl</a></span>.<br/>
-&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> near:</span><span class="id"> d;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_lt">nbhs_right_lt</a></span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> near:</span><span class="id"> d;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_lt">nbhs_right_lt</a></span>.<br/>
 <span class="gallina-kwd">exists</span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> d</span>).<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> split;</span><span class="id"> [exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.normed_module.html#ball_open">ball_open</a></span><span class="id">|exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ballxx">ballxx</a></span><span class="id">]</span>.<br/>
 <span class="id">move=&gt;</span><span class="id"> y;</span><span class="id"> rewrite</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id">/=</span><span class="id"> =&gt;</span><span class="id"> xyd</span>.<br/>
@@ -1116,7 +1165,7 @@ i
   ([set: Real_sort__canonical__measurable_structure_SigmaRing R]
    `&` HL_maximal f @^-1` Y)%classic
 
-Arguments measurable_HL_maximal {R} [f]%function_scope _ _ [Y] _ [i] _
+Arguments measurable_HL_maximal {R} [f]%_function_scope _ _ [Y] _ [i] _
 measurable_HL_maximal is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.measurable_HL_maximal
@@ -1145,7 +1194,7 @@ locally_integrable [set: R] f ->
   \int[lebesgue_measure]_(y in D) `|(f0 y)%:E|) [set: R]%classic f)%E
 
 maximal_inequality is not universe polymorphic
-Arguments maximal_inequality {R} [f]%function_scope [c] _ _
+Arguments maximal_inequality {R} [f]%_function_scope [c] _ _
 maximal_inequality is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.maximal_inequality
@@ -1225,7 +1274,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="davg" class="id"><a name="davg" class="" title="davg : forall {R : realType}, (R -> R) -> R -> R -> \bar R
 
 davg is not universe polymorphic
-Arguments davg {R} f%function_scope (x r)%ring_scope
+Arguments davg {R} f%_function_scope (x r)%_ring_scope
 davg is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.davg
@@ -1238,7 +1287,7 @@ forall {R : realType} (f : R -> R) (x : R) [r : R],
 (r <= 0)%R -> davg f x r = 0%R
 
 davg0 is not universe polymorphic
-Arguments davg0 {R} f%function_scope x%ring_scope [r]%ring_scope _
+Arguments davg0 {R} f%_function_scope x%_ring_scope [r]%_ring_scope _
 davg0 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.davg0
@@ -1254,7 +1303,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 forall {R : realType} (f : R -> R) (x r : R), (0%R <= davg f x r)%E
 
 davg_ge0 is not universe polymorphic
-Arguments davg_ge0 {R} f%function_scope (x r)%ring_scope
+Arguments davg_ge0 {R} f%_function_scope (x r)%_ring_scope
 davg_ge0 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.davg_ge0
@@ -1277,7 +1326,7 @@ measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
 (davg (f \+ g)%R x r <= (davg f x \+ davg g x) r)%E
 
 davgD is not universe polymorphic
-Arguments davgD {R} [f g]%function_scope [x r]%ring_scope _ _
+Arguments davgD {R} [f g]%_function_scope [x r]%_ring_scope _ _
 davgD is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.davgD
@@ -1303,18 +1352,20 @@ Qed.</div></details>
 forall {R : realType} (f : R -> R) [a : itv_bound R] [x u : R],
 (x < u)%R ->
 (a < BRight x)%E ->
-\forall r \near (0^'+)%classic, davg f x r =
-                                davg (f \_ [set` Interval a (BRight u)]) x r
+filter.prop_near1 (0^'+)%classic
+  (P:=fun r : R => davg f x r = davg (f \_ [set` Interval a (BRight u)]) x r)
+  (inPhantom
+     (forall r : R, davg f x r = davg (f \_ [set` Interval a (BRight u)]) x r))
 
 near_davg is not universe polymorphic
-Arguments near_davg {R} f%function_scope [a x] [u]%ring_scope _ _
+Arguments near_davg {R} f%_function_scope [a x] [u]%_ring_scope _ _
 near_davg is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.near_davg
 Declared in
 library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation, line 632, characters 6-15
 ">near_davg</a></span><span class="id"> </span><span id="f:161" class="id"><a name="f:161" class="">f</a></span> (<span id="a:162" class="id"><a name="a:162" class="">a</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#itv_bound">itv_bound</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.R">R</a></span>)<span class="id"> </span><span id="x:163" class="id"><a name="x:163" class="">x</a></span> (<span id="u:164" class="id"><a name="u:164" class="">u</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.R">R</a></span>)<span class="id"> :</span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:163">x</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#u:164">u</a></span>)<span class="id">%R</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#a:162">a</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'&lt;'_x"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#BRight">BRight</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:163">x</a></span>)<span class="id">%E</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
-&nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f">\forall</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> </a></span><span id="r:165" class="id"><a name="r:165" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> \near</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f">,</a></span><br/>
+&nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f">\forall</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> </a></span><span id="r:165" class="id"><a name="r:165" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> \near</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f">,</a></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg">davg</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:161">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:163">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:165">r</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg">davg</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:161">f</a></span><span class="id"><a href="mathcomp.classical.functions.html#2eecca447d655b6f816ae395946692f2"> \_</a></span><span class="id"><a href="mathcomp.classical.functions.html#2eecca447d655b6f816ae395946692f2"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7">[set`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#Interval">Interval</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#a:162">a</a></span> (<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#BRight">BRight</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#u:164">u</a></span>)<span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7">]</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:163">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:165">r</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -1327,9 +1378,9 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#ball_itv">ball_itv</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#inE">inE</a></span><span class="id">/=</span><span class="id"> =&gt;</span><span class="id"> yxr;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.functions.html#patchE">patchE</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#mem_set">mem_set</a></span><span class="id">//=</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#subset_itvW">subset_itvW</a></span><span class="id"> yxr</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerBrDl">lerBrDl</a></span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerBrDr">lerBrDr</a></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_ltW">nbhs_right_ltW</a></span><span class="id">;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.subr_gt0">subr_gt0</a></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_ltW">nbhs_right_ltW</a></span><span class="id">;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.subr_gt0">subr_gt0</a></span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerBrDl">lerBrDl</a></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_le">nbhs_right_le</a></span><span class="id">;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.subr_gt0">subr_gt0</a></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_le">nbhs_right_le</a></span><span class="id">;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.subr_gt0">subr_gt0</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">congr</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#76b5f4c325a4d0716da4bce1239a53f4">*%E</a></span><span class="id">;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#eq_integral">eq_integral</a></span><span class="id"> =&gt;</span><span class="id"> y</span><span class="id"> yxr</span><span class="id"> /=</span>.<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> fauf//</span><span class="id"> fauf//</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#inE">inE</a></span><span class="id">;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ballxx">ballxx</a></span>.<br/>
 <span class="id">-</span><span class="id"> near=&gt;</span><span class="id"> r</span>.<br/>
@@ -1338,7 +1389,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#ball_itv">ball_itv</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#inE">inE</a></span><span class="id">/=</span><span class="id"> =&gt;</span><span class="id"> yxr;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.functions.html#patchE">patchE</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#mem_set">mem_set</a></span><span class="id">//=</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">move:</span><span class="id"> yxr;</span><span class="id"> rewrite</span><span class="id"> !</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#in_itv">in_itv</a></span><span class="id">/=</span><span class="id"> =&gt;</span><span class="id"> /</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#andP">andP</a></span><span class="id">[_</span><span class="id"> /</span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.ltW">ltW</a></span><span class="id">/</span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_trans">le_trans</a></span><span class="id">];</span><span class="id"> apply</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerBrDl">lerBrDl</a></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_ltW">nbhs_right_ltW</a></span><span class="id">;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.subr_gt0">subr_gt0</a></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_ltW">nbhs_right_ltW</a></span><span class="id">;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.subr_gt0">subr_gt0</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">congr</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#76b5f4c325a4d0716da4bce1239a53f4">*%E</a></span><span class="id">;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#eq_integral">eq_integral</a></span><span class="id"> =&gt;</span><span class="id"> y</span><span class="id"> yxr</span><span class="id"> /=</span>.<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> foouf//</span><span class="id"> foouf//</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#inE">inE</a></span><span class="id">;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ballxx">ballxx</a></span>.<br/>
 <span class="id">Unshelve</span>. <span class="id">all:</span><span class="gallina-kwd"> by</span><span class="id"> end_near</span>. Qed.</div></details>
@@ -1355,8 +1406,8 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <summary class="toggleproof">Proof.</summary>
 <div class="proofscript">
 <span class="id">move:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.continuous_cvg_davg.fx">fx</a></span><span class="id"> =&gt;</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#cvgrPdist_le">cvgrPdist_le</a></span><span class="id"> /=</span><span class="id"> fx'</span>.<br/>
-<span class="id">near</span> (<span class="id">0%R:</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.R">R</a></span>)<span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"> =&gt;</span><span class="id"> e</span>.<br/>
-<span class="id">have</span><span class="id"> e0</span><span class="id"> :</span> (<span class="id">0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id">e</span>)<span class="id">%R</span><span class="gallina-kwd"> by</span><span class="id"> near:</span><span class="id"> e;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_gt">nbhs_right_gt</a></span>.<br/>
+<span class="id">near</span> (<span class="id">0%R:</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.R">R</a></span>)<span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"> =&gt;</span><span class="id"> e</span>.<br/>
+<span class="id">have</span><span class="id"> e0</span><span class="id"> :</span> (<span class="id">0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id">e</span>)<span class="id">%R</span><span class="gallina-kwd"> by</span><span class="id"> near:</span><span class="id"> e;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_gt">nbhs_right_gt</a></span>.<br/>
 <span class="id">have</span><span class="id"> [r</span><span class="id"> /=</span><span class="id"> r0</span><span class="id"> {}fx']</span><span class="id"> :=</span><span class="id"> fx'</span><span class="id"> _</span><span class="id"> e0</span>.<br/>
 <span class="id">have</span><span class="id"> [d/=</span><span class="id"> d0</span><span class="id"> dxU]</span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.normed_module.html#open_subball">open_subball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.continuous_cvg_davg.xU">xU</a></span>.<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#::pair_scope:x_'.1'">1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.continuous_cvg_davg.xU">xU</a></span>.<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#::pair_scope:x_'.2'">2</a></span>.<br/>
 <span class="id">near=&gt;</span><span class="id"> t;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#ge0_fin_numE">ge0_fin_numE</a></span><span class="id"> ?</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#integral_ge0">integral_ge0</a></span><span class="id">//</span>.<br/>
@@ -1379,8 +1430,8 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <div class="proofscript">
 <span class="id">have</span><span class="id"> [e</span><span class="id"> /=</span><span class="id"> e0</span><span class="id"> exf]</span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.continuous_cvg_davg.continuous_integralB_fin_num">continuous_integralB_fin_num</a></span>.<br/>
 <span class="id">move:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.continuous_cvg_davg.fx">fx</a></span><span class="id"> =&gt;</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#cvgrPdist_le">cvgrPdist_le</a></span><span class="id"> fx'</span>.<br/>
-<span class="id">near</span> (<span class="id">0%R:</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.R">R</a></span>)<span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"> =&gt;</span><span class="id"> r</span>.<br/>
-<span class="id">have</span><span class="id"> r0</span><span class="id"> :</span> (<span class="id">0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id">r</span>)<span class="id">%R</span><span class="gallina-kwd"> by</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_gt">nbhs_right_gt</a></span>.<br/>
+<span class="id">near</span> (<span class="id">0%R:</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg.R">R</a></span>)<span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"> =&gt;</span><span class="id"> r</span>.<br/>
+<span class="id">have</span><span class="id"> r0</span><span class="id"> :</span> (<span class="id">0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id">r</span>)<span class="id">%R</span><span class="gallina-kwd"> by</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_gt">nbhs_right_gt</a></span>.<br/>
 <span class="id">have</span><span class="id"> [d</span><span class="id"> /=</span><span class="id"> d0</span><span class="id"> {}fx']</span><span class="id"> :=</span><span class="id"> fx'</span><span class="id"> _</span><span class="id"> e0</span>.<br/>
 <span class="id">near=&gt;</span><span class="id"> t;</span><span class="id"> have</span><span class="id"> [t0|t0]</span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.TotalTheory.leP">leP</a></span><span class="id"> t</span><span class="id"> 0%R;</span><span class="id"> first</span><span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg0">davg0</a></span>.<br/>
 <span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#fin_numM">fin_numM</a></span><span class="id"> ?exf//=</span>.<br/>
@@ -1389,29 +1440,43 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="continuous_cvg_davg" class="id"><a name="continuous_cvg_davg" class="" title="continuous_cvg_davg :
 forall {R : realType} [f : R -> R] [x : R] [U : set R],
-open_nbhs x U ->
+topology_structure.open_nbhs x U ->
 'measurable%classic U ->
 measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) U f ->
-{for x, continuous f} -> (davg f x r @[r --> 0%R] --> 0%R)%classic
+{for x,
+  forall
+    x0 : filter.Nbhs.sort
+           (numFieldTopology.Real_sort__canonical__filter_Nbhs R),
+  filter.continuous_at
+    (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs R)
+    (U:=numFieldTopology.Real_sort__canonical__filter_Nbhs R) x0 f} ->
+filter.cvg_to (filter.nbhs (filter.fmap [eta davg f x] (filter.nbhs 0%R)))
+  (filter.nbhs 0%R)
 
 continuous_cvg_davg is not universe polymorphic
 Expanded type for implicit arguments
 continuous_cvg_davg :
 forall {R : realType} [f : R -> R] [x : R] [U : set R],
-open_nbhs x U ->
+topology_structure.open_nbhs x U ->
 'measurable%classic U ->
 measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) U f ->
-{for x, continuous f} ->
+{for x,
+  forall
+    x0 : filter.Nbhs.sort
+           (numFieldTopology.Real_sort__canonical__filter_Nbhs R),
+  filter.continuous_at
+    (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs R)
+    (U:=numFieldTopology.Real_sort__canonical__filter_Nbhs R) x0 f} ->
 forall [t : set \bar R],
-nbhs 0%R t ->
+filter.nbhs 0%R t ->
 exists2 i : R,
   [set e | (0 < e)%R]%classic i &
   (ball_ [eta normr] 0%R i `<=` [eta davg f x] @^-1` t)%classic
 
-Arguments continuous_cvg_davg {R} [f]%function_scope 
-  [x]%ring_scope [U]%classical_set_scope xU mU mUf 
+Arguments continuous_cvg_davg {R} [f]%_function_scope 
+  [x]%_ring_scope [U]%_classical_set_scope xU mU mUf 
   fx [t] _
 continuous_cvg_davg is opaque
 Expands to: Constant
@@ -1457,7 +1522,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <span class="vernacular">Definition</span><span class="id"> </span><span id="lim_sup_davg" class="id"><a name="lim_sup_davg" class="" title="lim_sup_davg : forall {R : realType}, (R -> R) -> R -> \bar R
 
 lim_sup_davg is not universe polymorphic
-Arguments lim_sup_davg {R} f%function_scope x%ring_scope
+Arguments lim_sup_davg {R} f%_function_scope x%_ring_scope
 lim_sup_davg is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lim_sup_davg
@@ -1471,7 +1536,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 forall {R : realType} (f : R -> R) (x : R), (0%R <= lim_sup_davg f x)%E
 
 lim_sup_davg_ge0 is not universe polymorphic
-Arguments lim_sup_davg_ge0 {R} f%function_scope x%ring_scope
+Arguments lim_sup_davg_ge0 {R} f%_function_scope x%_ring_scope
 lim_sup_davg_ge0 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lim_sup_davg_ge0
@@ -1485,10 +1550,11 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="lim_sup_davg_le" class="id"><a name="lim_sup_davg_le" class="" title="lim_sup_davg_le :
 forall {R : realType} [f g : R -> R]
-  [x : numFieldTopology.Real_sort__canonical__topology_structure_Topological
-         R]
+  [x : topology_structure.Topological.sort
+         (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+            R)]
   [U : set R],
-open_nbhs x U ->
+topology_structure.open_nbhs x U ->
 'measurable%classic U ->
 measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) U f ->
@@ -1497,8 +1563,8 @@ measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
 (lim_sup_davg (f \+ g)%R x <= (lim_sup_davg f \+ lim_sup_davg g) x)%E
 
 lim_sup_davg_le is not universe polymorphic
-Arguments lim_sup_davg_le {R} [f g]%function_scope 
-  [x] [U]%classical_set_scope _ _ _ _
+Arguments lim_sup_davg_le {R} [f g]%_function_scope 
+  [x] [U]%_classical_set_scope _ _ _ _
 lim_sup_davg_le is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lim_sup_davg_le
@@ -1517,25 +1583,33 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> !</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg0">davg0</a></span><span class="id"> ?</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#adde0">adde0</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.ltW">ltW</a></span>.<br/>
 <span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davgD">davgD</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_funS">measurable_funS</a></span><span class="id"> mf</span><span class="id"> =&gt;</span><span class="id"> //;</span><span class="id"> apply:</span><span class="id"> exU</span><span class="id"> =&gt;</span><span class="id"> //=</span>.<br/>
-&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.lt_le_trans">lt_le_trans</a></span><span class="id"> ry</span>)<span class="id">//;</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_le">nbhs_right_le</a></span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.lt_le_trans">lt_le_trans</a></span><span class="id"> ry</span>)<span class="id">//;</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_le">nbhs_right_le</a></span>.<br/>
 <span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_funS">measurable_funS</a></span><span class="id"> mg</span><span class="id"> =&gt;</span><span class="id"> //;</span><span class="id"> apply:</span><span class="id"> exU</span><span class="id"> =&gt;</span><span class="id"> //=</span>.<br/>
-<span class="gallina-kwd">by</span><span class="id"> rewrite</span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.lt_le_trans">lt_le_trans</a></span><span class="id"> ry</span>)<span class="id">//;</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_le">nbhs_right_le</a></span>.<br/>
+<span class="gallina-kwd">by</span><span class="id"> rewrite</span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.lt_le_trans">lt_le_trans</a></span><span class="id"> ry</span>)<span class="id">//;</span><span class="id"> near:</span><span class="id"> r;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_le">nbhs_right_le</a></span>.<br/>
 <span class="id">Unshelve</span>. <span class="id">all:</span><span class="gallina-kwd"> by</span><span class="id"> end_near</span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="continuous_lim_sup_davg" class="id"><a name="continuous_lim_sup_davg" class="" title="continuous_lim_sup_davg :
 forall {R : realType} [f : R -> R]
-  [x : numFieldTopology.Real_sort__canonical__topology_structure_Topological
-         R]
+  [x : topology_structure.Topological.sort
+         (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+            R)]
   [U : set R],
-open_nbhs x U ->
+topology_structure.open_nbhs x U ->
 'measurable%classic U ->
 measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) U f ->
-{for x, continuous f} -> lim_sup_davg f x = 0%R
+{for x,
+  forall
+    x0 : filter.Nbhs.sort
+           (numFieldTopology.Real_sort__canonical__filter_Nbhs R),
+  filter.continuous_at
+    (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs R)
+    (U:=numFieldTopology.Real_sort__canonical__filter_Nbhs R) x0 f} ->
+lim_sup_davg f x = 0%R
 
 continuous_lim_sup_davg is not universe polymorphic
-Arguments continuous_lim_sup_davg {R} [f]%function_scope 
-  [x] [U]%classical_set_scope _ _ _ _
+Arguments continuous_lim_sup_davg {R} [f]%_function_scope 
+  [x] [U]%_classical_set_scope _ _ _ _
 continuous_lim_sup_davg is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.continuous_lim_sup_davg
@@ -1553,19 +1627,26 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="lim_sup_davgB" class="id"><a name="lim_sup_davgB" class="" title="lim_sup_davgB :
 forall {R : realType} [f g : R -> R]
-  [x : numFieldTopology.Real_sort__canonical__topology_structure_Topological
-         R]
+  [x : topology_structure.Topological.sort
+         (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+            R)]
   [U : set R],
-open_nbhs x U ->
+topology_structure.open_nbhs x U ->
 'measurable%classic U ->
 measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) U f ->
-{for x, continuous g} ->
+{for x,
+  forall
+    x0 : filter.Nbhs.sort
+           (numFieldTopology.Real_sort__canonical__filter_Nbhs R),
+  filter.continuous_at
+    (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs R)
+    (U:=numFieldTopology.Real_sort__canonical__filter_Nbhs R) x0 g} ->
 locally_integrable [set: R] g -> lim_sup_davg (f \- g)%R x = lim_sup_davg f x
 
 lim_sup_davgB is not universe polymorphic
-Arguments lim_sup_davgB {R} [f g]%function_scope [x] 
-  [U]%classical_set_scope _ _ _ _ _
+Arguments lim_sup_davgB {R} [f g]%_function_scope 
+  [x] [U]%_classical_set_scope _ _ _ _ _
 lim_sup_davgB is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lim_sup_davgB
@@ -1599,7 +1680,7 @@ Qed.</div></details>
 <span class="vernacular">Local</span><span class="vernacular"> Notation</span><span class="id"> </span><span id="mu" class="id"><a name="mu" class="">mu</a></span><span class="id"> :=</span> (<span class="id">@</span><span class="id"><a href="mathcomp.analysis.lebesgue_measure.html#lebesgue_measure">lebesgue_measure</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lim_sup_davg.R">R</a></span>).<br/>
 <br/>
 <span class="vernacular">Let</span><span class="id"> </span><span id="lim_sup_davg.is_cvg_ereal_sup_davg" class="id"><a name="lim_sup_davg.is_cvg_ereal_sup_davg" class="">is_cvg_ereal_sup_davg</a></span><span class="id"> </span><span id="f:204" class="id"><a name="f:204" class="">f</a></span><span class="id"> </span><span id="x:205" class="id"><a name="x:205" class="">x</a></span><span class="id"> :</span><br/>
-&nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.filter.html#cvg">cvg</a></span> (<span class="id"><a href="mathcomp.analysis.ereal.html#ereal_sup">ereal_sup</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df">[set</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg">davg</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:204">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:205">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#y:207">y</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df"> |</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df"> </a></span><span id="y:209" class="id"><span id="y:207" class="id"><a name="y:209" class="">y</a></span></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> 0%R</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#e:206">e</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#a493d7760e57e2fda3971f50b830b776"> `\</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#a493d7760e57e2fda3971f50b830b776"> </a></span><span class="id">0%R</span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="e:208" class="id"><span id="e:206" class="id"><a name="e:208" class="">e</a></span></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span>).<br/>
+&nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.filter.html#cvg">cvg</a></span> (<span class="id"><a href="mathcomp.analysis.ereal.html#ereal_sup">ereal_sup</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df">[set</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg">davg</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:204">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:205">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#y:207">y</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df"> |</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df"> </a></span><span id="y:209" class="id"><span id="y:207" class="id"><a name="y:209" class="">y</a></span></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> 0%R</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#e:206">e</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#a493d7760e57e2fda3971f50b830b776"> `\</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#a493d7760e57e2fda3971f50b830b776"> </a></span><span class="id">0%R</span><span class="id"><a href="mathcomp.classical.classical_sets.html#7e4573e059f309ba0ef27b7fc70cc4df">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="e:208" class="id"><span id="e:206" class="id"><a name="e:208" class="">e</a></span></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span>).<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
 <div class="proofscript">
@@ -1612,10 +1693,10 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="lim_sup_davgT_HL_maximal" class="id"><a name="lim_sup_davgT_HL_maximal" class="" title="lim_sup_davgT_HL_maximal :
 forall {R : realType} [f : R -> R] (x : R),
 locally_integrable [set: R] f ->
-(lim_sup_davg f x <= HL_maximal f x + `|f x|%:E)%E
+(lim_sup_davg f x <= (HL_maximal f x + `|f x|%:E)%R)%E
 
 lim_sup_davgT_HL_maximal is not universe polymorphic
-Arguments lim_sup_davgT_HL_maximal {R} [f]%function_scope x%ring_scope _
+Arguments lim_sup_davgT_HL_maximal {R} [f]%_function_scope x%_ring_scope _
 lim_sup_davgT_HL_maximal is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lim_sup_davgT_HL_maximal
@@ -1666,40 +1747,55 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <span class="vernacular">Definition</span><span class="id"> </span><span id="lebesgue_pt" class="id"><a name="lebesgue_pt" class="" title="lebesgue_pt : forall {R : realType}, (R -> R) -> R -> Prop
 
 lebesgue_pt is not universe polymorphic
-Arguments lebesgue_pt {R} f%function_scope x%ring_scope
+Arguments lebesgue_pt {R} f%_function_scope x%_ring_scope
 lebesgue_pt is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lebesgue_pt
 Declared in
 library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation, line 839, characters 11-22
 ">lebesgue_pt</a></span><span class="id"> {</span><span id="R:221" class="id"><a name="R:221" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span><span class="id">}</span> (<span id="f:222" class="id"><a name="f:222" class="">f</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#R:221">R</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#R:221">R</a></span>) (<span id="x:223" class="id"><a name="x:223" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#R:221">R</a></span>)<span class="id"> :=</span><br/>
-&nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg">davg</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:222">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:223">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:224">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="r:224" class="id"><a name="r:224" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span> (<span class="id">0%R:</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#R:221">R</a></span>)<span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span><span class="id">0%E</span>.<br/>
+&nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg">davg</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:222">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:223">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:224">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="r:224" class="id"><a name="r:224" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span> (<span class="id">0%R:</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#R:221">R</a></span>)<span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span><span class="id">0%E</span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="continuous_lebesgue_pt" class="id"><a name="continuous_lebesgue_pt" class="" title="continuous_lebesgue_pt :
 forall {R : realType} [f : R -> R]
-  [x : numFieldTopology.Real_sort__canonical__topology_structure_Topological
-         R]
+  [x : topology_structure.Topological.sort
+         (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+            R)]
   [U : set R],
-open_nbhs x U ->
+topology_structure.open_nbhs x U ->
 'measurable%classic U ->
 measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) U f ->
-{for x, continuous f} -> lebesgue_pt f x
+{for x,
+  forall
+    x0 : filter.Nbhs.sort
+           (numFieldTopology.Real_sort__canonical__filter_Nbhs R),
+  filter.continuous_at
+    (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs R)
+    (U:=numFieldTopology.Real_sort__canonical__filter_Nbhs R) x0 f} ->
+lebesgue_pt f x
 
 continuous_lebesgue_pt is not universe polymorphic
 Expanded type for implicit arguments
 continuous_lebesgue_pt :
 forall {R : realType} [f : R -> R]
-  [x : numFieldTopology.Real_sort__canonical__topology_structure_Topological
-         R]
+  [x : topology_structure.Topological.sort
+         (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+            R)]
   [U : set R],
-open_nbhs x U ->
+topology_structure.open_nbhs x U ->
 'measurable%classic U ->
 measurable_fun (T:=Real_sort__canonical__measurable_structure_SigmaRing R)
   (U:=Real_sort__canonical__measurable_structure_SigmaRing R) U f ->
-{for x, continuous f} ->
+{for x,
+  forall
+    x0 : filter.Nbhs.sort
+           (numFieldTopology.Real_sort__canonical__filter_Nbhs R),
+  filter.continuous_at
+    (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs R)
+    (U:=numFieldTopology.Real_sort__canonical__filter_Nbhs R) x0 f} ->
 forall [t : set \bar R],
-nbhs 0%R t ->
+filter.nbhs 0%R t ->
 exists2 i : R,
   [set e | (0 < e)%R]%classic i &
   (ball_ [eta normr] (0%R : R) i
@@ -1707,8 +1803,8 @@ exists2 i : R,
          (fun u : R => is_true ((0 : R) < u)%R) t0 ->
          ([eta davg f x] @^-1` t) t0))%classic
 
-Arguments continuous_lebesgue_pt {R} [f]%function_scope 
-  [x] [U]%classical_set_scope _ _ _ _ [t] _
+Arguments continuous_lebesgue_pt {R} [f]%_function_scope 
+  [x] [U]%_classical_set_scope _ _ _ _ [t] _
 continuous_lebesgue_pt is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.continuous_lebesgue_pt
@@ -1739,7 +1835,7 @@ forall {R : realType} [f : R -> R] [a : itv_bound R] [x u : R],
 (a < BRight x)%E ->
 lebesgue_pt f x ->
 forall [t : set \bar R],
-nbhs 0%R t ->
+filter.nbhs 0%R t ->
 exists2 i : R,
   [set e | (0 < e)%R]%classic i &
   (ball_ [eta normr] (0%R : R) i
@@ -1747,7 +1843,7 @@ exists2 i : R,
          (fun u0 : R => is_true ((0 : R) < u0)%R) t0 ->
          ([eta davg (f \_ [set` Interval a (BRight u)]) x] @^-1` t) t0))%classic
 
-Arguments lebesgue_pt_restrict {R} [f]%function_scope [a x u] _ _ _ [t] _
+Arguments lebesgue_pt_restrict {R} [f]%_function_scope [a x u] _ _ _ [t] _
 lebesgue_pt_restrict is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lebesgue_pt_restrict
@@ -1953,7 +2049,7 @@ locally_integrable [set: R] f ->
 \forall x \ae lebesgue_measure, lebesgue_pt f x
 
 lebesgue_differentiation is not universe polymorphic
-Arguments lebesgue_differentiation {R} [f]%function_scope _
+Arguments lebesgue_differentiation {R} [f]%_function_scope _
 lebesgue_differentiation is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lebesgue_differentiation
@@ -2001,21 +2097,21 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;<span class="id">rewrite</span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.lt_le_trans">lt_le_trans</a></span><span class="id"> xrt</span>)<span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerBlDl">lerBlDl</a></span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_trans">le_trans</a></span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.ltW">ltW</a></span><span class="id"> r1</span>))<span class="id">//</span>.<br/>
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerBlDl">lerBlDl</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.addrC">addrC</a></span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerBrDr">lerBrDr</a></span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_trans">le_trans</a></span> (<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.ler_norm">ler_norm</a></span><span class="id"> _</span>))<span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.normrN">normrN</a></span>.<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_trans">le_trans</a></span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.ltW">ltW</a></span><span class="id"> yk1</span>))<span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerBrDr">lerBrDr</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.natr1">natr1</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.ler_nat">ler_nat</a></span><span class="id"> -</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#muln2">muln2</a></span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#ltn_Pmulr">ltn_Pmulr</a></span>.<br/>
-<span class="id">have</span><span class="id"> :=</span><span class="id"> h</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#124262c1d6731d26a230b737e0b3e9b6">`|</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Def.ceil">ceil</a></span><span class="id"> x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#124262c1d6731d26a230b737e0b3e9b6">|</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bda89d73ec4a8f23ae92b565ffb5aaa6">+1</a></span><span class="id">%N</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#I">Logic</a></span>.<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#I">I</a></span>.<br/>
-<span class="id">have</span><span class="id"> Bxx</span><span class="id"> :</span><span class="id"> B</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#124262c1d6731d26a230b737e0b3e9b6">`|</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Def.ceil">ceil</a></span><span class="id"> x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#124262c1d6731d26a230b737e0b3e9b6">|</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bda89d73ec4a8f23ae92b565ffb5aaa6">+1</a></span><span class="id"> x</span>.<br/>
-&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> /B</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.sub0r">sub0r</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.normrN">normrN</a></span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_lt_trans">le_lt_trans</a></span> (<span class="id"><a href="mathcomp.classical.unstable.html#abs_ceil_ge">unstable</a></span>.<span class="id"><a href="mathcomp.classical.unstable.html#abs_ceil_ge">abs_ceil_ge</a></span><span class="id"> _</span>))<span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.ltr_nat">ltr_nat</a></span>.<br/>
-&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> -</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#addnn">addnn</a></span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#addSnnS">addSnnS</a></span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#ltn_addl">ltn_addl</a></span>.<br/>
+<span class="id">have</span><span class="id"> :=</span><span class="id"> h</span> (<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Def.truncn">truncn</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id">x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span>)<span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#I">Logic</a></span>.<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#I">I</a></span>.<br/>
+<span class="id">have</span><span class="id"> Bxx</span><span class="id"> :</span><span class="id"> B</span> (<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Def.truncn">truncn</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id">x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span>)<span class="id"> x</span>.<br/>
+&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> /B</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.sub0r">sub0r</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.normrN">normrN</a></span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#doubleS">doubleS</a></span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Theory.truncn_le_nat">truncn_le_nat</a></span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> -</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#addnn">addnn</a></span><span class="id"> -</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#addnS">addnS</a></span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#leq_addr">leq_addr</a></span>.<br/>
 <span class="id">move=&gt;</span><span class="id"> /</span>(_<span class="id"> Bxx</span>)<span class="id">/</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.normed_module.html#fine_cvgP">fine_cvgP</a></span><span class="id">[davg_fk_fin_num</span><span class="id"> davg_fk0]</span>.<br/>
-<span class="id">have</span><span class="id"> f_fk_ceil</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f">\forall</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> </a></span><span id="t:328" class="id"><a name="t:328" class="">t</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> \near</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f">,</a></span><br/>
+<span class="id">have</span><span class="id"> f_fk_ceil</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f">\forall</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> </a></span><span id="t:328" class="id"><a name="t:328" class="">t</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> \near</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#be9d045413b70f39126ce7af3de2a77f">,</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">\int[</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">]_</a></span>(<span id="y:329" class="id"><a name="y:329" class="">y</a></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#t:328">t</a></span>)<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#baaea4d1d2e6cce26f49e2f830fd4e9f">`|</a></span>(<span class="id">f</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#y:329">y</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'-'_x"> -</a></span> (<span class="id">f</span><span class="id"> x</span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#baaea4d1d2e6cce26f49e2f830fd4e9f">|</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><br/>
-&nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">\int[</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">]_</a></span>(<span id="y:330" class="id"><a name="y:330" class="">y</a></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#t:328">t</a></span>)<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id">fk</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#124262c1d6731d26a230b737e0b3e9b6">`|</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Def.ceil">ceil</a></span><span class="id"> x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#124262c1d6731d26a230b737e0b3e9b6">|</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bda89d73ec4a8f23ae92b565ffb5aaa6">+1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#y:330">y</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> -</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> </a></span><span class="id">fk</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#124262c1d6731d26a230b737e0b3e9b6">`|</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Def.ceil">ceil</a></span><span class="id"> x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#124262c1d6731d26a230b737e0b3e9b6">|</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bda89d73ec4a8f23ae92b565ffb5aaa6">+1</a></span><span class="id"> x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span>.<br/>
+&nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">\int[</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">]_</a></span>(<span id="y:330" class="id"><a name="y:330" class="">y</a></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#t:328">t</a></span>)<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id">fk</span> (<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Def.truncn">truncn</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id">x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#y:330">y</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> -</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> </a></span><span class="id">fk</span> (<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Def.truncn">truncn</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id">x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span>)<span class="id"> x</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">near=&gt;</span><span class="id"> t</span>.<br/>
 &nbsp;&nbsp;<span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#eq_integral">eq_integral</a></span><span class="id"> =&gt;</span><span class="id"> /=</span><span class="id"> y</span><span class="id"> /</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#1bedcde8d778593b4f52c096a5ecb94a">[1!</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#inE">inE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#1bedcde8d778593b4f52c096a5ecb94a">]</a></span><span class="id"> xty</span>.<br/>
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> -</span>(<span class="id">fE</span><span class="id"> x</span><span class="id"> _</span><span class="id"> t</span>)<span class="id">//;</span><span class="id"> last</span><span class="id"> first</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.sub0r">sub0r</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.normrN">normrN</a></span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_lt_trans">le_lt_trans</a></span> (<span class="id"><a href="mathcomp.classical.unstable.html#abs_ceil_ge">unstable</a></span>.<span class="id"><a href="mathcomp.classical.unstable.html#abs_ceil_ge">abs_ceil_ge</a></span><span class="id"> _</span>))<span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.ltr_nat">ltr_nat</a></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.sub0r">sub0r</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.normrN">normrN</a></span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Theory.truncn_le_nat">truncn_le_nat</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> -</span>(<span class="id">fE</span><span class="id"> x</span><span class="id"> _</span><span class="id"> t</span>)<span class="id">//;</span><span class="id"> last</span><span class="id"> first</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ballxx">ballxx</a></span><span class="id">;</span><span class="id"> near:</span><span class="id"> t;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_right_gt">nbhs_right_gt</a></span>.<br/>
-&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.sub0r">sub0r</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.normrN">normrN</a></span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_lt_trans">le_lt_trans</a></span> (<span class="id"><a href="mathcomp.classical.unstable.html#abs_ceil_ge">unstable</a></span>.<span class="id"><a href="mathcomp.classical.unstable.html#abs_ceil_ge">abs_ceil_ge</a></span><span class="id"> _</span>))<span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.ltr_nat">ltr_nat</a></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ballxx">ballxx</a></span><span class="id">;</span><span class="id"> near:</span><span class="id"> t;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#nbhs_right_gt">nbhs_right_gt</a></span>.<br/>
+&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.sub0r">sub0r</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.normrN">normrN</a></span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Theory.truncn_le_nat">truncn_le_nat</a></span>.<br/>
 <span class="id">apply/</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.normed_module.html#fine_cvgP">fine_cvgP</a></span><span class="id">;</span><span class="id"> split=&gt;</span><span class="id"> [{davg_fk0}|{davg_fk_fin_num}]</span>.<br/>
 <span class="id">-</span><span class="id"> move:</span><span class="id"> davg_fk_fin_num</span><span class="id"> =&gt;</span><span class="id"> -[M</span><span class="id"> /=</span><span class="id"> M0]</span><span class="id"> davg_fk_fin_num</span>.<br/>
 &nbsp;&nbsp;<span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#filter_app">filter_app</a></span><span class="id"> f_fk_ceil;</span><span class="id"> near=&gt;</span><span class="id"> t</span><span class="id"> =&gt;</span><span class="id"> Ht</span>.<br/>
@@ -2036,12 +2132,17 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="lebesgue_density" class="id"><a name="lebesgue_density" class="" title="lebesgue_density :
 forall {R : realType} [A : set R],
 'measurable%classic A ->
-\forall x \ae lebesgue_measure, ((lebesgue_measure (A `&` ball x r) /
-                                  lebesgue_measure (ball x r))%E @[r --> 0^'+] --> 
-                                 (\1_A x)%:E)%classic
+\forall x \ae lebesgue_measure, filter.cvg_to
+                                  (filter.nbhs
+                                     (filter.fmap
+                                        (fun r : R =>
+                                         (lebesgue_measure (A `&` ball x r) /
+                                          lebesgue_measure (ball x r))%E)
+                                        (filter.nbhs (0^'+)%classic)))
+                                  (filter.nbhs (\1_A x)%:E)
 
 lebesgue_density is not universe polymorphic
-Arguments lebesgue_density {R} [A]%classical_set_scope _
+Arguments lebesgue_density {R} [A]%_classical_set_scope _
 lebesgue_density is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.lebesgue_density
@@ -2049,7 +2150,7 @@ Declared in
 library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation, line 1111, characters 6-22
 ">lebesgue_density</a></span> (<span id="A:332" class="id"><a name="A:332" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#density.R">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#measurable">measurable</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#A:332">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.measure_theory.measure_negligible.html#bc9b2ba76d94ad575afd74542172654c">{ae</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_negligible.html#bc9b2ba76d94ad575afd74542172654c"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_negligible.html#bc9b2ba76d94ad575afd74542172654c">,</a></span><span class="gallina-kwd"> forall</span><span class="id"> </span><span id="x:333" class="id"><a name="x:333" class="">x</a></span><span class="id">,</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#A:332">A</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> `&amp;`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:333">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:334">r</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> *</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#x:333">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:334">r</a></span>))<span class="id"><a href="mathcomp.reals.constructive_ereal.html#2e1feae62a5737b40e886e0abeca58dd">^-1</a></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">@[</a></span><span id="r:334" class="id"><a name="r:334" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span> (<span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6">\1_</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#A:332">A</a></span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6"> x</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_negligible.html#bc9b2ba76d94ad575afd74542172654c">}</a></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">@[</a></span><span id="r:334" class="id"><a name="r:334" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span> (<span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6">\1_</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#A:332">A</a></span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6"> x</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_negligible.html#bc9b2ba76d94ad575afd74542172654c">}</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
 <div class="proofscript">
@@ -2059,7 +2160,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <span class="id">apply:</span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.normed_module.html#sube_cvg0">sube_cvg0</a></span><span class="id"> _</span><span class="id"> _</span>).<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#::pair_scope:x_'.1'">1</a></span><span class="id"> =&gt;</span><span class="id"> //</span>.<br/>
 <span class="id">move:</span><span class="id"> Ax;</span><span class="id"> rewrite</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#lebesgue_pt">lebesgue_pt</a></span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#davg">davg</a></span><span class="id"> /=</span><span class="id"> -/</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span><span class="id"> =&gt;</span><span class="id"> Ax</span>.<br/>
 <span class="id">have</span><span class="id"> :</span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:335">r</a></span>))<span class="id"><a href="mathcomp.reals.constructive_ereal.html#2e1feae62a5737b40e886e0abeca58dd">^-1</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> *</a></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.reals.constructive_ereal.html#baaea4d1d2e6cce26f49e2f830fd4e9f">`|</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">\int[</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">]_</a></span>(<span id="y:336" class="id"><a name="y:336" class="">y</a></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:335">r</a></span>) (<span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6">\1_</a></span><span class="id">A</span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6"> y</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> -</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> </a></span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6">\1_</a></span><span class="id">A</span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6"> x</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#baaea4d1d2e6cce26f49e2f830fd4e9f"> |</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="r:335" class="id"><a name="r:335" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span><span class="id">0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.reals.constructive_ereal.html#baaea4d1d2e6cce26f49e2f830fd4e9f">`|</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">\int[</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3">]_</a></span>(<span id="y:336" class="id"><a name="y:336" class="">y</a></span><span class="gallina-kwd"> in</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#871f2882c0e95b3d1e1d20f0a4fbdef3"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:335">r</a></span>) (<span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6">\1_</a></span><span class="id">A</span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6"> y</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> -</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> </a></span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6">\1_</a></span><span class="id">A</span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6"> x</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#baaea4d1d2e6cce26f49e2f830fd4e9f"> |</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="r:335" class="id"><a name="r:335" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span><span class="id">0</span>.<br/>
 &nbsp;&nbsp;<span class="id">apply:</span> (<span class="id">@</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.normed_module.html#squeeze_cvge">squeeze_cvge</a></span><span class="id"> _</span><span class="id"> _</span><span class="id"> _</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#density.R">R</a></span> (<span class="id"><a href="mathcomp.classical.functions.html#cst">cst</a></span><span class="id"> 0</span>)<span class="id"> _</span><span class="id"> _</span><span class="id"> _</span><span class="id"> _</span><span class="id"> _</span><span class="id"> Ax</span>)<span class="id"> =&gt;</span><span class="id"> //;</span><span class="id"> [|exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#cvg_cst">cvg_cst</a></span><span class="id">]</span>.<br/>
 &nbsp;&nbsp;<span class="id">near=&gt;</span><span class="id"> a;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#mule_ge0">mule_ge0</a></span><span class="id"> ?</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#inve_ge0">inve_ge0</a></span><span class="id">///=</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#lee_pmul2l">lee_pmul2l</a></span><span class="id">//;</span><span class="id"> last</span><span class="id"> 2</span><span class="id"> first</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_measure.html#lebesgue_measure_ball">lebesgue_measure_ball</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#fin_numV">fin_numV</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#eqe">eqe</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.mulrn_eq0">mulrn_eq0</a></span><span class="id">/=</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.gt_eqF">gt_eqF</a></span>.<br/>
@@ -2067,7 +2168,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.invr_gt0">invr_gt0</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.mulrn_wgt0">mulrn_wgt0</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_nonneg.html#le_abse_integral">le_abse_integral</a></span><span class="id"> =&gt;</span><span class="id"> //;</span><span class="id"> first</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#measurable_ball">measurable_ball</a></span>.<br/>
 &nbsp;&nbsp;<span class="id">exact/</span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#measurable_EFinP">measurable_EFinP</a></span><span class="id">/</span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#measurable_funB">measurable_funB</a></span>.<br/>
-<span class="id">set</span><span class="id"> f</span><span class="id"> :=</span> (<span class="id">f</span><span class="gallina-kwd"> in</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:338">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:337">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="r:339" class="id"><span id="r:337" class="id"><a name="r:339" class="">r</a></span></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span>_<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span>_).<br/>
+<span class="id">set</span><span class="id"> f</span><span class="id"> :=</span> (<span class="id">f</span><span class="gallina-kwd"> in</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#f:338">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:337">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="r:339" class="id"><span id="r:337" class="id"><a name="r:339" class="">r</a></span></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span>_<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span>_).<br/>
 <span class="id">rewrite</span> (_<span class="id"> :</span><span class="id"> f</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="gallina-kwd"> fun</span><span class="id"> </span><span id="r:342" class="id"><span id="r:341" class="id"><span id="r:340" class="id"><a name="r:342" class="">r</a></span></span></span><span class="id"> =&gt;</span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:340">r</a></span>))<span class="id"><a href="mathcomp.reals.constructive_ereal.html#2e1feae62a5737b40e886e0abeca58dd">^-1</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> *</a></span><br/>
 &nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.reals.constructive_ereal.html#baaea4d1d2e6cce26f49e2f830fd4e9f">`|</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id">A</span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> `&amp;`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:340">r</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'-'_x"> -</a></span> (<span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6">\1_</a></span><span class="id">A</span><span class="id"><a href="mathcomp.analysis.numfun.html#e353122e03268a6eab33cb5af81dd3c6"> x</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> *</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:340">r</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#baaea4d1d2e6cce26f49e2f830fd4e9f">|</a></span>)<span class="id">;</span><span class="id"> last</span><span class="id"> first</span>.<br/>
 &nbsp;&nbsp;<span class="id">apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> r;</span><span class="id"> rewrite</span><span class="id"> /f</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integrable.html#integralB_EFin">integralB_EFin</a></span><span class="id">//=;</span><span class="id"> last</span><span class="id"> 3</span><span class="id"> first</span>.<br/>
@@ -2093,7 +2194,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 &nbsp;&nbsp;<span class="id">apply:</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#iffRL">iffRL</a></span><span class="id">;</span><span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#propeqP">propeqP</a></span><span class="id">;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#eq_cvg">eq_cvg</a></span><span class="id"> =&gt;</span><span class="id"> r</span>.<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> -</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.mulNrn">mulNrn</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.mulr0n">mulr0n</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#adde0">adde0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#mul0e">mul0e</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#sube0">sube0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#gee0_abs">gee0_abs</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#muleC">muleC</a></span>.<br/>
 <span class="id">have</span><span class="id"> {xrA0}</span><span class="id"> /</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.normed_module.html#cvgeN">cvgeN</a></span><span class="id"> :</span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:343">r</a></span>))<span class="id"><a href="mathcomp.reals.constructive_ereal.html#2e1feae62a5737b40e886e0abeca58dd">^-1</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#f1c2ddfea282f8f8d7539f61e14c08e4"> *</a></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:343">r</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'-'_x"> -</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'-'_x"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id">A</span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> `&amp;`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:343">r</a></span>))<span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="r:343" class="id"><a name="r:343" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span><span class="id">0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:343">r</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'-'_x"> -</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:x_'-'_x"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#mu">mu</a></span> (<span class="id">A</span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> `&amp;`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> x</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html#r:343">r</a></span>))<span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="r:343" class="id"><a name="r:343" class="">r</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id">0</span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span><span class="id">0</span>.<br/>
 &nbsp;&nbsp;<span class="id">move:</span><span class="id"> xrA0;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#cvg_trans">cvg_trans</a></span><span class="id">;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#near_eq_cvg">near_eq_cvg</a></span><span class="id">;</span><span class="id"> near=&gt;</span><span class="id"> r</span>.<br/>
 &nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#mul1e">mul1e</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#lee0_abs">lee0_abs</a></span><span class="id">;</span><span class="id"> last</span><span class="id"> first</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#sube_le0">sube_le0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_function.html#le_measure">le_measure</a></span><span class="id">//</span><span class="id"> ?</span><span class="id"><a href="mathcomp.classical.classical_sets.html#inE">inE</a></span><span class="id">/=;</span><span class="id"> last</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#measurable_ball">measurable_ball</a></span>.<br/>
@@ -2121,7 +2222,7 @@ library mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentia
 <span class="vernacular">Definition</span><span class="id"> </span><span id="nicely_shrinking" class="id"><a name="nicely_shrinking" class="" title="nicely_shrinking : forall {R : realType}, R -> (set R) ^nat -> Prop
 
 nicely_shrinking is not universe polymorphic
-Arguments nicely_shrinking {R} x%ring_scope E
+Arguments nicely_shrinking {R} x%_ring_scope E
 nicely_shrinking is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.nicely_shrinking
@@ -2139,7 +2240,7 @@ forall {R : realType} [x : R] [E : (set R) ^nat],
 nicely_shrinking x E -> forall n : nat, (0%R < lebesgue_measure (E n))%E
 
 nicely_shrinking_gt0 is not universe polymorphic
-Arguments nicely_shrinking_gt0 {R} [x]%ring_scope [E] _ n%nat_scope
+Arguments nicely_shrinking_gt0 {R} [x]%_ring_scope [E] _ n%_nat_scope
 nicely_shrinking_gt0 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.nicely_shrinking_gt0
@@ -2161,7 +2262,7 @@ forall {R : realType} [x : R] [E : (set R) ^nat],
 nicely_shrinking x E -> forall n : nat, (lebesgue_measure (E n) < +oo)%E
 
 nicely_shrinking_lty is not universe polymorphic
-Arguments nicely_shrinking_lty {R} [x]%ring_scope [E] _ n%nat_scope
+Arguments nicely_shrinking_lty {R} [x]%_ring_scope [E] _ n%_nat_scope
 nicely_shrinking_lty is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.nicely_shrinking_lty
@@ -2183,7 +2284,7 @@ forall {R : realType} [x : R] [E : (set R) ^nat],
 nicely_shrinking x E -> forall n : nat, lebesgue_measure (E n) \is a fin_num
 
 nicely_shrinking_fin_num is not universe polymorphic
-Arguments nicely_shrinking_fin_num {R} [x]%ring_scope [E] _ n%nat_scope
+Arguments nicely_shrinking_fin_num {R} [x]%_ring_scope [E] _ n%_nat_scope
 nicely_shrinking_fin_num is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.nicely_shrinking_fin_num
@@ -2213,9 +2314,14 @@ forall [f : R -> R],
 locally_integrable [set: R] f ->
 forall [x : R],
 lebesgue_pt f x ->
-(((lebesgue_measure (E x n))^-1 *
-  \int[lebesgue_measure]_(y in E x n) (f y)%:E)%E @[n --> \oo] --> 
- (f x)%:E)%classic
+filter.cvg_to
+  (filter.nbhs
+     (filter.fmap
+        (fun n : nat =>
+         ((lebesgue_measure (E x n))^-1 *
+          \int[lebesgue_measure]_(y in E x n) (f y)%:E)%E)
+        (filter.nbhs filter.eventually)))
+  (filter.nbhs (f x)%:E)
 
 nice_lebesgue_differentiation is not universe polymorphic
 Expanded type for implicit arguments
@@ -2227,7 +2333,7 @@ locally_integrable [set: R] f ->
 forall [x : R],
 lebesgue_pt f x ->
 forall [t : set \bar R],
-nbhs (f x)%:E t ->
+filter.nbhs (f x)%:E t ->
 exists2 i : nat,
   [set: nat]%classic i &
   ((fun N : nat => [set n | N <= n]) i
@@ -2236,8 +2342,8 @@ exists2 i : nat,
           \int[lebesgue_measure]_(y in E x n) (f y)%:E)%E) @^-1`
         t)%classic
 
-Arguments nice_lebesgue_differentiation {R} [E]%function_scope
-  hE%function_scope [f]%function_scope _ [x]%ring_scope 
+Arguments nice_lebesgue_differentiation {R} [E]%_function_scope
+  hE%_function_scope [f]%_function_scope _ [x]%_ring_scope 
   _ [t] _
 nice_lebesgue_differentiation is opaque
 Expands to: Constant

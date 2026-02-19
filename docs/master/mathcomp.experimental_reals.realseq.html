@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -241,7 +256,7 @@
 forall {R : realDomainType} [T : Type] (f : T -> R) (x : T), (f x <= f x)%R
 
 leff is not universe polymorphic
-Arguments leff {R} [T]%type_scope f%function_scope x
+Arguments leff {R} [T]%_type_scope f%_function_scope x
 leff is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.leff
 Declared in
@@ -258,8 +273,8 @@ forall {R : realDomainType} [T : Type] [g f h : T -> R],
 (forall x : T, (g x <= h x)%R) -> forall x : T, (f x <= h x)%R
 
 lef_trans is not universe polymorphic
-Arguments lef_trans {R} [T]%type_scope [g f h]%function_scope
-  (_ _)%function_scope x
+Arguments lef_trans {R} [T]%_type_scope [g f h]%_function_scope
+  (_ _)%_function_scope x
 lef_trans is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.lef_trans
 Declared in
@@ -282,7 +297,7 @@ library mathcomp.experimental_reals.realseq, line 38, characters 6-15
 <span class="vernacular">Coercion</span><span class="id"> </span><span id="pred_of_nbh" class="id"><a name="pred_of_nbh" class="" title="pred_of_nbh : forall {R : realType} [l : \bar R], nbh l -> simpl_pred R
 
 pred_of_nbh is not universe polymorphic
-Arguments pred_of_nbh {R} [l]%ereal_scope v
+Arguments pred_of_nbh {R} [l]%_ereal_scope v
 pred_of_nbh is a coercion
 pred_of_nbh is transparent
 Expands to: Constant mathcomp.experimental_reals.realseq.pred_of_nbh
@@ -309,7 +324,7 @@ forall (R : realType) (c : R) (P : forall x : \bar R, nbh x -> Prop),
 forall v : nbh c%:E, P c%:E v
 
 nbh_finW is not universe polymorphic
-Arguments nbh_finW R c%ring_scope (P _)%function_scope v
+Arguments nbh_finW R c%_ring_scope (P _)%_function_scope v
 nbh_finW is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nbh_finW
 Declared in
@@ -329,7 +344,7 @@ forall (R : realType) (P : forall x : \bar R, nbh x -> Prop),
 (forall M : R, P +oo%E (NPInf M)) -> forall v : nbh +oo, P +oo%E v
 
 nbh_pinfW is not universe polymorphic
-Arguments nbh_pinfW R (P _)%function_scope v
+Arguments nbh_pinfW R (P _)%_function_scope v
 nbh_pinfW is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nbh_pinfW
 Declared in
@@ -348,7 +363,7 @@ forall (R : realType) (P : forall x : \bar R, nbh x -> Prop),
 (forall M : R, P -oo%E (NNInf M)) -> forall v : nbh -oo, P -oo%E v
 
 nbh_ninfW is not universe polymorphic
-Arguments nbh_ninfW R (P _)%function_scope v
+Arguments nbh_ninfW R (P _)%_function_scope v
 nbh_ninfW is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nbh_ninfW
 Declared in
@@ -370,7 +385,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="eclamp" class="id"><a name="eclamp" class="" title="eclamp : forall {R : realType}, R -> R
 
 eclamp is not universe polymorphic
-Arguments eclamp {R} e%ring_scope
+Arguments eclamp {R} e%_ring_scope
 eclamp is transparent
 Expands to: Constant mathcomp.experimental_reals.realseq.eclamp
 Declared in
@@ -381,7 +396,7 @@ library mathcomp.experimental_reals.realseq, line 91, characters 11-17
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="gt0_clamp" class="id"><a name="gt0_clamp" class="" title="gt0_clamp : forall {R : realType} (e : R), (0 < eclamp e)%R
 
 gt0_clamp is not universe polymorphic
-Arguments gt0_clamp {R} e%ring_scope
+Arguments gt0_clamp {R} e%_ring_scope
 gt0_clamp is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.gt0_clamp
 Declared in
@@ -395,7 +410,7 @@ library mathcomp.experimental_reals.realseq, line 94, characters 6-15
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="eclamp_id" class="id"><a name="eclamp_id" class="" title="eclamp_id : forall {R : realType} [e : R], (0 < e)%R -> eclamp e = e
 
 eclamp_id is not universe polymorphic
-Arguments eclamp_id {R} [e]%ring_scope _
+Arguments eclamp_id {R} [e]%_ring_scope _
 eclamp_id is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.eclamp_id
 Declared in
@@ -409,7 +424,7 @@ library mathcomp.experimental_reals.realseq, line 97, characters 6-15
 <span class="vernacular">Definition</span><span class="id"> </span><span id="B1" class="id"><a name="B1" class="" title="B1 : forall {R : realType} (x : R), nbh x%:E
 
 B1 is not universe polymorphic
-Arguments B1 {R} x%ring_scope
+Arguments B1 {R} x%_ring_scope
 B1 is transparent
 Expands to: Constant mathcomp.experimental_reals.realseq.B1
 Declared in
@@ -420,7 +435,7 @@ library mathcomp.experimental_reals.realseq, line 100, characters 11-13
 <span class="vernacular">Definition</span><span class="id"> </span><span id="B" class="id"><a name="B" class="" title="B : forall {R : realType} (x : R), R -> nbh x%:E
 
 B is not universe polymorphic
-Arguments B {R} (x e)%ring_scope
+Arguments B {R} (x e)%_ring_scope
 B is transparent
 Expands to: Constant mathcomp.experimental_reals.realseq.B
 Declared in
@@ -435,7 +450,7 @@ exists (v1 : nbh l1) (v2 : nbh l2),
   forall x y : R, x \in v1 -> y \in v2 -> (x < y)%R
 
 separable_le is not universe polymorphic
-Arguments separable_le {R} [l1 l2]%ereal_scope _
+Arguments separable_le {R} [l1 l2]%_ereal_scope _
 separable_le is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.separable_le
 Declared in
@@ -469,7 +484,7 @@ l1 != l2 ->
 exists (v1 : nbh l1) (v2 : nbh l2), forall x : R, x \notin [predI v1 & v2]
 
 separable is not universe polymorphic
-Arguments separable {R} [l1 l2]%ereal_scope _
+Arguments separable {R} [l1 l2]%_ereal_scope _
 separable is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.separable
 Declared in
@@ -498,7 +513,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="ncvg" class="id"><a name="ncvg" class="" title="ncvg : forall [R : realType], (nat -> R) -> \bar R -> Prop
 
 ncvg is not universe polymorphic
-Arguments ncvg [R] u%function_scope l%ereal_scope
+Arguments ncvg [R] u%_function_scope l%_ereal_scope
 ncvg is transparent
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg
 Declared in
@@ -509,7 +524,7 @@ library mathcomp.experimental_reals.realseq, line 148, characters 11-15
 <span class="vernacular">Definition</span><span class="id"> </span><span id="iscvg" class="id"><a name="iscvg" class="" title="iscvg : forall [R : realType], (nat -> R) -> Prop
 
 iscvg is not universe polymorphic
-Arguments iscvg [R] u%function_scope
+Arguments iscvg [R] u%_function_scope
 iscvg is transparent
 Expands to: Constant mathcomp.experimental_reals.realseq.iscvg
 Declared in
@@ -519,7 +534,7 @@ library mathcomp.experimental_reals.realseq, line 151, characters 11-16
 <span class="vernacular">Definition</span><span class="id"> </span><span id="nbounded" class="id"><a name="nbounded" class="" title="nbounded : forall [R : realType], (nat -> R) -> Prop
 
 nbounded is not universe polymorphic
-Arguments nbounded [R] u%function_scope
+Arguments nbounded [R] u%_function_scope
 nbounded is transparent
 Expands to: Constant mathcomp.experimental_reals.realseq.nbounded
 Declared in
@@ -559,7 +574,7 @@ reflect
   `[< nbounded (R:=R) u >]
 
 nboundedP is not universe polymorphic
-Arguments nboundedP [R] u%function_scope
+Arguments nboundedP [R] u%_function_scope
 nboundedP is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nboundedP
 Declared in
@@ -589,7 +604,7 @@ forall [R : realType] [u : nat -> R] [l1 l2 : \bar R],
 ncvg (R:=R) u l1 -> ncvg (R:=R) u l2 -> l1 = l2
 
 ncvg_uniq is not universe polymorphic
-Arguments ncvg_uniq [R] [u]%function_scope [l1 l2]%ereal_scope _ _
+Arguments ncvg_uniq [R] [u]%_function_scope [l1 l2]%_ereal_scope _ _
 ncvg_uniq is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_uniq
 Declared in
@@ -610,8 +625,8 @@ forall [R : realType] [K : nat] [v u : nat -> R] [l : \bar R],
 (forall n : nat, K <= n -> u n = v n) -> ncvg (R:=R) v l -> ncvg (R:=R) u l
 
 ncvg_eq_from is not universe polymorphic
-Arguments ncvg_eq_from [R] [K]%nat_scope [v u]%function_scope 
-  [l]%ereal_scope _%function_scope _ v
+Arguments ncvg_eq_from [R] [K]%_nat_scope [v u]%_function_scope
+  [l]%_ereal_scope _%_function_scope _ v
 ncvg_eq_from is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_eq_from
 Declared in
@@ -630,7 +645,7 @@ forall [R : realType] [v u : nat -> R] [l : \bar R],
 u =1 v -> ncvg (R:=R) v l -> ncvg (R:=R) u l
 
 ncvg_eq is not universe polymorphic
-Arguments ncvg_eq [R] [v u]%function_scope [l]%ereal_scope _ _ v
+Arguments ncvg_eq [R] [v u]%_function_scope [l]%_ereal_scope _ _ v
 ncvg_eq is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_eq
 Declared in
@@ -647,8 +662,8 @@ forall [R : realType] [K : nat] [v u : nat -> R] [lv lu : \bar R],
 ncvg (R:=R) v lv -> ncvg (R:=R) u lu -> (lu <= lv)%E
 
 ncvg_le_from is not universe polymorphic
-Arguments ncvg_le_from [R] [K]%nat_scope [v u]%function_scope
-  [lv lu]%ereal_scope _%function_scope _ _
+Arguments ncvg_le_from [R] [K]%_nat_scope [v u]%_function_scope
+  [lv lu]%_ereal_scope _%_function_scope _ _
 ncvg_le_from is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_le_from
 Declared in
@@ -671,8 +686,8 @@ forall [R : realType] [v u : nat -> R] [lv lu : \bar R],
 ncvg (R:=R) v lv -> ncvg (R:=R) u lu -> (lu <= lv)%E
 
 ncvg_le is not universe polymorphic
-Arguments ncvg_le [R] [v u]%function_scope [lv lu]%ereal_scope
-  _%function_scope _ _
+Arguments ncvg_le [R] [v u]%_function_scope [lv lu]%_ereal_scope
+  _%_function_scope _ _
 ncvg_le is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_le
 Declared in
@@ -689,7 +704,7 @@ forall [R : realType] [u : nat -> R] [x : R],
 ncvg (R:=R) u x%:E -> nbounded (R:=R) u
 
 ncvg_nbounded is not universe polymorphic
-Arguments ncvg_nbounded [R] [u]%function_scope [x]%ring_scope _
+Arguments ncvg_nbounded [R] [u]%_function_scope [x]%_ring_scope _
 ncvg_nbounded is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_nbounded
 Declared in
@@ -720,7 +735,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="nboundedC" class="id"><a name="nboundedC" class="" title="nboundedC : forall [R : realType] (c : R), nbounded (R:=R) c%:S
 
 nboundedC is not universe polymorphic
-Arguments nboundedC [R] c%ring_scope
+Arguments nboundedC [R] c%_ring_scope
 nboundedC is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nboundedC
 Declared in
@@ -736,7 +751,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="ncvgC" class="id"><a name="ncvgC" class="" title="ncvgC : forall [R : realType] [c : R], ncvg (R:=R) c%:S c%:E
 
 ncvgC is not universe polymorphic
-Arguments ncvgC [R] [c]%ring_scope v
+Arguments ncvgC [R] [c]%_ring_scope v
 ncvgC is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgC
 Declared in
@@ -755,7 +770,7 @@ ncvg (R:=R) u lu%:E ->
 ncvg (R:=R) v lv%:E -> ncvg (R:=R) (u \+ v)%R ((lu + lv)%E)%:E
 
 ncvgD is not universe polymorphic
-Arguments ncvgD [R] [u v]%function_scope [lu lv]%ring_scope _ _ v
+Arguments ncvgD [R] [u v]%_function_scope [lu lv]%_ring_scope _ _ v
 ncvgD is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgD
 Declared in
@@ -780,7 +795,7 @@ forall [R : realType] [u : nat -> R] [lu : \bar R],
 ncvg (R:=R) u lu -> ncvg (R:=R) (- u)%R (- lu)
 
 ncvgN is not universe polymorphic
-Arguments ncvgN [R] [u]%function_scope [lu]%ereal_scope _ v
+Arguments ncvgN [R] [u]%_function_scope [lu]%_ereal_scope _ v
 ncvgN is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgN
 Declared in
@@ -803,7 +818,7 @@ forall [R : realType] [u : nat -> R] [lu : R],
 ncvg (R:=R) u lu%:E -> ncvg (R:=R) (- u)%R (- lu)%:E
 
 ncvgN_fin is not universe polymorphic
-Arguments ncvgN_fin [R] [u]%function_scope [lu]%ring_scope _ v
+Arguments ncvgN_fin [R] [u]%_function_scope [lu]%_ring_scope _ v
 ncvgN_fin is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgN_fin
 Declared in
@@ -820,7 +835,7 @@ ncvg (R:=R) u lu%:E ->
 ncvg (R:=R) v lv%:E -> ncvg (R:=R) (u \- v)%R (lu - lv)%:E
 
 ncvgB is not universe polymorphic
-Arguments ncvgB [R] [u v]%function_scope [lu lv]%ring_scope _ _ v
+Arguments ncvgB [R] [u v]%_function_scope [lu lv]%_ring_scope _ _ v
 ncvgB is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgB
 Declared in
@@ -837,7 +852,7 @@ forall [R : realType] [u : nat -> R] [lu : R],
 ncvg (R:=R) u lu%:E -> ncvg (R:=R) (fun n : nat => `|u n|%R) `|lu|%:E
 
 ncvg_abs is not universe polymorphic
-Arguments ncvg_abs [R] [u]%function_scope [lu]%ring_scope _ v
+Arguments ncvg_abs [R] [u]%_function_scope [lu]%_ring_scope _ v
 ncvg_abs is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_abs
 Declared in
@@ -856,7 +871,7 @@ forall [R : realType] [u : nat -> R],
 ncvg (R:=R) (fun n : nat => `|u n|%R) 0%:E -> ncvg (R:=R) u 0%:E
 
 ncvg_abs0 is not universe polymorphic
-Arguments ncvg_abs0 [R] [u]%function_scope _ v
+Arguments ncvg_abs0 [R] [u]%_function_scope _ v
 ncvg_abs0 is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_abs0
 Declared in
@@ -874,7 +889,7 @@ forall [R : realType] [u v : nat -> R],
 ncvg (R:=R) u 0%:E -> nbounded (R:=R) v -> ncvg (R:=R) (u \* v)%R 0%:E
 
 ncvgMl is not universe polymorphic
-Arguments ncvgMl [R] [u v]%function_scope _ _ v
+Arguments ncvgMl [R] [u v]%_function_scope _ _ v
 ncvgMl is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgMl
 Declared in
@@ -893,7 +908,7 @@ forall [R : realType] [u v : nat -> R],
 ncvg (R:=R) v 0%:E -> nbounded (R:=R) u -> ncvg (R:=R) (u \* v)%R 0%:E
 
 ncvgMr is not universe polymorphic
-Arguments ncvgMr [R] [u v]%function_scope _ _ v
+Arguments ncvgMr [R] [u v]%_function_scope _ _ v
 ncvgMr is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgMr
 Declared in
@@ -913,7 +928,7 @@ ncvg (R:=R) u lu%:E ->
 ncvg (R:=R) v lv%:E -> ncvg (R:=R) (u \* v)%R (lu * lv)%:E
 
 ncvgM is not universe polymorphic
-Arguments ncvgM [R] [u v]%function_scope [lu lv]%ring_scope _ _ v
+Arguments ncvgM [R] [u v]%_function_scope [lu lv]%_ring_scope _ _ v
 ncvgM is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgM
 Declared in
@@ -939,7 +954,7 @@ forall [R : realType] [c : R] [u : nat -> R] [lu : R],
 ncvg (R:=R) u lu%:E -> ncvg (R:=R) (c \*o u)%R (c * lu)%:E
 
 ncvgZ is not universe polymorphic
-Arguments ncvgZ [R] [c]%ring_scope [u]%function_scope [lu]%ring_scope _ v
+Arguments ncvgZ [R] [c]%_ring_scope [u]%_function_scope [lu]%_ring_scope _ v
 ncvgZ is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvgZ
 Declared in
@@ -955,8 +970,8 @@ forall [R : realType] [c : R] [u : nat -> R] [lu : \bar R],
 (forall n : nat, (u n <= c)%R) -> ncvg (R:=R) u lu -> (lu <= c%:E)%E
 
 ncvg_leC is not universe polymorphic
-Arguments ncvg_leC [R] [c]%ring_scope [u]%function_scope 
-  [lu]%ereal_scope _%function_scope _
+Arguments ncvg_leC [R] [c]%_ring_scope [u]%_function_scope 
+  [lu]%_ereal_scope _%_function_scope _
 ncvg_leC is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_leC
 Declared in
@@ -973,8 +988,8 @@ forall [R : realType] [c : R] [u : nat -> R] [lu : \bar R],
 (forall n : nat, (c <= u n)%R) -> ncvg (R:=R) u lu -> (c%:E <= lu)%E
 
 ncvg_geC is not universe polymorphic
-Arguments ncvg_geC [R] [c]%ring_scope [u]%function_scope 
-  [lu]%ereal_scope _%function_scope _
+Arguments ncvg_geC [R] [c]%_ring_scope [u]%_function_scope 
+  [lu]%_ereal_scope _%_function_scope _
 ncvg_geC is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_geC
 Declared in
@@ -989,7 +1004,7 @@ library mathcomp.experimental_reals.realseq, line 322, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="iscvgC" class="id"><a name="iscvgC" class="" title="iscvgC : forall [R : realType] (c : R), iscvg (R:=R) c%:S
 
 iscvgC is not universe polymorphic
-Arguments iscvgC [R] c%ring_scope
+Arguments iscvgC [R] c%_ring_scope
 iscvgC is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.iscvgC
 Declared in
@@ -1007,7 +1022,7 @@ forall [R : realType] [u v : nat -> R],
 iscvg (R:=R) u -> iscvg (R:=R) v -> iscvg (R:=R) (u \+ v)%R
 
 iscvgD is not universe polymorphic
-Arguments iscvgD [R] [u v]%function_scope _ _
+Arguments iscvgD [R] [u v]%_function_scope _ _
 iscvgD is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.iscvgD
 Declared in
@@ -1024,7 +1039,7 @@ forall [R : realType] {I : eqType} [u : I -> nat -> R] [r : seq_predType I],
 iscvg (R:=R) (fun n : nat => (\sum_(i <- r) u i n)%R)
 
 iscvg_sum is not universe polymorphic
-Arguments iscvg_sum [R] {I} [u]%function_scope [r] _%function_scope
+Arguments iscvg_sum [R] {I} [u]%_function_scope [r] _%_function_scope
 iscvg_sum is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.iscvg_sum
 Declared in
@@ -1048,7 +1063,7 @@ forall [R : realType] [u v : nat -> R],
 u =1 v -> iscvg (R:=R) v -> iscvg (R:=R) u
 
 iscvg_eq is not universe polymorphic
-Arguments iscvg_eq [R] [u v]%function_scope _ _
+Arguments iscvg_eq [R] [u v]%_function_scope _ _
 iscvg_eq is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.iscvg_eq
 Declared in
@@ -1066,7 +1081,7 @@ forall [R : realType] [h : nat -> nat] [u : nat -> R] [lu : \bar R],
 ncvg (R:=R) u lu -> ncvg (R:=R) (fun n : nat => u (h n)) lu
 
 ncvg_sub is not universe polymorphic
-Arguments ncvg_sub [R] [h u]%function_scope [lu]%ereal_scope _ _ v
+Arguments ncvg_sub [R] [h u]%_function_scope [lu]%_ereal_scope _ _ v
 ncvg_sub is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_sub
 Declared in
@@ -1088,7 +1103,7 @@ forall [R : realType] [σ : nat -> nat] [u : nat -> R],
 {homo σ : x y / x < y} -> iscvg (R:=R) u -> iscvg (R:=R) (u \o σ)
 
 iscvg_sub is not universe polymorphic
-Arguments iscvg_sub [R] [σ u]%function_scope _ _
+Arguments iscvg_sub [R] [σ u]%_function_scope _ _
 iscvg_sub is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.iscvg_sub
 Declared in
@@ -1102,10 +1117,10 @@ library mathcomp.experimental_reals.realseq, line 360, characters 6-15
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="ncvg_shift" class="id"><a name="ncvg_shift" class="" title="ncvg_shift :
 forall [R : realType] (k : nat) (u : nat -> R) (l : \bar R),
-ncvg (R:=R) u l <-> ncvg (R:=R) (fun n : nat => u (n + k)) l
+ncvg (R:=R) u l <-> ncvg (R:=R) (fun n : nat => u (n + k)%N) l
 
 ncvg_shift is not universe polymorphic
-Arguments ncvg_shift [R] k%nat_scope u%function_scope l%ereal_scope
+Arguments ncvg_shift [R] k%_nat_scope u%_function_scope l%_ereal_scope
 ncvg_shift is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_shift
 Declared in
@@ -1125,10 +1140,10 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="iscvg_shift" class="id"><a name="iscvg_shift" class="" title="iscvg_shift :
 forall [R : realType] (k : nat) (u : nat -> R),
-iscvg (R:=R) u <-> iscvg (R:=R) (fun n : nat => u (n + k))
+iscvg (R:=R) u <-> iscvg (R:=R) (fun n : nat => u (n + k)%N)
 
 iscvg_shift is not universe polymorphic
-Arguments iscvg_shift [R] k%nat_scope u%function_scope
+Arguments iscvg_shift [R] k%_nat_scope u%_function_scope
 iscvg_shift is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.iscvg_shift
 Declared in
@@ -1147,7 +1162,7 @@ ncvg (R:=R) u l2 ->
 exists K : nat, forall n : nat, K <= n -> (l1 < (u n)%:E)%E
 
 ncvg_gt is not universe polymorphic
-Arguments ncvg_gt [R] [u]%function_scope [l1 l2]%ereal_scope _ _
+Arguments ncvg_gt [R] [u]%_function_scope [l1 l2]%_ereal_scope _ _
 ncvg_gt is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_gt
 Declared in
@@ -1175,7 +1190,7 @@ ncvg (R:=R) u l1 ->
 exists K : nat, forall n : nat, K <= n -> ((u n)%:E < l2)%E
 
 ncvg_lt is not universe polymorphic
-Arguments ncvg_lt [R] [u]%function_scope [l1 l2]%ereal_scope _ _
+Arguments ncvg_lt [R] [u]%_function_scope [l1 l2]%_ereal_scope _ _
 ncvg_lt is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_lt
 Declared in
@@ -1197,8 +1212,8 @@ forall [R : realType] [u : nat -> R] [l1 l2 : \bar R],
 (l1 < l2)%E -> ncvg (R:=R) u l1 -> forall n : nat, ((u n)%:E < l2)%E
 
 ncvg_homo_lt is not universe polymorphic
-Arguments ncvg_homo_lt [R] [u]%function_scope [l1 l2]%ereal_scope
-  _%function_scope _ _ n%nat_scope
+Arguments ncvg_homo_lt [R] [u]%_function_scope [l1 l2]%_ereal_scope
+  _%_function_scope _ _ n%_nat_scope
 ncvg_homo_lt is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_homo_lt
 Declared in
@@ -1220,8 +1235,8 @@ forall [R : realType] [u : nat -> R] [l : \bar R],
 ncvg (R:=R) u l -> forall n : nat, ((u n)%:E <= l)%E
 
 ncvg_homo_le is not universe polymorphic
-Arguments ncvg_homo_le [R] [u]%function_scope [l]%ereal_scope
-  _%function_scope _ n%nat_scope
+Arguments ncvg_homo_le [R] [u]%_function_scope [l]%_ereal_scope
+  _%_function_scope _ n%_nat_scope
 ncvg_homo_le is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.ncvg_homo_le
 Declared in
@@ -1245,7 +1260,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="nlim" class="id"><a name="nlim" class="" title="nlim : forall {R : realType}, (nat -> R) -> \bar R
 
 nlim is not universe polymorphic
-Arguments nlim {R} u%function_scope
+Arguments nlim {R} u%_function_scope
 nlim is transparent
 Expands to: Constant mathcomp.experimental_reals.realseq.nlim
 Declared in
@@ -1259,7 +1274,7 @@ forall {R : realType} [u : nat -> R],
 (exists l : \bar R, ncvg (R:=R) u l) -> ncvg (R:=R) u (nlim u)
 
 nlim_ncvg is not universe polymorphic
-Arguments nlim_ncvg {R} [u]%function_scope _ v
+Arguments nlim_ncvg {R} [u]%_function_scope _ v
 nlim_ncvg is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlim_ncvg
 Declared in
@@ -1278,7 +1293,7 @@ forall {R : realType} [u : nat -> R],
 ~ (exists l : \bar R, ncvg (R:=R) u l) -> nlim u = -oo%E
 
 nlim_out is not universe polymorphic
-Arguments nlim_out {R} [u]%function_scope _
+Arguments nlim_out {R} [u]%_function_scope _
 nlim_out is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlim_out
 Declared in
@@ -1298,7 +1313,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="nlimP" class="id"><a name="nlimP" class="" title="nlimP : forall {R : realType} (u : nat -> R), nlim_spec u (nlim u)
 
 nlimP is not universe polymorphic
-Arguments nlimP {R} u%function_scope
+Arguments nlimP {R} u%_function_scope
 nlimP is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlimP
 Declared in
@@ -1317,7 +1332,7 @@ forall {R : realType} [u : nat -> R] [l : \bar R],
 ncvg (R:=R) u l -> nlim u = l
 
 nlimE is not universe polymorphic
-Arguments nlimE {R} [u]%function_scope [l]%ereal_scope _
+Arguments nlimE {R} [u]%_function_scope [l]%_ereal_scope _
 nlimE is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlimE
 Declared in
@@ -1333,7 +1348,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="nlimC" class="id"><a name="nlimC" class="" title="nlimC : forall {R : realType} (c : R), nlim c%:S = c%:E
 
 nlimC is not universe polymorphic
-Arguments nlimC {R} c%ring_scope
+Arguments nlimC {R} c%_ring_scope
 nlimC is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlimC
 Declared in
@@ -1349,7 +1364,7 @@ forall {R : realType} [u v : nat -> R],
 iscvg (R:=R) u -> iscvg (R:=R) v -> nlim (u \+ v)%R = (nlim u + nlim v)%E
 
 nlimD is not universe polymorphic
-Arguments nlimD {R} [u v]%function_scope _ _
+Arguments nlimD {R} [u v]%_function_scope _ _
 nlimD is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlimD
 Declared in
@@ -1368,8 +1383,8 @@ forall {R : realType} [K : nat] [v u : nat -> R],
 (forall n : nat, K <= n -> u n = v n) -> nlim u = nlim v
 
 eq_from_nlim is not universe polymorphic
-Arguments eq_from_nlim {R} [K]%nat_scope [v u]%function_scope
-  _%function_scope
+Arguments eq_from_nlim {R} [K]%_nat_scope [v u]%_function_scope
+  _%_function_scope
 eq_from_nlim is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.eq_from_nlim
 Declared in
@@ -1389,7 +1404,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="eq_nlim" class="id"><a name="eq_nlim" class="" title="eq_nlim : forall {R : realType} [v u : nat -> R], u =1 v -> nlim u = nlim v
 
 eq_nlim is not universe polymorphic
-Arguments eq_nlim {R} [v u]%function_scope _
+Arguments eq_nlim {R} [v u]%_function_scope _
 eq_nlim is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.eq_nlim
 Declared in
@@ -1404,7 +1419,7 @@ library mathcomp.experimental_reals.realseq, line 479, characters 6-13
 forall {R : realType} (u : nat -> R), nlim (fun n : nat => u n.+1) = nlim u
 
 nlim_bump is not universe polymorphic
-Arguments nlim_bump {R} u%function_scope
+Arguments nlim_bump {R} u%_function_scope
 nlim_bump is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlim_bump
 Declared in
@@ -1425,10 +1440,10 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="nlim_lift" class="id"><a name="nlim_lift" class="" title="nlim_lift :
 forall {R : realType} (u : nat -> R) (p : nat),
-nlim (fun n : nat => u (n + p)) = nlim u
+nlim (fun n : nat => u (n + p)%N) = nlim u
 
 nlim_lift is not universe polymorphic
-Arguments nlim_lift {R} u%function_scope p%nat_scope
+Arguments nlim_lift {R} u%_function_scope p%_nat_scope
 nlim_lift is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlim_lift
 Declared in
@@ -1448,7 +1463,7 @@ forall {R : realType} {I : eqType} [u : I -> nat -> R] [r : seq I],
 nlim (fun n : nat => (\sum_(i <- r) u i n)%R) = (\sum_(i <- r) nlim (u i))%R
 
 nlim_sum is not universe polymorphic
-Arguments nlim_sum {R I} [u]%function_scope [r]%seq_scope _%function_scope
+Arguments nlim_sum {R I} [u]%_function_scope [r]%_seq_scope _%_function_scope
 nlim_sum is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlim_sum
 Declared in
@@ -1476,7 +1491,8 @@ nlim (fun n : nat => (\sum_(i <- r) u i n)%R) =
 (\sum_(i <- r) (fine (nlim (u i)) : R))%:E
 
 nlim_sumR is not universe polymorphic
-Arguments nlim_sumR {R I} [u]%function_scope [r]%seq_scope _%function_scope
+Arguments nlim_sumR {R I} [u]%_function_scope [r]%_seq_scope
+  _%_function_scope
 nlim_sumR is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlim_sumR
 Declared in
@@ -1501,7 +1517,8 @@ forall {R : realType} [u : nat -> R] [l : R],
 ncvg (R:=R) u l%:E -> sup [set r | (exists n : nat, r = u n)] = l
 
 nlim_sup is not universe polymorphic
-Arguments nlim_sup {R} [u]%function_scope [l]%ring_scope _%function_scope _
+Arguments nlim_sup {R} [u]%_function_scope [l]%_ring_scope 
+  _%_function_scope _
 nlim_sup is opaque
 Expands to: Constant mathcomp.experimental_reals.realseq.nlim_sup
 Declared in

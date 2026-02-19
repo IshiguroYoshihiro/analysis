@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -254,7 +269,7 @@ forall {d : measure_display} {T : measurableType d} {R : realType},
 measure T R -> measure T R -> Prop
 
 measure_eq is not universe polymorphic
-Arguments measure_eq {d}%measure_display_scope {T R} _ _
+Arguments measure_eq {d}%_measure_display_scope {T R} _ _
 measure_eq is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measure_eq
@@ -276,7 +291,7 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 40, characters 11-
 <span class="vernacular">Definition</span><span class="id"> </span><span id="giry" class="id"><a name="giry" class="" title="giry : forall [d : measure_display], measurableType d -> realType -> Type
 
 giry is not universe polymorphic
-Arguments giry [d]%measure_display_scope T R
+Arguments giry [d]%_measure_display_scope T R
 giry is transparent
 Expands to: Constant mathcomp.analysis.lebesgue_integral_theory.giry.giry
 Declared in
@@ -287,7 +302,8 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 53, characters 11-
 forall [d : measure_display], measurableType d -> realType -> eqType
 
 giry_giry__canonical__eqtype_Equality is not universe polymorphic
-Arguments giry_giry__canonical__eqtype_Equality [d]%measure_display_scope T R
+Arguments giry_giry__canonical__eqtype_Equality [d]%_measure_display_scope 
+  T R
 giry_giry__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__eqtype_Equality
@@ -297,7 +313,8 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 55, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> eqType
 
 giry_giry__canonical__eqtype_Equality is not universe polymorphic
-Arguments giry_giry__canonical__eqtype_Equality [d]%measure_display_scope T R
+Arguments giry_giry__canonical__eqtype_Equality [d]%_measure_display_scope 
+  T R
 giry_giry__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__eqtype_Equality
@@ -307,7 +324,8 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 55, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> eqType
 
 giry_giry__canonical__eqtype_Equality is not universe polymorphic
-Arguments giry_giry__canonical__eqtype_Equality [d]%measure_display_scope T R
+Arguments giry_giry__canonical__eqtype_Equality [d]%_measure_display_scope 
+  T R
 giry_giry__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__eqtype_Equality
@@ -317,7 +335,8 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 55, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> eqType
 
 giry_giry__canonical__eqtype_Equality is not universe polymorphic
-Arguments giry_giry__canonical__eqtype_Equality [d]%measure_display_scope T R
+Arguments giry_giry__canonical__eqtype_Equality [d]%_measure_display_scope 
+  T R
 giry_giry__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__eqtype_Equality
@@ -327,7 +346,8 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 55, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> eqType
 
 giry_giry__canonical__eqtype_Equality is not universe polymorphic
-Arguments giry_giry__canonical__eqtype_Equality [d]%measure_display_scope T R
+Arguments giry_giry__canonical__eqtype_Equality [d]%_measure_display_scope 
+  T R
 giry_giry__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__eqtype_Equality
@@ -338,7 +358,7 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 55, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> choiceType
 
 giry_giry__canonical__choice_Choice is not universe polymorphic
-Arguments giry_giry__canonical__choice_Choice [d]%measure_display_scope T R
+Arguments giry_giry__canonical__choice_Choice [d]%_measure_display_scope T R
 giry_giry__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__choice_Choice
@@ -348,7 +368,7 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 56, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> choiceType
 
 giry_giry__canonical__choice_Choice is not universe polymorphic
-Arguments giry_giry__canonical__choice_Choice [d]%measure_display_scope T R
+Arguments giry_giry__canonical__choice_Choice [d]%_measure_display_scope T R
 giry_giry__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__choice_Choice
@@ -358,7 +378,7 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 56, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> choiceType
 
 giry_giry__canonical__choice_Choice is not universe polymorphic
-Arguments giry_giry__canonical__choice_Choice [d]%measure_display_scope T R
+Arguments giry_giry__canonical__choice_Choice [d]%_measure_display_scope T R
 giry_giry__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__choice_Choice
@@ -368,7 +388,7 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 56, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> choiceType
 
 giry_giry__canonical__choice_Choice is not universe polymorphic
-Arguments giry_giry__canonical__choice_Choice [d]%measure_display_scope T R
+Arguments giry_giry__canonical__choice_Choice [d]%_measure_display_scope T R
 giry_giry__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__choice_Choice
@@ -378,7 +398,7 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 56, characters 0-4
 forall [d : measure_display], measurableType d -> realType -> choiceType
 
 giry_giry__canonical__choice_Choice is not universe polymorphic
-Arguments giry_giry__canonical__choice_Choice [d]%measure_display_scope T R
+Arguments giry_giry__canonical__choice_Choice [d]%_measure_display_scope T R
 giry_giry__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__choice_Choice
@@ -390,7 +410,7 @@ forall [d : measure_display], measurableType d -> realType -> pointedType
 
 giry_giry__canonical__classical_sets_Pointed is not universe polymorphic
 Arguments giry_giry__canonical__classical_sets_Pointed
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__classical_sets_Pointed is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__classical_sets_Pointed
@@ -401,7 +421,7 @@ forall [d : measure_display], measurableType d -> realType -> pointedType
 
 giry_giry__canonical__classical_sets_Pointed is not universe polymorphic
 Arguments giry_giry__canonical__classical_sets_Pointed
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__classical_sets_Pointed is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__classical_sets_Pointed
@@ -412,7 +432,7 @@ forall [d : measure_display], measurableType d -> realType -> pointedType
 
 giry_giry__canonical__classical_sets_Pointed is not universe polymorphic
 Arguments giry_giry__canonical__classical_sets_Pointed
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__classical_sets_Pointed is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__classical_sets_Pointed
@@ -423,7 +443,7 @@ forall [d : measure_display], measurableType d -> realType -> pointedType
 
 giry_giry__canonical__classical_sets_Pointed is not universe polymorphic
 Arguments giry_giry__canonical__classical_sets_Pointed
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__classical_sets_Pointed is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__classical_sets_Pointed
@@ -434,7 +454,7 @@ forall [d : measure_display], measurableType d -> realType -> pointedType
 
 giry_giry__canonical__classical_sets_Pointed is not universe polymorphic
 Arguments giry_giry__canonical__classical_sets_Pointed
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__classical_sets_Pointed is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__classical_sets_Pointed
@@ -447,7 +467,7 @@ forall {d : measure_display} {T : measurableType d} {R : realType},
 giry T R -> set T -> \bar R
 
 giry_ev is not universe polymorphic
-Arguments giry_ev {d}%measure_display_scope {T R} mu A%classical_set_scope
+Arguments giry_ev {d}%_measure_display_scope {T R} mu A%_classical_set_scope
 giry_ev is transparent
 Expands to: Constant mathcomp.analysis.lebesgue_integral_theory.giry.giry_ev
 Declared in
@@ -456,11 +476,11 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 59, characters 11-
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="preimg_giry_ev" class="id"><a name="preimg_giry_ev" class="" title="preimg_giry_ev :
 forall [d : measure_display] [T : measurableType d] [R : realType],
-set T -> set_system (giry T R)
+set T -> filter.set_system (giry T R)
 
 preimg_giry_ev is not universe polymorphic
-Arguments preimg_giry_ev [d]%measure_display_scope 
-  [T R] A%classical_set_scope _
+Arguments preimg_giry_ev [d]%_measure_display_scope 
+  [T R] A%_classical_set_scope _
 preimg_giry_ev is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.preimg_giry_ev
@@ -474,7 +494,7 @@ forall [d : measure_display] [T : measurableType d] [R : realType],
 set (set (giry T R))
 
 giry_measurable is not universe polymorphic
-Arguments giry_measurable [d]%measure_display_scope [T R] _
+Arguments giry_measurable [d]%_measure_display_scope [T R] _
 giry_measurable is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_measurable
@@ -522,7 +542,7 @@ measurableType d -> realType -> measurableType giry_display
 
 giry_giry__canonical__measurable_structure_Measurable is not universe polymorphic
 Arguments giry_giry__canonical__measurable_structure_Measurable
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__measurable_structure_Measurable is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__measurable_structure_Measurable
@@ -534,7 +554,7 @@ measurableType d -> realType -> measurableType giry_display
 
 giry_giry__canonical__measurable_structure_Measurable is not universe polymorphic
 Arguments giry_giry__canonical__measurable_structure_Measurable
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__measurable_structure_Measurable is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__measurable_structure_Measurable
@@ -546,7 +566,7 @@ measurableType d -> realType -> measurableType giry_display
 
 giry_giry__canonical__measurable_structure_Measurable is not universe polymorphic
 Arguments giry_giry__canonical__measurable_structure_Measurable
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__measurable_structure_Measurable is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__measurable_structure_Measurable
@@ -558,7 +578,7 @@ measurableType d -> realType -> measurableType giry_display
 
 giry_giry__canonical__measurable_structure_Measurable is not universe polymorphic
 Arguments giry_giry__canonical__measurable_structure_Measurable
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__measurable_structure_Measurable is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__measurable_structure_Measurable
@@ -571,7 +591,7 @@ measurableType d -> realType -> measurableType giry_display
 
 giry_giry__canonical__measurable_structure_Measurable is not universe polymorphic
 Arguments giry_giry__canonical__measurable_structure_Measurable
-  [d]%measure_display_scope T R
+  [d]%_measure_display_scope T R
 giry_giry__canonical__measurable_structure_Measurable is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_giry__canonical__measurable_structure_Measurable
@@ -607,8 +627,8 @@ forall [i : set (set (giry T R))],
   i ->
 i ([set: giry T R] `&` giry_ev^~ A @^-1` Y)%classic
 
-Arguments measurable_giry_ev [d]%measure_display_scope 
-  [T R] [A]%classical_set_scope _ _ [Y] _ [i] _
+Arguments measurable_giry_ev [d]%_measure_display_scope 
+  [T R] [A]%_classical_set_scope _ _ [Y] _ [i] _
 measurable_giry_ev is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measurable_giry_ev
@@ -640,7 +660,7 @@ GRing.BaseAddMagma.sort
   constructive_ereal_extended__canonical__Algebra_BaseAddMagma
 
 giry_int is not universe polymorphic
-Arguments giry_int {d}%measure_display_scope {T R} mu f%function_scope
+Arguments giry_int {d}%_measure_display_scope {T R} mu f%_function_scope
 giry_int is transparent
 Expands to: Constant mathcomp.analysis.lebesgue_integral_theory.giry.giry_int
 Declared in
@@ -688,9 +708,9 @@ forall [i : set (set (giry T R))],
   i ->
 i ([set: giry T R] `&` giry_int^~ f @^-1` Y)%classic
 
-Arguments measurable_giry_int [d]%measure_display_scope 
-  [T R] [f]%function_scope _ _%function_scope _ [Y] 
-  _ [i] _
+Arguments measurable_giry_int [d]%_measure_display_scope 
+  [T R] [f]%_function_scope _ _%_function_scope _ 
+  [Y] _ [i] _
 measurable_giry_int is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measurable_giry_int
@@ -764,9 +784,9 @@ giry_display.-measurable%classic Y ->
       class) in
  measurable) (D `&` f @^-1` Y)%classic
 
-Arguments measurable_giry_codensity [d1]%measure_display_scope 
-  {T1} [d2]%measure_display_scope {T2 R} [D]%classical_set_scope
-  [f]%function_scope _ _%function_scope _ [Y] _
+Arguments measurable_giry_codensity [d1]%_measure_display_scope 
+  {T1} [d2]%_measure_display_scope {T2 R} [D]%_classical_set_scope
+  [f]%_function_scope _ _%_function_scope _ [Y] _
 measurable_giry_codensity is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measurable_giry_codensity
@@ -820,7 +840,7 @@ measurable_fun (T:=T1) (U:=T2) [set: T1] f -> giry T1 R -> measure T2 R
 
 giry_map__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_map__canonical__measure_function_Measure
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__measure_function_Measure is transparent
 Expands to: Constant
@@ -834,7 +854,7 @@ measurable_fun (T:=T1) (U:=T2) [set: T1] f -> giry T1 R -> measure T2 R
 
 giry_map__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_map__canonical__measure_function_Measure
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__measure_function_Measure is transparent
 Expands to: Constant
@@ -848,7 +868,7 @@ measurable_fun (T:=T1) (U:=T2) [set: T1] f -> giry T1 R -> measure T2 R
 
 giry_map__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_map__canonical__measure_function_Measure
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__measure_function_Measure is transparent
 Expands to: Constant
@@ -862,7 +882,7 @@ measurable_fun (T:=T1) (U:=T2) [set: T1] f -> giry T1 R -> measure T2 R
 
 giry_map__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_map__canonical__measure_function_Measure
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__measure_function_Measure is transparent
 Expands to: Constant
@@ -876,7 +896,7 @@ measurable_fun (T:=T1) (U:=T2) [set: T1] f -> giry T1 R -> measure T2 R
 
 giry_map__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_map__canonical__measure_function_Measure
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__measure_function_Measure is transparent
 Expands to: Constant
@@ -901,7 +921,7 @@ giry T1 R -> subprobability T2 R
 
 giry_map__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_map__canonical__probability_measure_SubProbability
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
@@ -916,7 +936,7 @@ giry T1 R -> subprobability T2 R
 
 giry_map__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_map__canonical__probability_measure_SubProbability
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
@@ -931,7 +951,7 @@ giry T1 R -> subprobability T2 R
 
 giry_map__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_map__canonical__probability_measure_SubProbability
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
@@ -946,7 +966,7 @@ giry T1 R -> subprobability T2 R
 
 giry_map__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_map__canonical__probability_measure_SubProbability
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
@@ -961,7 +981,7 @@ giry T1 R -> subprobability T2 R
 
 giry_map__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_map__canonical__probability_measure_SubProbability
-  {d1 d2}%measure_display_scope {T1 T2 R} [f]%function_scope 
+  {d1 d2}%_measure_display_scope {T1 T2 R} [f]%_function_scope 
   mf mu1
 giry_map__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
@@ -976,8 +996,8 @@ forall {d1 d2 : measure_display} {T1 : measurableType d1}
 measurable_fun (T:=T1) (U:=T2) [set: T1] f -> giry T1 R -> giry T2 R
 
 giry_map is not universe polymorphic
-Arguments giry_map {d1 d2}%measure_display_scope {T1 T2 R} 
-  [f]%function_scope mf mu1
+Arguments giry_map {d1 d2}%_measure_display_scope 
+  {T1 T2 R} [f]%_function_scope mf mu1
 giry_map is transparent
 Expands to: Constant mathcomp.analysis.lebesgue_integral_theory.giry.giry_map
 Declared in
@@ -1014,8 +1034,8 @@ forall [i : set (set (giry T1 R))],
   i ->
 i ([set: giry T1 R] `&` giry_map (f:=f) mf @^-1` Y)%classic
 
-Arguments measurable_giry_map [d1 d2]%measure_display_scope 
-  [T1 T2 R] [f]%function_scope mf _ [Y] _ [i] _
+Arguments measurable_giry_map [d1 d2]%_measure_display_scope 
+  [T1 T2 R] [f]%_function_scope mf _ [Y] _ [i] _
 measurable_giry_map is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measurable_giry_map
@@ -1044,9 +1064,9 @@ measurable_fun (T:=T2)
 giry_int (giry_map (f:=f) mf mu) h = giry_int mu (h \o f)
 
 giry_int_map is not universe polymorphic
-Arguments giry_int_map [d1 d2]%measure_display_scope 
-  [T1 T2 R] [f]%function_scope mf mu [h]%function_scope 
-  _ _%function_scope
+Arguments giry_int_map [d1 d2]%_measure_display_scope 
+  [T1 T2 R] [f]%_function_scope mf mu [h]%_function_scope 
+  _ _%_function_scope
 giry_int_map is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_int_map
@@ -1069,8 +1089,8 @@ d2.-measurable%classic B ->
 giry_map (f:=f) mf mu1 B = (\int[mu1]_x (\d_(f x))%R B)%E
 
 giry_map_dirac is not universe polymorphic
-Arguments giry_map_dirac [d1 d2]%measure_display_scope 
-  [T1 T2 R] [f]%function_scope mf mu1 [B]%classical_set_scope 
+Arguments giry_map_dirac [d1 d2]%_measure_display_scope 
+  [T1 T2 R] [f]%_function_scope mf mu1 [B]%_classical_set_scope 
   _
 giry_map_dirac is opaque
 Expands to: Constant
@@ -1084,8 +1104,7 @@ library mathcomp.analysis.lebesgue_integral_theory.giry, line 201, characters 6-
 <div class="proofscript">
 <span class="id">move=&gt;</span><span class="id"> mB</span>.<br/>
 <span class="id">rewrite</span><span class="id"> -[in</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssrmatching.ssrmatching.html#SsrMatchingSyntax.LHS">LHS</a></span><span class="id">]</span>(<span class="id"><a href="mathcomp.classical.classical_sets.html#setIT">setIT</a></span><span class="id"> B</span>)<span class="id"> -[</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssrmatching.ssrmatching.html#SsrMatchingSyntax.LHS">LHS</a></span><span class="id">]</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#integral_indic">integral_indic</a></span><span class="id">//</span><span class="id"> [</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssrmatching.ssrmatching.html#SsrMatchingSyntax.LHS">LHS</a></span><span class="id">]</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int_map">giry_int_map</a></span><span class="id">//</span>.<br/>
-&nbsp;&nbsp;<span class="id">exact/</span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#measurable_EFinP">measurable_EFinP</a></span><span class="id">/</span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#measurable_indic">measurable_indic</a></span>.<br/>
-<span class="gallina-kwd">by</span><span class="id"> move=&gt;</span><span class="id"> ?;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#lee_fin">lee_fin</a></span>.<br/>
+<span class="id">exact/</span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#measurable_EFinP">measurable_EFinP</a></span><span class="id">/</span><span class="id"><a href="mathcomp.analysis.measurable_realfun.html#measurable_indic">measurable_indic</a></span>.<br/>
 Qed.</div></details>
 <br/>
 <span class="vernacular">End</span><span class="id"> giry_map_lemmas</span>.<br/>
@@ -1098,11 +1117,11 @@ forall {d : measure_display} {T : measurableType d} {R : realType},
 T -> giry T R
 
 giry_ret is not universe polymorphic
-Arguments giry_ret {d}%measure_display_scope {T R} x
+Arguments giry_ret {d}%_measure_display_scope {T R} x
 giry_ret is transparent
 Expands to: Constant mathcomp.analysis.lebesgue_integral_theory.giry.giry_ret
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 215, characters 11-19
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 214, characters 11-19
 ">giry_ret</a></span> (<span id="x:73" class="id"><a name="x:73" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret.T">T</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret.T">T</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret.R">R</a></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.analysis.measure_theory.dirac_measure.html#beb404b4c6e52afbdfec2979598a2318">\d_</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#x:73">x</a></span>)<span class="id">%R</span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="measurable_giry_ret" class="id"><a name="measurable_giry_ret" class="" title="measurable_giry_ret :
@@ -1125,12 +1144,12 @@ giry_display.-measurable%classic Y ->
       class) in
  measurable) ([set: T] `&` giry_ret @^-1` Y)%classic
 
-Arguments measurable_giry_ret {d}%measure_display_scope {T R} _ [Y] _
+Arguments measurable_giry_ret {d}%_measure_display_scope {T R} _ [Y] _
 measurable_giry_ret is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measurable_giry_ret
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 217, characters 6-25
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 216, characters 6-25
 ">measurable_giry_ret</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret.T">T</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret">giry_ret</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -1148,12 +1167,13 @@ measurable_fun (T:=T)
 giry_int (giry_ret x) f = f x
 
 giry_int_ret is not universe polymorphic
-Arguments giry_int_ret {d}%measure_display_scope {T R} x [f]%function_scope _
+Arguments giry_int_ret {d}%_measure_display_scope 
+  {T R} x [f]%_function_scope _
 giry_int_ret is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_int_ret
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 222, characters 6-18
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 221, characters 6-18
 ">giry_int_ret</a></span> (<span id="x:74" class="id"><a name="x:74" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret.T">T</a></span>) (<span id="f:75" class="id"><a name="f:75" class="">f</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret.T">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret.R">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret.T">T</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#f:75">f</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret">giry_ret</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#x:74">x</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#f:75">f</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#f:75">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#x:74">x</a></span>.<br/>
 <details>
@@ -1206,60 +1226,60 @@ giry (giry T R) R -> measure T R
 
 giry_join__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_join__canonical__measure_function_Measure
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__measure_function_Measure is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__measure_function_Measure
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 257, characters 0-97
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 256, characters 0-97
 ">HB</a></span></span></span></span></span></span></span>.<span id="giry_join__canonical__measure_function_Measure" class="id"><span id="HB_unnamed_mixin_36" class="id"><span id="giry_join__canonical__measure_function_Content" class="id"><span id="HB_unnamed_mixin_35" class="id"><span id="measure_function_isMeasure__to__measure_function_isContent__34" class="id"><span id="measure_function_isMeasure__to__measure_function_Content_isMeasure__32" class="id"><span id="HB_unnamed_factory_30" class="id"><a name="giry_join__canonical__measure_function_Measure" class="" title="giry_join__canonical__measure_function_Measure :
 forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> measure T R
 
 giry_join__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_join__canonical__measure_function_Measure
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__measure_function_Measure is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__measure_function_Measure
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 257, characters 0-97
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 256, characters 0-97
 ">instance</a></span></span></span></span></span></span></span><span class="vernacular"> Definition</span><span id="giry_join__canonical__measure_function_Measure" class="id"><span id="HB_unnamed_mixin_36" class="id"><span id="giry_join__canonical__measure_function_Content" class="id"><span id="HB_unnamed_mixin_35" class="id"><span id="measure_function_isMeasure__to__measure_function_isContent__34" class="id"><span id="measure_function_isMeasure__to__measure_function_Content_isMeasure__32" class="id"><span id="HB_unnamed_factory_30" class="id"><a name="giry_join__canonical__measure_function_Measure" class="" title="giry_join__canonical__measure_function_Measure :
 forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> measure T R
 
 giry_join__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_join__canonical__measure_function_Measure
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__measure_function_Measure is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__measure_function_Measure
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 257, characters 0-97
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 256, characters 0-97
 "> _</a></span></span></span></span></span></span></span><span id="giry_join__canonical__measure_function_Measure" class="id"><span id="HB_unnamed_mixin_36" class="id"><span id="giry_join__canonical__measure_function_Content" class="id"><span id="HB_unnamed_mixin_35" class="id"><span id="measure_function_isMeasure__to__measure_function_isContent__34" class="id"><span id="measure_function_isMeasure__to__measure_function_Content_isMeasure__32" class="id"><span id="HB_unnamed_factory_30" class="id"><a name="giry_join__canonical__measure_function_Measure" class="" title="giry_join__canonical__measure_function_Measure :
 forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> measure T R
 
 giry_join__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_join__canonical__measure_function_Measure
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__measure_function_Measure is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__measure_function_Measure
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 257, characters 0-97
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 256, characters 0-97
 "> :=</a></span></span></span></span></span></span></span><span id="giry_join__canonical__measure_function_Measure" class="id"><span id="HB_unnamed_mixin_36" class="id"><span id="giry_join__canonical__measure_function_Content" class="id"><span id="HB_unnamed_mixin_35" class="id"><span id="measure_function_isMeasure__to__measure_function_isContent__34" class="id"><span id="measure_function_isMeasure__to__measure_function_Content_isMeasure__32" class="id"><span id="HB_unnamed_factory_30" class="id"><a name="giry_join__canonical__measure_function_Measure" class="" title="giry_join__canonical__measure_function_Measure :
 forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> measure T R
 
 giry_join__canonical__measure_function_Measure is not universe polymorphic
 Arguments giry_join__canonical__measure_function_Measure
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__measure_function_Measure is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__measure_function_Measure
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 257, characters 0-97
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 256, characters 0-97
 "> isMeasure</a></span></span></span></span></span></span></span>.<span class="id"><a href="mathcomp.analysis.measure_theory.measure_function.html#isMeasure.Build">Build</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.d">d</a></span><span class="id"> _</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.R">R</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.join">join</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.join0">join0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.join_ge0">join_ge0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.join_semi_sigma_additive">join_semi_sigma_additive</a></span>.<br/>
 <br/>
@@ -1284,60 +1304,60 @@ giry (giry T R) R -> subprobability T R
 
 giry_join__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_join__canonical__probability_measure_SubProbability
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__probability_measure_SubProbability
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 273, characters 0-80
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 272, characters 0-80
 ">HB</a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>.<span id="giry_join__canonical__probability_measure_SubProbability" class="id"><span id="HB_unnamed_mixin_49" class="id"><span id="giry_join__canonical__measure_function_FiniteMeasure" class="id"><span id="giry_join__canonical__measure_function_SigmaFiniteMeasure" class="id"><span id="giry_join__canonical__measure_function_SigmaFiniteContent" class="id"><span id="HB_unnamed_mixin_48" class="id"><span id="giry_join__canonical__measure_function_FinNumFun" class="id"><span id="HB_unnamed_mixin_47" class="id"><span id="giry_join__canonical__measure_function_SFiniteMeasure" class="id"><span id="HB_unnamed_mixin_46" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isSigmaFinite__45" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isFinite__43" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isSFinite__41" class="id"><span id="probability_measure_Measure_isSubProbability__to__probability_measure_isSubProbability__39" class="id"><span id="HB_unnamed_factory_37" class="id"><a name="giry_join__canonical__probability_measure_SubProbability" class="" title="giry_join__canonical__probability_measure_SubProbability :
 forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> subprobability T R
 
 giry_join__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_join__canonical__probability_measure_SubProbability
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__probability_measure_SubProbability
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 273, characters 0-80
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 272, characters 0-80
 ">instance</a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="vernacular"> Definition</span><span id="giry_join__canonical__probability_measure_SubProbability" class="id"><span id="HB_unnamed_mixin_49" class="id"><span id="giry_join__canonical__measure_function_FiniteMeasure" class="id"><span id="giry_join__canonical__measure_function_SigmaFiniteMeasure" class="id"><span id="giry_join__canonical__measure_function_SigmaFiniteContent" class="id"><span id="HB_unnamed_mixin_48" class="id"><span id="giry_join__canonical__measure_function_FinNumFun" class="id"><span id="HB_unnamed_mixin_47" class="id"><span id="giry_join__canonical__measure_function_SFiniteMeasure" class="id"><span id="HB_unnamed_mixin_46" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isSigmaFinite__45" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isFinite__43" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isSFinite__41" class="id"><span id="probability_measure_Measure_isSubProbability__to__probability_measure_isSubProbability__39" class="id"><span id="HB_unnamed_factory_37" class="id"><a name="giry_join__canonical__probability_measure_SubProbability" class="" title="giry_join__canonical__probability_measure_SubProbability :
 forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> subprobability T R
 
 giry_join__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_join__canonical__probability_measure_SubProbability
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__probability_measure_SubProbability
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 273, characters 0-80
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 272, characters 0-80
 "> _</a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span id="giry_join__canonical__probability_measure_SubProbability" class="id"><span id="HB_unnamed_mixin_49" class="id"><span id="giry_join__canonical__measure_function_FiniteMeasure" class="id"><span id="giry_join__canonical__measure_function_SigmaFiniteMeasure" class="id"><span id="giry_join__canonical__measure_function_SigmaFiniteContent" class="id"><span id="HB_unnamed_mixin_48" class="id"><span id="giry_join__canonical__measure_function_FinNumFun" class="id"><span id="HB_unnamed_mixin_47" class="id"><span id="giry_join__canonical__measure_function_SFiniteMeasure" class="id"><span id="HB_unnamed_mixin_46" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isSigmaFinite__45" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isFinite__43" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isSFinite__41" class="id"><span id="probability_measure_Measure_isSubProbability__to__probability_measure_isSubProbability__39" class="id"><span id="HB_unnamed_factory_37" class="id"><a name="giry_join__canonical__probability_measure_SubProbability" class="" title="giry_join__canonical__probability_measure_SubProbability :
 forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> subprobability T R
 
 giry_join__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_join__canonical__probability_measure_SubProbability
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__probability_measure_SubProbability
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 273, characters 0-80
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 272, characters 0-80
 "> :=</a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span id="giry_join__canonical__probability_measure_SubProbability" class="id"><span id="HB_unnamed_mixin_49" class="id"><span id="giry_join__canonical__measure_function_FiniteMeasure" class="id"><span id="giry_join__canonical__measure_function_SigmaFiniteMeasure" class="id"><span id="giry_join__canonical__measure_function_SigmaFiniteContent" class="id"><span id="HB_unnamed_mixin_48" class="id"><span id="giry_join__canonical__measure_function_FinNumFun" class="id"><span id="HB_unnamed_mixin_47" class="id"><span id="giry_join__canonical__measure_function_SFiniteMeasure" class="id"><span id="HB_unnamed_mixin_46" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isSigmaFinite__45" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isFinite__43" class="id"><span id="probability_measure_Measure_isSubProbability__to__measure_function_isSFinite__41" class="id"><span id="probability_measure_Measure_isSubProbability__to__probability_measure_isSubProbability__39" class="id"><span id="HB_unnamed_factory_37" class="id"><a name="giry_join__canonical__probability_measure_SubProbability" class="" title="giry_join__canonical__probability_measure_SubProbability :
 forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> subprobability T R
 
 giry_join__canonical__probability_measure_SubProbability is not universe polymorphic
 Arguments giry_join__canonical__probability_measure_SubProbability
-  {d}%measure_display_scope {T R} M
+  {d}%_measure_display_scope {T R} M
 giry_join__canonical__probability_measure_SubProbability is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join__canonical__probability_measure_SubProbability
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 273, characters 0-80
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 272, characters 0-80
 "> Measure_isSubProbability</a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>.<span class="id"><a href="mathcomp.analysis.measure_theory.probability_measure.html#Measure_isSubProbability.Build">Build</a></span><span class="id"> _</span><span class="id"> _</span><span class="id"> _</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.join">join</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.join_setT">join_setT</a></span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="giry_join" class="id"><a name="giry_join" class="" title="giry_join :
@@ -1345,12 +1365,12 @@ forall {d : measure_display} {T : measurableType d} {R : realType},
 giry (giry T R) R -> giry T R
 
 giry_join is not universe polymorphic
-Arguments giry_join {d}%measure_display_scope {T R} M
+Arguments giry_join {d}%_measure_display_scope {T R} M
 giry_join is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 275, characters 11-20
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 274, characters 11-20
 ">giry_join</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.T">T</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.R">R</a></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join.join">join</a></span>.<br/>
 <br/>
 <span class="vernacular">End</span><span class="id"> giry_join</span>.<br/>
@@ -1381,12 +1401,12 @@ forall [i : set (set (giry (giry T R) R))],
   i ->
 i ([set: giry (giry T R) R] `&` giry_join @^-1` Y)%classic
 
-Arguments measurable_giry_join {d}%measure_display_scope {T R} _ [Y] _ [i] _
+Arguments measurable_giry_join {d}%_measure_display_scope {T R} _ [Y] _ [i] _
 measurable_giry_join is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measurable_giry_join
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 283, characters 6-26
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 282, characters 6-26
 ">measurable_giry_join</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.T">T</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.R">R</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.R">R</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -1403,12 +1423,12 @@ forall {d : measure_display} {T : measurableType d}
 sintegral (R:=R) (giry_join M) h = (\int[M]_mu sintegral (R:=R) mu h)%E
 
 sintegral_giry_join is not universe polymorphic
-Arguments sintegral_giry_join {d}%measure_display_scope {T R} M h
+Arguments sintegral_giry_join {d}%_measure_display_scope {T R} M h
 sintegral_giry_join is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.sintegral_giry_join
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 291, characters 6-25
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 290, characters 6-25
 ">sintegral_giry_join</a></span> (<span id="M:118" class="id"><a name="M:118" class="">M</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.T">T</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.R">R</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.R">R</a></span>) (<span id="h:119" class="id"><a name="h:119" class="">h</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.simple_functions.html#62b1f9be67dbf6239bec964ff9de3502">{nnsfun</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.simple_functions.html#62b1f9be67dbf6239bec964ff9de3502"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.T">T</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.simple_functions.html#62b1f9be67dbf6239bec964ff9de3502"> &gt;-&gt;</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.simple_functions.html#62b1f9be67dbf6239bec964ff9de3502"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.R">R</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.simple_functions.html#62b1f9be67dbf6239bec964ff9de3502">}</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#sintegral">sintegral</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#M:118">M</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:119">h</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#3e4826d90e3d691004f544dc3de2d121">\int[</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#M:118">M</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#3e4826d90e3d691004f544dc3de2d121">]_</a></span><span id="mu:120" class="id"><a name="mu:120" class="">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#3e4826d90e3d691004f544dc3de2d121"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#sintegral">sintegral</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#mu:120">mu</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:119">h</a></span>.<br/>
 <details>
@@ -1438,13 +1458,13 @@ measurable_fun (T:=T)
 giry_int (giry_join M) h = giry_int M (giry_int^~ h)
 
 giry_int_join is not universe polymorphic
-Arguments giry_int_join {d}%measure_display_scope 
-  {T R} M [h]%function_scope _ _%function_scope
+Arguments giry_int_join {d}%_measure_display_scope 
+  {T R} M [h]%_function_scope _ _%_function_scope
 giry_int_join is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_int_join
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 307, characters 6-19
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 306, characters 6-19
 ">giry_int_join</a></span> (<span id="M:121" class="id"><a name="M:121" class="">M</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.T">T</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.R">R</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.R">R</a></span>) (<span id="h:122" class="id"><a name="h:122" class="">h</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.T">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.R">R</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join.T">T</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:122">h</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span> (<span class="gallina-kwd">forall</span><span class="id"> </span><span id="x:123" class="id"><a name="x:123" class="">x</a></span><span class="id">,</span><span class="id"> 0</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#63b01a542aec2e4c61e028256cf5a548"> &lt;=</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#63b01a542aec2e4c61e028256cf5a548"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:122">h</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#x:123">x</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#M:121">M</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:122">h</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#M:121">M</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#3dce462f8124648b906d1e347a73bb9f"> ^~</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#3dce462f8124648b906d1e347a73bb9f"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:122">h</a></span>).<br/>
@@ -1492,13 +1512,13 @@ measurable_fun (T:=T1)
 giry T2 R
 
 giry_bind is not universe polymorphic
-Arguments giry_bind [d1 d2]%measure_display_scope 
-  [T1 T2 R] mu [f]%function_scope mf
+Arguments giry_bind [d1 d2]%_measure_display_scope 
+  [T1 T2 R] mu [f]%_function_scope mf
 giry_bind is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_bind
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 342, characters 11-20
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 341, characters 11-20
 ">giry_bind</a></span><span class="id"> </span><span id="mu:148" class="id"><a name="mu:148" class="">mu</a></span><span class="id"> </span><span id="f:149" class="id"><a name="f:149" class="">f</a></span> (<span id="mf:150" class="id"><a name="mf:150" class="">mf</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.T1">T1</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#f:149">f</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.T2">T2</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.R">R</a></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_map">giry_map</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#mf:150">mf</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> mu</a></span>.<br/>
 <br/>
@@ -1535,13 +1555,13 @@ i
    `&` (fun mu : giry T1 R => giry_bind (T1:=T1) (T2:=T2) (R:=R) mu (f:=f) mf) @^-1`
        Y)%classic
 
-Arguments measurable_giry_bind [d1 d2]%measure_display_scope 
-  [T1 T2 R] [f]%function_scope mf _ [Y] _ [i] _
+Arguments measurable_giry_bind [d1 d2]%_measure_display_scope 
+  [T1 T2 R] [f]%_function_scope mf _ [Y] _ [i] _
 measurable_giry_bind is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measurable_giry_bind
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 347, characters 6-26
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 346, characters 6-26
 ">measurable_giry_bind</a></span><span class="id"> </span><span id="f:151" class="id"><a name="f:151" class="">f</a></span> (<span id="mf:152" class="id"><a name="mf:152" class="">mf</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.T1">T1</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#f:151">f</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.T1">T1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.R">R</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span> (<span class="gallina-kwd">fun</span><span class="id"> </span><span id="mu:153" class="id"><a name="mu:153" class="">mu</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#mu:153">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#fc71c2e43666a743aab1509109fb0819"> &gt;&gt;=</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#fc71c2e43666a743aab1509109fb0819"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#mf:152">mf</a></span>).<br/>
 <details>
@@ -1569,14 +1589,14 @@ giry_int (giry_bind (T1:=T1) (T2:=T2) (R:=R) mu (f:=f) mf) h =
 giry_int mu (fun x : T1 => giry_int (f x) h)
 
 giry_int_bind is not universe polymorphic
-Arguments giry_int_bind [d1 d2]%measure_display_scope 
-  [T1 T2 R] mu [f]%function_scope mf [h]%function_scope 
-  _ _%function_scope
+Arguments giry_int_bind [d1 d2]%_measure_display_scope 
+  [T1 T2 R] mu [f]%_function_scope mf [h]%_function_scope 
+  _ _%_function_scope
 giry_int_bind is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_int_bind
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 355, characters 6-19
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 354, characters 6-19
 ">giry_int_bind</a></span><span class="id"> </span><span id="mu:154" class="id"><a name="mu:154" class="">mu</a></span><span class="id"> </span><span id="f:155" class="id"><a name="f:155" class="">f</a></span> (<span id="mf:156" class="id"><a name="mf:156" class="">mf</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.T1">T1</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#f:155">f</a></span>) (<span id="h:157" class="id"><a name="h:157" class="">h</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.T2">T2</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.R">R</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_bind.T2">T2</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:157">h</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span> (<span class="gallina-kwd">forall</span><span class="id"> </span><span id="x:158" class="id"><a name="x:158" class="">x</a></span><span class="id">,</span><span class="id"> 0</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#63b01a542aec2e4c61e028256cf5a548"> &lt;=</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#63b01a542aec2e4c61e028256cf5a548"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:157">h</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#x:158">x</a></span>)<span class="id">%E</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#mu:154">mu</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#fc71c2e43666a743aab1509109fb0819"> &gt;&gt;=</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#fc71c2e43666a743aab1509109fb0819"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#mf:156">mf</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:157">h</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#mu:154">mu</a></span> (<span class="gallina-kwd">fun</span><span class="id"> </span><span id="x:159" class="id"><a name="x:159" class="">x</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#f:155">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#x:159">x</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#h:157">h</a></span>).<br/>
@@ -1610,12 +1630,12 @@ d1.-measurable%classic S ->
 (giry_join \o giry_map (f:=giry_join) measurable_giry_join) x S =
 (giry_join \o giry_join) x S
 
-Arguments giry_joinA [d1]%measure_display_scope [T1 R] x [S] _
+Arguments giry_joinA [d1]%_measure_display_scope [T1 R] x [S] _
 giry_joinA is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_joinA
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 370, characters 6-16
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 369, characters 6-16
 ">giry_joinA</a></span> (<span id="x:167" class="id"><a name="x:167" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.T1">T1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.R">R</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.R">R</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.R">R</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_map">giry_map</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_join">measurable_giry_join</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> x</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#c9f5159538e263c9ee7df9dd5c804e02"> ≡μ</a></span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> x</a></span>.<br/>
@@ -1642,12 +1662,12 @@ d1.-measurable%classic S ->
 (giry_join \o giry_map (f:=giry_ret) measurable_giry_ret) x S =
 (giry_join \o giry_ret) x S
 
-Arguments giry_join_id1 [d1]%measure_display_scope [T1 R] x [S] _
+Arguments giry_join_id1 [d1]%_measure_display_scope [T1 R] x [S] _
 giry_join_id1 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join_id1
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 379, characters 6-19
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 378, characters 6-19
 ">giry_join_id1</a></span> (<span id="x:168" class="id"><a name="x:168" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.T1">T1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.R">R</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_map">giry_map</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_ret">measurable_giry_ret</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> x</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#c9f5159538e263c9ee7df9dd5c804e02"> ≡μ</a></span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_ret">giry_ret</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> x</a></span>.<br/>
@@ -1684,13 +1704,13 @@ d2.-measurable%classic S ->
   x S =
 (giry_map (f:=f) mf \o giry_join) x S
 
-Arguments giry_join_id2 [d1 d2]%measure_display_scope 
-  [T1 T2 R] x [f]%function_scope mf [S] _
+Arguments giry_join_id2 [d1 d2]%_measure_display_scope 
+  [T1 T2 R] x [f]%_function_scope mf [S] _
 giry_join_id2 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_join_id2
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 389, characters 6-19
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 388, characters 6-19
 ">giry_join_id2</a></span> (<span id="x:169" class="id"><a name="x:169" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.T1">T1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.R">R</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.R">R</a></span>) (<span id="f:170" class="id"><a name="f:170" class="">f</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.T1">T1</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.T2">T2</a></span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<span id="mf:171" class="id"><a name="mf:171" class="">mf</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_monad.T1">T1</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#f:170">f</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_join">giry_join</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_map">giry_map</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_map">measurable_giry_map</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#mf:171">mf</a></span>))<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> x</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#c9f5159538e263c9ee7df9dd5c804e02"> ≡μ</a></span><br/>
@@ -1709,12 +1729,12 @@ forall {d1 d2 : measure_display} {T1 : measurableType d1}
 giry T1 R * giry T2 R -> giry (T1 * T2)%type R
 
 giry_prod is not universe polymorphic
-Arguments giry_prod {d1 d2}%measure_display_scope {T1 T2 R} m
+Arguments giry_prod {d1 d2}%_measure_display_scope {T1 T2 R} m
 giry_prod is transparent
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_prod
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 400, characters 11-20
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 399, characters 11-20
 ">giry_prod</a></span><span class="id"> {</span><span id="d1:172" class="id"><a name="d1:172" class="">d1</a></span><span class="id">}</span><span class="id"> {</span><span id="d2:173" class="id"><a name="d2:173" class="">d2</a></span><span class="id">}</span><span class="id"> {</span><span id="T1:174" class="id"><a name="T1:174" class="">T1</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#Measurable.Exports.measurableType">measurableType</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#d1:172">d1</a></span><span class="id">}</span><span class="id"> {</span><span id="T2:175" class="id"><a name="T2:175" class="">T2</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#Measurable.Exports.measurableType">measurableType</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#d2:173">d2</a></span><span class="id">}</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">{</span><span id="R:176" class="id"><a name="R:176" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span><span class="id">}</span> (<span id="m:177" class="id"><a name="m:177" class="">m</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#T1:174">T1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#R:176">R</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"> *</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#T2:175">T2</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#R:176">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#T1:174">T1</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"> *</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#T2:175">T2</a></span>)<span class="id">%type</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#R:176">R</a></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="id">@</span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_fubini.html#product_subprobability">product_subprobability</a></span><span class="id"> _</span><span class="id"> _</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#T1:174">T1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#T2:175">T2</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#R:176">R</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#m:177">m</a></span>.<br/>
@@ -1772,13 +1792,13 @@ forall
   i ->
 i ([set: giry T1 R * giry T2 R] `&` giry_prod @^-1` Y)%classic
 
-Arguments measurable_giry_prod {d1 d2}%measure_display_scope 
+Arguments measurable_giry_prod {d1 d2}%_measure_display_scope 
   {T1 T2 R} _ [Y] _ [i] _
 measurable_giry_prod is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.measurable_giry_prod
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 411, characters 6-26
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 410, characters 6-26
 ">measurable_giry_prod</a></span><span class="id"> :</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurable_fun">measurable_fun</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">[set:</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_prod.T1">T1</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_prod.R">R</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"> *</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry">giry</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_prod.T2">T2</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#measurable_giry_prod.R">R</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#36b9f1631384d2c3b944cb9d5855cd98">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod">giry_prod</a></span>.<br/>
 <details>
@@ -1842,13 +1862,13 @@ giry_int (giry_prod (m1, m2)) h =
 giry_int m1 (fun x : T1 => giry_int m2 (fun y : T2 => h (x, y)))
 
 giry_int_prod1 is not universe polymorphic
-Arguments giry_int_prod1 {d1 d2}%measure_display_scope 
-  {T1 T2 R} m1 m2 [h]%function_scope mh h0%function_scope
+Arguments giry_int_prod1 {d1 d2}%_measure_display_scope 
+  {T1 T2 R} m1 m2 [h]%_function_scope mh h0%_function_scope
 giry_int_prod1 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_int_prod1
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 458, characters 6-20
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 457, characters 6-20
 ">giry_int_prod1</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod">giry_prod</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.m1">m1</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.m2">m2</a></span>))<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.h">h</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.m1">m1</a></span> (<span class="gallina-kwd">fun</span><span class="id"> </span><span id="x:213" class="id"><a name="x:213" class="">x</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.m2">m2</a></span> (<span class="gallina-kwd">fun</span><span class="id"> </span><span id="y:214" class="id"><a name="y:214" class="">y</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.h">h</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#x:213">x</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#y:214">y</a></span>))).<br/>
 <details>
@@ -1870,13 +1890,13 @@ giry_int (giry_prod (m1, m2)) h =
 giry_int m2 (fun y : T2 => giry_int m1 (fun x : T1 => h (x, y)))
 
 giry_int_prod2 is not universe polymorphic
-Arguments giry_int_prod2 {d1 d2}%measure_display_scope 
-  {T1 T2 R} m1 m2 [h]%function_scope mh h0%function_scope
+Arguments giry_int_prod2 {d1 d2}%_measure_display_scope 
+  {T1 T2 R} m1 m2 [h]%_function_scope mh h0%_function_scope
 giry_int_prod2 is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.giry.giry_int_prod2
 Declared in
-library mathcomp.analysis.lebesgue_integral_theory.giry, line 462, characters 6-20
+library mathcomp.analysis.lebesgue_integral_theory.giry, line 461, characters 6-20
 ">giry_int_prod2</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod">giry_prod</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.m1">m1</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.m2">m2</a></span>))<span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.h">h</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.m2">m2</a></span> (<span class="gallina-kwd">fun</span><span class="id"> </span><span id="y:215" class="id"><a name="y:215" class="">y</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_int">giry_int</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.m1">m1</a></span> (<span class="gallina-kwd">fun</span><span class="id"> </span><span id="x:216" class="id"><a name="x:216" class="">x</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#giry_prod_int.h">h</a></span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#x:216">x</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.giry.html#y:215">y</a></span>))).<br/>
 <details>

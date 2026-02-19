@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -213,6 +228,8 @@
 <span class="vernacular">From</span><span class="id"> HB</span><span class="vernacular"> Require</span><span class="vernacular"> Import</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for HB.structures">structures</a></span>.<br/>
 <span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Import</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.ssreflect.all_ssreflect.html">all_ssreflect</a></span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.finmap.finmap">finmap</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html">ssralg</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.ssrnum.html">ssrnum</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html">ssrint</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html">interval</a></span>.<br/>
 <span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Import</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html">archimedean</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.rat.html">rat</a></span>.<br/>
+<span class="id">#[warning=</span><span class="id">&quot;-warn-library-file-internal-analysis&quot;</span><span class="id">]</span><br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Import</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.unstable.html">unstable</a></span>.<br/>
 <span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Import</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html">boolp</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html">classical_sets</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.functions.html">functions</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.cardinality.html">cardinality</a></span>.<br/>
 <span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Import</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html">set_interval</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html">interval_inference</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.ereal.html">ereal</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html">reals</a></span>.<br/>
 <span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Import</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.topology.html">topology</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.function_spaces.html">function_spaces</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.tvs.html">tvs</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.num_normedtype.html">num_normedtype</a></span>.<br/>
@@ -260,33 +277,33 @@ This file also provides the infinite version of Vitali's covering lemma.
 <span class="vernacular">Definition</span><span class="id"> </span><span id="cpoint" class="id"><a name="cpoint" class="" title="cpoint : forall {R : numDomainType} {M : pseudoPMetricType R}, set M -> M
 
 cpoint is not universe polymorphic
-Arguments cpoint {R M} A%classical_set_scope
+Arguments cpoint {R M} A%_classical_set_scope
 cpoint is transparent
 Expands to: Constant mathcomp.analysis.normedtype_theory.vitali_lemma.cpoint
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 50, characters 11-17
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 52, characters 11-17
 ">cpoint</a></span><span class="id"> </span><span id="A:3" class="id"><a name="A:3" class="">A</a></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#get">get</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9">[set</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9"> </a></span><span id="c:4" class="id"><a name="c:4" class="">c</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9"> |</a></span><span class="gallina-kwd"> exists</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54"> </a></span><span id="r:5" class="id"><a name="r:5" class="">r</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:3">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#c:4">c</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:5">r</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9">]</a></span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="radius" class="id"><a name="radius" class="" title="radius :
 forall {R : numDomainType} {M : pseudoPMetricType R}, set M -> {nonneg R}%R
 
 radius is not universe polymorphic
-Arguments radius {R M} A%classical_set_scope
+Arguments radius {R M} A%_classical_set_scope
 radius is transparent
 Expands to: Constant mathcomp.analysis.normedtype_theory.vitali_lemma.radius
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 52, characters 11-17
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 54, characters 11-17
 ">radius</a></span><span class="id"> </span><span id="A:6" class="id"><a name="A:6" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#6b57a954db0efd6b7fe2f37c706d0c82">{nonneg</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#6b57a954db0efd6b7fe2f37c706d0c82"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius.R">R</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#6b57a954db0efd6b7fe2f37c706d0c82">}</a></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.classical_sets.html#xget">xget</a></span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#47ac4d6dece4689d4a3505486f61da27">%:nng</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9">[set</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9"> </a></span><span id="r:7" class="id"><a name="r:7" class="">r</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9"> |</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:6">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:6">A</a></span>)<span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:7">r</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9">]</a></span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="is_ball" class="id"><a name="is_ball" class="" title="is_ball : forall {R : numDomainType} {M : pseudoPMetricType R}, set M -> bool
 
 is_ball is not universe polymorphic
-Arguments is_ball {R M} A%classical_set_scope
+Arguments is_ball {R M} A%_classical_set_scope
 is_ball is transparent
 Expands to: Constant mathcomp.analysis.normedtype_theory.vitali_lemma.is_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 55, characters 11-18
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 57, characters 11-18
 ">is_ball</a></span><span class="id"> </span><span id="A:8" class="id"><a name="A:8" class="">A</a></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:8">A</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#df45e8c2e8370fd4f0f7c4fdaf208180"> ==</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#df45e8c2e8370fd4f0f7c4fdaf208180"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:8">A</a></span>) (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:8">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="scale_ball" class="id"><a name="scale_ball" class="" title="scale_ball :
@@ -298,12 +315,12 @@ join_pseudometric_structure_PseudoPointedMetric_between_classical_sets_Pointed_a
 Prop
 
 scale_ball is not universe polymorphic
-Arguments scale_ball {R M} k%ring_scope A%classical_set_scope _
+Arguments scale_ball {R M} k%_ring_scope A%_classical_set_scope _
 scale_ball is transparent
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.scale_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 57, characters 11-21
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 59, characters 11-21
 ">scale_ball</a></span> (<span id="k:9" class="id"><a name="k:9" class="">k</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius.R">R</a></span>)<span class="id"> </span><span id="A:10" class="id"><a name="A:10" class="">A</a></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="gallina-kwd">if</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#::boolean_if_scope:'if'_x_'then'_x_'else'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:10">A</a></span><span class="gallina-kwd"> then</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#::boolean_if_scope:'if'_x_'then'_x_'else'_x"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:10">A</a></span>) (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:9">k</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:10">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span>)<span class="gallina-kwd"> else</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#::boolean_if_scope:'if'_x_'then'_x_'else'_x"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set0">set0</a></span>.<br/>
 <br/>
@@ -329,12 +346,12 @@ forall
  then ball (cpoint A) (l * (radius A)%:num)
  else set0) t
 
-Arguments sub_scale_ball {R M} [A]%classical_set_scope [k l] _ [t] _
+Arguments sub_scale_ball {R M} [A]%_classical_set_scope [k l] _ [t] _
 sub_scale_ball is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.sub_scale_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 62, characters 6-20
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 64, characters 6-20
 ">sub_scale_ball</a></span><span class="id"> </span><span id="A:11" class="id"><a name="A:11" class="">A</a></span><span class="id"> </span><span id="k:12" class="id"><a name="k:12" class="">k</a></span><span class="id"> </span><span id="l:13" class="id"><a name="l:13" class="">l</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:12">k</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#l:13">l</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:12">k</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#177f7946ea43649ac9d8c0445c54fd7c"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#177f7946ea43649ac9d8c0445c54fd7c"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:11">A</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> `&lt;=`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#l:13">l</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#177f7946ea43649ac9d8c0445c54fd7c"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#177f7946ea43649ac9d8c0445c54fd7c"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:11">A</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -348,12 +365,12 @@ forall {R : numDomainType} {M : pseudoPMetricType R} [A : set M],
 is_ball A -> (1 *` A)%classic = A
 
 scale_ball1 is not universe polymorphic
-Arguments scale_ball1 {R M} [A]%classical_set_scope _
+Arguments scale_ball1 {R M} [A]%_classical_set_scope _
 scale_ball1 is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.scale_ball1
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 68, characters 6-17
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 70, characters 6-17
 ">scale_ball1</a></span><span class="id"> </span><span id="A:14" class="id"><a name="A:14" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:14">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id">1</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#177f7946ea43649ac9d8c0445c54fd7c"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#177f7946ea43649ac9d8c0445c54fd7c"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:14">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:14">A</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -378,12 +395,12 @@ A t ->
  then ball (cpoint A) (l.+1%:R * (radius A)%:num)
  else set0) t
 
-Arguments sub1_scale_ball {R M} [A]%classical_set_scope l%nat_scope _ [t] _
+Arguments sub1_scale_ball {R M} [A]%_classical_set_scope l%_nat_scope _ [t] _
 sub1_scale_ball is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.sub1_scale_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 71, characters 6-21
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 73, characters 6-21
 ">sub1_scale_ball</a></span><span class="id"> </span><span id="A:15" class="id"><a name="A:15" class="">A</a></span><span class="id"> </span><span id="l:16" class="id"><a name="l:16" class="">l</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:15">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:15">A</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> `&lt;=`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#l:16">l</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bda89d73ec4a8f23ae92b565ffb5aaa6">+1</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#6411ed08724033ae48d2865f0380d533">%:R</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#177f7946ea43649ac9d8c0445c54fd7c"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#177f7946ea43649ac9d8c0445c54fd7c"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:15">A</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -400,12 +417,12 @@ forall {R : realFieldType} (A : set R)
 (r <= 0)%R -> (r *` A)%classic = set0
 
 scale_ball0 is not universe polymorphic
-Arguments scale_ball0 {R} A%classical_set_scope [r] _
+Arguments scale_ball0 {R} A%_classical_set_scope [r] _
 scale_ball0 is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.scale_ball0
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 77, characters 6-17
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 79, characters 6-17
 ">scale_ball0</a></span><span class="id"> {</span><span id="R:17" class="id"><a name="R:17" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numfield.html#Num.RealField.Exports.realFieldType">realFieldType</a></span><span class="id">}</span> (<span id="A:18" class="id"><a name="A:18" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#R:17">R</a></span>)<span class="id"> </span><span id="r:19" class="id"><a name="r:19" class="">r</a></span><span class="id"> :</span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:19">r</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id">0</span>)<span class="id">%R</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:19">r</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:18">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set0">set0</a></span>.<br/>
 <details>
@@ -476,12 +493,12 @@ forall {R : realFieldType} [x y r s : R],
 (0 < r)%R -> ball x r = ball y s -> x = y /\ r = s
 
 ball_inj is not universe polymorphic
-Arguments ball_inj {R} [x y r s]%ring_scope _ _
+Arguments ball_inj {R} [x y r s]%_ring_scope _ _
 ball_inj is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.ball_inj
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 134, characters 6-14
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 136, characters 6-14
 ">ball_inj</a></span><span class="id"> </span><span id="x:33" class="id"><a name="x:33" class="">x</a></span><span class="id"> </span><span id="y:34" class="id"><a name="y:34" class="">y</a></span><span class="id"> </span><span id="r:35" class="id"><a name="r:35" class="">r</a></span><span class="id"> </span><span id="s:36" class="id"><a name="s:36" class="">s</a></span><span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:35">r</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:33">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:35">r</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#y:34">y</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#s:36">s</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:33">x</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#y:34">y</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"> /\</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:35">r</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#s:36">s</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -498,7 +515,7 @@ Arguments radius0 {R}
 radius0 is opaque
 Expands to: Constant mathcomp.analysis.normedtype_theory.vitali_lemma.radius0
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 140, characters 6-13
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 142, characters 6-13
 ">radius0</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span> (<span class="id">@</span><span class="id"><a href="mathcomp.classical.classical_sets.html#set0">set0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> </a></span><span class="id">0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#47ac4d6dece4689d4a3505486f61da27">%:nng</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> :&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#6b57a954db0efd6b7fe2f37c706d0c82">{nonneg</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#6b57a954db0efd6b7fe2f37c706d0c82"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#6b57a954db0efd6b7fe2f37c706d0c82">}</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -516,7 +533,7 @@ is_ball0 is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.is_ball0
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 147, characters 6-14
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 149, characters 6-14
 ">is_ball0</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span> (<span class="id">@</span><span class="id"><a href="mathcomp.classical.classical_sets.html#set0">set0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>).<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -530,12 +547,12 @@ forall {R : realFieldType} (x : R) [r : R],
 (0 < r)%R -> cpoint (ball x r) = x
 
 cpoint_ball is not universe polymorphic
-Arguments cpoint_ball {R} x%ring_scope [r]%ring_scope _
+Arguments cpoint_ball {R} x%_ring_scope [r]%_ring_scope _
 cpoint_ball is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.cpoint_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 153, characters 6-17
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 155, characters 6-17
 ">cpoint_ball</a></span><span class="id"> </span><span id="x:37" class="id"><a name="x:37" class="">x</a></span><span class="id"> </span><span id="r:38" class="id"><a name="r:38" class="">r</a></span><span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:38">r</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:37">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:38">r</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:37">x</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -549,12 +566,12 @@ forall {R : realFieldType} (x : R) [r : R],
 (0 <= r)%R -> (radius (ball x r))%:num%R = r
 
 radius_ball_num is not universe polymorphic
-Arguments radius_ball_num {R} x%ring_scope [r]%ring_scope _
+Arguments radius_ball_num {R} x%_ring_scope [r]%_ring_scope _
 radius_ball_num is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.radius_ball_num
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 159, characters 6-21
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 161, characters 6-21
 ">radius_ball_num</a></span><span class="id"> </span><span id="x:39" class="id"><a name="x:39" class="">x</a></span><span class="id"> </span><span id="r:40" class="id"><a name="r:40" class="">r</a></span><span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:40">r</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:39">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:40">r</a></span>))<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:40">r</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -569,12 +586,12 @@ forall {R : realFieldType} (x : R) [r : R] (r0 : (0 <= r)%R),
 radius (ball x r) = NngNum (R:=R) (x:=r) r0
 
 radius_ball is not universe polymorphic
-Arguments radius_ball {R} x%ring_scope [r]%ring_scope r0
+Arguments radius_ball {R} x%_ring_scope [r]%_ring_scope r0
 radius_ball is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.radius_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 166, characters 6-17
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 168, characters 6-17
 ">radius_ball</a></span><span class="id"> </span><span id="x:41" class="id"><a name="x:41" class="">x</a></span><span class="id"> </span><span id="r:42" class="id"><a name="r:42" class="">r</a></span> (<span id="r0:43" class="id"><a name="r0:43" class="">r0</a></span><span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:42">r</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:41">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:42">r</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#NngNum">NngNum</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r0:43">r0</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -586,12 +603,12 @@ forall {R : realFieldType} [A : set R] [x : R],
 is_ball A -> A x -> (`|cpoint A - x| < (radius A)%:num)%R
 
 is_ballP is not universe polymorphic
-Arguments is_ballP {R} [A]%classical_set_scope [x]%ring_scope _ _
+Arguments is_ballP {R} [A]%_classical_set_scope [x]%_ring_scope _ _
 is_ballP is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.is_ballP
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 169, characters 6-14
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 171, characters 6-14
 ">is_ballP</a></span> (<span id="A:44" class="id"><a name="A:44" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"> </span><span id="x:45" class="id"><a name="x:45" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:44">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:44">A</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:45">x</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#55297ec87c6b3f98c14c99daeafb55d3">`|</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:44">A</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> -</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:45">x</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#55297ec87c6b3f98c14c99daeafb55d3">|</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:44">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span>.<br/>
 <details>
@@ -602,12 +619,12 @@ library mathcomp.analysis.normedtype_theory.vitali_lemma, line 169, characters 6
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="is_ball_ball" class="id"><a name="is_ball_ball" class="" title="is_ball_ball : forall {R : realFieldType} (x r : R), is_ball (ball x r)
 
 is_ball_ball is not universe polymorphic
-Arguments is_ball_ball {R} (x r)%ring_scope
+Arguments is_ball_ball {R} (x r)%_ring_scope
 is_ball_ball is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.is_ball_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 173, characters 6-18
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 175, characters 6-18
 ">is_ball_ball</a></span><span class="id"> </span><span id="x:46" class="id"><a name="x:46" class="">x</a></span><span class="id"> </span><span id="r:47" class="id"><a name="r:47" class="">r</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:46">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:47">r</a></span>).<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -620,12 +637,12 @@ Qed.</div></details>
 forall {R : realFieldType} (k : R), (k *` set0)%classic = set0
 
 scale_ball_set0 is not universe polymorphic
-Arguments scale_ball_set0 {R} k%ring_scope
+Arguments scale_ball_set0 {R} k%_ring_scope
 scale_ball_set0 is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.scale_ball_set0
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 179, characters 6-21
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 181, characters 6-21
 ">scale_ball_set0</a></span> (<span id="k:48" class="id"><a name="k:48" class="">k</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:48">k</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set0">set0</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set0">set0</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> :&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -637,11 +654,11 @@ forall {R : realFieldType} [A : set R],
 is_ball A -> A = ball (cpoint A) (radius A)%:num
 
 ballE is not universe polymorphic
-Arguments ballE {R} [A]%classical_set_scope _
+Arguments ballE {R} [A]%_classical_set_scope _
 ballE is opaque
 Expands to: Constant mathcomp.analysis.normedtype_theory.vitali_lemma.ballE
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 182, characters 6-11
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 184, characters 6-11
 ">ballE</a></span> (<span id="A:49" class="id"><a name="A:49" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:49">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:49">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:49">A</a></span>) (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:49">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -652,15 +669,16 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="is_ball_closureP" class="id"><a name="is_ball_closureP" class="" title="is_ball_closureP :
 forall {R : realFieldType} [A : set R] [x : R],
-is_ball A -> closure A x -> (`|cpoint A - x| <= (radius A)%:num)%R
+is_ball A ->
+topology_structure.closure A x -> (`|cpoint A - x| <= (radius A)%:num)%R
 
 is_ball_closureP is not universe polymorphic
-Arguments is_ball_closureP {R} [A]%classical_set_scope [x]%ring_scope _ _
+Arguments is_ball_closureP {R} [A]%_classical_set_scope [x]%_ring_scope _ _
 is_ball_closureP is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.is_ball_closureP
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 188, characters 6-22
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 190, characters 6-22
 ">is_ball_closureP</a></span> (<span id="A:50" class="id"><a name="A:50" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"> </span><span id="x:51" class="id"><a name="x:51" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:50">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#closure">closure</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:50">A</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:51">x</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#55297ec87c6b3f98c14c99daeafb55d3">`|</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:50">A</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> -</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:51">x</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#55297ec87c6b3f98c14c99daeafb55d3">|</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:50">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span>.<br/>
 <details>
@@ -675,7 +693,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="is_ball_closure" class="id"><a name="is_ball_closure" class="" title="is_ball_closure :
 forall {R : realFieldType} [A : set R],
 is_ball A ->
-closure A =
+topology_structure.closure A =
 closed_ball
   (V:=join_pseudometric_structure_PseudoPointedMetric_between_classical_sets_Pointed_and_pseudometric_structure_PseudoMetric
         (numFieldTopology.RealField_sort__canonical__pseudometric_structure_PseudoPointedMetric
@@ -683,12 +701,12 @@ closed_ball
   (cpoint A) (radius A)%:num
 
 is_ball_closure is not universe polymorphic
-Arguments is_ball_closure {R} [A]%classical_set_scope _
+Arguments is_ball_closure {R} [A]%_classical_set_scope _
 is_ball_closure is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.is_ball_closure
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 197, characters 6-21
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 199, characters 6-21
 ">is_ball_closure</a></span> (<span id="A:52" class="id"><a name="A:52" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:52">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#closure">closure</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:52">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#closed_ball">closed_ball</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:52">A</a></span>) (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:52">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span>.<br/>
 <details>
@@ -704,12 +722,12 @@ forall {R : realFieldType}
 (0 <= k)%R -> (k *` ball x r)%classic = ball x (k * r)
 
 scale_ballE is not universe polymorphic
-Arguments scale_ballE {R} [k] (x r)%ring_scope _
+Arguments scale_ballE {R} [k] (x r)%_ring_scope _
 scale_ballE is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.scale_ballE
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 201, characters 6-17
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 203, characters 6-17
 ">scale_ballE</a></span><span class="id"> </span><span id="k:53" class="id"><a name="k:53" class="">k</a></span><span class="id"> </span><span id="x:54" class="id"><a name="x:54" class="">x</a></span><span class="id"> </span><span id="r:55" class="id"><a name="r:55" class="">r</a></span><span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:53">k</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:53">k</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:54">x</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:55">r</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.pseudometric_structure.html#ball">ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#x:54">x</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:53">k</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#r:55">r</a></span>).<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -733,12 +751,13 @@ forall {R : realFieldType}
 is_ball A -> (0 < (radius A)%:num)%R -> cpoint (k *` A) = cpoint A
 
 cpoint_scale_ball is not universe polymorphic
-Arguments cpoint_scale_ball {R} [A]%classical_set_scope [k]%ring_scope _ _ _
+Arguments cpoint_scale_ball {R} [A]%_classical_set_scope 
+  [k]%_ring_scope _ _ _
 cpoint_scale_ball is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.cpoint_scale_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 212, characters 6-23
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 214, characters 6-23
 ">cpoint_scale_ball</a></span><span class="id"> </span><span id="A:56" class="id"><a name="A:56" class="">A</a></span> (<span id="k:57" class="id"><a name="k:57" class="">k</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:57">k</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:56">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id">0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:56">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:57">k</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:56">A</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#cpoint">cpoint</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:56">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> :&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#b8b2ebc8e1a8b9aa935c0702efb5dccf"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>.<br/>
 <details>
@@ -754,12 +773,12 @@ forall {R : realFieldType} [A : set R] [k : R],
 (0 <= k)%R -> is_ball A -> (radius (k *` A))%:num%R = (k * (radius A)%:num)%R
 
 radius_scale_ball is not universe polymorphic
-Arguments radius_scale_ball {R} [A]%classical_set_scope [k]%ring_scope _ _
+Arguments radius_scale_ball {R} [A]%_classical_set_scope [k]%_ring_scope _ _
 radius_scale_ball is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.radius_scale_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 220, characters 6-23
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 222, characters 6-23
 ">radius_scale_ball</a></span> (<span id="A:58" class="id"><a name="A:58" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>) (<span id="k:59" class="id"><a name="k:59" class="">k</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:59">k</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:58">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:59">k</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:58">A</a></span>))<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:59">k</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:58">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span>.<br/>
 <details>
@@ -773,12 +792,12 @@ Qed.</div></details>
 forall {R : realFieldType} [A : set R] (k : R), is_ball A -> is_ball (k *` A)
 
 is_scale_ball is not universe polymorphic
-Arguments is_scale_ball {R} [A]%classical_set_scope k%ring_scope _
+Arguments is_scale_ball {R} [A]%_classical_set_scope k%_ring_scope _
 is_scale_ball is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.is_scale_ball
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 227, characters 6-19
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 229, characters 6-19
 ">is_scale_ball</a></span> (<span id="A:60" class="id"><a name="A:60" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>) (<span id="k:61" class="id"><a name="k:61" class="">k</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#center_radius_realFieldType.R">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:60">A</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#is_ball">is_ball</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#k:61">k</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> *`</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#1e4e85f1fc6f19c4fad1878bba951c16"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#A:60">A</a></span>).<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -814,13 +833,13 @@ forall s : seq I,
           & (B i `<=` 3 *` B j)%classic]]}
 
 vitali_lemma_finite is not universe polymorphic
-Arguments vitali_lemma_finite {R I} [B]%function_scope
-  (is_ballB B_set0)%function_scope s%seq_scope
+Arguments vitali_lemma_finite {R I} [B]%_function_scope
+  (is_ballB B_set0)%_function_scope s%_seq_scope
 vitali_lemma_finite is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.vitali_lemma_finite
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 245, characters 6-25
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 247, characters 6-25
 ">vitali_lemma_finite</a></span> (<span id="s:72" class="id"><a name="s:72" class="">s</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#seq">seq</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_finite.I">I</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562">{</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span id="D:73" class="id"><a name="D:73" class="">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> :</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#seq">seq</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_finite.I">I</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> |</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">[/\</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#uniq">uniq</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:73">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463">{subset</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:73">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463"> &lt;=</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#s:72">s</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463">}</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#trivIset">trivIset</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7">[set`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:73">D</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_finite.B">B</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> &amp;</a></span><br/>
@@ -897,13 +916,13 @@ forall s : seq I,
     & (cover [set` s] B `<=` cover [set` D] (scale_ball 3 \o B))%classic]}
 
 vitali_lemma_finite_cover is not universe polymorphic
-Arguments vitali_lemma_finite_cover {R I} [B]%function_scope
-  (is_ballB B_set0)%function_scope s%seq_scope
+Arguments vitali_lemma_finite_cover {R I} [B]%_function_scope
+  (is_ballB B_set0)%_function_scope s%_seq_scope
 vitali_lemma_finite_cover is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.vitali_lemma_finite_cover
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 309, characters 6-31
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 311, characters 6-31
 ">vitali_lemma_finite_cover</a></span> (<span id="s:79" class="id"><a name="s:79" class="">s</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#seq">seq</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_finite.I">I</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562">{</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span id="D:80" class="id"><a name="D:80" class="">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> :</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#seq">seq</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_finite.I">I</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> |</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">[/\</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#uniq">uniq</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:80">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463">{subset</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:80">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463"> &lt;=</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#s:79">s</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#ca592708f529c7c7ee5f3dbd6cf93463">}</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.classical_sets.html#trivIset">trivIset</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7">[set`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:80">D</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7">]</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_finite.B">B</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> &amp;</a></span><br/>
@@ -929,13 +948,14 @@ forall {R : realType} {I : eqType},
 (I -> set R) -> set I -> R -> nat -> set I
 
 vitali_collection_partition is not universe polymorphic
-Arguments vitali_collection_partition {R I} B%function_scope
-  V%classical_set_scope r%ring_scope n%nat_scope _
+Arguments vitali_collection_partition {R I} B%_function_scope
+  V%_classical_set_scope r%_ring_scope n%_nat_scope 
+  _
 vitali_collection_partition is transparent
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.vitali_collection_partition
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 327, characters 11-38
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 329, characters 11-38
 ">vitali_collection_partition</a></span><span class="id"> </span><span id="n:95" class="id"><a name="n:95" class="">n</a></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9">[set</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9"> </a></span><span id="i:96" class="id"><a name="i:96" class="">i</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9"> |</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition.V">V</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#i:96">i</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"> /\</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition.r">r</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#69c431a9c94f6f30a655bd7ddb59037b"> /</a></span> (<span class="id">2</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#81fd94e251a61ee523cdd7855774ae7c"> ^</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#81fd94e251a61ee523cdd7855774ae7c"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#n:95">n</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bda89d73ec4a8f23ae92b565ffb5aaa6">+1</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#6411ed08724033ae48d2865f0380d533">%:R</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#2204180cdceca384f1146e14bfad202d"> &lt;</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition.B">B</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#i:96">i</a></span>))<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#2204180cdceca384f1146e14bfad202d"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#2204180cdceca384f1146e14bfad202d"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition.r">r</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#69c431a9c94f6f30a655bd7ddb59037b"> /</a></span> (<span class="id">2</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#81fd94e251a61ee523cdd7855774ae7c"> ^</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#81fd94e251a61ee523cdd7855774ae7c"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#n:95">n</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#6411ed08724033ae48d2865f0380d533">%:R</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#075f2dd209aa707f1415a58a026b96d9">]</a></span>.<br/>
 <br/>
@@ -949,13 +969,13 @@ forall [i : I], V i -> (0 < r)%R
 
 vitali_collection_partition_ub_gt0 is not universe polymorphic
 Arguments vitali_collection_partition_ub_gt0 {R I} 
-  [B]%function_scope [V]%classical_set_scope [r]%ring_scope
-  (B_set0 VBr)%function_scope [i] _
+  [B]%_function_scope [V]%_classical_set_scope [r]%_ring_scope
+  (B_set0 VBr)%_function_scope [i] _
 vitali_collection_partition_ub_gt0 is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.vitali_collection_partition_ub_gt0
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 332, characters 6-40
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 334, characters 6-40
 ">vitali_collection_partition_ub_gt0</a></span><span class="id"> </span><span id="i:100" class="id"><a name="i:100" class="">i</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition.V">V</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#i:100">i</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id">0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition.r">r</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -971,14 +991,14 @@ forall {R : realType} {I : eqType} [B : I -> set R] [V : set I] [r : R],
 forall [i : I], V i -> exists n : nat, vitali_collection_partition B V r n i
 
 ex_vitali_collection_partition is not universe polymorphic
-Arguments ex_vitali_collection_partition {R I} [B]%function_scope
-  [V]%classical_set_scope [r]%ring_scope (B_set0 VBr)%function_scope 
+Arguments ex_vitali_collection_partition {R I} [B]%_function_scope
+  [V]%_classical_set_scope [r]%_ring_scope (B_set0 VBr)%_function_scope 
   [i] _
 ex_vitali_collection_partition is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.ex_vitali_collection_partition
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 337, characters 6-36
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 339, characters 6-36
 ">ex_vitali_collection_partition</a></span><span class="id"> </span><span id="i:101" class="id"><a name="i:101" class="">i</a></span><span class="id"> :</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition.V">V</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#i:101">i</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="gallina-kwd"> exists</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54"> </a></span><span id="n:102" class="id"><a name="n:102" class="">n</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition">vitali_collection_partition</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#n:102">n</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#i:101">i</a></span>.<br/>
 <details>
@@ -1011,13 +1031,13 @@ V = (\bigcup_n vitali_collection_partition B V r n)%classic
 
 cover_vitali_collection_partition is not universe polymorphic
 Arguments cover_vitali_collection_partition {R I} 
-  [B]%function_scope [V]%classical_set_scope [r]%ring_scope
-  (B_set0 VBr)%function_scope
+  [B]%_function_scope [V]%_classical_set_scope [r]%_ring_scope
+  (B_set0 VBr)%_function_scope
 cover_vitali_collection_partition is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.cover_vitali_collection_partition
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 359, characters 6-39
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 361, characters 6-39
 ">cover_vitali_collection_partition</a></span><span class="id"> :</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition.V">V</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#4652af423267d4923a164c1104e1273f">\bigcup_</a></span><span id="n:103" class="id"><a name="n:103" class="">n</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#4652af423267d4923a164c1104e1273f"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition">vitali_collection_partition</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#n:103">n</a></span>.<br/>
 <details>
@@ -1038,13 +1058,13 @@ set0
 
 disjoint_vitali_collection_partition is not universe polymorphic
 Arguments disjoint_vitali_collection_partition {R I} 
-  [B]%function_scope [V]%classical_set_scope [r]%ring_scope
-  (B_set0 VBr)%function_scope [n m] _
+  [B]%_function_scope [V]%_classical_set_scope [r]%_ring_scope
+  (B_set0 VBr)%_function_scope [n m] _
 disjoint_vitali_collection_partition is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.disjoint_vitali_collection_partition
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 366, characters 6-42
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 368, characters 6-42
 ">disjoint_vitali_collection_partition</a></span><span class="id"> </span><span id="n:104" class="id"><a name="n:104" class="">n</a></span><span class="id"> </span><span id="m:105" class="id"><a name="m:105" class="">m</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#n:104">n</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#c385a484ee9d1b4e0615924561a9b75e"> !=</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#c385a484ee9d1b4e0615924561a9b75e"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#m:105">m</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition">vitali_collection_partition</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#n:104">n</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> `&amp;`</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_collection_partition">vitali_collection_partition</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#m:105">m</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set0">set0</a></span>.<br/>
@@ -1067,9 +1087,10 @@ Qed.</div></details>
 forall {R : realType} [I : Type] [B : I -> set R] [D : set I],
 (forall i : I, (0 < (radius (B i))%:num)%R) ->
 trivIset
-  (T:=join_pseudometric_structure_PseudoPointedMetric_between_classical_sets_Pointed_and_pseudometric_structure_PseudoMetric
-        (numFieldTopology.Real_sort__canonical__pseudometric_structure_PseudoPointedMetric
-           R))
+  (T:=topology_structure.Topological.sort
+        (join_pseudometric_structure_PseudoPointedMetric_between_classical_sets_Pointed_and_pseudometric_structure_PseudoMetric
+           (numFieldTopology.Real_sort__canonical__pseudometric_structure_PseudoPointedMetric
+              R)))
   D
   (fun i : I =>
    closed_ball
@@ -1080,14 +1101,14 @@ trivIset
 countable (T:=I) D
 
 separated_closed_ball_countable is not universe polymorphic
-Arguments separated_closed_ball_countable {R} [I]%type_scope
-  [B]%function_scope [D]%classical_set_scope _%function_scope 
+Arguments separated_closed_ball_countable {R} [I]%_type_scope
+  [B]%_function_scope [D]%_classical_set_scope _%_function_scope 
   _
 separated_closed_ball_countable is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.separated_closed_ball_countable
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 382, characters 6-37
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 384, characters 6-37
 ">separated_closed_ball_countable</a></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">{</span><span id="R:106" class="id"><a name="R:106" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span><span class="id">}</span> (<span id="I:107" class="id"><a name="I:107" class="">I</a></span><span class="id"> :</span><span class="gallina-kwd"> Type</span>) (<span id="B:108" class="id"><a name="B:108" class="">B</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#I:107">I</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#R:106">R</a></span>) (<span id="D:109" class="id"><a name="D:109" class="">D</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#I:107">I</a></span>)<span class="id"> :</span><br/>
 &nbsp;&nbsp;(<span class="gallina-kwd">forall</span><span class="id"> </span><span id="i:110" class="id"><a name="i:110" class="">i</a></span><span class="id">,</span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#radius">radius</a></span> (<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#B:108">B</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#i:110">i</a></span>))<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval_inference.html#1c0324eabc1cbd2d8f3ac221154b0692">%:num</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&gt;'_x"> &gt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&gt;'_x"> </a></span><span class="id">0</span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><br/>
@@ -1132,24 +1153,29 @@ forall {R : realType} {I : eqType} [B : I -> set R] [V : set I] [r : R],
 {D : set I
 | [/\ countable (T:=I) D, (D `<=` V)%classic,
       trivIset
-        (T:=numFieldTopology.Real_sort__canonical__topology_structure_Topological
-              R)
-        D (closure \o B)
+        (T:=topology_structure.Topological.sort
+              (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+                 R))
+        D (topology_structure.closure \o B)
     & forall i : I,
       V i ->
       exists j : I,
-        [/\ D j, (closure (B i) `&` closure (B j) !=set0)%classic,
+        [/\ D j,
+            (topology_structure.closure (B i)
+             `&` topology_structure.closure (B j) !=set0)%classic,
             ((radius (B i))%:num / 2 <= (radius (B j))%:num)%R
-          & (closure (B i) `<=` closure (5 *` B j))%classic]]}
+          & (topology_structure.closure (B i)
+             `<=` topology_structure.closure (5 *` B j))%classic]]}
 
 vitali_lemma_infinite is not universe polymorphic
-Arguments vitali_lemma_infinite {R I} [B]%function_scope
-  [V]%classical_set_scope [r]%ring_scope (is_ballB Bset0 VBr)%function_scope
+Arguments vitali_lemma_infinite {R I} [B]%_function_scope
+  [V]%_classical_set_scope [r]%_ring_scope
+  (is_ballB Bset0 VBr)%_function_scope
 vitali_lemma_infinite is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.vitali_lemma_infinite
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 416, characters 6-27
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 418, characters 6-27
 ">vitali_lemma_infinite</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562">{</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span id="D:138" class="id"><a name="D:138" class="">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> :</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.I">I</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> |</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">[/\</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="mathcomp.classical.cardinality.html#countable">countable</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:138">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:138">D</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> `&lt;=`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.V">V</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#trivIset">trivIset</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:138">D</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#closure">closure</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.B">B</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> &amp;</a></span><br/>
 &nbsp;&nbsp;<span class="gallina-kwd">forall</span><span class="id"> </span><span id="i:139" class="id"><a name="i:139" class="">i</a></span><span class="id">,</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.V">V</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#i:139">i</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="gallina-kwd"> exists</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54"> </a></span><span id="j:140" class="id"><a name="j:140" class="">j</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">[/\</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:138">D</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#j:140">j</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><br/>
@@ -1292,19 +1318,22 @@ forall {R : realType} {I : eqType} [B : I -> set R] [V : set I] [r : R],
 {D : set I
 | [/\ countable (T:=I) D, (D `<=` V)%classic,
       trivIset
-        (T:=numFieldTopology.Real_sort__canonical__topology_structure_Topological
-              R)
-        D (closure \o B)
-    & (cover V (closure \o B) `<=` cover D ((closure \o scale_ball 5) \o B))%classic]}
+        (T:=topology_structure.Topological.sort
+              (numFieldTopology.Real_sort__canonical__topology_structure_Topological
+                 R))
+        D (topology_structure.closure \o B)
+    & (cover V (topology_structure.closure \o B)
+       `<=` cover D ((topology_structure.closure \o scale_ball 5) \o B))%classic]}
 
 vitali_lemma_infinite_cover is not universe polymorphic
-Arguments vitali_lemma_infinite_cover {R I} [B]%function_scope
-  [V]%classical_set_scope [r]%ring_scope (is_ballB Bset0 VBr)%function_scope
+Arguments vitali_lemma_infinite_cover {R I} [B]%_function_scope
+  [V]%_classical_set_scope [r]%_ring_scope
+  (is_ballB Bset0 VBr)%_function_scope
 vitali_lemma_infinite_cover is opaque
 Expands to: Constant
             mathcomp.analysis.normedtype_theory.vitali_lemma.vitali_lemma_infinite_cover
 Declared in
-library mathcomp.analysis.normedtype_theory.vitali_lemma, line 548, characters 6-33
+library mathcomp.analysis.normedtype_theory.vitali_lemma, line 550, characters 6-33
 ">vitali_lemma_infinite_cover</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562">{</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span id="D:167" class="id"><a name="D:167" class="">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> :</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.I">I</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> |</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">[/\</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="mathcomp.classical.cardinality.html#countable">countable</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:167">D</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:167">D</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> `&lt;=`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.V">V</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#trivIset">trivIset</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:167">D</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#closure">closure</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.B">B</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014"> &amp;</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.classical_sets.html#cover">cover</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.V">V</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#closure">closure</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.B">B</a></span>)<span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> `&lt;=`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#e19db46c1d4073266228fb7781521a56"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#cover">cover</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#D:167">D</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#closure">closure</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#scale_ball">scale_ball</a></span><span class="id"> 5</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#6411ed08724033ae48d2865f0380d533">%:R</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> \o</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#687e14754dadb7c0b04f27d8f71d2638"> </a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.vitali_lemma.html#vitali_lemma_infinite.B">B</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#554fc3f3cf0a27fe0863b7741d119014">]</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#6556914db359db999889decec6a4a562"> }</a></span>.<br/>

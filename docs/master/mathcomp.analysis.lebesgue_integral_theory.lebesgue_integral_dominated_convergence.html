@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -386,11 +401,19 @@ forall [f_ : (T -> \bar R) ^nat] [f g : T -> \bar R],
    (U:=constructive_ereal_extended__canonical__measurable_structure_SigmaRing
          R)
    D (f_ n)) ->
-(forall x : T, D x -> (f_ x0 x @[x0 --> \oo] --> f x)%classic) ->
+(forall x : T,
+ D x ->
+ filter.cvg_to
+   (filter.nbhs (filter.fmap (f_^~ x) (filter.nbhs filter.eventually)))
+   (filter.nbhs (f x))) ->
 (forall x : T, D x -> g x \is a fin_num) ->
 mu.-integrable D g ->
 (forall (n : nat) (x : T), D x -> (`|f_ n x| <= g x)%E) ->
-((\int[mu]_(x in D) f_ n x)%E @[n \oo] --> (\int[mu]_(x in D) f x)%E)%classic
+filter.cvg_to
+  (filter.nbhs
+     (filter.fmap (fun n : nat => (\int[mu]_(x in D) f_ n x)%E)
+        filter.eventually))
+  (filter.nbhs (\int[mu]_(x in D) f x)%E)
 
 dominated_cvg is not universe polymorphic
 Expanded type for implicit arguments
@@ -404,7 +427,11 @@ forall [f_ : (T -> \bar R) ^nat] [f g : T -> \bar R],
    (U:=constructive_ereal_extended__canonical__measurable_structure_SigmaRing
          R)
    D (f_ n)) ->
-(forall x : T, D x -> (f_ x0 x @[x0 --> \oo] --> f x)%classic) ->
+(forall x : T,
+ D x ->
+ filter.cvg_to
+   (filter.nbhs (filter.fmap (f_^~ x) (filter.nbhs filter.eventually)))
+   (filter.nbhs (f x))) ->
 (forall x : T, D x -> g x \is a fin_num) ->
 mu.-integrable D g ->
 (forall (n : nat) (x : T), D x -> (`|f_ n x| <= g x)%E) ->
@@ -412,15 +439,15 @@ forall
   [t : set
          (GRing.BaseAddMagma.sort
             constructive_ereal_extended__canonical__Algebra_BaseAddMagma)],
-nbhs (\int[mu]_(x in D) f x)%E t ->
+filter.nbhs (\int[mu]_(x in D) f x)%E t ->
 exists2 i : nat,
   [set: nat]%classic i &
   ((fun N : nat => [set n | N <= n]) i
    `<=` (fun n : nat => (\int[mu]_(x in D) f_ n x)%E) @^-1` t)%classic
 
-Arguments dominated_cvg [d]%measure_display_scope 
-  [T R mu] [D]%classical_set_scope mD [f_] [f g]%function_scope
-  (mf_ f_f fing)%function_scope ig absfg%function_scope 
+Arguments dominated_cvg [d]%_measure_display_scope 
+  [T R mu] [D]%_classical_set_scope mD [f_] [f g]%_function_scope
+  (mf_ f_f fing)%_function_scope ig absfg%_function_scope 
   [t] _
 dominated_cvg is opaque
 Expands to: Constant
@@ -478,20 +505,31 @@ measurable_fun (T:=T)
   (U:=constructive_ereal_extended__canonical__measurable_structure_SigmaRing
         R)
   D f ->
-(\forall x \ae mu, D x -> (f_ x0 x @[x0 --> \oo] --> f x)%classic) ->
+(\forall x \ae mu, D x ->
+                   filter.cvg_to
+                     (filter.nbhs
+                        (filter.fmap (f_^~ x) (filter.nbhs filter.eventually)))
+                     (filter.nbhs (f x))) ->
 mu.-integrable D g ->
 (\forall x \ae mu, forall n : nat, D x -> (`|f_ n x| <= g x)%E) ->
 [/\ mu.-integrable D f,
-    ([sequence (\int[mu]_(x in D)
-                   (fun (n0 : nat) (x0 : T) => `|f_ n0 x0 - f x0|) n x)%E]_n%R
-       x @[x --> \oo] --> 0%R)%classic
-  & ([sequence (\int[mu]_(x in D) f_ n x)%E]_n%R x @[x --> \oo] --> 
-     (\int[mu]_(x in D) f x)%E)%classic]
+    filter.cvg_to
+      (filter.nbhs
+         (filter.fmap
+            [sequence (\int[mu]_(x in D)
+                          (fun (n0 : nat) (x0 : T) => `|f_ n0 x0 - f x0|) n x)%E]_n%R
+            (filter.nbhs filter.eventually)))
+      (filter.nbhs 0%R)
+  & filter.cvg_to
+      (filter.nbhs
+         (filter.fmap [sequence (\int[mu]_(x in D) f_ n x)%E]_n%R
+            (filter.nbhs filter.eventually)))
+      (filter.nbhs (\int[mu]_(x in D) f x)%E)]
 
 dominated_convergence is not universe polymorphic
-Arguments dominated_convergence [d]%measure_display_scope 
-  [T R mu] [D]%classical_set_scope mD [f_] [f g]%function_scope
-  mf_%function_scope mf f_f ig f_g
+Arguments dominated_convergence [d]%_measure_display_scope 
+  [T R mu] [D]%_classical_set_scope mD [f_] [f g]%_function_scope
+  mf_%_function_scope mf f_f ig f_g
 dominated_convergence is opaque
 Expands to: Constant
             mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_dominated_convergence.dominated_convergence
@@ -615,12 +653,21 @@ exists g_ : {sfun T >-> R} ^nat,
   [/\ forall n : nat, mu.-integrable E (EFin \o g_ n),
       forall x : T,
       E x ->
-      ((EFin \o (fun x0 : nat => g_ x0 x)) x0 @[x0 --> \oo] --> f x)%classic
-    & ((\int[mu]_(z in E) `|f z - (g_ n z)%:E|)%E @[n --> \oo] --> 0%R)%classic]
+      filter.cvg_to
+        (filter.nbhs
+           (filter.fmap (EFin \o (fun x0 : nat => g_ x0 x))
+              (filter.nbhs filter.eventually)))
+        (filter.nbhs (f x))
+    & filter.cvg_to
+        (filter.nbhs
+           (filter.fmap
+              (fun n : nat => (\int[mu]_(z in E) `|f z - (g_ n z)%:E|)%E)
+              (filter.nbhs filter.eventually)))
+        (filter.nbhs 0%R)]
 
 approximation_sfun_integrable is not universe polymorphic
-Arguments approximation_sfun_integrable [d]%measure_display_scope 
-  [T R mu] [E]%classical_set_scope mE [f]%function_scope 
+Arguments approximation_sfun_integrable [d]%_measure_display_scope 
+  [T R mu] [E]%_classical_set_scope mE [f]%_function_scope 
   _
 approximation_sfun_integrable is opaque
 Expands to: Constant

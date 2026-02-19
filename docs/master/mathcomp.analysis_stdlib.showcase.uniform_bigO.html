@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -239,7 +254,7 @@ code is here: http://fost.saclay.inria.fr/coq_total/BigO.html.
 forall [A : Type], set (R * R) -> (A -> R * R -> R) -> (R * R -> R) -> Set
 
 OuP is not universe polymorphic
-Arguments OuP [A]%type_scope P%classical_set_scope (f g)%function_scope
+Arguments OuP [A]%_type_scope P%_classical_set_scope (f g)%_function_scope
 OuP is transparent
 Expands to: Constant mathcomp.analysis_stdlib.showcase.uniform_bigO.OuP
 Declared in
@@ -259,7 +274,7 @@ forall [A : Type],
 set (R * R) -> (A -> R * R -> R^o) -> (R * R -> R^o) -> Prop
 
 OuPex is not universe polymorphic
-Arguments OuPex [A]%type_scope P%classical_set_scope (f g)%function_scope
+Arguments OuPex [A]%_type_scope P%_classical_set_scope (f g)%_function_scope
 OuPex is transparent
 Expands to: Constant mathcomp.analysis_stdlib.showcase.uniform_bigO.OuPex
 Declared in
@@ -270,7 +285,7 @@ library mathcomp.analysis_stdlib.showcase.uniform_bigO, line 38, characters 11-1
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#dX:16">dX</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.Syntax.::ring_scope:x_'&lt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#alp:12">alp</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#UniformBigO.P">P</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#dX:16">dX</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#f:9">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#X:15">X</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#dX:16">dX</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#C:14">C</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">`|</a></span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#g:10">g</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.showcase.uniform_bigO.html#dX:16">dX</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#d57f8ea5c04769804302899e06b02be3">|</a></span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="ler_norm2" class="id"><a name="ler_norm2" class="" title="ler_norm2 :
-forall x : R^o * R^o,
+forall x : normed_module.NormedModule.sort (R^o * R^o)%type,
 (`|x| <= sqrt ((x.1)² + (x.2)²) <= Num.ExtraDef.sqrtr 2 * `|x|)%R
 
 ler_norm2 is not universe polymorphic
@@ -303,8 +318,8 @@ forall [A : Type] [P : set (R * R)] [f : A -> R * R -> R] [g : R * R -> R],
 OuP P f g -> OuPex P f g
 
 OuP_to_ex is not universe polymorphic
-Arguments OuP_to_ex [A]%type_scope [P]%classical_set_scope
-  [f g]%function_scope _
+Arguments OuP_to_ex [A]%_type_scope [P]%_classical_set_scope
+  [f g]%_function_scope _
 OuP_to_ex is opaque
 Expands to: Constant mathcomp.analysis_stdlib.showcase.uniform_bigO.OuP_to_ex
 Declared in
@@ -325,8 +340,8 @@ forall [A : Type] [P : set (R * R)] [f : A -> R * R -> R^o]
 OuPex P f g -> OuP P f g
 
 Ouex_to_P is not universe polymorphic
-Arguments Ouex_to_P [A]%type_scope [P]%classical_set_scope
-  [f g]%function_scope _
+Arguments Ouex_to_P [A]%_type_scope [P]%_classical_set_scope
+  [f g]%_function_scope _
 Ouex_to_P is opaque
 Expands to: Constant mathcomp.analysis_stdlib.showcase.uniform_bigO.Ouex_to_P
 Declared in
@@ -348,7 +363,7 @@ forall [A : Type],
 set (R * R) -> (A -> R * R -> R^o) -> (R * R -> R^o) -> Prop
 
 OuO is not universe polymorphic
-Arguments OuO [A]%type_scope P%classical_set_scope (f g)%function_scope
+Arguments OuO [A]%_type_scope P%_classical_set_scope (f g)%_function_scope
 OuO is transparent
 Expands to: Constant mathcomp.analysis_stdlib.showcase.uniform_bigO.OuO
 Declared in
@@ -362,8 +377,8 @@ forall [A : Type] [P : set (R * R)] [f : A -> R * R -> R] [g : R * R -> R],
 OuP P f g -> OuO P f g
 
 OuP_to_O is not universe polymorphic
-Arguments OuP_to_O [A]%type_scope [P]%classical_set_scope
-  [f g]%function_scope _
+Arguments OuP_to_O [A]%_type_scope [P]%_classical_set_scope
+  [f g]%_function_scope _
 OuP_to_O is opaque
 Expands to: Constant mathcomp.analysis_stdlib.showcase.uniform_bigO.OuP_to_O
 Declared in
@@ -388,8 +403,8 @@ forall [A : Type] [P : set (R * R)] [f : A -> R * R -> R^o]
 OuO P f g -> OuP P f g
 
 OuO_to_P is not universe polymorphic
-Arguments OuO_to_P [A]%type_scope [P]%classical_set_scope
-  [f g]%function_scope _
+Arguments OuO_to_P [A]%_type_scope [P]%_classical_set_scope
+  [f g]%_function_scope _
 OuO_to_P is opaque
 Expands to: Constant mathcomp.analysis_stdlib.showcase.uniform_bigO.OuO_to_P
 Declared in

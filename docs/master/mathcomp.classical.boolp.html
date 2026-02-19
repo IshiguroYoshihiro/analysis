@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -293,7 +308,7 @@ forall [A : Type] [P Q : A -> Prop],
 (exists2 x : A, P x & Q x) -> {x : A | P x & Q x}
 
 cid2 is not universe polymorphic
-Arguments cid2 [A]%type_scope [P Q]%function_scope _
+Arguments cid2 [A]%_type_scope [P Q]%_function_scope _
 cid2 is opaque
 Expands to: Constant mathcomp.classical.boolp.cid2
 Declared in library mathcomp.classical.boolp, line 85, characters 6-10
@@ -311,7 +326,7 @@ forall [T : Type] [P : T -> Type] [x y : T] [Px : P x] [Py : P y],
 existT P x Px = existT P y Py -> x = y
 
 existT_inj1 is not universe polymorphic
-Arguments existT_inj1 [T]%type_scope [P]%function_scope [x y Px Py] _
+Arguments existT_inj1 [T]%_type_scope [P]%_function_scope [x y Px Py] _
 existT_inj1 is opaque
 Expands to: Constant mathcomp.classical.boolp.existT_inj1
 Declared in library mathcomp.classical.boolp, line 92, characters 6-17
@@ -327,7 +342,7 @@ forall [T : eqType] [P : T -> Type] [x : T] [Px1 Px2 : P x],
 existT P x Px1 = existT P x Px2 -> Px1 = Px2
 
 existT_inj2 is not universe polymorphic
-Arguments existT_inj2 [T] [P]%function_scope [x Px1 Px2] _
+Arguments existT_inj2 [T] [P]%_function_scope [x Px1 Px2] _
 existT_inj2 is opaque
 Expands to: Constant mathcomp.classical.boolp.existT_inj2
 Declared in library mathcomp.classical.boolp, line 96, characters 6-17
@@ -345,7 +360,7 @@ forall [T : Type] [P : T -> Type] (p : {x : T & P x}),
 existT [eta P] (projT1 p) (projT2 p) = p
 
 surjective_existT is not universe polymorphic
-Arguments surjective_existT [T]%type_scope [P]%function_scope p
+Arguments surjective_existT [T]%_type_scope [P]%_function_scope p
 surjective_existT is opaque
 Expands to: Constant mathcomp.classical.boolp.surjective_existT
 Declared in library mathcomp.classical.boolp, line 103, characters 6-23
@@ -380,7 +395,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="propext" class="id"><a name="propext" class="" title="propext : forall [P Q : Prop], P <-> Q -> P = Q
 
 propext is not universe polymorphic
-Arguments propext [P Q]%type_scope _
+Arguments propext [P Q]%_type_scope _
 propext is opaque
 Expands to: Constant mathcomp.classical.boolp.propext
 Declared in library mathcomp.classical.boolp, line 120, characters 6-13
@@ -395,7 +410,7 @@ Declared in library mathcomp.classical.boolp, line 120, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="funext" class="id"><a name="funext" class="" title="funext : forall {T U : Type} [f g : T -> U], f =1 g -> f = g
 
 funext is not universe polymorphic
-Arguments funext {T U}%type_scope [f g]%function_scope _
+Arguments funext {T U}%_type_scope [f g]%_function_scope _
 funext is opaque
 Expands to: Constant mathcomp.classical.boolp.funext
 Declared in library mathcomp.classical.boolp, line 125, characters 6-12
@@ -408,7 +423,7 @@ Declared in library mathcomp.classical.boolp, line 125, characters 6-12
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="propeqE" class="id"><a name="propeqE" class="" title="propeqE : forall P Q : Prop, (P = Q) = (P <-> Q)
 
 propeqE is not universe polymorphic
-Arguments propeqE (P Q)%type_scope
+Arguments propeqE (P Q)%_type_scope
 propeqE is opaque
 Expands to: Constant mathcomp.classical.boolp.propeqE
 Declared in library mathcomp.classical.boolp, line 128, characters 6-13
@@ -421,7 +436,7 @@ Declared in library mathcomp.classical.boolp, line 128, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="propeqP" class="id"><a name="propeqP" class="" title="propeqP : forall P Q : Prop, P = Q <-> (P <-> Q)
 
 propeqP is not universe polymorphic
-Arguments propeqP (P Q)%type_scope
+Arguments propeqP (P Q)%_type_scope
 propeqP is opaque
 Expands to: Constant mathcomp.classical.boolp.propeqP
 Declared in library mathcomp.classical.boolp, line 131, characters 6-13
@@ -434,7 +449,7 @@ Declared in library mathcomp.classical.boolp, line 131, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="funeqE" class="id"><a name="funeqE" class="" title="funeqE : forall {T U : Type} (f g : T -> U), (f = g) = (f =1 g)
 
 funeqE is not universe polymorphic
-Arguments funeqE {T U}%type_scope (f g)%function_scope
+Arguments funeqE {T U}%_type_scope (f g)%_function_scope
 funeqE is opaque
 Expands to: Constant mathcomp.classical.boolp.funeqE
 Declared in library mathcomp.classical.boolp, line 134, characters 6-12
@@ -447,7 +462,7 @@ Declared in library mathcomp.classical.boolp, line 134, characters 6-12
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="funeq2E" class="id"><a name="funeq2E" class="" title="funeq2E : forall {T U V : Type} (f g : T -> U -> V), (f = g) = (f =2 g)
 
 funeq2E is not universe polymorphic
-Arguments funeq2E {T U V}%type_scope (f g)%function_scope
+Arguments funeq2E {T U V}%_type_scope (f g)%_function_scope
 funeq2E is opaque
 Expands to: Constant mathcomp.classical.boolp.funeq2E
 Declared in library mathcomp.classical.boolp, line 137, characters 6-13
@@ -463,7 +478,7 @@ forall {T U V W : Type} (f g : T -> U -> V -> W),
 (f = g) = (forall (x : T) (y : U) (z : V), f x y z = g x y z)
 
 funeq3E is not universe polymorphic
-Arguments funeq3E {T U V W}%type_scope (f g)%function_scope
+Arguments funeq3E {T U V W}%_type_scope (f g)%_function_scope
 funeq3E is opaque
 Expands to: Constant mathcomp.classical.boolp.funeq3E
 Declared in library mathcomp.classical.boolp, line 142, characters 6-13
@@ -478,7 +493,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="funeqP" class="id"><a name="funeqP" class="" title="funeqP : forall {T U : Type} (f g : T -> U), f = g <-> f =1 g
 
 funeqP is not universe polymorphic
-Arguments funeqP {T U}%type_scope (f g)%function_scope
+Arguments funeqP {T U}%_type_scope (f g)%_function_scope
 funeqP is opaque
 Expands to: Constant mathcomp.classical.boolp.funeqP
 Declared in library mathcomp.classical.boolp, line 148, characters 6-12
@@ -491,7 +506,7 @@ Declared in library mathcomp.classical.boolp, line 148, characters 6-12
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="funeq2P" class="id"><a name="funeq2P" class="" title="funeq2P : forall {T U V : Type} (f g : T -> U -> V), f = g <-> f =2 g
 
 funeq2P is not universe polymorphic
-Arguments funeq2P {T U V}%type_scope (f g)%function_scope
+Arguments funeq2P {T U V}%_type_scope (f g)%_function_scope
 funeq2P is opaque
 Expands to: Constant mathcomp.classical.boolp.funeq2P
 Declared in library mathcomp.classical.boolp, line 151, characters 6-13
@@ -506,7 +521,7 @@ forall {T U V W : Type} (f g : T -> U -> V -> W),
 f = g <-> (forall (x : T) (y : U) (z : V), f x y z = g x y z)
 
 funeq3P is not universe polymorphic
-Arguments funeq3P {T U V W}%type_scope (f g)%function_scope
+Arguments funeq3P {T U V W}%_type_scope (f g)%_function_scope
 funeq3P is opaque
 Expands to: Constant mathcomp.classical.boolp.funeq3P
 Declared in library mathcomp.classical.boolp, line 154, characters 6-13
@@ -521,7 +536,7 @@ Declared in library mathcomp.classical.boolp, line 154, characters 6-13
 forall {T : Type} (P Q : T -> Prop), (P = Q) = (forall x : T, P x <-> Q x)
 
 predeqE is not universe polymorphic
-Arguments predeqE {T}%type_scope (P Q)%function_scope
+Arguments predeqE {T}%_type_scope (P Q)%_function_scope
 predeqE is opaque
 Expands to: Constant mathcomp.classical.boolp.predeqE
 Declared in library mathcomp.classical.boolp, line 158, characters 6-13
@@ -537,7 +552,7 @@ forall {T U : Type} (P Q : T -> U -> Prop),
 (P = Q) = (forall (x : T) (y : U), P x y <-> Q x y)
 
 predeq2E is not universe polymorphic
-Arguments predeq2E {T U}%type_scope (P Q)%function_scope
+Arguments predeq2E {T U}%_type_scope (P Q)%_function_scope
 predeq2E is opaque
 Expands to: Constant mathcomp.classical.boolp.predeq2E
 Declared in library mathcomp.classical.boolp, line 163, characters 6-14
@@ -554,7 +569,7 @@ forall {T U V : Type} (P Q : T -> U -> V -> Prop),
 (P = Q) = (forall (x : T) (y : U) (z : V), P x y z <-> Q x y z)
 
 predeq3E is not universe polymorphic
-Arguments predeq3E {T U V}%type_scope (P Q)%function_scope
+Arguments predeq3E {T U V}%_type_scope (P Q)%_function_scope
 predeq3E is opaque
 Expands to: Constant mathcomp.classical.boolp.predeq3E
 Declared in library mathcomp.classical.boolp, line 169, characters 6-14
@@ -570,7 +585,7 @@ Qed.</div></details>
 forall {T : Type} (A B : T -> Prop), A = B <-> (forall x : T, A x <-> B x)
 
 predeqP is not universe polymorphic
-Arguments predeqP {T}%type_scope (A B)%function_scope
+Arguments predeqP {T}%_type_scope (A B)%_function_scope
 predeqP is opaque
 Expands to: Constant mathcomp.classical.boolp.predeqP
 Declared in library mathcomp.classical.boolp, line 175, characters 6-13
@@ -585,7 +600,7 @@ forall {T U : Type} (P Q : T -> U -> Prop),
 P = Q <-> (forall (x : T) (y : U), P x y <-> Q x y)
 
 predeq2P is not universe polymorphic
-Arguments predeq2P {T U}%type_scope (P Q)%function_scope
+Arguments predeq2P {T U}%_type_scope (P Q)%_function_scope
 predeq2P is opaque
 Expands to: Constant mathcomp.classical.boolp.predeq2P
 Declared in library mathcomp.classical.boolp, line 178, characters 6-14
@@ -601,7 +616,7 @@ forall {T U V : Type} (P Q : T -> U -> V -> Prop),
 P = Q <-> (forall (x : T) (y : U) (z : V), P x y z <-> Q x y z)
 
 predeq3P is not universe polymorphic
-Arguments predeq3P {T U V}%type_scope (P Q)%function_scope
+Arguments predeq3P {T U V}%_type_scope (P Q)%_function_scope
 predeq3P is opaque
 Expands to: Constant mathcomp.classical.boolp.predeq3P
 Declared in library mathcomp.classical.boolp, line 182, characters 6-14
@@ -615,7 +630,7 @@ Declared in library mathcomp.classical.boolp, line 182, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="propT" class="id"><a name="propT" class="" title="propT : forall {P : Prop}, P -> P = True
 
 propT is not universe polymorphic
-Arguments propT {P}%type_scope _
+Arguments propT {P}%_type_scope _
 propT is opaque
 Expands to: Constant mathcomp.classical.boolp.propT
 Declared in library mathcomp.classical.boolp, line 186, characters 6-11
@@ -628,7 +643,7 @@ Declared in library mathcomp.classical.boolp, line 186, characters 6-11
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="Prop_irrelevance" class="id"><a name="Prop_irrelevance" class="" title="Prop_irrelevance : forall [P : Prop] (x y : P), x = y
 
 Prop_irrelevance is not universe polymorphic
-Arguments Prop_irrelevance [P]%type_scope x y
+Arguments Prop_irrelevance [P]%_type_scope x y
 Prop_irrelevance is opaque
 Expands to: Constant mathcomp.classical.boolp.Prop_irrelevance
 Declared in library mathcomp.classical.boolp, line 189, characters 6-22
@@ -649,7 +664,7 @@ forall [X Y : Type] [P : X -> Y -> Prop],
 (forall x : X, exists y : Y, P x y) -> {f : X -> Y & forall x : X, P x (f x)}
 
 choice is not universe polymorphic
-Arguments choice [X Y]%type_scope [P]%function_scope _%function_scope
+Arguments choice [X Y]%_type_scope [P]%_function_scope _%_function_scope
 choice is opaque
 Expands to: Constant mathcomp.classical.boolp.choice
 Declared in library mathcomp.classical.boolp, line 198, characters 6-12
@@ -663,7 +678,7 @@ Declared in library mathcomp.classical.boolp, line 198, characters 6-12
 <span class="vernacular">Theorem</span><span class="id"> </span><span id="EM" class="id"><a name="EM" class="" title="EM : forall P : Prop, P \/ ~ P
 
 EM is not universe polymorphic
-Arguments EM P%type_scope
+Arguments EM P%_type_scope
 EM is opaque
 Expands to: Constant mathcomp.classical.boolp.EM
 Declared in library mathcomp.classical.boolp, line 203, characters 8-10
@@ -687,7 +702,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pselect" class="id"><a name="pselect" class="" title="pselect : forall P : Prop, {P} + {~ P}
 
 pselect is not universe polymorphic
-Arguments pselect P%type_scope
+Arguments pselect P%_type_scope
 pselect is opaque
 Expands to: Constant mathcomp.classical.boolp.pselect
 Declared in library mathcomp.classical.boolp, line 218, characters 6-13
@@ -703,7 +718,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pselectT" class="id"><a name="pselectT" class="" title="pselectT : forall T : Type, (T -> False) + T
 
 pselectT is not universe polymorphic
-Arguments pselectT T%type_scope
+Arguments pselectT T%_type_scope
 pselectT is opaque
 Expands to: Constant mathcomp.classical.boolp.pselectT
 Declared in library mathcomp.classical.boolp, line 225, characters 6-14
@@ -737,7 +752,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="gen_choiceMixin" class="id"><a name="gen_choiceMixin" class="" title="gen_choiceMixin : forall T : Type, hasChoice.phant_axioms T
 
 gen_choiceMixin is not universe polymorphic
-Arguments gen_choiceMixin T%type_scope
+Arguments gen_choiceMixin T%_type_scope
 gen_choiceMixin is opaque
 Expands to: Constant mathcomp.classical.boolp.gen_choiceMixin
 Declared in library mathcomp.classical.boolp, line 242, characters 6-21
@@ -750,7 +765,7 @@ Declared in library mathcomp.classical.boolp, line 242, characters 6-21
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="lem" class="id"><a name="lem" class="" title="lem : forall P : Prop, P \/ ~ P
 
 lem is not universe polymorphic
-Arguments lem P%type_scope
+Arguments lem P%_type_scope
 lem is opaque
 Expands to: Constant mathcomp.classical.boolp.lem
 Declared in library mathcomp.classical.boolp, line 245, characters 6-9
@@ -787,7 +802,7 @@ Declared in library mathcomp.classical.boolp, line 251, characters 6-12
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="propF" class="id"><a name="propF" class="" title="propF : forall [P : Prop], ~ P -> P = False
 
 propF is not universe polymorphic
-Arguments propF [P]%type_scope _
+Arguments propF [P]%_type_scope _
 propF is opaque
 Expands to: Constant mathcomp.classical.boolp.propF
 Declared in library mathcomp.classical.boolp, line 254, characters 6-11
@@ -802,7 +817,7 @@ forall [T rT : Type] [U V : T -> rT],
 (forall x : T, U x = V x) -> [eta U] = [eta V]
 
 eq_fun is not universe polymorphic
-Arguments eq_fun [T rT]%type_scope [U V]%function_scope _%function_scope
+Arguments eq_fun [T rT]%_type_scope [U V]%_function_scope _%_function_scope
 eq_fun is opaque
 Expands to: Constant mathcomp.classical.boolp.eq_fun
 Declared in library mathcomp.classical.boolp, line 257, characters 6-12
@@ -819,7 +834,8 @@ forall [T1 T2 rT : Type] [U V : T1 -> T2 -> rT],
 (fun x : T1 => [eta U x]) = (fun x : T1 => [eta V x])
 
 eq2_fun is not universe polymorphic
-Arguments eq2_fun [T1 T2 rT]%type_scope [U V]%function_scope _%function_scope
+Arguments eq2_fun [T1 T2 rT]%_type_scope [U V]%_function_scope
+  _%_function_scope
 eq2_fun is opaque
 Expands to: Constant mathcomp.classical.boolp.eq2_fun
 Declared in library mathcomp.classical.boolp, line 261, characters 6-13
@@ -839,8 +855,8 @@ forall [T1 T2 T3 rT : Type] [U V : T1 -> T2 -> T3 -> rT],
 (fun (x : T1) (y : T2) => [eta V x y])
 
 eq3_fun is not universe polymorphic
-Arguments eq3_fun [T1 T2 T3 rT]%type_scope [U V]%function_scope
-  _%function_scope
+Arguments eq3_fun [T1 T2 T3 rT]%_type_scope [U V]%_function_scope
+  _%_function_scope
 eq3_fun is opaque
 Expands to: Constant mathcomp.classical.boolp.eq3_fun
 Declared in library mathcomp.classical.boolp, line 267, characters 6-13
@@ -859,7 +875,7 @@ forall [T : Type] [U V : T -> Prop],
 (forall x : T, U x = V x) -> (forall x : T, U x) = (forall x : T, V x)
 
 eq_forall is not universe polymorphic
-Arguments eq_forall [T]%type_scope [U V]%function_scope _%function_scope
+Arguments eq_forall [T]%_type_scope [U V]%_function_scope _%_function_scope
 eq_forall is opaque
 Expands to: Constant mathcomp.classical.boolp.eq_forall
 Declared in library mathcomp.classical.boolp, line 274, characters 6-15
@@ -876,7 +892,8 @@ forall [T : Type] [S : T -> Type] [U V : forall x : T, S x -> Prop],
 (forall (x : T) (y : S x), U x y) = (forall (x : T) (y : S x), V x y)
 
 eq2_forall is not universe polymorphic
-Arguments eq2_forall [T]%type_scope [S U V]%function_scope _%function_scope
+Arguments eq2_forall [T]%_type_scope [S U V]%_function_scope
+  _%_function_scope
 eq2_forall is opaque
 Expands to: Constant mathcomp.classical.boolp.eq2_forall
 Declared in library mathcomp.classical.boolp, line 278, characters 6-16
@@ -897,7 +914,8 @@ forall [T : Type] [S : T -> Type] [R : forall x : T, S x -> Type]
 (forall (x : T) (y : S x) (z : R x y), V x y z)
 
 eq3_forall is not universe polymorphic
-Arguments eq3_forall [T]%type_scope [S R U V]%function_scope _%function_scope
+Arguments eq3_forall [T]%_type_scope [S R U V]%_function_scope
+  _%_function_scope
 eq3_forall is opaque
 Expands to: Constant mathcomp.classical.boolp.eq3_forall
 Declared in library mathcomp.classical.boolp, line 284, characters 6-16
@@ -916,7 +934,7 @@ forall [T : Type] [U V : T -> Prop],
 (forall x : T, U x = V x) -> (exists x : T, U x) = (exists x : T, V x)
 
 eq_exists is not universe polymorphic
-Arguments eq_exists [T]%type_scope [U V]%function_scope _%function_scope
+Arguments eq_exists [T]%_type_scope [U V]%_function_scope _%_function_scope
 eq_exists is opaque
 Expands to: Constant mathcomp.classical.boolp.eq_exists
 Declared in library mathcomp.classical.boolp, line 291, characters 6-15
@@ -934,7 +952,8 @@ forall [T : Type] [S : T -> Type] [U V : forall x : T, S x -> Prop],
 (exists (x : T) (y : S x), U x y) = (exists (x : T) (y : S x), V x y)
 
 eq2_exists is not universe polymorphic
-Arguments eq2_exists [T]%type_scope [S U V]%function_scope _%function_scope
+Arguments eq2_exists [T]%_type_scope [S U V]%_function_scope
+  _%_function_scope
 eq2_exists is opaque
 Expands to: Constant mathcomp.classical.boolp.eq2_exists
 Declared in library mathcomp.classical.boolp, line 297, characters 6-16
@@ -955,7 +974,8 @@ forall [T : Type] [S : T -> Type] [R : forall x : T, S x -> Type]
 (exists (x : T) (y : S x) (z : R x y), V x y z)
 
 eq3_exists is not universe polymorphic
-Arguments eq3_exists [T]%type_scope [S R U V]%function_scope _%function_scope
+Arguments eq3_exists [T]%_type_scope [S R U V]%_function_scope
+  _%_function_scope
 eq3_exists is opaque
 Expands to: Constant mathcomp.classical.boolp.eq3_exists
 Declared in library mathcomp.classical.boolp, line 303, characters 6-16
@@ -974,7 +994,7 @@ forall [T : Type] [P : T -> Prop] [s t : T] (p : P s) (q : P t),
 s = t -> exist P s p = exist P t q
 
 eq_exist is not universe polymorphic
-Arguments eq_exist [T]%type_scope [P]%function_scope [s t] p q _
+Arguments eq_exist [T]%_type_scope [P]%_function_scope [s t] p q _
 eq_exist is opaque
 Expands to: Constant mathcomp.classical.boolp.eq_exist
 Declared in library mathcomp.classical.boolp, line 310, characters 6-14
@@ -990,7 +1010,7 @@ forall [T S : Type] (U : T -> S -> Prop),
 (forall (x : T) (y : S), U x y) = (forall (y : S) (x : T), U x y)
 
 forall_swap is not universe polymorphic
-Arguments forall_swap [T S]%type_scope U%function_scope
+Arguments forall_swap [T S]%_type_scope U%_function_scope
 forall_swap is opaque
 Expands to: Constant mathcomp.classical.boolp.forall_swap
 Declared in library mathcomp.classical.boolp, line 314, characters 6-17
@@ -1006,7 +1026,7 @@ forall [T S : Type] (U : T -> S -> Prop),
 (exists (x : T) (y : S), U x y) = (exists (y : S) (x : T), U x y)
 
 exists_swap is not universe polymorphic
-Arguments exists_swap [T S]%type_scope U%function_scope
+Arguments exists_swap [T S]%_type_scope U%_function_scope
 exists_swap is opaque
 Expands to: Constant mathcomp.classical.boolp.exists_swap
 Declared in library mathcomp.classical.boolp, line 318, characters 6-17
@@ -1020,7 +1040,7 @@ Declared in library mathcomp.classical.boolp, line 318, characters 6-17
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="reflect_eq" class="id"><a name="reflect_eq" class="" title="reflect_eq : forall [P : Prop] [b : bool], reflect P b -> P = b
 
 reflect_eq is not universe polymorphic
-Arguments reflect_eq [P]%type_scope [b]%bool_scope _
+Arguments reflect_eq [P]%_type_scope [b]%_bool_scope _
 reflect_eq is opaque
 Expands to: Constant mathcomp.classical.boolp.reflect_eq
 Declared in library mathcomp.classical.boolp, line 322, characters 6-16
@@ -1033,7 +1053,7 @@ Declared in library mathcomp.classical.boolp, line 322, characters 6-16
 <span class="vernacular">Definition</span><span class="id"> </span><span id="asbool" class="id"><a name="asbool" class="" title="asbool : Prop -> bool
 
 asbool is not universe polymorphic
-Arguments asbool P%type_scope
+Arguments asbool P%_type_scope
 asbool is transparent
 Expands to: Constant mathcomp.classical.boolp.asbool
 Declared in library mathcomp.classical.boolp, line 325, characters 11-17
@@ -1044,7 +1064,7 @@ Declared in library mathcomp.classical.boolp, line 325, characters 11-17
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asboolE" class="id"><a name="asboolE" class="" title="asboolE : forall P : Prop, `[< P >] = P
 
 asboolE is not universe polymorphic
-Arguments asboolE P%type_scope
+Arguments asboolE P%_type_scope
 asboolE is opaque
 Expands to: Constant mathcomp.classical.boolp.asboolE
 Declared in library mathcomp.classical.boolp, line 329, characters 6-13
@@ -1057,7 +1077,7 @@ Declared in library mathcomp.classical.boolp, line 329, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asboolP" class="id"><a name="asboolP" class="" title="asboolP : forall P : Prop, reflect P `[< P >]
 
 asboolP is not universe polymorphic
-Arguments asboolP P%type_scope
+Arguments asboolP P%_type_scope
 asboolP is opaque
 Expands to: Constant mathcomp.classical.boolp.asboolP
 Declared in library mathcomp.classical.boolp, line 332, characters 6-13
@@ -1070,7 +1090,7 @@ Declared in library mathcomp.classical.boolp, line 332, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asboolb" class="id"><a name="asboolb" class="" title="asboolb : forall b : bool, `[< b >] = b
 
 asboolb is not universe polymorphic
-Arguments asboolb b%bool_scope
+Arguments asboolb b%_bool_scope
 asboolb is opaque
 Expands to: Constant mathcomp.classical.boolp.asboolb
 Declared in library mathcomp.classical.boolp, line 335, characters 6-13
@@ -1083,7 +1103,7 @@ Declared in library mathcomp.classical.boolp, line 335, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asboolPn" class="id"><a name="asboolPn" class="" title="asboolPn : forall P : Prop, reflect (~ P) (~~ `[< P >])
 
 asboolPn is not universe polymorphic
-Arguments asboolPn P%type_scope
+Arguments asboolPn P%_type_scope
 asboolPn is opaque
 Expands to: Constant mathcomp.classical.boolp.asboolPn
 Declared in library mathcomp.classical.boolp, line 338, characters 6-14
@@ -1096,7 +1116,7 @@ Declared in library mathcomp.classical.boolp, line 338, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asboolW" class="id"><a name="asboolW" class="" title="asboolW : forall [P : Prop], `[< P >] -> P
 
 asboolW is not universe polymorphic
-Arguments asboolW [P]%type_scope _
+Arguments asboolW [P]%_type_scope _
 asboolW is opaque
 Expands to: Constant mathcomp.classical.boolp.asboolW
 Declared in library mathcomp.classical.boolp, line 341, characters 6-13
@@ -1109,7 +1129,7 @@ Declared in library mathcomp.classical.boolp, line 341, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="orW" class="id"><a name="orW" class="" title="orW : forall [A B : Prop], A \/ B -> A + B
 
 orW is not universe polymorphic
-Arguments orW [A B]%type_scope _
+Arguments orW [A B]%_type_scope _
 orW is opaque
 Expands to: Constant mathcomp.classical.boolp.orW
 Declared in library mathcomp.classical.boolp, line 344, characters 6-9
@@ -1125,7 +1145,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="or3W" class="id"><a name="or3W" class="" title="or3W : forall [A B C : Prop], [\/ A, B | C] -> A + B + C
 
 or3W is not universe polymorphic
-Arguments or3W [A B C]%type_scope _
+Arguments or3W [A B C]%_type_scope _
 or3W is opaque
 Expands to: Constant mathcomp.classical.boolp.or3W
 Declared in library mathcomp.classical.boolp, line 351, characters 6-10
@@ -1142,7 +1162,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="or4W" class="id"><a name="or4W" class="" title="or4W : forall [A B C D : Prop], [\/ A, B, C | D] -> A + B + C + D
 
 or4W is not universe polymorphic
-Arguments or4W [A B C D]%type_scope _
+Arguments or4W [A B C D]%_type_scope _
 or4W is opaque
 Expands to: Constant mathcomp.classical.boolp.or4W
 Declared in library mathcomp.classical.boolp, line 359, characters 6-10
@@ -1160,7 +1180,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asboolT" class="id"><a name="asboolT" class="" title="asboolT : forall [P : Prop], P -> `[< P >]
 
 asboolT is not universe polymorphic
-Arguments asboolT [P]%type_scope _
+Arguments asboolT [P]%_type_scope _
 asboolT is opaque
 Expands to: Constant mathcomp.classical.boolp.asboolT
 Declared in library mathcomp.classical.boolp, line 369, characters 6-13
@@ -1173,7 +1193,7 @@ Declared in library mathcomp.classical.boolp, line 369, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asboolF" class="id"><a name="asboolF" class="" title="asboolF : forall [P : Prop], ~ P -> `[< P >] = false
 
 asboolF is not universe polymorphic
-Arguments asboolF [P]%type_scope _
+Arguments asboolF [P]%_type_scope _
 asboolF is opaque
 Expands to: Constant mathcomp.classical.boolp.asboolF
 Declared in library mathcomp.classical.boolp, line 372, characters 6-13
@@ -1215,7 +1235,7 @@ Declared in library mathcomp.classical.boolp, line 378, characters 6-17
 <span class="vernacular">Definition</span><span class="id"> </span><span id="gen_eq" class="id"><a name="gen_eq" class="" title="gen_eq : forall [T : Type], T -> T -> bool
 
 gen_eq is not universe polymorphic
-Arguments gen_eq [T]%type_scope u v
+Arguments gen_eq [T]%_type_scope u v
 gen_eq is transparent
 Expands to: Constant mathcomp.classical.boolp.gen_eq
 Declared in library mathcomp.classical.boolp, line 381, characters 11-17
@@ -1223,7 +1243,7 @@ Declared in library mathcomp.classical.boolp, line 381, characters 11-17
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="gen_eqP" class="id"><a name="gen_eqP" class="" title="gen_eqP : forall [T : Type], Equality.axiom (T:=T) (gen_eq (T:=T))
 
 gen_eqP is not universe polymorphic
-Arguments gen_eqP [T]%type_scope x y
+Arguments gen_eqP [T]%_type_scope x y
 gen_eqP is opaque
 Expands to: Constant mathcomp.classical.boolp.gen_eqP
 Declared in library mathcomp.classical.boolp, line 382, characters 6-13
@@ -1235,7 +1255,7 @@ Declared in library mathcomp.classical.boolp, line 382, characters 6-13
 <span class="vernacular">Definition</span><span class="id"> </span><span id="gen_eqMixin" class="id"><a name="gen_eqMixin" class="" title="gen_eqMixin : forall T : Type, hasDecEq.phant_axioms T
 
 gen_eqMixin is not universe polymorphic
-Arguments gen_eqMixin T%type_scope
+Arguments gen_eqMixin T%_type_scope
 gen_eqMixin is transparent
 Expands to: Constant mathcomp.classical.boolp.gen_eqMixin
 Declared in library mathcomp.classical.boolp, line 384, characters 11-22
@@ -1245,7 +1265,7 @@ Declared in library mathcomp.classical.boolp, line 384, characters 11-22
 <span id="prod__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_2" class="id"><span id="hb_instance_1.T'" class="id"><span id="hb_instance_1.T" class="id"><a name="prod__canonical__eqtype_Equality" class="" title="prod__canonical__eqtype_Equality : forall [T : Type], (T -> eqType) -> eqType
 
 prod__canonical__eqtype_Equality is not universe polymorphic
-Arguments prod__canonical__eqtype_Equality [T]%type_scope T'%function_scope
+Arguments prod__canonical__eqtype_Equality [T]%_type_scope T'%_function_scope
 prod__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.prod__canonical__eqtype_Equality
@@ -1253,7 +1273,7 @@ Declared in library mathcomp.classical.boolp, line 387, characters 0-93
 ">HB</a></span></span></span></span>.<span id="prod__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_2" class="id"><span id="hb_instance_1.T'" class="id"><span id="hb_instance_1.T" class="id"><a name="prod__canonical__eqtype_Equality" class="" title="prod__canonical__eqtype_Equality : forall [T : Type], (T -> eqType) -> eqType
 
 prod__canonical__eqtype_Equality is not universe polymorphic
-Arguments prod__canonical__eqtype_Equality [T]%type_scope T'%function_scope
+Arguments prod__canonical__eqtype_Equality [T]%_type_scope T'%_function_scope
 prod__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.prod__canonical__eqtype_Equality
@@ -1261,7 +1281,7 @@ Declared in library mathcomp.classical.boolp, line 387, characters 0-93
 ">instance</a></span></span></span></span><span class="vernacular"> Definition</span><span id="prod__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_2" class="id"><span id="hb_instance_1.T'" class="id"><span id="hb_instance_1.T" class="id"><a name="prod__canonical__eqtype_Equality" class="" title="prod__canonical__eqtype_Equality : forall [T : Type], (T -> eqType) -> eqType
 
 prod__canonical__eqtype_Equality is not universe polymorphic
-Arguments prod__canonical__eqtype_Equality [T]%type_scope T'%function_scope
+Arguments prod__canonical__eqtype_Equality [T]%_type_scope T'%_function_scope
 prod__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.prod__canonical__eqtype_Equality
@@ -1269,7 +1289,7 @@ Declared in library mathcomp.classical.boolp, line 387, characters 0-93
 "> _</a></span></span></span></span> (<span id="prod__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_2" class="id"><span id="hb_instance_1.T'" class="id"><span id="hb_instance_1.T" class="id"><a name="prod__canonical__eqtype_Equality" class="" title="prod__canonical__eqtype_Equality : forall [T : Type], (T -> eqType) -> eqType
 
 prod__canonical__eqtype_Equality is not universe polymorphic
-Arguments prod__canonical__eqtype_Equality [T]%type_scope T'%function_scope
+Arguments prod__canonical__eqtype_Equality [T]%_type_scope T'%_function_scope
 prod__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.prod__canonical__eqtype_Equality
@@ -1277,7 +1297,7 @@ Declared in library mathcomp.classical.boolp, line 387, characters 0-93
 ">T</a></span></span></span></span><span id="prod__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_2" class="id"><span id="hb_instance_1.T'" class="id"><span id="hb_instance_1.T" class="id"><a name="prod__canonical__eqtype_Equality" class="" title="prod__canonical__eqtype_Equality : forall [T : Type], (T -> eqType) -> eqType
 
 prod__canonical__eqtype_Equality is not universe polymorphic
-Arguments prod__canonical__eqtype_Equality [T]%type_scope T'%function_scope
+Arguments prod__canonical__eqtype_Equality [T]%_type_scope T'%_function_scope
 prod__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.prod__canonical__eqtype_Equality
@@ -1285,7 +1305,7 @@ Declared in library mathcomp.classical.boolp, line 387, characters 0-93
 "> :</a></span></span></span></span><span class="gallina-kwd"> Type</span>) (<span id="prod__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_2" class="id"><span id="hb_instance_1.T'" class="id"><span id="hb_instance_1.T" class="id"><a name="prod__canonical__eqtype_Equality" class="" title="prod__canonical__eqtype_Equality : forall [T : Type], (T -> eqType) -> eqType
 
 prod__canonical__eqtype_Equality is not universe polymorphic
-Arguments prod__canonical__eqtype_Equality [T]%type_scope T'%function_scope
+Arguments prod__canonical__eqtype_Equality [T]%_type_scope T'%_function_scope
 prod__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.prod__canonical__eqtype_Equality
@@ -1293,7 +1313,7 @@ Declared in library mathcomp.classical.boolp, line 387, characters 0-93
 ">T'</a></span></span></span></span><span id="prod__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_2" class="id"><span id="hb_instance_1.T'" class="id"><span id="hb_instance_1.T" class="id"><a name="prod__canonical__eqtype_Equality" class="" title="prod__canonical__eqtype_Equality : forall [T : Type], (T -> eqType) -> eqType
 
 prod__canonical__eqtype_Equality is not universe polymorphic
-Arguments prod__canonical__eqtype_Equality [T]%type_scope T'%function_scope
+Arguments prod__canonical__eqtype_Equality [T]%_type_scope T'%_function_scope
 prod__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.prod__canonical__eqtype_Equality
@@ -1301,7 +1321,7 @@ Declared in library mathcomp.classical.boolp, line 387, characters 0-93
 "> :</a></span></span></span></span><span id="prod__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_2" class="id"><span id="hb_instance_1.T'" class="id"><span id="hb_instance_1.T" class="id"><a name="prod__canonical__eqtype_Equality" class="" title="prod__canonical__eqtype_Equality : forall [T : Type], (T -> eqType) -> eqType
 
 prod__canonical__eqtype_Equality is not universe polymorphic
-Arguments prod__canonical__eqtype_Equality [T]%type_scope T'%function_scope
+Arguments prod__canonical__eqtype_Equality [T]%_type_scope T'%_function_scope
 prod__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.prod__canonical__eqtype_Equality
@@ -1313,7 +1333,7 @@ Declared in library mathcomp.classical.boolp, line 387, characters 0-93
 forall [T : Type], (T -> choiceType) -> choiceType
 
 prod__canonical__choice_Choice is not universe polymorphic
-Arguments prod__canonical__choice_Choice [T]%type_scope T'%function_scope
+Arguments prod__canonical__choice_Choice [T]%_type_scope T'%_function_scope
 prod__canonical__choice_Choice is transparent
 Expands to: Constant mathcomp.classical.boolp.prod__canonical__choice_Choice
 Declared in library mathcomp.classical.boolp, line 390, characters 0-101
@@ -1321,7 +1341,7 @@ Declared in library mathcomp.classical.boolp, line 390, characters 0-101
 forall [T : Type], (T -> choiceType) -> choiceType
 
 prod__canonical__choice_Choice is not universe polymorphic
-Arguments prod__canonical__choice_Choice [T]%type_scope T'%function_scope
+Arguments prod__canonical__choice_Choice [T]%_type_scope T'%_function_scope
 prod__canonical__choice_Choice is transparent
 Expands to: Constant mathcomp.classical.boolp.prod__canonical__choice_Choice
 Declared in library mathcomp.classical.boolp, line 390, characters 0-101
@@ -1329,7 +1349,7 @@ Declared in library mathcomp.classical.boolp, line 390, characters 0-101
 forall [T : Type], (T -> choiceType) -> choiceType
 
 prod__canonical__choice_Choice is not universe polymorphic
-Arguments prod__canonical__choice_Choice [T]%type_scope T'%function_scope
+Arguments prod__canonical__choice_Choice [T]%_type_scope T'%_function_scope
 prod__canonical__choice_Choice is transparent
 Expands to: Constant mathcomp.classical.boolp.prod__canonical__choice_Choice
 Declared in library mathcomp.classical.boolp, line 390, characters 0-101
@@ -1337,7 +1357,7 @@ Declared in library mathcomp.classical.boolp, line 390, characters 0-101
 forall [T : Type], (T -> choiceType) -> choiceType
 
 prod__canonical__choice_Choice is not universe polymorphic
-Arguments prod__canonical__choice_Choice [T]%type_scope T'%function_scope
+Arguments prod__canonical__choice_Choice [T]%_type_scope T'%_function_scope
 prod__canonical__choice_Choice is transparent
 Expands to: Constant mathcomp.classical.boolp.prod__canonical__choice_Choice
 Declared in library mathcomp.classical.boolp, line 390, characters 0-101
@@ -1345,7 +1365,7 @@ Declared in library mathcomp.classical.boolp, line 390, characters 0-101
 forall [T : Type], (T -> choiceType) -> choiceType
 
 prod__canonical__choice_Choice is not universe polymorphic
-Arguments prod__canonical__choice_Choice [T]%type_scope T'%function_scope
+Arguments prod__canonical__choice_Choice [T]%_type_scope T'%_function_scope
 prod__canonical__choice_Choice is transparent
 Expands to: Constant mathcomp.classical.boolp.prod__canonical__choice_Choice
 Declared in library mathcomp.classical.boolp, line 390, characters 0-101
@@ -1353,7 +1373,7 @@ Declared in library mathcomp.classical.boolp, line 390, characters 0-101
 forall [T : Type], (T -> choiceType) -> choiceType
 
 prod__canonical__choice_Choice is not universe polymorphic
-Arguments prod__canonical__choice_Choice [T]%type_scope T'%function_scope
+Arguments prod__canonical__choice_Choice [T]%_type_scope T'%_function_scope
 prod__canonical__choice_Choice is transparent
 Expands to: Constant mathcomp.classical.boolp.prod__canonical__choice_Choice
 Declared in library mathcomp.classical.boolp, line 390, characters 0-101
@@ -1361,7 +1381,7 @@ Declared in library mathcomp.classical.boolp, line 390, characters 0-101
 forall [T : Type], (T -> choiceType) -> choiceType
 
 prod__canonical__choice_Choice is not universe polymorphic
-Arguments prod__canonical__choice_Choice [T]%type_scope T'%function_scope
+Arguments prod__canonical__choice_Choice [T]%_type_scope T'%_function_scope
 prod__canonical__choice_Choice is transparent
 Expands to: Constant mathcomp.classical.boolp.prod__canonical__choice_Choice
 Declared in library mathcomp.classical.boolp, line 390, characters 0-101
@@ -1369,7 +1389,7 @@ Declared in library mathcomp.classical.boolp, line 390, characters 0-101
 forall [T : Type], (T -> choiceType) -> choiceType
 
 prod__canonical__choice_Choice is not universe polymorphic
-Arguments prod__canonical__choice_Choice [T]%type_scope T'%function_scope
+Arguments prod__canonical__choice_Choice [T]%_type_scope T'%_function_scope
 prod__canonical__choice_Choice is transparent
 Expands to: Constant mathcomp.classical.boolp.prod__canonical__choice_Choice
 Declared in library mathcomp.classical.boolp, line 390, characters 0-101
@@ -1449,7 +1469,7 @@ Declared in library mathcomp.classical.boolp, line 394, characters 0-49
 <span class="vernacular">Definition</span><span class="id"> </span><span id="classicType" class="id"><a name="classicType" class="" title="classicType : Type -> Type
 
 classicType is not universe polymorphic
-Arguments classicType T%type_scope
+Arguments classicType T%_type_scope
 classicType is transparent
 Expands to: Constant mathcomp.classical.boolp.classicType
 Declared in library mathcomp.classical.boolp, line 398, characters 11-22
@@ -1457,7 +1477,7 @@ Declared in library mathcomp.classical.boolp, line 398, characters 11-22
 <span id="boolp_classicType__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_11" class="id"><a name="boolp_classicType__canonical__eqtype_Equality" class="" title="boolp_classicType__canonical__eqtype_Equality : Type -> eqType
 
 boolp_classicType__canonical__eqtype_Equality is not universe polymorphic
-Arguments boolp_classicType__canonical__eqtype_Equality T%type_scope
+Arguments boolp_classicType__canonical__eqtype_Equality T%_type_scope
 boolp_classicType__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__eqtype_Equality
@@ -1465,7 +1485,7 @@ Declared in library mathcomp.classical.boolp, line 399, characters 0-52
 ">HB</a></span></span>.<span id="boolp_classicType__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_11" class="id"><a name="boolp_classicType__canonical__eqtype_Equality" class="" title="boolp_classicType__canonical__eqtype_Equality : Type -> eqType
 
 boolp_classicType__canonical__eqtype_Equality is not universe polymorphic
-Arguments boolp_classicType__canonical__eqtype_Equality T%type_scope
+Arguments boolp_classicType__canonical__eqtype_Equality T%_type_scope
 boolp_classicType__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__eqtype_Equality
@@ -1473,7 +1493,7 @@ Declared in library mathcomp.classical.boolp, line 399, characters 0-52
 ">instance</a></span></span><span class="vernacular"> Definition</span><span id="boolp_classicType__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_11" class="id"><a name="boolp_classicType__canonical__eqtype_Equality" class="" title="boolp_classicType__canonical__eqtype_Equality : Type -> eqType
 
 boolp_classicType__canonical__eqtype_Equality is not universe polymorphic
-Arguments boolp_classicType__canonical__eqtype_Equality T%type_scope
+Arguments boolp_classicType__canonical__eqtype_Equality T%_type_scope
 boolp_classicType__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__eqtype_Equality
@@ -1481,7 +1501,7 @@ Declared in library mathcomp.classical.boolp, line 399, characters 0-52
 "> _</a></span></span><span id="boolp_classicType__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_11" class="id"><a name="boolp_classicType__canonical__eqtype_Equality" class="" title="boolp_classicType__canonical__eqtype_Equality : Type -> eqType
 
 boolp_classicType__canonical__eqtype_Equality is not universe polymorphic
-Arguments boolp_classicType__canonical__eqtype_Equality T%type_scope
+Arguments boolp_classicType__canonical__eqtype_Equality T%_type_scope
 boolp_classicType__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__eqtype_Equality
@@ -1489,7 +1509,7 @@ Declared in library mathcomp.classical.boolp, line 399, characters 0-52
 "> :=</a></span></span><span id="boolp_classicType__canonical__eqtype_Equality" class="id"><span id="HB_unnamed_factory_11" class="id"><a name="boolp_classicType__canonical__eqtype_Equality" class="" title="boolp_classicType__canonical__eqtype_Equality : Type -> eqType
 
 boolp_classicType__canonical__eqtype_Equality is not universe polymorphic
-Arguments boolp_classicType__canonical__eqtype_Equality T%type_scope
+Arguments boolp_classicType__canonical__eqtype_Equality T%_type_scope
 boolp_classicType__canonical__eqtype_Equality is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__eqtype_Equality
@@ -1498,7 +1518,7 @@ Declared in library mathcomp.classical.boolp, line 399, characters 0-52
 <span id="boolp_classicType__canonical__choice_Choice" class="id"><span id="HB_unnamed_factory_13" class="id"><a name="boolp_classicType__canonical__choice_Choice" class="" title="boolp_classicType__canonical__choice_Choice : Type -> choiceType
 
 boolp_classicType__canonical__choice_Choice is not universe polymorphic
-Arguments boolp_classicType__canonical__choice_Choice T%type_scope
+Arguments boolp_classicType__canonical__choice_Choice T%_type_scope
 boolp_classicType__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__choice_Choice
@@ -1506,7 +1526,7 @@ Declared in library mathcomp.classical.boolp, line 400, characters 0-56
 ">HB</a></span></span>.<span id="boolp_classicType__canonical__choice_Choice" class="id"><span id="HB_unnamed_factory_13" class="id"><a name="boolp_classicType__canonical__choice_Choice" class="" title="boolp_classicType__canonical__choice_Choice : Type -> choiceType
 
 boolp_classicType__canonical__choice_Choice is not universe polymorphic
-Arguments boolp_classicType__canonical__choice_Choice T%type_scope
+Arguments boolp_classicType__canonical__choice_Choice T%_type_scope
 boolp_classicType__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__choice_Choice
@@ -1514,7 +1534,7 @@ Declared in library mathcomp.classical.boolp, line 400, characters 0-56
 ">instance</a></span></span><span class="vernacular"> Definition</span><span id="boolp_classicType__canonical__choice_Choice" class="id"><span id="HB_unnamed_factory_13" class="id"><a name="boolp_classicType__canonical__choice_Choice" class="" title="boolp_classicType__canonical__choice_Choice : Type -> choiceType
 
 boolp_classicType__canonical__choice_Choice is not universe polymorphic
-Arguments boolp_classicType__canonical__choice_Choice T%type_scope
+Arguments boolp_classicType__canonical__choice_Choice T%_type_scope
 boolp_classicType__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__choice_Choice
@@ -1522,7 +1542,7 @@ Declared in library mathcomp.classical.boolp, line 400, characters 0-56
 "> _</a></span></span><span id="boolp_classicType__canonical__choice_Choice" class="id"><span id="HB_unnamed_factory_13" class="id"><a name="boolp_classicType__canonical__choice_Choice" class="" title="boolp_classicType__canonical__choice_Choice : Type -> choiceType
 
 boolp_classicType__canonical__choice_Choice is not universe polymorphic
-Arguments boolp_classicType__canonical__choice_Choice T%type_scope
+Arguments boolp_classicType__canonical__choice_Choice T%_type_scope
 boolp_classicType__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__choice_Choice
@@ -1530,7 +1550,7 @@ Declared in library mathcomp.classical.boolp, line 400, characters 0-56
 "> :=</a></span></span><span id="boolp_classicType__canonical__choice_Choice" class="id"><span id="HB_unnamed_factory_13" class="id"><a name="boolp_classicType__canonical__choice_Choice" class="" title="boolp_classicType__canonical__choice_Choice : Type -> choiceType
 
 boolp_classicType__canonical__choice_Choice is not universe polymorphic
-Arguments boolp_classicType__canonical__choice_Choice T%type_scope
+Arguments boolp_classicType__canonical__choice_Choice T%_type_scope
 boolp_classicType__canonical__choice_Choice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.boolp_classicType__canonical__choice_Choice
@@ -1639,7 +1659,7 @@ Declared in library mathcomp.classical.boolp, line 409, characters 0-57
 <span class="vernacular">Definition</span><span class="id"> </span><span id="canonical_of" class="id"><a name="canonical_of" class="" title="canonical_of : forall [T U : Type], (U -> T) -> Type
 
 canonical_of is not universe polymorphic
-Arguments canonical_of [T U]%type_scope sort%function_scope
+Arguments canonical_of [T U]%_type_scope sort%_function_scope
 canonical_of is transparent
 Expands to: Constant mathcomp.classical.boolp.canonical_of
 Declared in library mathcomp.classical.boolp, line 414, characters 11-23
@@ -1653,7 +1673,8 @@ forall {T U : Type} {sort : U -> T},
 (forall x : T, exists y : U, sort y = x) -> canonical_ sort
 
 canon is not universe polymorphic
-Arguments canon {T U}%type_scope {sort}%function_scope x%function_scope G _ x
+Arguments canon {T U}%_type_scope {sort}%_function_scope 
+  x%_function_scope G _ x
   (where some original arguments have been renamed)
 canon is opaque
 Expands to: Constant mathcomp.classical.boolp.canon
@@ -1745,7 +1766,7 @@ Declared in library mathcomp.classical.boolp, line 432, characters 6-15
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asbool_equiv_eq" class="id"><a name="asbool_equiv_eq" class="" title="asbool_equiv_eq : forall {P Q : Prop}, P <-> Q -> `[< P >] = `[< Q >]
 
 asbool_equiv_eq is not universe polymorphic
-Arguments asbool_equiv_eq {P Q}%type_scope _
+Arguments asbool_equiv_eq {P Q}%_type_scope _
 asbool_equiv_eq is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_equiv_eq
 Declared in library mathcomp.classical.boolp, line 434, characters 6-21
@@ -1759,7 +1780,7 @@ Declared in library mathcomp.classical.boolp, line 434, characters 6-21
 forall {P Q : Prop} [b : bool], reflect Q b -> P <-> Q -> `[< P >] = b
 
 asbool_equiv_eqP is not universe polymorphic
-Arguments asbool_equiv_eqP {P Q}%type_scope [b]%bool_scope _ _
+Arguments asbool_equiv_eqP {P Q}%_type_scope [b]%_bool_scope _ _
 asbool_equiv_eqP is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_equiv_eqP
 Declared in library mathcomp.classical.boolp, line 437, characters 6-22
@@ -1772,7 +1793,7 @@ Declared in library mathcomp.classical.boolp, line 437, characters 6-22
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asbool_equiv" class="id"><a name="asbool_equiv" class="" title="asbool_equiv : forall {P Q : Prop}, P <-> Q -> `[< P >] <-> `[< Q >]
 
 asbool_equiv is not universe polymorphic
-Arguments asbool_equiv {P Q}%type_scope _
+Arguments asbool_equiv {P Q}%_type_scope _
 asbool_equiv is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_equiv
 Declared in library mathcomp.classical.boolp, line 440, characters 6-18
@@ -1785,7 +1806,7 @@ Declared in library mathcomp.classical.boolp, line 440, characters 6-18
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asbool_eq_equiv" class="id"><a name="asbool_eq_equiv" class="" title="asbool_eq_equiv : forall {P Q : Prop}, `[< P >] = `[< Q >] -> P <-> Q
 
 asbool_eq_equiv is not universe polymorphic
-Arguments asbool_eq_equiv {P Q}%type_scope _
+Arguments asbool_eq_equiv {P Q}%_type_scope _
 asbool_eq_equiv is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_eq_equiv
 Declared in library mathcomp.classical.boolp, line 443, characters 6-21
@@ -1798,7 +1819,7 @@ Declared in library mathcomp.classical.boolp, line 443, characters 6-21
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="and_asboolP" class="id"><a name="and_asboolP" class="" title="and_asboolP : forall P Q : Prop, reflect (P /\ Q) (`[< P >] && `[< Q >])
 
 and_asboolP is not universe polymorphic
-Arguments and_asboolP (P Q)%type_scope
+Arguments and_asboolP (P Q)%_type_scope
 and_asboolP is opaque
 Expands to: Constant mathcomp.classical.boolp.and_asboolP
 Declared in library mathcomp.classical.boolp, line 446, characters 6-17
@@ -1814,7 +1835,7 @@ Qed.</div></details>
 forall P Q R : Prop, reflect [/\ P, Q & R] [&& `[< P >], `[< Q >] & `[< R >]]
 
 and3_asboolP is not universe polymorphic
-Arguments and3_asboolP (P Q R)%type_scope
+Arguments and3_asboolP (P Q R)%_type_scope
 and3_asboolP is opaque
 Expands to: Constant mathcomp.classical.boolp.and3_asboolP
 Declared in library mathcomp.classical.boolp, line 452, characters 6-18
@@ -1830,7 +1851,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="or_asboolP" class="id"><a name="or_asboolP" class="" title="or_asboolP : forall P Q : Prop, reflect (P \/ Q) (`[< P >] || `[< Q >])
 
 or_asboolP is not universe polymorphic
-Arguments or_asboolP (P Q)%type_scope
+Arguments or_asboolP (P Q)%_type_scope
 or_asboolP is opaque
 Expands to: Constant mathcomp.classical.boolp.or_asboolP
 Declared in library mathcomp.classical.boolp, line 459, characters 6-16
@@ -1846,7 +1867,7 @@ Qed.</div></details>
 forall P Q R : Prop, reflect [\/ P, Q | R] [|| `[< P >], `[< Q >] | `[< R >]]
 
 or3_asboolP is not universe polymorphic
-Arguments or3_asboolP (P Q R)%type_scope
+Arguments or3_asboolP (P Q R)%_type_scope
 or3_asboolP is opaque
 Expands to: Constant mathcomp.classical.boolp.or3_asboolP
 Declared in library mathcomp.classical.boolp, line 465, characters 6-17
@@ -1862,7 +1883,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asbool_neg" class="id"><a name="asbool_neg" class="" title="asbool_neg : forall {P : Prop}, `[< ~ P >] = ~~ `[< P >]
 
 asbool_neg is not universe polymorphic
-Arguments asbool_neg {P}%type_scope
+Arguments asbool_neg {P}%_type_scope
 asbool_neg is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_neg
 Declared in library mathcomp.classical.boolp, line 472, characters 6-16
@@ -1875,7 +1896,7 @@ Declared in library mathcomp.classical.boolp, line 472, characters 6-16
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asbool_or" class="id"><a name="asbool_or" class="" title="asbool_or : forall {P Q : Prop}, `[< P \/ Q >] = `[< P >] || `[< Q >]
 
 asbool_or is not universe polymorphic
-Arguments asbool_or {P Q}%type_scope
+Arguments asbool_or {P Q}%_type_scope
 asbool_or is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_or
 Declared in library mathcomp.classical.boolp, line 475, characters 6-15
@@ -1888,7 +1909,7 @@ Declared in library mathcomp.classical.boolp, line 475, characters 6-15
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asbool_and" class="id"><a name="asbool_and" class="" title="asbool_and : forall {P Q : Prop}, `[< P /\ Q >] = `[< P >] && `[< Q >]
 
 asbool_and is not universe polymorphic
-Arguments asbool_and {P Q}%type_scope
+Arguments asbool_and {P Q}%_type_scope
 asbool_and is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_and
 Declared in library mathcomp.classical.boolp, line 478, characters 6-16
@@ -1901,7 +1922,7 @@ Declared in library mathcomp.classical.boolp, line 478, characters 6-16
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="imply_asboolP" class="id"><a name="imply_asboolP" class="" title="imply_asboolP : forall {P Q : Prop}, reflect (P -> Q) (`[< P >] ==> `[< Q >])
 
 imply_asboolP is not universe polymorphic
-Arguments imply_asboolP {P Q}%type_scope
+Arguments imply_asboolP {P Q}%_type_scope
 imply_asboolP is opaque
 Expands to: Constant mathcomp.classical.boolp.imply_asboolP
 Declared in library mathcomp.classical.boolp, line 481, characters 6-19
@@ -1916,7 +1937,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="asbool_imply" class="id"><a name="asbool_imply" class="" title="asbool_imply : forall {P Q : Prop}, `[< P -> Q >] = `[< P >] ==> `[< Q >]
 
 asbool_imply is not universe polymorphic
-Arguments asbool_imply {P Q}%type_scope
+Arguments asbool_imply {P Q}%_type_scope
 asbool_imply is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_imply
 Declared in library mathcomp.classical.boolp, line 487, characters 6-18
@@ -1929,7 +1950,7 @@ Declared in library mathcomp.classical.boolp, line 487, characters 6-18
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="imply_asboolPn" class="id"><a name="imply_asboolPn" class="" title="imply_asboolPn : forall P Q : Prop, reflect (P /\ ~ Q) (~~ `[< P -> Q >])
 
 imply_asboolPn is not universe polymorphic
-Arguments imply_asboolPn (P Q)%type_scope
+Arguments imply_asboolPn (P Q)%_type_scope
 imply_asboolPn is opaque
 Expands to: Constant mathcomp.classical.boolp.imply_asboolPn
 Declared in library mathcomp.classical.boolp, line 490, characters 6-20
@@ -1947,7 +1968,7 @@ forall {T : Type} (P : T -> Prop),
 reflect (forall x : T, `[< P x >]) `[< forall x : T, P x >]
 
 forall_asboolP is not universe polymorphic
-Arguments forall_asboolP {T}%type_scope P%function_scope
+Arguments forall_asboolP {T}%_type_scope P%_function_scope
 forall_asboolP is opaque
 Expands to: Constant mathcomp.classical.boolp.forall_asboolP
 Declared in library mathcomp.classical.boolp, line 497, characters 6-20
@@ -1965,7 +1986,7 @@ forall {T : Type} (P : T -> Prop),
 reflect (exists x : T, `[< P x >]) `[< exists x : T, P x >]
 
 exists_asboolP is not universe polymorphic
-Arguments exists_asboolP {T}%type_scope P%function_scope
+Arguments exists_asboolP {T}%_type_scope P%_function_scope
 exists_asboolP is opaque
 Expands to: Constant mathcomp.classical.boolp.exists_asboolP
 Declared in library mathcomp.classical.boolp, line 504, characters 6-20
@@ -1986,7 +2007,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="PropB" class="id"><a name="PropB" class="" title="PropB : forall P : Prop, BoolProp P
 
 PropB is not universe polymorphic
-Arguments PropB P%type_scope
+Arguments PropB P%_type_scope
 PropB is opaque
 Expands to: Constant mathcomp.classical.boolp.PropB
 Declared in library mathcomp.classical.boolp, line 517, characters 6-11
@@ -2058,7 +2079,7 @@ Declared in library mathcomp.classical.boolp, line 531, characters 6-12
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="decide_or" class="id"><a name="decide_or" class="" title="decide_or : forall [P Q : Prop], P \/ Q -> {P} + {Q}
 
 decide_or is not universe polymorphic
-Arguments decide_or [P Q]%type_scope _
+Arguments decide_or [P Q]%_type_scope _
 decide_or is opaque
 Expands to: Constant mathcomp.classical.boolp.decide_or
 Declared in library mathcomp.classical.boolp, line 536, characters 6-15
@@ -2072,7 +2093,7 @@ Declared in library mathcomp.classical.boolp, line 536, characters 6-15
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="notT" class="id"><a name="notT" class="" title="notT : forall [P : Prop], P = False -> ~ P
 
 notT is not universe polymorphic
-Arguments notT [P]%type_scope _ _
+Arguments notT [P]%_type_scope _ _
 notT is opaque
 Expands to: Constant mathcomp.classical.boolp.notT
 Declared in library mathcomp.classical.boolp, line 541, characters 6-10
@@ -2085,7 +2106,7 @@ Declared in library mathcomp.classical.boolp, line 541, characters 6-10
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contrapT" class="id"><a name="contrapT" class="" title="contrapT : forall [P : Prop], ~ ~ P -> P
 
 contrapT is not universe polymorphic
-Arguments contrapT [P]%type_scope _
+Arguments contrapT [P]%_type_scope _
 contrapT is opaque
 Expands to: Constant mathcomp.classical.boolp.contrapT
 Declared in library mathcomp.classical.boolp, line 544, characters 6-14
@@ -2098,7 +2119,7 @@ Declared in library mathcomp.classical.boolp, line 544, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="notTE" class="id"><a name="notTE" class="" title="notTE : forall [P : Prop], ~ P -> P = False
 
 notTE is not universe polymorphic
-Arguments notTE [P]%type_scope _
+Arguments notTE [P]%_type_scope _
 notTE is opaque
 Expands to: Constant mathcomp.classical.boolp.notTE
 Declared in library mathcomp.classical.boolp, line 547, characters 6-11
@@ -2111,7 +2132,7 @@ Declared in library mathcomp.classical.boolp, line 547, characters 6-11
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="notFE" class="id"><a name="notFE" class="" title="notFE : forall [P : Prop], (~ P) = False -> P
 
 notFE is not universe polymorphic
-Arguments notFE [P]%type_scope _
+Arguments notFE [P]%_type_scope _
 notFE is opaque
 Expands to: Constant mathcomp.classical.boolp.notFE
 Declared in library mathcomp.classical.boolp, line 549, characters 6-11
@@ -2137,7 +2158,7 @@ Declared in library mathcomp.classical.boolp, line 552, characters 6-10
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contra_notP" class="id"><a name="contra_notP" class="" title="contra_notP : forall [Q P : Prop], (~ Q -> P) -> ~ P -> Q
 
 contra_notP is not universe polymorphic
-Arguments contra_notP [Q P]%type_scope _%function_scope _
+Arguments contra_notP [Q P]%_type_scope _%_function_scope _
 contra_notP is opaque
 Expands to: Constant mathcomp.classical.boolp.contra_notP
 Declared in library mathcomp.classical.boolp, line 555, characters 6-17
@@ -2150,7 +2171,7 @@ Declared in library mathcomp.classical.boolp, line 555, characters 6-17
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contraPP" class="id"><a name="contraPP" class="" title="contraPP : forall [Q P : Prop], (~ Q -> ~ P) -> P -> Q
 
 contraPP is not universe polymorphic
-Arguments contraPP [Q P]%type_scope _%function_scope _
+Arguments contraPP [Q P]%_type_scope _%_function_scope _
 contraPP is opaque
 Expands to: Constant mathcomp.classical.boolp.contraPP
 Declared in library mathcomp.classical.boolp, line 558, characters 6-14
@@ -2163,7 +2184,7 @@ Declared in library mathcomp.classical.boolp, line 558, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contra_notT" class="id"><a name="contra_notT" class="" title="contra_notT : forall [P : Prop] [b : bool], (~~ b -> P) -> ~ P -> b
 
 contra_notT is not universe polymorphic
-Arguments contra_notT [P]%type_scope [b]%bool_scope _%function_scope _
+Arguments contra_notT [P]%_type_scope [b]%_bool_scope _%_function_scope _
 contra_notT is opaque
 Expands to: Constant Corelib.ssr.ssrbool.contra_notT
 Declared in library Corelib.ssr.ssrbool, line 565, characters 6-17
@@ -2176,7 +2197,7 @@ Declared in library Corelib.ssr.ssrbool, line 565, characters 6-17
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contraPT" class="id"><a name="contraPT" class="" title="contraPT : forall [P : Prop] [b : bool], (~~ b -> ~ P) -> P -> b
 
 contraPT is not universe polymorphic
-Arguments contraPT [P]%type_scope [b]%bool_scope _%function_scope _
+Arguments contraPT [P]%_type_scope [b]%_bool_scope _%_function_scope _
 contraPT is opaque
 Expands to: Constant Corelib.ssr.ssrbool.contraPT
 Declared in library Corelib.ssr.ssrbool, line 562, characters 6-14
@@ -2189,7 +2210,7 @@ Declared in library Corelib.ssr.ssrbool, line 562, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contraTP" class="id"><a name="contraTP" class="" title="contraTP : forall [b : bool] [Q : Prop], (~ Q -> ~~ b) -> b -> Q
 
 contraTP is not universe polymorphic
-Arguments contraTP [b]%bool_scope [Q]%type_scope _%function_scope _
+Arguments contraTP [b]%_bool_scope [Q]%_type_scope _%_function_scope _
 contraTP is opaque
 Expands to: Constant mathcomp.classical.boolp.contraTP
 Declared in library mathcomp.classical.boolp, line 567, characters 6-14
@@ -2202,7 +2223,7 @@ Declared in library mathcomp.classical.boolp, line 567, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contraNP" class="id"><a name="contraNP" class="" title="contraNP : forall [P : Prop] [b : bool], (~ P -> b) -> ~~ b -> P
 
 contraNP is not universe polymorphic
-Arguments contraNP [P]%type_scope [b]%bool_scope _%function_scope _
+Arguments contraNP [P]%_type_scope [b]%_bool_scope _%_function_scope _
 contraNP is opaque
 Expands to: Constant mathcomp.classical.boolp.contraNP
 Declared in library mathcomp.classical.boolp, line 570, characters 6-14
@@ -2216,7 +2237,7 @@ Declared in library mathcomp.classical.boolp, line 570, characters 6-14
 forall [T : eqType] [x y : T] [P : Prop], (~ P -> x = y) -> x != y -> P
 
 contra_neqP is not universe polymorphic
-Arguments contra_neqP [T x y] [P]%type_scope _%function_scope _
+Arguments contra_neqP [T x y] [P]%_type_scope _%_function_scope _
 contra_neqP is opaque
 Expands to: Constant mathcomp.classical.boolp.contra_neqP
 Declared in library mathcomp.classical.boolp, line 573, characters 6-17
@@ -2230,7 +2251,7 @@ Declared in library mathcomp.classical.boolp, line 573, characters 6-17
 forall [T : eqType] [x y : T] [Q : Prop], (~ Q -> x != y) -> x = y -> Q
 
 contra_eqP is not universe polymorphic
-Arguments contra_eqP [T x y] [Q]%type_scope _%function_scope _
+Arguments contra_eqP [T x y] [Q]%_type_scope _%_function_scope _
 contra_eqP is opaque
 Expands to: Constant mathcomp.classical.boolp.contra_eqP
 Declared in library mathcomp.classical.boolp, line 576, characters 6-16
@@ -2241,11 +2262,11 @@ Declared in library mathcomp.classical.boolp, line 576, characters 6-16
 <span class="gallina-kwd"> by</span><span class="id"> move=&gt;</span><span class="id"> Qxy</span><span class="id"> /</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#eqP">eqP</a></span><span class="id">;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#contraTP">contraTP</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contra_leP" class="id"><a name="contra_leP" class="" title="contra_leP :
-forall {disp1 : disp_t} {T1 : porderType disp1} [P : Prop] [x y : T1],
+forall {disp1 : Order.disp_t} {T1 : porderType disp1} [P : Prop] [x y : T1],
 (~ P -> (x < y)%O) -> (y <= x)%O -> P
 
 contra_leP is not universe polymorphic
-Arguments contra_leP {disp1 T1} [P]%type_scope [x y] _%function_scope _
+Arguments contra_leP {disp1 T1} [P]%_type_scope [x y] _%_function_scope _
 contra_leP is opaque
 Expands to: Constant mathcomp.classical.boolp.contra_leP
 Declared in library mathcomp.classical.boolp, line 579, characters 6-16
@@ -2259,11 +2280,11 @@ Declared in library mathcomp.classical.boolp, line 579, characters 6-16
 Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="contra_ltP" class="id"><a name="contra_ltP" class="" title="contra_ltP :
-forall {disp1 : disp_t} {T1 : porderType disp1} [P : Prop] [x y : T1],
+forall {disp1 : Order.disp_t} {T1 : porderType disp1} [P : Prop] [x y : T1],
 (~ P -> (x <= y)%O) -> (y < x)%O -> P
 
 contra_ltP is not universe polymorphic
-Arguments contra_ltP {disp1 T1} [P]%type_scope [x y] _%function_scope _
+Arguments contra_ltP {disp1 T1} [P]%_type_scope [x y] _%_function_scope _
 contra_ltP is opaque
 Expands to: Constant mathcomp.classical.boolp.contra_ltP
 Declared in library mathcomp.classical.boolp, line 586, characters 6-16
@@ -2279,7 +2300,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="wlog_neg" class="id"><a name="wlog_neg" class="" title="wlog_neg : forall [b : bool], (~~ b -> b) -> b
 
 wlog_neg is not universe polymorphic
-Arguments wlog_neg [b]%bool_scope _%function_scope
+Arguments wlog_neg [b]%_bool_scope _%_function_scope
 wlog_neg is opaque
 Expands to: Constant Corelib.ssr.ssrbool.wlog_neg
 Declared in library Corelib.ssr.ssrbool, line 534, characters 6-14
@@ -2308,7 +2329,7 @@ Declared in library mathcomp.classical.boolp, line 596, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="notLR" class="id"><a name="notLR" class="" title="notLR : forall [P Q : Prop], P = (~ Q) -> (~ P) = Q
 
 notLR is not universe polymorphic
-Arguments notLR [P Q]%type_scope _
+Arguments notLR [P Q]%_type_scope _
 notLR is opaque
 Expands to: Constant mathcomp.classical.boolp.notLR
 Declared in library mathcomp.classical.boolp, line 598, characters 6-11
@@ -2321,7 +2342,7 @@ Declared in library mathcomp.classical.boolp, line 598, characters 6-11
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="notRL" class="id"><a name="notRL" class="" title="notRL : forall [P Q : Prop], (~ P) = Q -> P = (~ Q)
 
 notRL is not universe polymorphic
-Arguments notRL [P Q]%type_scope _
+Arguments notRL [P Q]%_type_scope _
 notRL is opaque
 Expands to: Constant mathcomp.classical.boolp.notRL
 Declared in library mathcomp.classical.boolp, line 600, characters 6-11
@@ -2334,7 +2355,7 @@ Declared in library mathcomp.classical.boolp, line 600, characters 6-11
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="iff_notr" class="id"><a name="iff_notr" class="" title="iff_notr : forall P Q : Prop, (P <-> ~ Q) <-> (~ P <-> Q)
 
 iff_notr is not universe polymorphic
-Arguments iff_notr (P Q)%type_scope
+Arguments iff_notr (P Q)%_type_scope
 iff_notr is opaque
 Expands to: Constant mathcomp.classical.boolp.iff_notr
 Declared in library mathcomp.classical.boolp, line 602, characters 6-14
@@ -2347,7 +2368,7 @@ Declared in library mathcomp.classical.boolp, line 602, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="iff_not2" class="id"><a name="iff_not2" class="" title="iff_not2 : forall P Q : Prop, (~ P <-> ~ Q) <-> (P <-> Q)
 
 iff_not2 is not universe polymorphic
-Arguments iff_not2 (P Q)%type_scope
+Arguments iff_not2 (P Q)%_type_scope
 iff_not2 is opaque
 Expands to: Constant mathcomp.classical.boolp.iff_not2
 Declared in library mathcomp.classical.boolp, line 605, characters 6-14
@@ -2361,7 +2382,7 @@ Declared in library mathcomp.classical.boolp, line 605, characters 6-14
 <span class="vernacular">Definition</span><span class="id"> </span><span id="predp" class="id"><a name="predp" class="" title="predp : Type -> Type
 
 predp is not universe polymorphic
-Arguments predp T%type_scope
+Arguments predp T%_type_scope
 predp is transparent
 Expands to: Constant mathcomp.classical.boolp.predp
 Declared in library mathcomp.classical.boolp, line 612, characters 11-16
@@ -2372,7 +2393,7 @@ Declared in library mathcomp.classical.boolp, line 612, characters 11-16
 <span class="vernacular">Definition</span><span class="id"> </span><span id="relp" class="id"><a name="relp" class="" title="relp : Type -> Type
 
 relp is not universe polymorphic
-Arguments relp T%type_scope
+Arguments relp T%_type_scope
 relp is transparent
 Expands to: Constant mathcomp.classical.boolp.relp
 Declared in library mathcomp.classical.boolp, line 616, characters 11-15
@@ -2392,7 +2413,7 @@ Declared in library mathcomp.classical.boolp, line 616, characters 11-15
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pred0p" class="id"><a name="pred0p" class="" title="pred0p : forall {T : Type}, predp T -> bool
 
 pred0p is not universe polymorphic
-Arguments pred0p {T}%type_scope P
+Arguments pred0p {T}%_type_scope P
 pred0p is transparent
 Expands to: Constant mathcomp.classical.boolp.pred0p
 Declared in library mathcomp.classical.boolp, line 629, characters 11-17
@@ -2402,7 +2423,7 @@ Declared in library mathcomp.classical.boolp, line 629, characters 11-17
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pred0pP" class="id"><a name="pred0pP" class="" title="pred0pP : forall [T : Type] (P : predp T), reflect (P =1 xpredp0) (pred0p P)
 
 pred0pP is not universe polymorphic
-Arguments pred0pP [T]%type_scope P
+Arguments pred0pP [T]%_type_scope P
 pred0pP is opaque
 Expands to: Constant mathcomp.classical.boolp.pred0pP
 Declared in library mathcomp.classical.boolp, line 632, characters 6-13
@@ -2417,7 +2438,7 @@ forall {T : Type} {P : T -> Prop},
 reflect (forall x : T, ~ P x) (~~ `[< exists x : T, P x >])
 
 forallp_asboolPn is not universe polymorphic
-Arguments forallp_asboolPn {T}%type_scope {P}%function_scope
+Arguments forallp_asboolPn {T}%_type_scope {P}%_function_scope
 forallp_asboolPn is opaque
 Expands to: Constant mathcomp.classical.boolp.forallp_asboolPn
 Declared in library mathcomp.classical.boolp, line 635, characters 6-22
@@ -2435,7 +2456,7 @@ forall {T : Type} {P : T -> Prop},
 reflect (exists x : T, ~ P x) (~~ `[< forall x : T, P x >])
 
 existsp_asboolPn is not universe polymorphic
-Arguments existsp_asboolPn {T}%type_scope {P}%function_scope
+Arguments existsp_asboolPn {T}%_type_scope {P}%_function_scope
 existsp_asboolPn is opaque
 Expands to: Constant mathcomp.classical.boolp.existsp_asboolPn
 Declared in library mathcomp.classical.boolp, line 642, characters 6-22
@@ -2454,7 +2475,7 @@ forall {T : Type} (P : pred T),
 `[< forall x : T, ~~ P x >] = ~~ `[< exists x : T, P x >]
 
 asbool_forallNb is not universe polymorphic
-Arguments asbool_forallNb {T}%type_scope P
+Arguments asbool_forallNb {T}%_type_scope P
 asbool_forallNb is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_forallNb
 Declared in library mathcomp.classical.boolp, line 650, characters 6-21
@@ -2472,7 +2493,7 @@ forall {T : Type} (P : pred T),
 `[< exists x : T, ~~ P x >] = ~~ `[< forall x : T, P x >]
 
 asbool_existsNb is not universe polymorphic
-Arguments asbool_existsNb {T}%type_scope P
+Arguments asbool_existsNb {T}%_type_scope P
 asbool_existsNb is opaque
 Expands to: Constant mathcomp.classical.boolp.asbool_existsNb
 Declared in library mathcomp.classical.boolp, line 657, characters 6-21
@@ -2488,7 +2509,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_implyP" class="id"><a name="not_implyP" class="" title="not_implyP : forall P Q : Prop, ~ (P -> Q) <-> P /\ ~ Q
 
 not_implyP is not universe polymorphic
-Arguments not_implyP (P Q)%type_scope
+Arguments not_implyP (P Q)%_type_scope
 not_implyP is opaque
 Expands to: Constant mathcomp.classical.boolp.not_implyP
 Declared in library mathcomp.classical.boolp, line 664, characters 6-16
@@ -2503,7 +2524,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_andE" class="id"><a name="not_andE" class="" title="not_andE : forall P Q : Prop, (~ (P /\ Q)) = (~ P \/ ~ Q)
 
 not_andE is not universe polymorphic
-Arguments not_andE (P Q)%type_scope
+Arguments not_andE (P Q)%_type_scope
 not_andE is opaque
 Expands to: Constant mathcomp.classical.boolp.not_andE
 Declared in library mathcomp.classical.boolp, line 670, characters 6-14
@@ -2518,7 +2539,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_andP" class="id"><a name="not_andP" class="" title="not_andP : forall P Q : Prop, ~ (P /\ Q) <-> ~ P \/ ~ Q
 
 not_andP is not universe polymorphic
-Arguments not_andP (P Q)%type_scope
+Arguments not_andP (P Q)%_type_scope
 not_andP is opaque
 Expands to: Constant mathcomp.classical.boolp.not_andP
 Declared in library mathcomp.classical.boolp, line 676, characters 6-14
@@ -2531,7 +2552,7 @@ Declared in library mathcomp.classical.boolp, line 676, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_and3P" class="id"><a name="not_and3P" class="" title="not_and3P : forall P Q R : Prop, ~ [/\ P, Q & R] <-> [\/ ~ P, ~ Q | ~ R]
 
 not_and3P is not universe polymorphic
-Arguments not_and3P (P Q R)%type_scope
+Arguments not_and3P (P Q R)%_type_scope
 not_and3P is opaque
 Expands to: Constant mathcomp.classical.boolp.not_and3P
 Declared in library mathcomp.classical.boolp, line 679, characters 6-15
@@ -2547,7 +2568,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_notP" class="id"><a name="not_notP" class="" title="not_notP : forall P : Prop, ~ ~ P <-> P
 
 not_notP is not universe polymorphic
-Arguments not_notP P%type_scope
+Arguments not_notP P%_type_scope
 not_notP is opaque
 Expands to: Constant mathcomp.classical.boolp.not_notP
 Declared in library mathcomp.classical.boolp, line 686, characters 6-14
@@ -2562,7 +2583,7 @@ Declared in library mathcomp.classical.boolp, line 686, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_notE" class="id"><a name="not_notE" class="" title="not_notE : forall P : Prop, (~ ~ P) = P
 
 not_notE is not universe polymorphic
-Arguments not_notE P%type_scope
+Arguments not_notE P%_type_scope
 not_notE is opaque
 Expands to: Constant mathcomp.classical.boolp.not_notE
 Declared in library mathcomp.classical.boolp, line 691, characters 6-14
@@ -2577,7 +2598,7 @@ Declared in library mathcomp.classical.boolp, line 691, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_orE" class="id"><a name="not_orE" class="" title="not_orE : forall P Q : Prop, (~ (P \/ Q)) = (~ P /\ ~ Q)
 
 not_orE is not universe polymorphic
-Arguments not_orE (P Q)%type_scope
+Arguments not_orE (P Q)%_type_scope
 not_orE is opaque
 Expands to: Constant mathcomp.classical.boolp.not_orE
 Declared in library mathcomp.classical.boolp, line 696, characters 6-13
@@ -2590,7 +2611,7 @@ Declared in library mathcomp.classical.boolp, line 696, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_orP" class="id"><a name="not_orP" class="" title="not_orP : forall P Q : Prop, ~ (P \/ Q) <-> ~ P /\ ~ Q
 
 not_orP is not universe polymorphic
-Arguments not_orP (P Q)%type_scope
+Arguments not_orP (P Q)%_type_scope
 not_orP is opaque
 Expands to: Constant mathcomp.classical.boolp.not_orP
 Declared in library mathcomp.classical.boolp, line 699, characters 6-13
@@ -2603,7 +2624,7 @@ Declared in library mathcomp.classical.boolp, line 699, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="not_implyE" class="id"><a name="not_implyE" class="" title="not_implyE : forall P Q : Prop, (~ (P -> Q)) = (P /\ ~ Q)
 
 not_implyE is not universe polymorphic
-Arguments not_implyE (P Q)%type_scope
+Arguments not_implyE (P Q)%_type_scope
 not_implyE is opaque
 Expands to: Constant mathcomp.classical.boolp.not_implyE
 Declared in library mathcomp.classical.boolp, line 702, characters 6-16
@@ -2616,7 +2637,7 @@ Declared in library mathcomp.classical.boolp, line 702, characters 6-16
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="implyE" class="id"><a name="implyE" class="" title="implyE : forall P Q : Prop, (P -> Q) = (~ P \/ Q)
 
 implyE is not universe polymorphic
-Arguments implyE (P Q)%type_scope
+Arguments implyE (P Q)%_type_scope
 implyE is opaque
 Expands to: Constant mathcomp.classical.boolp.implyE
 Declared in library mathcomp.classical.boolp, line 705, characters 6-12
@@ -2694,7 +2715,7 @@ Declared in library mathcomp.classical.boolp, line 720, characters 6-11
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="orNp" class="id"><a name="orNp" class="" title="orNp : forall P Q : Prop, (~ P \/ Q) = (P -> Q)
 
 orNp is not universe polymorphic
-Arguments orNp (P Q)%type_scope
+Arguments orNp (P Q)%_type_scope
 orNp is opaque
 Expands to: Constant mathcomp.classical.boolp.orNp
 Declared in library mathcomp.classical.boolp, line 723, characters 6-10
@@ -2707,7 +2728,7 @@ Declared in library mathcomp.classical.boolp, line 723, characters 6-10
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="orpN" class="id"><a name="orpN" class="" title="orpN : forall P Q : Prop, (P \/ ~ Q) = (Q -> P)
 
 orpN is not universe polymorphic
-Arguments orpN (P Q)%type_scope
+Arguments orpN (P Q)%_type_scope
 orpN is opaque
 Expands to: Constant mathcomp.classical.boolp.orpN
 Declared in library mathcomp.classical.boolp, line 726, characters 6-10
@@ -2720,7 +2741,7 @@ Declared in library mathcomp.classical.boolp, line 726, characters 6-10
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="or3E" class="id"><a name="or3E" class="" title="or3E : forall P Q R : Prop, [\/ P, Q | R] = (P \/ Q \/ R)
 
 or3E is not universe polymorphic
-Arguments or3E (P Q R)%type_scope
+Arguments or3E (P Q R)%_type_scope
 or3E is opaque
 Expands to: Constant mathcomp.classical.boolp.or3E
 Declared in library mathcomp.classical.boolp, line 728, characters 6-10
@@ -2735,7 +2756,7 @@ Qed.</div></details>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="or4E" class="id"><a name="or4E" class="" title="or4E : forall P Q R S : Prop, [\/ P, Q, R | S] = (P \/ Q \/ R \/ S)
 
 or4E is not universe polymorphic
-Arguments or4E (P Q R S)%type_scope
+Arguments or4E (P Q R S)%_type_scope
 or4E is opaque
 Expands to: Constant mathcomp.classical.boolp.or4E
 Declared in library mathcomp.classical.boolp, line 734, characters 6-10
@@ -2815,7 +2836,7 @@ Declared in library mathcomp.classical.boolp, line 752, characters 6-12
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="and3E" class="id"><a name="and3E" class="" title="and3E : forall P Q R : Prop, [/\ P, Q & R] = (P /\ Q /\ R)
 
 and3E is not universe polymorphic
-Arguments and3E (P Q R)%type_scope
+Arguments and3E (P Q R)%_type_scope
 and3E is opaque
 Expands to: Constant mathcomp.classical.boolp.and3E
 Declared in library mathcomp.classical.boolp, line 755, characters 6-11
@@ -2828,7 +2849,7 @@ Declared in library mathcomp.classical.boolp, line 755, characters 6-11
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="and4E" class="id"><a name="and4E" class="" title="and4E : forall P Q R S : Prop, [/\ P, Q, R & S] = (P /\ Q /\ R /\ S)
 
 and4E is not universe polymorphic
-Arguments and4E (P Q R S)%type_scope
+Arguments and4E (P Q R S)%_type_scope
 and4E is opaque
 Expands to: Constant mathcomp.classical.boolp.and4E
 Declared in library mathcomp.classical.boolp, line 758, characters 6-11
@@ -2842,7 +2863,7 @@ Declared in library mathcomp.classical.boolp, line 758, characters 6-11
 forall P Q R S T : Prop, [/\ P, Q, R, S & T] = (P /\ Q /\ R /\ S /\ T)
 
 and5E is not universe polymorphic
-Arguments and5E (P Q R S T)%type_scope
+Arguments and5E (P Q R S T)%_type_scope
 and5E is opaque
 Expands to: Constant mathcomp.classical.boolp.and5E
 Declared in library mathcomp.classical.boolp, line 761, characters 6-11
@@ -2855,7 +2876,7 @@ Declared in library mathcomp.classical.boolp, line 761, characters 6-11
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="implyNp" class="id"><a name="implyNp" class="" title="implyNp : forall P Q : Prop, (~ P -> Q : Prop) = (P \/ Q)
 
 implyNp is not universe polymorphic
-Arguments implyNp (P Q)%type_scope
+Arguments implyNp (P Q)%_type_scope
 implyNp is opaque
 Expands to: Constant mathcomp.classical.boolp.implyNp
 Declared in library mathcomp.classical.boolp, line 764, characters 6-13
@@ -2868,7 +2889,7 @@ Declared in library mathcomp.classical.boolp, line 764, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="implypN" class="id"><a name="implypN" class="" title="implypN : forall P Q : Prop, (P -> ~ Q) = (~ (P /\ Q))
 
 implypN is not universe polymorphic
-Arguments implypN (P Q)%type_scope
+Arguments implypN (P Q)%_type_scope
 implypN is opaque
 Expands to: Constant mathcomp.classical.boolp.implypN
 Declared in library mathcomp.classical.boolp, line 767, characters 6-13
@@ -2881,7 +2902,7 @@ Declared in library mathcomp.classical.boolp, line 767, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="implyNN" class="id"><a name="implyNN" class="" title="implyNN : forall P Q : Prop, (~ P -> ~ Q) = (Q -> P)
 
 implyNN is not universe polymorphic
-Arguments implyNN (P Q)%type_scope
+Arguments implyNN (P Q)%_type_scope
 implyNN is opaque
 Expands to: Constant mathcomp.classical.boolp.implyNN
 Declared in library mathcomp.classical.boolp, line 770, characters 6-13
@@ -2948,7 +2969,7 @@ forall {T : Type} (P : T -> Prop),
 (forall x : T, ~ P x) = (~ (exists x : T, P x))
 
 forallNE is not universe polymorphic
-Arguments forallNE {T}%type_scope P%function_scope
+Arguments forallNE {T}%_type_scope P%_function_scope
 forallNE is opaque
 Expands to: Constant mathcomp.classical.boolp.forallNE
 Declared in library mathcomp.classical.boolp, line 785, characters 6-14
@@ -2964,7 +2985,7 @@ forall {T : Type} (P : T -> Prop),
 (exists x : T, ~ P x) = (~ (forall x : T, P x))
 
 existsNE is not universe polymorphic
-Arguments existsNE {T}%type_scope P%function_scope
+Arguments existsNE {T}%_type_scope P%_function_scope
 existsNE is opaque
 Expands to: Constant mathcomp.classical.boolp.existsNE
 Declared in library mathcomp.classical.boolp, line 790, characters 6-14
@@ -2981,7 +3002,7 @@ forall [T : Type] (P : T -> Prop),
 (exists x : T, ~ P x) <-> ~ (forall x : T, P x)
 
 existsNP is not universe polymorphic
-Arguments existsNP [T]%type_scope P%function_scope
+Arguments existsNP [T]%_type_scope P%_function_scope
 existsNP is opaque
 Expands to: Constant mathcomp.classical.boolp.existsNP
 Declared in library mathcomp.classical.boolp, line 796, characters 6-14
@@ -2996,7 +3017,7 @@ forall [T : Type] (P : T -> Prop),
 (exists x : T, P x) <-> ~ (forall x : T, ~ P x)
 
 not_existsP is not universe polymorphic
-Arguments not_existsP [T]%type_scope P%function_scope
+Arguments not_existsP [T]%_type_scope P%_function_scope
 not_existsP is opaque
 Expands to: Constant mathcomp.classical.boolp.not_existsP
 Declared in library mathcomp.classical.boolp, line 799, characters 6-17
@@ -3011,7 +3032,7 @@ forall [T : Type] (P : T -> Prop),
 (forall x : T, ~ P x) <-> ~ (exists x : T, P x)
 
 forallNP is not universe polymorphic
-Arguments forallNP [T]%type_scope P%function_scope
+Arguments forallNP [T]%_type_scope P%_function_scope
 forallNP is opaque
 Expands to: Constant mathcomp.classical.boolp.forallNP
 Declared in library mathcomp.classical.boolp, line 802, characters 6-14
@@ -3026,7 +3047,7 @@ forall [T : Type] (P : T -> Prop),
 (forall x : T, P x) <-> ~ (exists x : T, ~ P x)
 
 not_forallP is not universe polymorphic
-Arguments not_forallP [T]%type_scope P%function_scope
+Arguments not_forallP [T]%_type_scope P%_function_scope
 not_forallP is opaque
 Expands to: Constant mathcomp.classical.boolp.not_forallP
 Declared in library mathcomp.classical.boolp, line 805, characters 6-17
@@ -3041,7 +3062,7 @@ forall [A : Type] (P Q : A -> Prop),
 (exists2 x : A, P x & Q x) = (exists x : A, P x /\ Q x)
 
 exists2E is not universe polymorphic
-Arguments exists2E [A]%type_scope (P Q)%function_scope
+Arguments exists2E [A]%_type_scope (P Q)%_function_scope
 exists2E is opaque
 Expands to: Constant mathcomp.classical.boolp.exists2E
 Declared in library mathcomp.classical.boolp, line 808, characters 6-14
@@ -3056,7 +3077,7 @@ forall [T : Type] (P Q : T -> Prop),
 (exists2 x : T, P x & Q x) <-> (exists x : T, P x /\ Q x)
 
 exists2P is not universe polymorphic
-Arguments exists2P [T]%type_scope (P Q)%function_scope
+Arguments exists2P [T]%_type_scope (P Q)%_function_scope
 exists2P is opaque
 Expands to: Constant mathcomp.classical.boolp.exists2P
 Declared in library mathcomp.classical.boolp, line 811, characters 6-14
@@ -3072,7 +3093,7 @@ forall [T : Type] (P Q : T -> Prop),
 (exists2 x : T, P x & Q x) <-> ~ (forall x : T, ~ P x \/ ~ Q x)
 
 not_exists2P is not universe polymorphic
-Arguments not_exists2P [T]%type_scope (P Q)%function_scope
+Arguments not_exists2P [T]%_type_scope (P Q)%_function_scope
 not_exists2P is opaque
 Expands to: Constant mathcomp.classical.boolp.not_exists2P
 Declared in library mathcomp.classical.boolp, line 815, characters 6-18
@@ -3090,7 +3111,7 @@ forall [T : Type] (P Q : T -> Prop),
 (forall x : T, ~ P x \/ ~ Q x) <-> ~ (exists2 x : T, P x & Q x)
 
 forall2NP is not universe polymorphic
-Arguments forall2NP [T]%type_scope (P Q)%function_scope
+Arguments forall2NP [T]%_type_scope (P Q)%_function_scope
 forall2NP is opaque
 Expands to: Constant mathcomp.classical.boolp.forall2NP
 Declared in library mathcomp.classical.boolp, line 822, characters 6-15
@@ -3108,7 +3129,7 @@ forall [T : Type] (P Q : T -> Prop),
 (forall x : T, P x -> ~ Q x) <-> ~ (exists2 x : T, P x & Q x)
 
 forallPNP is not universe polymorphic
-Arguments forallPNP [T]%type_scope (P Q)%function_scope
+Arguments forallPNP [T]%_type_scope (P Q)%_function_scope
 forallPNP is opaque
 Expands to: Constant mathcomp.classical.boolp.forallPNP
 Declared in library mathcomp.classical.boolp, line 829, characters 6-15
@@ -3126,7 +3147,7 @@ forall [T : Type] (P Q : T -> Prop),
 (exists2 x : T, P x & ~ Q x) <-> ~ (forall x : T, P x -> Q x)
 
 existsPNP is not universe polymorphic
-Arguments existsPNP [T]%type_scope (P Q)%function_scope
+Arguments existsPNP [T]%_type_scope (P Q)%_function_scope
 existsPNP is opaque
 Expands to: Constant mathcomp.classical.boolp.existsPNP
 Declared in library mathcomp.classical.boolp, line 836, characters 6-15
@@ -3144,7 +3165,7 @@ forall {T : Type} {P Q : T -> Prop},
 reflect (forall x : T, ~ P x \/ ~ Q x) (~~ `[< exists2 x : T, P x & Q x >])
 
 forallp_asboolPn2 is not universe polymorphic
-Arguments forallp_asboolPn2 {T}%type_scope {P Q}%function_scope
+Arguments forallp_asboolPn2 {T}%_type_scope {P Q}%_function_scope
 forallp_asboolPn2 is opaque
 Expands to: Constant mathcomp.classical.boolp.forallp_asboolPn2
 Declared in library mathcomp.classical.boolp, line 843, characters 6-23
@@ -3168,13 +3189,13 @@ Qed.</div></details>
 <span class="vernacular">Import</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.TTheory">Order</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.TTheory">TTheory</a></span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="bigmax_geP" class="id"><a name="bigmax_geP" class="" title="bigmax_geP :
-forall [d : disp_t] [T : orderType d] (x : T) [I : finType] 
-  (P : pred I) (m : T) (F : I -> T),
+forall [d : Order.disp_t] [T : orderType d] (x : T) 
+  [I : finType] (P : pred I) (m : T) (F : I -> T),
 reflect ((m <= x)%O \/ (exists2 i : I, P i & (m <= F i)%O))
-  (m <= \big[Def.max/x]_(i | P i) F i)%O
+  (m <= \big[Order.Def.max/x]_(i | P i) F i)%O
 
 bigmax_geP is not universe polymorphic
-Arguments bigmax_geP [d T] x [I] P m F%function_scope
+Arguments bigmax_geP [d T] x [I] P m F%_function_scope
 bigmax_geP is opaque
 Expands to: Constant mathcomp.classical.boolp.bigmax_geP
 Declared in library mathcomp.classical.boolp, line 860, characters 6-16
@@ -3191,13 +3212,13 @@ Declared in library mathcomp.classical.boolp, line 860, characters 6-16
 Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="bigmax_gtP" class="id"><a name="bigmax_gtP" class="" title="bigmax_gtP :
-forall [d : disp_t] [T : orderType d] (x : T) [I : finType] 
-  (P : pred I) (m : T) (F : I -> T),
+forall [d : Order.disp_t] [T : orderType d] (x : T) 
+  [I : finType] (P : pred I) (m : T) (F : I -> T),
 reflect ((m < x)%O \/ (exists2 i : I, P i & (m < F i)%O))
-  (m < \big[Def.max/x]_(i | P i) F i)%O
+  (m < \big[Order.Def.max/x]_(i | P i) F i)%O
 
 bigmax_gtP is not universe polymorphic
-Arguments bigmax_gtP [d T] x [I] P m F%function_scope
+Arguments bigmax_gtP [d T] x [I] P m F%_function_scope
 bigmax_gtP is opaque
 Expands to: Constant mathcomp.classical.boolp.bigmax_gtP
 Declared in library mathcomp.classical.boolp, line 870, characters 6-16
@@ -3214,13 +3235,13 @@ Declared in library mathcomp.classical.boolp, line 870, characters 6-16
 Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="bigmin_leP" class="id"><a name="bigmin_leP" class="" title="bigmin_leP :
-forall [d : disp_t] [T : orderType d] (x : T) [I : finType] 
-  (P : pred I) (m : T) (F : I -> T),
+forall [d : Order.disp_t] [T : orderType d] (x : T) 
+  [I : finType] (P : pred I) (m : T) (F : I -> T),
 reflect ((x <= m)%O \/ (exists2 i : I, P i & (F i <= m)%O))
-  (\big[Def.min/x]_(i | P i) F i <= m)%O
+  (\big[Order.Def.min/x]_(i | P i) F i <= m)%O
 
 bigmin_leP is not universe polymorphic
-Arguments bigmin_leP [d T] x [I] P m F%function_scope
+Arguments bigmin_leP [d T] x [I] P m F%_function_scope
 bigmin_leP is opaque
 Expands to: Constant mathcomp.classical.boolp.bigmin_leP
 Declared in library mathcomp.classical.boolp, line 880, characters 6-16
@@ -3237,13 +3258,13 @@ Declared in library mathcomp.classical.boolp, line 880, characters 6-16
 Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="bigmin_ltP" class="id"><a name="bigmin_ltP" class="" title="bigmin_ltP :
-forall [d : disp_t] [T : orderType d] (x : T) [I : finType] 
-  (P : pred I) (m : T) (F : I -> T),
+forall [d : Order.disp_t] [T : orderType d] (x : T) 
+  [I : finType] (P : pred I) (m : T) (F : I -> T),
 reflect ((x < m)%O \/ (exists2 i : I, P i & (F i < m)%O))
-  (\big[Def.min/x]_(i | P i) F i < m)%O
+  (\big[Order.Def.min/x]_(i | P i) F i < m)%O
 
 bigmin_ltP is not universe polymorphic
-Arguments bigmin_ltP [d T] x [I] P m F%function_scope
+Arguments bigmin_ltP [d T] x [I] P m F%_function_scope
 bigmin_ltP is opaque
 Expands to: Constant mathcomp.classical.boolp.bigmin_ltP
 Declared in library mathcomp.classical.boolp, line 890, characters 6-16
@@ -3267,7 +3288,7 @@ Qed.</div></details>
 <span class="vernacular">Variables</span> (<span id="FunOrder.FunOrder.aT" class="id"><a name="FunOrder.FunOrder.aT" class="">aT</a></span><span class="id"> :</span><span class="gallina-kwd"> Type</span>) (<span id="FunOrder.FunOrder.d" class="id"><a name="FunOrder.FunOrder.d" class="">d</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.preorder#Order.disp_t">Order</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.order.preorder#Order.disp_t">disp_t</a></span>) (<span id="FunOrder.FunOrder.T" class="id"><a name="FunOrder.FunOrder.T" class="">T</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrder.Exports.porderType">porderType</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#d:618">d</a></span>).<br/>
 <span class="vernacular">Implicit</span><span class="id"> Types</span><span class="id"> f</span><span class="id"> g</span><span class="id"> h</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#FunOrder.FunOrder.aT">aT</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.classical.boolp.html#FunOrder.FunOrder.T">T</a></span>.<br/>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.fun_display" class="id"><a name="FunOrder.fun_display" class="" title="FunOrder.fun_display : disp_t
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.fun_display" class="id"><a name="FunOrder.fun_display" class="" title="FunOrder.fun_display : Order.disp_t
 
 FunOrder.fun_display is not universe polymorphic
 FunOrder.fun_display is opaque
@@ -3280,11 +3301,11 @@ Declared in library mathcomp.classical.boolp, line 908, characters 6-17
 <span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.mathcomp_extra.html#Order.default_display">Order</a></span>.<span class="id"><a href="mathcomp.classical.mathcomp_extra.html#Order.default_display">default_display</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="FunOrder.lef" class="id"><a name="FunOrder.lef" class="" title="FunOrder.lef :
-forall [aT : Type] [d : disp_t] [T : porderType d],
+forall [aT : Type] [d : Order.disp_t] [T : porderType d],
 (aT -> T) -> (aT -> T) -> bool
 
 FunOrder.lef is not universe polymorphic
-Arguments FunOrder.lef [aT]%type_scope [d T] (f g)%function_scope
+Arguments FunOrder.lef [aT]%_type_scope [d T] (f g)%_function_scope
 FunOrder.lef is transparent
 Expands to: Constant mathcomp.classical.boolp.FunOrder.lef
 Declared in library mathcomp.classical.boolp, line 910, characters 11-14
@@ -3292,11 +3313,11 @@ Declared in library mathcomp.classical.boolp, line 910, characters 11-14
 <span class="vernacular">Local</span><span class="vernacular"> Notation</span> <span id="f19451cbaa2069d404dd9bdd9c3b0464" class="id"><a name="f19451cbaa2069d404dd9bdd9c3b0464" class="">&quot;f &lt;= g&quot;</a></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.classical.boolp.html#FunOrder.lef">lef</a></span><span class="id"> f</span><span class="id"> g</span>).<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="FunOrder.ltf" class="id"><a name="FunOrder.ltf" class="" title="FunOrder.ltf :
-forall [aT : Type] [d : disp_t] [T : porderType d],
+forall [aT : Type] [d : Order.disp_t] [T : porderType d],
 (aT -> T) -> (aT -> T) -> bool
 
 FunOrder.ltf is not universe polymorphic
-Arguments FunOrder.ltf [aT]%type_scope [d T] (f g)%function_scope
+Arguments FunOrder.ltf [aT]%_type_scope [d T] (f g)%_function_scope
 FunOrder.ltf is transparent
 Expands to: Constant mathcomp.classical.boolp.FunOrder.ltf
 Declared in library mathcomp.classical.boolp, line 913, characters 11-14
@@ -3304,11 +3325,11 @@ Declared in library mathcomp.classical.boolp, line 913, characters 11-14
 <span class="vernacular">Local</span><span class="vernacular"> Notation</span> <span id="FunOrder.FunOrder.:::x_'&lt;'_x" class="id"><a name="FunOrder.FunOrder.:::x_'&lt;'_x" class="">&quot;f &lt; g&quot;</a></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.classical.boolp.html#FunOrder.ltf">ltf</a></span><span class="id"> f</span><span class="id"> g</span>).<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.ltf_def" class="id"><a name="FunOrder.ltf_def" class="" title="FunOrder.ltf_def :
-forall [aT : Type] [d : disp_t] [T : porderType d] (f g : aT -> T),
+forall [aT : Type] [d : Order.disp_t] [T : porderType d] (f g : aT -> T),
 FunOrder.ltf (T:=T) f g = (g != f) && FunOrder.lef (T:=T) f g
 
 FunOrder.ltf_def is not universe polymorphic
-Arguments FunOrder.ltf_def [aT]%type_scope [d T] (f g)%function_scope
+Arguments FunOrder.ltf_def [aT]%_type_scope [d T] (f g)%_function_scope
 FunOrder.ltf_def is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.ltf_def
 Declared in library mathcomp.classical.boolp, line 916, characters 6-13
@@ -3326,11 +3347,11 @@ Declared in library mathcomp.classical.boolp, line 916, characters 6-13
 Qed.</div></details>
 <br/>
 <span class="vernacular">Fact</span><span class="id"> </span><span id="FunOrder.lef_refl" class="id"><a name="FunOrder.lef_refl" class="" title="FunOrder.lef_refl :
-forall [aT : Type] [d : disp_t] [T : porderType d],
+forall [aT : Type] [d : Order.disp_t] [T : porderType d],
 reflexive (T:=aT -> T) (FunOrder.lef (T:=T))
 
 FunOrder.lef_refl is not universe polymorphic
-Arguments FunOrder.lef_refl [aT]%type_scope [d T] x
+Arguments FunOrder.lef_refl [aT]%_type_scope [d T] x
 FunOrder.lef_refl is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.lef_refl
 Declared in library mathcomp.classical.boolp, line 927, characters 5-13
@@ -3341,16 +3362,16 @@ Declared in library mathcomp.classical.boolp, line 927, characters 5-13
 <span class="gallina-kwd"> by</span><span class="id"> move=&gt;</span><span class="id"> f;</span><span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#asboolP">asboolP</a></span><span class="id"> =&gt;</span><span class="id"> x</span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Fact</span><span class="id"> </span><span id="FunOrder.lef_anti" class="id"><a name="FunOrder.lef_anti" class="" title="FunOrder.lef_anti :
-forall [aT : Type] [d : disp_t] [T : porderType d],
+forall [aT : Type] [d : Order.disp_t] [T : porderType d],
 antisymmetric (T:=aT -> T) (FunOrder.lef (T:=T))
 
 FunOrder.lef_anti is not universe polymorphic
 Expanded type for implicit arguments
 FunOrder.lef_anti :
-forall [aT : Type] [d : disp_t] [T : porderType d] [x y : aT -> T],
+forall [aT : Type] [d : Order.disp_t] [T : porderType d] [x y : aT -> T],
 FunOrder.lef (T:=T) x y && FunOrder.lef (T:=T) y x -> x = y
 
-Arguments FunOrder.lef_anti [aT]%type_scope [d T x y] _
+Arguments FunOrder.lef_anti [aT]%_type_scope [d T x y] _
 FunOrder.lef_anti is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.lef_anti
 Declared in library mathcomp.classical.boolp, line 929, characters 5-13
@@ -3363,17 +3384,17 @@ Declared in library mathcomp.classical.boolp, line 929, characters 5-13
 Qed.</div></details>
 <br/>
 <span class="vernacular">Fact</span><span class="id"> </span><span id="FunOrder.lef_trans" class="id"><a name="FunOrder.lef_trans" class="" title="FunOrder.lef_trans :
-forall [aT : Type] [d : disp_t] [T : porderType d],
+forall [aT : Type] [d : Order.disp_t] [T : porderType d],
 transitive (T:=aT -> T) (FunOrder.lef (T:=T))
 
 FunOrder.lef_trans is not universe polymorphic
 Expanded type for implicit arguments
 FunOrder.lef_trans :
-forall [aT : Type] [d : disp_t] [T : porderType d] [y x z : aT -> T],
+forall [aT : Type] [d : Order.disp_t] [T : porderType d] [y x z : aT -> T],
 FunOrder.lef (T:=T) x y ->
 FunOrder.lef (T:=T) y z -> FunOrder.lef (T:=T) x z = true
 
-Arguments FunOrder.lef_trans [aT]%type_scope [d T y x z] _ _
+Arguments FunOrder.lef_trans [aT]%_type_scope [d T y x z] _ _
 FunOrder.lef_trans is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.lef_trans
 Declared in library mathcomp.classical.boolp, line 935, characters 5-14
@@ -3386,56 +3407,62 @@ Declared in library mathcomp.classical.boolp, line 935, characters 5-14
 Qed.</div></details>
 <br/>
 <span id="FunOrder.prod__canonical__Order_POrder" class="id"><span id="FunOrder.HB_unnamed_mixin_24" class="id"><span id="FunOrder.prod__canonical__Order_Preorder" class="id"><span id="FunOrder.HB_unnamed_mixin_23" class="id"><span id="FunOrder.Order_isPOrder__to__Order_isDuallyPreorder" class="id"><span id="FunOrder.Order_isPOrder__to__Order_Preorder_isDuallyPOrder" class="id"><span id="FunOrder.HB_unnamed_factory_20" class="id"><a name="FunOrder.prod__canonical__Order_POrder" class="" title="FunOrder.prod__canonical__Order_POrder :
-Type -> forall [d : disp_t], porderType d -> porderType FunOrder.fun_display
+Type ->
+forall [d : Order.disp_t], porderType d -> porderType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_POrder is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_POrder aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_POrder aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_POrder is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_POrder
 Declared in library mathcomp.classical.boolp, line 941, characters 0-128
 ">#[export]</a></span></span></span></span></span></span></span><br/>
 <span id="FunOrder.prod__canonical__Order_POrder" class="id"><span id="FunOrder.HB_unnamed_mixin_24" class="id"><span id="FunOrder.prod__canonical__Order_Preorder" class="id"><span id="FunOrder.HB_unnamed_mixin_23" class="id"><span id="FunOrder.Order_isPOrder__to__Order_isDuallyPreorder" class="id"><span id="FunOrder.Order_isPOrder__to__Order_Preorder_isDuallyPOrder" class="id"><span id="FunOrder.HB_unnamed_factory_20" class="id"><a name="FunOrder.prod__canonical__Order_POrder" class="" title="FunOrder.prod__canonical__Order_POrder :
-Type -> forall [d : disp_t], porderType d -> porderType FunOrder.fun_display
+Type ->
+forall [d : Order.disp_t], porderType d -> porderType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_POrder is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_POrder aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_POrder aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_POrder is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_POrder
 Declared in library mathcomp.classical.boolp, line 941, characters 0-128
 ">HB</a></span></span></span></span></span></span></span>.<span id="FunOrder.prod__canonical__Order_POrder" class="id"><span id="FunOrder.HB_unnamed_mixin_24" class="id"><span id="FunOrder.prod__canonical__Order_Preorder" class="id"><span id="FunOrder.HB_unnamed_mixin_23" class="id"><span id="FunOrder.Order_isPOrder__to__Order_isDuallyPreorder" class="id"><span id="FunOrder.Order_isPOrder__to__Order_Preorder_isDuallyPOrder" class="id"><span id="FunOrder.HB_unnamed_factory_20" class="id"><a name="FunOrder.prod__canonical__Order_POrder" class="" title="FunOrder.prod__canonical__Order_POrder :
-Type -> forall [d : disp_t], porderType d -> porderType FunOrder.fun_display
+Type ->
+forall [d : Order.disp_t], porderType d -> porderType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_POrder is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_POrder aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_POrder aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_POrder is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_POrder
 Declared in library mathcomp.classical.boolp, line 941, characters 0-128
 ">instance</a></span></span></span></span></span></span></span><span class="vernacular"> Definition</span><span id="FunOrder.prod__canonical__Order_POrder" class="id"><span id="FunOrder.HB_unnamed_mixin_24" class="id"><span id="FunOrder.prod__canonical__Order_Preorder" class="id"><span id="FunOrder.HB_unnamed_mixin_23" class="id"><span id="FunOrder.Order_isPOrder__to__Order_isDuallyPreorder" class="id"><span id="FunOrder.Order_isPOrder__to__Order_Preorder_isDuallyPOrder" class="id"><span id="FunOrder.HB_unnamed_factory_20" class="id"><a name="FunOrder.prod__canonical__Order_POrder" class="" title="FunOrder.prod__canonical__Order_POrder :
-Type -> forall [d : disp_t], porderType d -> porderType FunOrder.fun_display
+Type ->
+forall [d : Order.disp_t], porderType d -> porderType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_POrder is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_POrder aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_POrder aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_POrder is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_POrder
 Declared in library mathcomp.classical.boolp, line 941, characters 0-128
 "> _</a></span></span></span></span></span></span></span><span id="FunOrder.prod__canonical__Order_POrder" class="id"><span id="FunOrder.HB_unnamed_mixin_24" class="id"><span id="FunOrder.prod__canonical__Order_Preorder" class="id"><span id="FunOrder.HB_unnamed_mixin_23" class="id"><span id="FunOrder.Order_isPOrder__to__Order_isDuallyPreorder" class="id"><span id="FunOrder.Order_isPOrder__to__Order_Preorder_isDuallyPOrder" class="id"><span id="FunOrder.HB_unnamed_factory_20" class="id"><a name="FunOrder.prod__canonical__Order_POrder" class="" title="FunOrder.prod__canonical__Order_POrder :
-Type -> forall [d : disp_t], porderType d -> porderType FunOrder.fun_display
+Type ->
+forall [d : Order.disp_t], porderType d -> porderType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_POrder is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_POrder aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_POrder aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_POrder is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_POrder
 Declared in library mathcomp.classical.boolp, line 941, characters 0-128
 "> :=</a></span></span></span></span></span></span></span><span id="FunOrder.prod__canonical__Order_POrder" class="id"><span id="FunOrder.HB_unnamed_mixin_24" class="id"><span id="FunOrder.prod__canonical__Order_Preorder" class="id"><span id="FunOrder.HB_unnamed_mixin_23" class="id"><span id="FunOrder.Order_isPOrder__to__Order_isDuallyPreorder" class="id"><span id="FunOrder.Order_isPOrder__to__Order_Preorder_isDuallyPOrder" class="id"><span id="FunOrder.HB_unnamed_factory_20" class="id"><a name="FunOrder.prod__canonical__Order_POrder" class="" title="FunOrder.prod__canonical__Order_POrder :
-Type -> forall [d : disp_t], porderType d -> porderType FunOrder.fun_display
+Type ->
+forall [d : Order.disp_t], porderType d -> porderType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_POrder is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_POrder aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_POrder aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_POrder is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_POrder
@@ -3451,32 +3478,32 @@ Declared in library mathcomp.classical.boolp, line 941, characters 0-128
 <span class="vernacular">Implicit</span><span class="id"> Types</span><span class="id"> f</span><span class="id"> g</span><span class="id"> h</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#FunOrder.FunLattice.aT">aT</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.classical.boolp.html#FunOrder.FunLattice.T">T</a></span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="FunOrder.meetf" class="id"><a name="FunOrder.meetf" class="" title="FunOrder.meetf :
-forall [aT : Type] [d : disp_t] [T : latticeType d],
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d],
 (aT -> T) -> (aT -> T) -> aT -> T
 
 FunOrder.meetf is not universe polymorphic
-Arguments FunOrder.meetf [aT]%type_scope [d T] (f g)%function_scope x
+Arguments FunOrder.meetf [aT]%_type_scope [d T] (f g)%_function_scope x
 FunOrder.meetf is transparent
 Expands to: Constant mathcomp.classical.boolp.FunOrder.meetf
 Declared in library mathcomp.classical.boolp, line 952, characters 11-16
 ">meetf</a></span><span class="id"> </span><span id="f:636" class="id"><a name="f:636" class="">f</a></span><span class="id"> </span><span id="g:637" class="id"><a name="g:637" class="">g</a></span><span class="id"> :=</span><span class="gallina-kwd"> fun</span><span class="id"> </span><span id="x:638" class="id"><a name="x:638" class="">x</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.meet">Order</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.meet">meet</a></span> (<span class="id"><a href="mathcomp.classical.boolp.html#f:636">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#x:638">x</a></span>) (<span class="id"><a href="mathcomp.classical.boolp.html#g:637">g</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#x:638">x</a></span>).<br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="FunOrder.joinf" class="id"><a name="FunOrder.joinf" class="" title="FunOrder.joinf :
-forall [aT : Type] [d : disp_t] [T : latticeType d],
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d],
 (aT -> T) -> (aT -> T) -> aT -> T
 
 FunOrder.joinf is not universe polymorphic
-Arguments FunOrder.joinf [aT]%type_scope [d T] (f g)%function_scope x
+Arguments FunOrder.joinf [aT]%_type_scope [d T] (f g)%_function_scope x
 FunOrder.joinf is transparent
 Expands to: Constant mathcomp.classical.boolp.FunOrder.joinf
 Declared in library mathcomp.classical.boolp, line 953, characters 11-16
 ">joinf</a></span><span class="id"> </span><span id="f:639" class="id"><a name="f:639" class="">f</a></span><span class="id"> </span><span id="g:640" class="id"><a name="g:640" class="">g</a></span><span class="id"> :=</span><span class="gallina-kwd"> fun</span><span class="id"> </span><span id="x:641" class="id"><a name="x:641" class="">x</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.join">Order</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.join">join</a></span> (<span class="id"><a href="mathcomp.classical.boolp.html#f:639">f</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#x:641">x</a></span>) (<span class="id"><a href="mathcomp.classical.boolp.html#g:640">g</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#x:641">x</a></span>).<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.meetfC" class="id"><a name="FunOrder.meetfC" class="" title="FunOrder.meetfC :
-forall [aT : Type] [d : disp_t] [T : latticeType d],
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d],
 commutative (FunOrder.meetf (T:=T))
 
 FunOrder.meetfC is not universe polymorphic
-Arguments FunOrder.meetfC [aT]%type_scope [d T] x y
+Arguments FunOrder.meetfC [aT]%_type_scope [d T] x y
 FunOrder.meetfC is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.meetfC
 Declared in library mathcomp.classical.boolp, line 955, characters 6-12
@@ -3487,11 +3514,11 @@ Declared in library mathcomp.classical.boolp, line 955, characters 6-12
 <span class="id"> move=&gt;</span><span class="id"> f</span><span class="id"> g;</span><span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> x;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.MeetTheory.meetC">meetC</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.joinfC" class="id"><a name="FunOrder.joinfC" class="" title="FunOrder.joinfC :
-forall [aT : Type] [d : disp_t] [T : latticeType d],
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d],
 commutative (FunOrder.joinf (T:=T))
 
 FunOrder.joinfC is not universe polymorphic
-Arguments FunOrder.joinfC [aT]%type_scope [d T] x y
+Arguments FunOrder.joinfC [aT]%_type_scope [d T] x y
 FunOrder.joinfC is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.joinfC
 Declared in library mathcomp.classical.boolp, line 958, characters 6-12
@@ -3502,11 +3529,11 @@ Declared in library mathcomp.classical.boolp, line 958, characters 6-12
 <span class="id"> move=&gt;</span><span class="id"> f</span><span class="id"> g;</span><span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> x;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.JoinTheory.joinC">joinC</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.meetfA" class="id"><a name="FunOrder.meetfA" class="" title="FunOrder.meetfA :
-forall [aT : Type] [d : disp_t] [T : latticeType d],
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d],
 associative (FunOrder.meetf (T:=T))
 
 FunOrder.meetfA is not universe polymorphic
-Arguments FunOrder.meetfA [aT]%type_scope [d T] x y z
+Arguments FunOrder.meetfA [aT]%_type_scope [d T] x y z
 FunOrder.meetfA is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.meetfA
 Declared in library mathcomp.classical.boolp, line 961, characters 6-12
@@ -3517,11 +3544,11 @@ Declared in library mathcomp.classical.boolp, line 961, characters 6-12
 <span class="id"> move=&gt;</span><span class="id"> f</span><span class="id"> g</span><span class="id"> h;</span><span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> x;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.MeetTheory.meetA">meetA</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.joinfA" class="id"><a name="FunOrder.joinfA" class="" title="FunOrder.joinfA :
-forall [aT : Type] [d : disp_t] [T : latticeType d],
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d],
 associative (FunOrder.joinf (T:=T))
 
 FunOrder.joinfA is not universe polymorphic
-Arguments FunOrder.joinfA [aT]%type_scope [d T] x y z
+Arguments FunOrder.joinfA [aT]%_type_scope [d T] x y z
 FunOrder.joinfA is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.joinfA
 Declared in library mathcomp.classical.boolp, line 964, characters 6-12
@@ -3532,11 +3559,11 @@ Declared in library mathcomp.classical.boolp, line 964, characters 6-12
 <span class="id"> move=&gt;</span><span class="id"> f</span><span class="id"> g</span><span class="id"> h;</span><span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> x;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.JoinTheory.joinA">joinA</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.joinfKI" class="id"><a name="FunOrder.joinfKI" class="" title="FunOrder.joinfKI :
-forall [aT : Type] [d : disp_t] [T : latticeType d] (g f : aT -> T),
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d] (g f : aT -> T),
 FunOrder.meetf (T:=T) f (FunOrder.joinf (T:=T) f g) = f
 
 FunOrder.joinfKI is not universe polymorphic
-Arguments FunOrder.joinfKI [aT]%type_scope [d T] (g f)%function_scope
+Arguments FunOrder.joinfKI [aT]%_type_scope [d T] (g f)%_function_scope
 FunOrder.joinfKI is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.joinfKI
 Declared in library mathcomp.classical.boolp, line 967, characters 6-13
@@ -3547,11 +3574,11 @@ Declared in library mathcomp.classical.boolp, line 967, characters 6-13
 <span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> x;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.LatticeTheory.joinKI">joinKI</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.meetfKU" class="id"><a name="FunOrder.meetfKU" class="" title="FunOrder.meetfKU :
-forall [aT : Type] [d : disp_t] [T : latticeType d] (g f : aT -> T),
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d] (g f : aT -> T),
 FunOrder.joinf (T:=T) f (FunOrder.meetf (T:=T) f g) = f
 
 FunOrder.meetfKU is not universe polymorphic
-Arguments FunOrder.meetfKU [aT]%type_scope [d T] (g f)%function_scope
+Arguments FunOrder.meetfKU [aT]%_type_scope [d T] (g f)%_function_scope
 FunOrder.meetfKU is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.meetfKU
 Declared in library mathcomp.classical.boolp, line 970, characters 6-13
@@ -3562,11 +3589,11 @@ Declared in library mathcomp.classical.boolp, line 970, characters 6-13
 <span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> x;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.LatticeTheory.meetKU">meetKU</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="FunOrder.lef_meet" class="id"><a name="FunOrder.lef_meet" class="" title="FunOrder.lef_meet :
-forall [aT : Type] [d : disp_t] [T : latticeType d] (f g : aT -> T),
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d] (f g : aT -> T),
 (f <= g)%O = (FunOrder.meetf (T:=T) f g == f)
 
 FunOrder.lef_meet is not universe polymorphic
-Arguments FunOrder.lef_meet [aT]%type_scope [d T] (f g)%function_scope
+Arguments FunOrder.lef_meet [aT]%_type_scope [d T] (f g)%_function_scope
 FunOrder.lef_meet is opaque
 Expands to: Constant mathcomp.classical.boolp.FunOrder.lef_meet
 Declared in library mathcomp.classical.boolp, line 973, characters 6-14
@@ -3581,10 +3608,10 @@ Qed.</div></details>
 <br/>
 <span id="FunOrder.prod__canonical__Order_Lattice" class="id"><span id="FunOrder.prod__canonical__Order_JoinSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_29" class="id"><span id="FunOrder.prod__canonical__Order_MeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_28" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isJoinSemilattice" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isMeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_factory_25" class="id"><a name="FunOrder.prod__canonical__Order_Lattice" class="" title="FunOrder.prod__canonical__Order_Lattice :
 Type ->
-forall [d : disp_t], latticeType d -> latticeType FunOrder.fun_display
+forall [d : Order.disp_t], latticeType d -> latticeType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_Lattice is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_Lattice aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_Lattice aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_Lattice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_Lattice
@@ -3592,50 +3619,50 @@ Declared in library mathcomp.classical.boolp, line 980, characters 0-134
 ">#[export]</a></span></span></span></span></span></span></span></span><br/>
 <span id="FunOrder.prod__canonical__Order_Lattice" class="id"><span id="FunOrder.prod__canonical__Order_JoinSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_29" class="id"><span id="FunOrder.prod__canonical__Order_MeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_28" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isJoinSemilattice" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isMeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_factory_25" class="id"><a name="FunOrder.prod__canonical__Order_Lattice" class="" title="FunOrder.prod__canonical__Order_Lattice :
 Type ->
-forall [d : disp_t], latticeType d -> latticeType FunOrder.fun_display
+forall [d : Order.disp_t], latticeType d -> latticeType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_Lattice is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_Lattice aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_Lattice aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_Lattice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_Lattice
 Declared in library mathcomp.classical.boolp, line 980, characters 0-134
 ">HB</a></span></span></span></span></span></span></span></span>.<span id="FunOrder.prod__canonical__Order_Lattice" class="id"><span id="FunOrder.prod__canonical__Order_JoinSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_29" class="id"><span id="FunOrder.prod__canonical__Order_MeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_28" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isJoinSemilattice" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isMeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_factory_25" class="id"><a name="FunOrder.prod__canonical__Order_Lattice" class="" title="FunOrder.prod__canonical__Order_Lattice :
 Type ->
-forall [d : disp_t], latticeType d -> latticeType FunOrder.fun_display
+forall [d : Order.disp_t], latticeType d -> latticeType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_Lattice is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_Lattice aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_Lattice aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_Lattice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_Lattice
 Declared in library mathcomp.classical.boolp, line 980, characters 0-134
 ">instance</a></span></span></span></span></span></span></span></span><span class="vernacular"> Definition</span><span id="FunOrder.prod__canonical__Order_Lattice" class="id"><span id="FunOrder.prod__canonical__Order_JoinSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_29" class="id"><span id="FunOrder.prod__canonical__Order_MeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_28" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isJoinSemilattice" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isMeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_factory_25" class="id"><a name="FunOrder.prod__canonical__Order_Lattice" class="" title="FunOrder.prod__canonical__Order_Lattice :
 Type ->
-forall [d : disp_t], latticeType d -> latticeType FunOrder.fun_display
+forall [d : Order.disp_t], latticeType d -> latticeType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_Lattice is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_Lattice aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_Lattice aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_Lattice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_Lattice
 Declared in library mathcomp.classical.boolp, line 980, characters 0-134
 "> _</a></span></span></span></span></span></span></span></span><span id="FunOrder.prod__canonical__Order_Lattice" class="id"><span id="FunOrder.prod__canonical__Order_JoinSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_29" class="id"><span id="FunOrder.prod__canonical__Order_MeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_28" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isJoinSemilattice" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isMeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_factory_25" class="id"><a name="FunOrder.prod__canonical__Order_Lattice" class="" title="FunOrder.prod__canonical__Order_Lattice :
 Type ->
-forall [d : disp_t], latticeType d -> latticeType FunOrder.fun_display
+forall [d : Order.disp_t], latticeType d -> latticeType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_Lattice is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_Lattice aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_Lattice aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_Lattice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_Lattice
 Declared in library mathcomp.classical.boolp, line 980, characters 0-134
 "> :=</a></span></span></span></span></span></span></span></span><span id="FunOrder.prod__canonical__Order_Lattice" class="id"><span id="FunOrder.prod__canonical__Order_JoinSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_29" class="id"><span id="FunOrder.prod__canonical__Order_MeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_mixin_28" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isJoinSemilattice" class="id"><span id="FunOrder.Order_POrder_isLattice__to__Order_POrder_isMeetSemilattice" class="id"><span id="FunOrder.HB_unnamed_factory_25" class="id"><a name="FunOrder.prod__canonical__Order_Lattice" class="" title="FunOrder.prod__canonical__Order_Lattice :
 Type ->
-forall [d : disp_t], latticeType d -> latticeType FunOrder.fun_display
+forall [d : Order.disp_t], latticeType d -> latticeType FunOrder.fun_display
 
 FunOrder.prod__canonical__Order_Lattice is not universe polymorphic
-Arguments FunOrder.prod__canonical__Order_Lattice aT%type_scope [d] T
+Arguments FunOrder.prod__canonical__Order_Lattice aT%_type_scope [d] T
 FunOrder.prod__canonical__Order_Lattice is transparent
 Expands to: Constant
             mathcomp.classical.boolp.FunOrder.prod__canonical__Order_Lattice
@@ -3651,11 +3678,11 @@ Declared in library mathcomp.classical.boolp, line 980, characters 0-134
 <span class="vernacular">Export</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#FunOrder.Exports">FunOrder</a></span>.<span class="vernacular">Exports</span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="lefP" class="id"><a name="lefP" class="" title="lefP :
-forall [aT : Type] [d : disp_t] [T : porderType d] (f g : aT -> T),
+forall [aT : Type] [d : Order.disp_t] [T : porderType d] (f g : aT -> T),
 reflect (forall x : aT, (f x <= g x)%O) (f <= g)%O
 
 lefP is not universe polymorphic
-Arguments lefP [aT]%type_scope [d T] (f g)%function_scope
+Arguments lefP [aT]%_type_scope [d T] (f g)%_function_scope
 lefP is opaque
 Expands to: Constant mathcomp.classical.boolp.lefP
 Declared in library mathcomp.classical.boolp, line 991, characters 6-10
@@ -3667,11 +3694,12 @@ Declared in library mathcomp.classical.boolp, line 991, characters 6-10
 <span class="gallina-kwd"> by</span><span class="id"> apply:</span> (<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#iffP">iffP</a></span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#idP">idP</a></span>)<span class="id"> =&gt;</span><span class="id"> [fg|fg];</span><span class="id"> [exact/</span><span class="id"><a href="mathcomp.classical.boolp.html#asboolP">asboolP</a></span><span class="id"> |</span><span class="id"> exact/</span><span class="id"><a href="mathcomp.classical.boolp.html#asboolP">asboolP</a></span><span class="id">]</span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="meetfE" class="id"><a name="meetfE" class="" title="meetfE :
-forall [aT : Type] [d : disp_t] [T : latticeType d] (f g : aT -> T) (x : aT),
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d] 
+  (f g : aT -> T) (x : aT),
 (f `&` g)%O x = (f x `&` g x)%O
 
 meetfE is not universe polymorphic
-Arguments meetfE [aT]%type_scope [d T] (f g)%function_scope x
+Arguments meetfE [aT]%_type_scope [d T] (f g)%_function_scope x
 meetfE is opaque
 Expands to: Constant mathcomp.classical.boolp.meetfE
 Declared in library mathcomp.classical.boolp, line 995, characters 6-12
@@ -3683,11 +3711,12 @@ Declared in library mathcomp.classical.boolp, line 995, characters 6-12
 <span class="gallina-kwd"> by</span><span class="id"> []</span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="joinfE" class="id"><a name="joinfE" class="" title="joinfE :
-forall [aT : Type] [d : disp_t] [T : latticeType d] (f g : aT -> T) (x : aT),
+forall [aT : Type] [d : Order.disp_t] [T : latticeType d] 
+  (f g : aT -> T) (x : aT),
 (f `|` g)%O x = (f x `|` g x)%O
 
 joinfE is not universe polymorphic
-Arguments joinfE [aT]%type_scope [d T] (f g)%function_scope x
+Arguments joinfE [aT]%_type_scope [d T] (f g)%_function_scope x
 joinfE is opaque
 Expands to: Constant mathcomp.classical.boolp.joinfE
 Declared in library mathcomp.classical.boolp, line 999, characters 6-12
@@ -3702,7 +3731,7 @@ Declared in library mathcomp.classical.boolp, line 999, characters 6-12
 forall {T : Type} (f : T -> T) (n : nat), iter n.+1 f = f \o iter n f
 
 iterfS is not universe polymorphic
-Arguments iterfS {T}%type_scope f%function_scope n%nat_scope
+Arguments iterfS {T}%_type_scope f%_function_scope n%_nat_scope
 iterfS is opaque
 Expands to: Constant mathcomp.classical.boolp.iterfS
 Declared in library mathcomp.classical.boolp, line 1003, characters 6-12
@@ -3716,7 +3745,7 @@ Declared in library mathcomp.classical.boolp, line 1003, characters 6-12
 forall {T : Type} (f : T -> T) (n : nat), iter n.+1 f = iter n f \o f
 
 iterfSr is not universe polymorphic
-Arguments iterfSr {T}%type_scope f%function_scope n%nat_scope
+Arguments iterfSr {T}%_type_scope f%_function_scope n%_nat_scope
 iterfSr is opaque
 Expands to: Constant mathcomp.classical.boolp.iterfSr
 Declared in library mathcomp.classical.boolp, line 1006, characters 6-13
@@ -3729,7 +3758,7 @@ Declared in library mathcomp.classical.boolp, line 1006, characters 6-13
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="iter0" class="id"><a name="iter0" class="" title="iter0 : forall {T : Type} (f : T -> T), iter 0 f = id
 
 iter0 is not universe polymorphic
-Arguments iter0 {T}%type_scope f%function_scope
+Arguments iter0 {T}%_type_scope f%_function_scope
 iter0 is opaque
 Expands to: Constant mathcomp.classical.boolp.iter0
 Declared in library mathcomp.classical.boolp, line 1009, characters 6-11
@@ -3745,7 +3774,7 @@ Declared in library mathcomp.classical.boolp, line 1009, characters 6-11
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="inhabitedE" class="id"><a name="inhabitedE" class="" title="inhabitedE : forall T : Type, inhabited T = (exists _ : T, True)
 
 inhabitedE is not universe polymorphic
-Arguments inhabitedE T%type_scope
+Arguments inhabitedE T%_type_scope
 inhabitedE is opaque
 Expands to: Constant mathcomp.classical.boolp.inhabitedE
 Declared in library mathcomp.classical.boolp, line 1015, characters 6-16
@@ -3758,7 +3787,7 @@ Declared in library mathcomp.classical.boolp, line 1015, characters 6-16
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="inhabited_witness" class="id"><a name="inhabited_witness" class="" title="inhabited_witness : forall [T : Type], inhabited T -> T
 
 inhabited_witness is not universe polymorphic
-Arguments inhabited_witness [T]%type_scope _
+Arguments inhabited_witness [T]%_type_scope _
 inhabited_witness is opaque
 Expands to: Constant mathcomp.classical.boolp.inhabited_witness
 Declared in library mathcomp.classical.boolp, line 1018, characters 6-23
@@ -3773,7 +3802,7 @@ Declared in library mathcomp.classical.boolp, line 1018, characters 6-23
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="uncurryK" class="id"><a name="uncurryK" class="" title="uncurryK : forall {X Y Z : Type}, cancel uncurry curry
 
 uncurryK is not universe polymorphic
-Arguments uncurryK {X Y Z}%type_scope x
+Arguments uncurryK {X Y Z}%_type_scope x
 uncurryK is opaque
 Expands to: Constant mathcomp.classical.boolp.uncurryK
 Declared in library mathcomp.classical.boolp, line 1023, characters 6-14
@@ -3786,7 +3815,7 @@ Declared in library mathcomp.classical.boolp, line 1023, characters 6-14
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="curryK" class="id"><a name="curryK" class="" title="curryK : forall {X Y Z : Type}, cancel curry uncurry
 
 curryK is not universe polymorphic
-Arguments curryK {X Y Z}%type_scope x
+Arguments curryK {X Y Z}%_type_scope x
 curryK is opaque
 Expands to: Constant mathcomp.classical.boolp.curryK
 Declared in library mathcomp.classical.boolp, line 1026, characters 6-12

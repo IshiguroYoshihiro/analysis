@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -239,7 +254,7 @@
 <span class="vernacular">Definition</span><span class="id"> </span><span id="gauss_fun" class="id"><a name="gauss_fun" class="" title="gauss_fun : forall {R : realType}, R -> R
 
 gauss_fun is not universe polymorphic
-Arguments gauss_fun {R} x%ring_scope
+Arguments gauss_fun {R} x%_ring_scope
 gauss_fun is transparent
 Expands to: Constant mathcomp.analysis.gauss_integral.gauss_fun
 Declared in
@@ -249,7 +264,7 @@ library mathcomp.analysis.gauss_integral, line 28, characters 11-20
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="gauss_fun_ge0" class="id"><a name="gauss_fun_ge0" class="" title="gauss_fun_ge0 : forall {R : realType} (x : R), (0 <= gauss_fun x)%R
 
 gauss_fun_ge0 is not universe polymorphic
-Arguments gauss_fun_ge0 {R} x%ring_scope
+Arguments gauss_fun_ge0 {R} x%_ring_scope
 gauss_fun_ge0 is opaque
 Expands to: Constant mathcomp.analysis.gauss_integral.gauss_fun_ge0
 Declared in
@@ -263,7 +278,7 @@ library mathcomp.analysis.gauss_integral, line 30, characters 6-19
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="gauss_fun_le1" class="id"><a name="gauss_fun_le1" class="" title="gauss_fun_le1 : forall {R : realType} (x : R), (gauss_fun x <= 1)%R
 
 gauss_fun_le1 is not universe polymorphic
-Arguments gauss_fun_le1 {R} x%ring_scope
+Arguments gauss_fun_le1 {R} x%_ring_scope
 gauss_fun_le1 is opaque
 Expands to: Constant mathcomp.analysis.gauss_integral.gauss_fun_le1
 Declared in
@@ -275,13 +290,15 @@ library mathcomp.analysis.gauss_integral, line 32, characters 6-19
 <span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> -</span><span class="id"><a href="mathcomp.analysis.exp.html#expR0">expR0</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.exp.html#ler_expR">ler_expR</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.lerNl">lerNl</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#GRing.Theory.oppr0">oppr0</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.sqr_ge0">sqr_ge0</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_gauss_fun" class="id"><a name="cvg_gauss_fun" class="" title="cvg_gauss_fun :
-forall {R : realType}, (gauss_fun x @[x --> +oo%R] --> (0%R : R))%classic
+forall {R : realType},
+filter.cvg_to (filter.nbhs (filter.fmap [eta gauss_fun] (filter.nbhs +oo%R)))
+  (filter.nbhs (0%R : R))
 
 cvg_gauss_fun is not universe polymorphic
 Expanded type for implicit arguments
 cvg_gauss_fun :
 forall {R : realType} [t : set R],
-nbhs (0%R : R) t ->
+filter.nbhs (0%R : R) t ->
 exists M : R,
   M \is Num.real /\
   (forall x : R, (M < x)%R -> ([eta gauss_fun] @^-1` t)%classic x)
@@ -339,15 +356,24 @@ library mathcomp.analysis.gauss_integral, line 41, characters 6-26
 <div class="proofscript">
 <span class="gallina-kwd"> by</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurableT_comp">measurableT_comp</a></span><span class="id"> =&gt;</span><span class="id"> //;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_function.html#measurableT_comp">measurableT_comp</a></span>. Qed.</div></details>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="continuous_gauss_fun" class="id"><a name="continuous_gauss_fun" class="" title="continuous_gauss_fun : forall {R : realType}, continuous gauss_fun
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="continuous_gauss_fun" class="id"><a name="continuous_gauss_fun" class="" title="continuous_gauss_fun :
+forall {R : realType}
+  [x : filter.Nbhs.sort
+         (numFieldTopology.Real_sort__canonical__filter_Nbhs R)],
+filter.continuous_at
+  (T:=numFieldTopology.Real_sort__canonical__filter_Nbhs R)
+  (U:=numFieldTopology.Real_sort__canonical__filter_Nbhs R) x gauss_fun
 
 continuous_gauss_fun is not universe polymorphic
 Expanded type for implicit arguments
 continuous_gauss_fun :
 forall {R : realType}
-  [x : numFieldTopology.Real_sort__canonical__filter_Nbhs R]
-  [t : set (numFieldTopology.Real_sort__canonical__filter_Nbhs R)],
-nbhs (gauss_fun x) t ->
+  [x : filter.Nbhs.sort
+         (numFieldTopology.Real_sort__canonical__filter_Nbhs R)]
+  [t : set
+         (filter.Nbhs.sort
+            (numFieldTopology.Real_sort__canonical__filter_Nbhs R))],
+filter.nbhs (gauss_fun x) t ->
 exists2 i : R,
   [set e | (0 < e)%R]%classic i &
   (ball_ [eta normr] x i `<=` gauss_fun @^-1` t)%classic
@@ -398,7 +424,7 @@ library mathcomp.analysis.gauss_integral, line 63, characters 11-27
 <span class="vernacular">Definition</span><span class="id"> </span><span id="gauss_integral_proof.integral0_gauss" class="id"><a name="gauss_integral_proof.integral0_gauss" class="" title="gauss_integral_proof.integral0_gauss : forall {R : realType}, R -> R
 
 gauss_integral_proof.integral0_gauss is not universe polymorphic
-Arguments gauss_integral_proof.integral0_gauss {R} x%ring_scope
+Arguments gauss_integral_proof.integral0_gauss {R} x%_ring_scope
 gauss_integral_proof.integral0_gauss is transparent
 Expands to: Constant
             mathcomp.analysis.gauss_integral.gauss_integral_proof.integral0_gauss
@@ -411,7 +437,7 @@ forall {R : realType} (x : R),
 (0 <= gauss_integral_proof.integral0_gauss x)%R
 
 gauss_integral_proof.integral0_gauss_ge0 is not universe polymorphic
-Arguments gauss_integral_proof.integral0_gauss_ge0 {R} x%ring_scope
+Arguments gauss_integral_proof.integral0_gauss_ge0 {R} x%_ring_scope
 gauss_integral_proof.integral0_gauss_ge0 is opaque
 Expands to: Constant
             mathcomp.analysis.gauss_integral.gauss_integral_proof.integral0_gauss_ge0
@@ -437,7 +463,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="gauss_integral_proof.u" class="id"><a name="gauss_integral_proof.u" class="" title="gauss_integral_proof.u : forall {R : realType}, R -> R -> R
 
 gauss_integral_proof.u is not universe polymorphic
-Arguments gauss_integral_proof.u {R} (x t)%ring_scope
+Arguments gauss_integral_proof.u {R} (x t)%_ring_scope
 gauss_integral_proof.u is transparent
 Expands to: Constant mathcomp.analysis.gauss_integral.gauss_integral_proof.u
 Declared in
@@ -509,7 +535,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="gauss_integral_proof.integral01_u" class="id"><a name="gauss_integral_proof.integral01_u" class="" title="gauss_integral_proof.integral01_u : forall {R : realType}, R -> R
 
 gauss_integral_proof.integral01_u is not universe polymorphic
-Arguments gauss_integral_proof.integral01_u {R} x%ring_scope
+Arguments gauss_integral_proof.integral01_u {R} x%_ring_scope
 gauss_integral_proof.integral01_u is transparent
 Expands to: Constant
             mathcomp.analysis.gauss_integral.gauss_integral_proof.integral01_u
@@ -620,7 +646,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="gauss_integral_proof.h" class="id"><a name="gauss_integral_proof.h" class="" title="gauss_integral_proof.h : forall {R : realType}, R -> R
 
 gauss_integral_proof.h is not universe polymorphic
-Arguments gauss_integral_proof.h {R} x%ring_scope
+Arguments gauss_integral_proof.h {R} x%_ring_scope
 gauss_integral_proof.h is transparent
 Expands to: Constant mathcomp.analysis.gauss_integral.gauss_integral_proof.h
 Declared in
@@ -726,14 +752,18 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="gauss_integral_proof.cvg_integral0_gauss_sqr" class="id"><a name="gauss_integral_proof.cvg_integral0_gauss_sqr" class="" title="gauss_integral_proof.cvg_integral0_gauss_sqr :
 forall {R : realType},
-((gauss_integral_proof.integral0_gauss x ^+ 2)%R @[x --> +oo%R] --> 
- (pi / 4)%R)%classic
+filter.cvg_to
+  (filter.nbhs
+     (filter.fmap
+        (fun x : R => (gauss_integral_proof.integral0_gauss x ^+ 2)%R)
+        (filter.nbhs +oo%R)))
+  (filter.nbhs (pi / 4)%R)
 
 gauss_integral_proof.cvg_integral0_gauss_sqr is not universe polymorphic
 Expanded type for implicit arguments
 gauss_integral_proof.cvg_integral0_gauss_sqr :
 forall {R : realType} [t : set R],
-nbhs (pi / 4)%R t ->
+filter.nbhs (pi / 4)%R t ->
 exists M : R,
   M \is Num.real /\
   (forall x : R,

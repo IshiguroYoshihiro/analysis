@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -228,7 +243,7 @@ Natural numbers `nat` are endowed with the structure of topology.
 <span class="vernacular">Local</span><span class="vernacular"> Open</span><span class="vernacular"> Scope</span><span class="id"> ring_scope</span>.<br/>
 <br/>
 <span id="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_PointedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_5" class="id"><span id="Datatypes_nat__canonical__filter_PointedFiltered" class="id"><span id="Datatypes_nat__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_4" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_1" class="id"><a name="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="" title="Datatypes_nat__canonical__order_topology_POrderedNbhs :
-POrderedNbhs.type Order.NatOrder.nat_display
+POrderedNbhs.type NatOrder.nat_display
 
 Datatypes_nat__canonical__order_topology_POrderedNbhs is not universe polymorphic
 Datatypes_nat__canonical__order_topology_POrderedNbhs is transparent
@@ -237,7 +252,7 @@ Expands to: Constant
 Declared in
 library mathcomp.analysis.topology_theory.nat_topology, line 19, characters 0-63
 ">HB</a></span></span></span></span></span></span></span></span></span></span>.<span id="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_PointedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_5" class="id"><span id="Datatypes_nat__canonical__filter_PointedFiltered" class="id"><span id="Datatypes_nat__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_4" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_1" class="id"><a name="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="" title="Datatypes_nat__canonical__order_topology_POrderedNbhs :
-POrderedNbhs.type Order.NatOrder.nat_display
+POrderedNbhs.type NatOrder.nat_display
 
 Datatypes_nat__canonical__order_topology_POrderedNbhs is not universe polymorphic
 Datatypes_nat__canonical__order_topology_POrderedNbhs is transparent
@@ -246,7 +261,7 @@ Expands to: Constant
 Declared in
 library mathcomp.analysis.topology_theory.nat_topology, line 19, characters 0-63
 ">instance</a></span></span></span></span></span></span></span></span></span></span><span class="vernacular"> Definition</span><span id="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_PointedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_5" class="id"><span id="Datatypes_nat__canonical__filter_PointedFiltered" class="id"><span id="Datatypes_nat__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_4" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_1" class="id"><a name="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="" title="Datatypes_nat__canonical__order_topology_POrderedNbhs :
-POrderedNbhs.type Order.NatOrder.nat_display
+POrderedNbhs.type NatOrder.nat_display
 
 Datatypes_nat__canonical__order_topology_POrderedNbhs is not universe polymorphic
 Datatypes_nat__canonical__order_topology_POrderedNbhs is transparent
@@ -255,7 +270,7 @@ Expands to: Constant
 Declared in
 library mathcomp.analysis.topology_theory.nat_topology, line 19, characters 0-63
 "> _</a></span></span></span></span></span></span></span></span></span></span><span id="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_PointedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_5" class="id"><span id="Datatypes_nat__canonical__filter_PointedFiltered" class="id"><span id="Datatypes_nat__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_4" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_1" class="id"><a name="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="" title="Datatypes_nat__canonical__order_topology_POrderedNbhs :
-POrderedNbhs.type Order.NatOrder.nat_display
+POrderedNbhs.type NatOrder.nat_display
 
 Datatypes_nat__canonical__order_topology_POrderedNbhs is not universe polymorphic
 Datatypes_nat__canonical__order_topology_POrderedNbhs is transparent
@@ -264,7 +279,7 @@ Expands to: Constant
 Declared in
 library mathcomp.analysis.topology_theory.nat_topology, line 19, characters 0-63
 "> :=</a></span></span></span></span></span></span></span></span></span></span><span id="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_PointedNbhs" class="id"><span id="Datatypes_nat__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_5" class="id"><span id="Datatypes_nat__canonical__filter_PointedFiltered" class="id"><span id="Datatypes_nat__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_4" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_1" class="id"><a name="Datatypes_nat__canonical__order_topology_POrderedNbhs" class="" title="Datatypes_nat__canonical__order_topology_POrderedNbhs :
-POrderedNbhs.type Order.NatOrder.nat_display
+POrderedNbhs.type NatOrder.nat_display
 
 Datatypes_nat__canonical__order_topology_POrderedNbhs is not universe polymorphic
 Datatypes_nat__canonical__order_topology_POrderedNbhs is transparent
@@ -331,16 +346,16 @@ library mathcomp.analysis.topology_theory.nat_topology, line 20, characters 0-60
 <span class="id">rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.discrete_topology.html#nbhs_principalE">nbhs_principalE</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#eqEsubset">eqEsubset</a></span><span class="id">;</span><span class="id"> split=&gt;</span><span class="id"> U;</span><span class="id"> first</span><span class="id"> last</span>.<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> case</span><span class="id"> =&gt;</span><span class="id"> V</span><span class="id"> [_</span><span class="id"> Vb]</span><span class="id"> VU;</span><span class="id"> apply/</span><span class="id"><a href="mathcomp.classical.filter.html#principal_filterP">principal_filterP</a></span><span class="id">/VU;</span><span class="id"> apply:</span><span class="id"> Vb</span>.<br/>
 <span class="id">move/</span><span class="id"><a href="mathcomp.classical.filter.html#principal_filterP">principal_filterP</a></span><span class="id">;</span><span class="id"> case:</span><span class="id"> n</span>.<br/>
-&nbsp;&nbsp;<span class="id">move=&gt;</span><span class="id"> U0;</span><span class="gallina-kwd"> exists</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#f7d0eaaef362bfb530a5cbf036db1453">`]-oo,</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#f7d0eaaef362bfb530a5cbf036db1453"> </a></span><span class="id">1</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#f7d0eaaef362bfb530a5cbf036db1453">[</a></span><span class="id">;</span><span class="id"> first</span><span class="id"> split</span><span class="id"> =&gt;</span><span class="id"> //;</span><span class="id"> first</span><span class="gallina-kwd"> by</span><span class="id"> left</span>.<br/>
+&nbsp;&nbsp;<span class="id">move=&gt;</span><span class="id"> U0;</span><span class="gallina-kwd"> exists</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#f7d0eaaef362bfb530a5cbf036db1453">`]-oo,</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#f7d0eaaef362bfb530a5cbf036db1453"> </a></span><span class="id">1</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#f7d0eaaef362bfb530a5cbf036db1453">[</a></span><span class="id">;</span><span class="id"> first</span><span class="id"> split</span><span class="id"> =&gt;</span><span class="id"> //</span>.<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> move=&gt;</span><span class="id"> r</span><span class="id"> /=;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#in_itv">in_itv</a></span><span class="id"> /=;</span><span class="id"> case:</span><span class="id"> r</span>.<br/>
-<span class="id">move=&gt;</span><span class="id"> n</span><span class="id"> USn;</span><span class="gallina-kwd"> exists</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#ebff9f8c4fe58806999ff1c12ccee445">`]</a></span><span class="id">n</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#ebff9f8c4fe58806999ff1c12ccee445">,</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#ebff9f8c4fe58806999ff1c12ccee445"> </a></span><span class="id">n</span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bc63483175fac06bcd5541a5e9093b18">+2</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#ebff9f8c4fe58806999ff1c12ccee445">[</a></span><span class="id">;</span><span class="id"> first</span><span class="id"> split</span><span class="id"> =&gt;</span><span class="id"> //;</span><span class="id"> first</span><span class="gallina-kwd"> by</span><span class="id"> right</span>.<br/>
+<span class="id">move=&gt;</span><span class="id"> n</span><span class="id"> USn;</span><span class="gallina-kwd"> exists</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#ebff9f8c4fe58806999ff1c12ccee445">`]</a></span><span class="id">n</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#ebff9f8c4fe58806999ff1c12ccee445">,</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#ebff9f8c4fe58806999ff1c12ccee445"> </a></span><span class="id">n</span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bc63483175fac06bcd5541a5e9093b18">+2</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#ebff9f8c4fe58806999ff1c12ccee445">[</a></span><span class="id">;</span><span class="id"> first</span><span class="id"> split</span><span class="id"> =&gt;</span><span class="id"> //</span>.<br/>
 &nbsp;&nbsp;<span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#in_itv">in_itv</a></span><span class="id">;</span><span class="id"> apply/</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#andP">andP</a></span><span class="id">;split</span><span class="id"> =&gt;</span><span class="id"> //=;</span><span class="id"> rewrite</span><span class="id"> /</span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.preorder#Order.lt">Order</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.order.preorder#Order.lt">lt</a></span><span class="id"> //=</span>.<br/>
 <span class="id">move=&gt;</span><span class="id"> r</span><span class="id"> /=;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.interval.html#in_itv">in_itv</a></span><span class="id"> /=</span><span class="id"> =&gt;</span><span class="id"> nr2;</span><span class="id"> suff:</span><span class="id"> r</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id">n</span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bda89d73ec4a8f23ae92b565ffb5aaa6">+1</a></span><span class="gallina-kwd"> by</span><span class="id"> move=&gt;</span><span class="id"> -&gt;</span>.<br/>
 <span class="id">exact/</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#esym">esym</a></span><span class="id">/</span><span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_anti">le_anti</a></span>.<br/>
 Qed.</div></details>
 <br/>
 <span id="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__discrete_topology_DiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderTopological" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderNbhs" class="id"><span id="HB_unnamed_factory_10" class="id"><a name="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="" title="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology :
-pdiscreteOrderTopologicalType Order.NatOrder.nat_display
+pdiscreteOrderTopologicalType NatOrder.nat_display
 
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is not universe polymorphic
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is transparent
@@ -349,7 +364,7 @@ Expands to: Constant
 Declared in
 library mathcomp.analysis.topology_theory.nat_topology, line 38, characters 0-66
 ">HB</a></span></span></span></span></span>.<span id="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__discrete_topology_DiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderTopological" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderNbhs" class="id"><span id="HB_unnamed_factory_10" class="id"><a name="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="" title="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology :
-pdiscreteOrderTopologicalType Order.NatOrder.nat_display
+pdiscreteOrderTopologicalType NatOrder.nat_display
 
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is not universe polymorphic
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is transparent
@@ -358,7 +373,7 @@ Expands to: Constant
 Declared in
 library mathcomp.analysis.topology_theory.nat_topology, line 38, characters 0-66
 ">instance</a></span></span></span></span></span><span class="vernacular"> Definition</span><span id="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__discrete_topology_DiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderTopological" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderNbhs" class="id"><span id="HB_unnamed_factory_10" class="id"><a name="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="" title="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology :
-pdiscreteOrderTopologicalType Order.NatOrder.nat_display
+pdiscreteOrderTopologicalType NatOrder.nat_display
 
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is not universe polymorphic
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is transparent
@@ -367,7 +382,7 @@ Expands to: Constant
 Declared in
 library mathcomp.analysis.topology_theory.nat_topology, line 38, characters 0-66
 "> _</a></span></span></span></span></span><span id="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__discrete_topology_DiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderTopological" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderNbhs" class="id"><span id="HB_unnamed_factory_10" class="id"><a name="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="" title="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology :
-pdiscreteOrderTopologicalType Order.NatOrder.nat_display
+pdiscreteOrderTopologicalType NatOrder.nat_display
 
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is not universe polymorphic
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is transparent
@@ -376,7 +391,7 @@ Expands to: Constant
 Declared in
 library mathcomp.analysis.topology_theory.nat_topology, line 38, characters 0-66
 "> :=</a></span></span></span></span></span><span id="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__discrete_topology_DiscreteOrderTopology" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderTopological" class="id"><span id="Datatypes_nat__canonical__order_topology_OrderNbhs" class="id"><span id="HB_unnamed_factory_10" class="id"><a name="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology" class="" title="Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology :
-pdiscreteOrderTopologicalType Order.NatOrder.nat_display
+pdiscreteOrderTopologicalType NatOrder.nat_display
 
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is not universe polymorphic
 Datatypes_nat__canonical__discrete_topology_PointedDiscreteOrderTopology is transparent
@@ -494,10 +509,13 @@ library mathcomp.analysis.topology_theory.nat_topology, line 40, characters 0-94
 "> numDomainType}</a></span></span></span></span></span></span></span></span></span></span></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="id">@</span><span class="id"><a href="mathcomp.analysis.topology_theory.discrete_topology.html#DiscretePseudoMetric_ofUniform.Build">DiscretePseudoMetric_ofUniform</a></span>.<span class="id"><a href="mathcomp.analysis.topology_theory.discrete_topology.html#DiscretePseudoMetric_ofUniform.Build">Build</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#R:4">R</a></span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#nat">nat</a></span>.<br/>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="nbhs_infty_gt" class="id"><a name="nbhs_infty_gt" class="" title="nbhs_infty_gt : forall N : nat, \forall n \near \oo%classic, N < n
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="nbhs_infty_gt" class="id"><a name="nbhs_infty_gt" class="" title="nbhs_infty_gt :
+forall N : nat,
+filter.prop_near1 filter.eventually (P:=fun n : nat => N < n)
+  (inPhantom (forall n : nat, N < n))
 
 nbhs_infty_gt is not universe polymorphic
-Arguments nbhs_infty_gt N%nat_scope
+Arguments nbhs_infty_gt N%_nat_scope
 nbhs_infty_gt is opaque
 Expands to: Constant
             mathcomp.analysis.topology_theory.nat_topology.nbhs_infty_gt
@@ -510,10 +528,13 @@ library mathcomp.analysis.topology_theory.nat_topology, line 43, characters 6-19
 <span class="gallina-kwd"> by</span><span class="gallina-kwd"> exists</span><span class="id"> N</span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#bda89d73ec4a8f23ae92b565ffb5aaa6">+1</a></span>. Qed.</div></details>
 <span class="id">#[global]</span><span class="vernacular"> Hint</span><span class="id"> Resolve</span><span class="id"> nbhs_infty_gt</span><span class="id"> :</span><span class="id"> core</span>.<br/>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="nbhs_infty_ge" class="id"><a name="nbhs_infty_ge" class="" title="nbhs_infty_ge : forall N : nat, \forall n \near \oo%classic, N <= n
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="nbhs_infty_ge" class="id"><a name="nbhs_infty_ge" class="" title="nbhs_infty_ge :
+forall N : nat,
+filter.prop_near1 filter.eventually (P:=fun n : nat => N <= n)
+  (inPhantom (forall n : nat, N <= n))
 
 nbhs_infty_ge is not universe polymorphic
-Arguments nbhs_infty_ge N%nat_scope
+Arguments nbhs_infty_ge N%_nat_scope
 nbhs_infty_ge is opaque
 Expands to: Constant
             mathcomp.analysis.topology_theory.nat_topology.nbhs_infty_ge
@@ -526,10 +547,12 @@ library mathcomp.analysis.topology_theory.nat_topology, line 47, characters 6-19
 <span class="gallina-kwd"> by</span><span class="gallina-kwd"> exists</span><span class="id"> N</span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="nbhs_infty_ger" class="id"><a name="nbhs_infty_ger" class="" title="nbhs_infty_ger :
-forall {R : realType} (r : R), \forall n \near \oo%classic, (r <= n%:R)%R
+forall {R : realType} (r : R),
+filter.prop_near1 filter.eventually (P:=fun n : nat => (r <= n%:R)%R)
+  (inPhantom (forall n : nat, (r <= n%:R)%R))
 
 nbhs_infty_ger is not universe polymorphic
-Arguments nbhs_infty_ger {R} r%ring_scope
+Arguments nbhs_infty_ger {R} r%_ring_scope
 nbhs_infty_ger is opaque
 Expands to: Constant
             mathcomp.analysis.topology_theory.nat_topology.nbhs_infty_ger
@@ -544,10 +567,14 @@ library mathcomp.analysis.topology_theory.nat_topology, line 50, characters 6-20
 <span class="gallina-kwd">by</span><span class="id"> rewrite</span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.order.order#Order.POrderTheory.le_trans">le_trans</a></span> (<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.archimedean.html#Num.Theory.ceil_ge">ceil_ge</a></span><span class="id"> _</span>))<span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#natr_absz">natr_absz</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssrint.html#ler_int">ler_int</a></span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.num_theory.numdomain.html#Num.Theory.ler_norm">ler_norm</a></span>.<br/>
 Qed.</div></details>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_addnl" class="id"><a name="cvg_addnl" class="" title="cvg_addnl : forall N : nat, (N + x @[x --> \oo] --> \oo)%classic
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_addnl" class="id"><a name="cvg_addnl" class="" title="cvg_addnl :
+forall N : nat,
+filter.cvg_to
+  (filter.nbhs (filter.fmap (addn N) (filter.nbhs filter.eventually)))
+  (filter.nbhs filter.eventually)
 
 cvg_addnl is not universe polymorphic
-Arguments cvg_addnl N%nat_scope t _
+Arguments cvg_addnl N%_nat_scope t _
 cvg_addnl is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvg_addnl
 Declared in
@@ -559,10 +586,14 @@ library mathcomp.analysis.topology_theory.nat_topology, line 57, characters 6-15
 <span class="gallina-kwd">by</span><span class="id"> move=&gt;</span><span class="id"> P</span><span class="id"> [n</span><span class="id"> _</span><span class="id"> Pn];</span><span class="gallina-kwd"> exists</span> (<span class="id">n</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#::nat_scope:x_'-'_x"> -</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#::nat_scope:x_'-'_x"> </a></span><span class="id">N</span>)<span class="id">%N</span><span class="id"> =&gt;</span><span class="id"> //</span><span class="id"> m;</span><span class="id"> rewrite</span><span class="id"> /=</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#leq_subLR">leq_subLR</a></span><span class="id"> =&gt;</span><span class="id"> /Pn</span>.<br/>
 Qed.</div></details>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_addnr" class="id"><a name="cvg_addnr" class="" title="cvg_addnr : forall N : nat, (x + N @[x --> \oo] --> \oo)%classic
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_addnr" class="id"><a name="cvg_addnr" class="" title="cvg_addnr :
+forall N : nat,
+filter.cvg_to
+  (filter.nbhs (filter.fmap (addn^~ N) (filter.nbhs filter.eventually)))
+  (filter.nbhs filter.eventually)
 
 cvg_addnr is not universe polymorphic
-Arguments cvg_addnr N%nat_scope t _
+Arguments cvg_addnr N%_nat_scope t _
 cvg_addnr is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvg_addnr
 Declared in
@@ -573,10 +604,14 @@ library mathcomp.analysis.topology_theory.nat_topology, line 62, characters 6-15
 <div class="proofscript">
 <span class="gallina-kwd"> by</span><span class="id"> under</span><span class="id"> [</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#addn">addn</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#3dce462f8124648b906d1e347a73bb9f">^~</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#3dce462f8124648b906d1e347a73bb9f"> </a></span><span class="id">N]</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> n</span><span class="id"> do</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#addnC">addnC</a></span><span class="id">;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#cvg_addnl">cvg_addnl</a></span>. Qed.</div></details>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_subnr" class="id"><a name="cvg_subnr" class="" title="cvg_subnr : forall N : nat, (x - N @[x --> \oo] --> \oo)%classic
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_subnr" class="id"><a name="cvg_subnr" class="" title="cvg_subnr :
+forall N : nat,
+filter.cvg_to
+  (filter.nbhs (filter.fmap (subn^~ N) (filter.nbhs filter.eventually)))
+  (filter.nbhs filter.eventually)
 
 cvg_subnr is not universe polymorphic
-Arguments cvg_subnr N%nat_scope t _
+Arguments cvg_subnr N%_nat_scope t _
 cvg_subnr is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvg_subnr
 Declared in
@@ -589,10 +624,15 @@ library mathcomp.analysis.topology_theory.nat_topology, line 65, characters 6-15
 <span class="gallina-kwd">by</span><span class="id"> apply:</span><span class="id"> Pn;</span><span class="id"> rewrite</span><span class="id"> /=</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#leq_subRL">leq_subRL</a></span><span class="id">//</span> (<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#leq_trans">leq_trans</a></span><span class="id"> _</span><span class="id"> le_m</span>)<span class="id">//</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#leq_addr">leq_addr</a></span>.<br/>
 Qed.</div></details>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_mulnl" class="id"><a name="cvg_mulnl" class="" title="cvg_mulnl : forall N : nat, 0 < N -> (N * x @[x --> \oo] --> \oo)%classic
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_mulnl" class="id"><a name="cvg_mulnl" class="" title="cvg_mulnl :
+forall N : nat,
+0 < N ->
+filter.cvg_to
+  (filter.nbhs (filter.fmap (muln N) (filter.nbhs filter.eventually)))
+  (filter.nbhs filter.eventually)
 
 cvg_mulnl is not universe polymorphic
-Arguments cvg_mulnl N%nat_scope _ t _
+Arguments cvg_mulnl N%_nat_scope _ t _
 cvg_mulnl is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvg_mulnl
 Declared in
@@ -605,10 +645,15 @@ library mathcomp.analysis.topology_theory.nat_topology, line 71, characters 6-15
 <span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> /=</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.div#ltn_divLR">ltn_divLR</a></span><span class="id">//</span><span class="id"> =&gt;</span><span class="id"> n_lt;</span><span class="id"> apply:</span><span class="id"> Pn;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#mulnC">mulnC</a></span><span class="id"> /=</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#ltnW">ltnW</a></span>.<br/>
 Qed.</div></details>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_mulnr" class="id"><a name="cvg_mulnr" class="" title="cvg_mulnr : forall N : nat, 0 < N -> (x * N @[x --> \oo] --> \oo)%classic
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_mulnr" class="id"><a name="cvg_mulnr" class="" title="cvg_mulnr :
+forall N : nat,
+0 < N ->
+filter.cvg_to
+  (filter.nbhs (filter.fmap (muln^~ N) (filter.nbhs filter.eventually)))
+  (filter.nbhs filter.eventually)
 
 cvg_mulnr is not universe polymorphic
-Arguments cvg_mulnr N%nat_scope _ t _
+Arguments cvg_mulnr N%_nat_scope _ t _
 cvg_mulnr is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvg_mulnr
 Declared in
@@ -620,10 +665,15 @@ library mathcomp.analysis.topology_theory.nat_topology, line 77, characters 6-15
 <span class="gallina-kwd">by</span><span class="id"> move=&gt;</span><span class="id"> N_gt0;</span><span class="id"> under</span><span class="id"> [</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#muln">muln</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#3dce462f8124648b906d1e347a73bb9f">^~</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#3dce462f8124648b906d1e347a73bb9f"> </a></span><span class="id">N]</span><span class="id"><a href="mathcomp.classical.boolp.html#funext">funext</a></span><span class="id"> =&gt;</span><span class="id"> n</span><span class="id"> do</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.ssrnat#mulnC">mulnC</a></span><span class="id">;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#cvg_mulnl">cvg_mulnl</a></span>.<br/>
 Qed.</div></details>
 <br/>
-<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_divnr" class="id"><a name="cvg_divnr" class="" title="cvg_divnr : forall N : nat, 0 < N -> (x %/ N @[x --> \oo] --> \oo)%classic
+<span class="vernacular">Lemma</span><span class="id"> </span><span id="cvg_divnr" class="id"><a name="cvg_divnr" class="" title="cvg_divnr :
+forall N : nat,
+0 < N ->
+filter.cvg_to
+  (filter.nbhs (filter.fmap (divn^~ N) (filter.nbhs filter.eventually)))
+  (filter.nbhs filter.eventually)
 
 cvg_divnr is not universe polymorphic
-Arguments cvg_divnr N%nat_scope _ t _
+Arguments cvg_divnr N%_nat_scope _ t _
 cvg_divnr is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvg_divnr
 Declared in
@@ -638,10 +688,12 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="near_inftyS" class="id"><a name="near_inftyS" class="" title="near_inftyS :
 forall P : set nat,
-(\forall x \near \oo%classic, P x.+1) -> \forall x \near \oo%classic, P x
+filter.prop_near1 filter.eventually (P:=fun x : nat => P x.+1)
+  (inPhantom (forall x : nat, P x.+1)) ->
+filter.prop_near1 filter.eventually (P:=P) (inPhantom (forall x : nat, P x))
 
 near_inftyS is not universe polymorphic
-Arguments near_inftyS P%classical_set_scope _
+Arguments near_inftyS P%_classical_set_scope _
 near_inftyS is opaque
 Expands to: Constant
             mathcomp.analysis.topology_theory.nat_topology.near_inftyS
@@ -682,13 +734,17 @@ library mathcomp.analysis.topology_theory.nat_topology, line 88, characters 6-17
 <span class="vernacular">Context</span><span class="id"> {</span><span id="infty_nat.map.I" class="id"><a name="infty_nat.map.I" class="">I</a></span><span class="id"> :</span><span class="id"> Type}</span><span class="id"> {</span><span id="infty_nat.map.F" class="id"><a name="infty_nat.map.F" class="">F</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#set_system">set_system</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#I:31">I</a></span><span class="id">}</span><span class="id"> {</span><span id="infty_nat.map.FF" class="id"><a name="infty_nat.map.FF" class="">FF</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.filter.html#Filter">Filter</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#F:32">F</a></span><span class="id">}</span> (<span id="infty_nat.map.f" class="id"><a name="infty_nat.map.f" class="">f</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#I:31">I</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#nat">nat</a></span>).<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="cvgnyPge" class="id"><a name="cvgnyPge" class="" title="cvgnyPge :
-forall {I : Type} {F : set_system I},
-Filter F ->
+forall {I : Type} {F : filter.set_system I},
+filter.Filter F ->
 forall f : I -> nat,
-(f x @[x --> F] --> \oo)%classic <-> (forall A : nat, \near F, A <= f F)
+filter.cvg_to (filter.nbhs (filter.fmap f (filter.nbhs F)))
+  (filter.nbhs filter.eventually) <->
+(forall A : nat,
+ filter.prop_near1 F (P:=fun x : I => A <= f x)
+   (inPhantom (forall x : I, A <= f x)))
 
 cvgnyPge is not universe polymorphic
-Arguments cvgnyPge {I}%type_scope {F FF} f%function_scope
+Arguments cvgnyPge {I}%_type_scope {F FF} f%_function_scope
 cvgnyPge is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvgnyPge
 Declared in
@@ -701,13 +757,17 @@ library mathcomp.analysis.topology_theory.nat_topology, line 117, characters 6-1
 <span class="id"> exact:</span> (<span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#infty_nat.cvgnyP">cvgnyP</a></span><span class="id"> 0%N</span><span class="id"> 1%N</span>). Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="cvgnyPgt" class="id"><a name="cvgnyPgt" class="" title="cvgnyPgt :
-forall {I : Type} {F : set_system I},
-Filter F ->
+forall {I : Type} {F : filter.set_system I},
+filter.Filter F ->
 forall f : I -> nat,
-(f x @[x --> F] --> \oo)%classic <-> (forall A : nat, \near F, A < f F)
+filter.cvg_to (filter.nbhs (filter.fmap f (filter.nbhs F)))
+  (filter.nbhs filter.eventually) <->
+(forall A : nat,
+ filter.prop_near1 F (P:=fun x : I => A < f x)
+   (inPhantom (forall x : I, A < f x)))
 
 cvgnyPgt is not universe polymorphic
-Arguments cvgnyPgt {I}%type_scope {F FF} f%function_scope
+Arguments cvgnyPgt {I}%_type_scope {F FF} f%_function_scope
 cvgnyPgt is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvgnyPgt
 Declared in
@@ -720,14 +780,22 @@ library mathcomp.analysis.topology_theory.nat_topology, line 121, characters 6-1
 <span class="id"> exact:</span> (<span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#infty_nat.cvgnyP">cvgnyP</a></span><span class="id"> 0%N</span><span class="id"> 2%N</span>). Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="cvgnyPgty" class="id"><a name="cvgnyPgty" class="" title="cvgnyPgty :
-forall {I : Type} {F : set_system I},
-Filter F ->
+forall {I : Type} {F : filter.set_system I},
+filter.Filter F ->
 forall f : I -> nat,
-(f x @[x --> F] --> \oo)%classic <->
-(\forall A \near \oo%classic, \near F, A < f F)
+filter.cvg_to (filter.nbhs (filter.fmap f (filter.nbhs F)))
+  (filter.nbhs filter.eventually) <->
+filter.prop_near1 filter.eventually
+  (P:=fun A : nat =>
+      filter.prop_near1 F (P:=fun x : I => A < f x)
+        (inPhantom (forall x : I, A < f x)))
+  (inPhantom
+     (forall A : nat,
+      filter.prop_near1 F (P:=fun x : I => A < f x)
+        (inPhantom (forall x : I, A < f x))))
 
 cvgnyPgty is not universe polymorphic
-Arguments cvgnyPgty {I}%type_scope {F FF} f%function_scope
+Arguments cvgnyPgty {I}%_type_scope {F FF} f%_function_scope
 cvgnyPgty is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvgnyPgty
 Declared in
@@ -740,14 +808,22 @@ library mathcomp.analysis.topology_theory.nat_topology, line 125, characters 6-1
 <span class="id"> exact:</span> (<span class="id"><a href="mathcomp.analysis.topology_theory.nat_topology.html#infty_nat.cvgnyP">cvgnyP</a></span><span class="id"> 0%N</span><span class="id"> 3%N</span>). Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="cvgnyPgey" class="id"><a name="cvgnyPgey" class="" title="cvgnyPgey :
-forall {I : Type} {F : set_system I},
-Filter F ->
+forall {I : Type} {F : filter.set_system I},
+filter.Filter F ->
 forall f : I -> nat,
-(f x @[x --> F] --> \oo)%classic <->
-(\forall A \near \oo%classic, \near F, A <= f F)
+filter.cvg_to (filter.nbhs (filter.fmap f (filter.nbhs F)))
+  (filter.nbhs filter.eventually) <->
+filter.prop_near1 filter.eventually
+  (P:=fun A : nat =>
+      filter.prop_near1 F (P:=fun x : I => A <= f x)
+        (inPhantom (forall x : I, A <= f x)))
+  (inPhantom
+     (forall A : nat,
+      filter.prop_near1 F (P:=fun x : I => A <= f x)
+        (inPhantom (forall x : I, A <= f x))))
 
 cvgnyPgey is not universe polymorphic
-Arguments cvgnyPgey {I}%type_scope {F FF} f%function_scope
+Arguments cvgnyPgey {I}%_type_scope {F FF} f%_function_scope
 cvgnyPgey is opaque
 Expands to: Constant mathcomp.analysis.topology_theory.nat_topology.cvgnyPgey
 Declared in

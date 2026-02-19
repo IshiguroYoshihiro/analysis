@@ -79,6 +79,20 @@
           </ul>
           </details>
           </li>
+<li><details id="mathcomp.analysis.probability_theory"><summary>probability_theory</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.probability_theory.bernoulli_distribution.html">bernoulli_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.beta_distribution.html">beta_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.binomial_distribution.html">binomial_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.exponential_distribution.html">exponential_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.normal_distribution.html">normal_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.poisson_distribution.html">poisson_distribution</a></li>
+<li><a href="mathcomp.analysis.probability_theory.probability.html">probability</a></li>
+<li><a href="mathcomp.analysis.probability_theory.random_variable.html">random_variable</a></li>
+<li><a href="mathcomp.analysis.probability_theory.uniform_distribution.html">uniform_distribution</a></li>
+          </ul>
+          </details>
+          </li>
 <li><details id="mathcomp.analysis.showcase"><summary>showcase</summary>
           <ul>
           <li><a href="mathcomp.analysis.showcase.pnt.html">pnt</a></li>
@@ -92,7 +106,9 @@
 <li><a href="mathcomp.analysis.topology_theory.compact.html">compact</a></li>
 <li><a href="mathcomp.analysis.topology_theory.connected.html">connected</a></li>
 <li><a href="mathcomp.analysis.topology_theory.discrete_topology.html">discrete_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.initial_topology.html">initial_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.matrix_topology.html">matrix_topology</a></li>
+<li><a href="mathcomp.analysis.topology_theory.metric_structure.html">metric_structure</a></li>
 <li><a href="mathcomp.analysis.topology_theory.nat_topology.html">nat_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.num_topology.html">num_topology</a></li>
 <li><a href="mathcomp.analysis.topology_theory.one_point_compactification.html">one_point_compactification</a></li>
@@ -133,7 +149,6 @@
 <li><a href="mathcomp.analysis.measurable_realfun.html">measurable_realfun</a></li>
 <li><a href="mathcomp.analysis.numfun.html">numfun</a></li>
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
-<li><a href="mathcomp.analysis.probability.html">probability</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
 <li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
@@ -258,7 +273,7 @@ forall
   i ->
 i (A `&` horner p @^-1` Y)%classic
 
-Arguments measurable_poly {R} p%ring_scope [A]%classical_set_scope 
+Arguments measurable_poly {R} p%_ring_scope [A]%_classical_set_scope 
   _ [Y] _ [i] _
 measurable_poly is opaque
 Expands to: Constant mathcomp.analysis.pi_irrational.measurable_poly
@@ -277,19 +292,23 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pi_irrational.exp_fact" class="id"><a name="pi_irrational.exp_fact" class="" title="pi_irrational.exp_fact :
 forall [R : realType] (r : R),
-((r ^+ n / n`!%:R)%R @[n --> \oo] --> 0%R)%classic
+filter.cvg_to
+  (filter.nbhs
+     (filter.fmap (fun n : nat => (r ^+ n / n`!%:R)%R)
+        (filter.nbhs filter.eventually)))
+  (filter.nbhs 0%R)
 
 pi_irrational.exp_fact is not universe polymorphic
 Expanded type for implicit arguments
 pi_irrational.exp_fact :
 forall [R : realType] (r : R) [t : set R],
-nbhs 0%R t ->
+filter.nbhs 0%R t ->
 exists2 i : nat,
   [set: nat]%classic i &
   ((fun N : nat => [set n | N <= n]) i
    `<=` (fun n : nat => (r ^+ n / n`!%:R)%R) @^-1` t)%classic
 
-Arguments pi_irrational.exp_fact [R] r%ring_scope [t] _
+Arguments pi_irrational.exp_fact [R] r%_ring_scope [t] _
 pi_irrational.exp_fact is opaque
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.exp_fact
 Declared in library mathcomp.analysis.pi_irrational, line 35, characters 6-14
@@ -309,7 +328,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pi_irrational.a" class="id"><a name="pi_irrational.a" class="" title="pi_irrational.a : forall {R : realType}, nat -> R
 
 pi_irrational.a is not universe polymorphic
-Arguments pi_irrational.a {R} na%nat_scope
+Arguments pi_irrational.a {R} na%_nat_scope
 pi_irrational.a is transparent
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.a
 Declared in
@@ -319,7 +338,7 @@ library mathcomp.analysis.pi_irrational, line 46, characters 11-12
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pi_irrational.b" class="id"><a name="pi_irrational.b" class="" title="pi_irrational.b : forall {R : realType}, nat -> R
 
 pi_irrational.b is not universe polymorphic
-Arguments pi_irrational.b {R} nb%nat_scope
+Arguments pi_irrational.b {R} nb%_nat_scope
 pi_irrational.b is transparent
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.b
 Declared in
@@ -329,7 +348,7 @@ library mathcomp.analysis.pi_irrational, line 48, characters 11-12
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pi_irrational.f" class="id"><a name="pi_irrational.f" class="" title="pi_irrational.f : forall {R : realType}, nat -> nat -> nat -> {poly R}
 
 pi_irrational.f is not universe polymorphic
-Arguments pi_irrational.f {R} (na nb n)%nat_scope
+Arguments pi_irrational.f {R} (na nb n)%_nat_scope
 pi_irrational.f is transparent
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.f
 Declared in
@@ -339,7 +358,7 @@ library mathcomp.analysis.pi_irrational, line 50, characters 11-12
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pi_irrational.F" class="id"><a name="pi_irrational.F" class="" title="pi_irrational.F : forall {R : realType}, nat -> nat -> nat -> {poly R}
 
 pi_irrational.F is not universe polymorphic
-Arguments pi_irrational.F {R} (na nb n)%nat_scope
+Arguments pi_irrational.F {R} (na nb n)%_nat_scope
 pi_irrational.F is transparent
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.F
 Declared in
@@ -417,7 +436,7 @@ forall {R : realType} (na nb n : nat),
 (pi_irrational.F na nb n).[0]%R \is a Num.int
 
 pi_irrational.F0_int is not universe polymorphic
-Arguments pi_irrational.F0_int {R} (na nb n)%nat_scope
+Arguments pi_irrational.F0_int {R} (na nb n)%_nat_scope
 pi_irrational.F0_int is opaque
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.F0_int
 Declared in
@@ -433,7 +452,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pi_irrational.pirat" class="id"><a name="pi_irrational.pirat" class="" title="pi_irrational.pirat : forall {R : realType}, nat -> nat -> R
 
 pi_irrational.pirat is not universe polymorphic
-Arguments pi_irrational.pirat {R} (na nb)%nat_scope
+Arguments pi_irrational.pirat {R} (na nb)%_nat_scope
 pi_irrational.pirat is transparent
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.pirat
 Declared in
@@ -478,12 +497,12 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pi_irrational.Fpi_int" class="id"><a name="pi_irrational.Fpi_int" class="" title="pi_irrational.Fpi_int :
 forall {R : realType} (na : nat) [nb : nat] (n : nat),
-nb != 0 ->
+nb != 0%N ->
 (pi_irrational.F na nb n).[pi_irrational.pirat na nb]%R \is a Num.int
 
 pi_irrational.Fpi_int is not universe polymorphic
-Arguments pi_irrational.Fpi_int {R} na%nat_scope [nb]%nat_scope 
-  n%nat_scope nb0
+Arguments pi_irrational.Fpi_int {R} na%_nat_scope 
+  [nb]%_nat_scope n%_nat_scope nb0
 pi_irrational.Fpi_int is opaque
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.Fpi_int
 Declared in
@@ -498,12 +517,13 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pi_irrational.D2FDF" class="id"><a name="pi_irrational.D2FDF" class="" title="pi_irrational.D2FDF :
 forall {R : realType} (na : nat) [nb : nat] (n : nat),
-nb != 0 ->
-((pi_irrational.F na nb n)^`(2)%R + pi_irrational.F na nb n)%E =
+nb != 0%N ->
+((pi_irrational.F na nb n)^`(2) + pi_irrational.F na nb n)%R =
 pi_irrational.f na nb n
 
 pi_irrational.D2FDF is not universe polymorphic
-Arguments pi_irrational.D2FDF {R} na%nat_scope [nb]%nat_scope n%nat_scope nb0
+Arguments pi_irrational.D2FDF {R} na%_nat_scope [nb]%_nat_scope 
+  n%_nat_scope nb0
 pi_irrational.D2FDF is opaque
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.D2FDF
 Declared in
@@ -584,7 +604,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pi_irrational.intfsin" class="id"><a name="pi_irrational.intfsin" class="" title="pi_irrational.intfsin : forall {R : realType}, nat -> nat -> nat -> R
 
 pi_irrational.intfsin is not universe polymorphic
-Arguments pi_irrational.intfsin {R} (na nb n)%nat_scope
+Arguments pi_irrational.intfsin {R} (na nb n)%_nat_scope
 pi_irrational.intfsin is transparent
 Expands to: Constant mathcomp.analysis.pi_irrational.pi_irrational.intfsin
 Declared in
@@ -601,7 +621,7 @@ library mathcomp.analysis.pi_irrational, line 210, characters 11-18
 <span class="gallina-kwd">by</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.normed_module.html#cvgM">cvgM</a></span><span class="id"> =&gt;</span><span class="id"> /=;</span><span class="id"> [exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.derive.html#continuous_horner">continuous_horner</a></span><span class="id">|exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.trigo.html#continuous_sin">continuous_sin</a></span><span class="id">]</span>.<br/>
 Qed.</div></details>
 <br/>
-<span class="vernacular">Goal</span><span class="gallina-kwd"> forall</span> (<span id="p:52" class="id"><a name="p:52" class="">p</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#da9f755b2dd01d49956ac8b6f40c9c5d">{poly</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#da9f755b2dd01d49956ac8b6f40c9c5d"> </a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#pi_irrational.analytic_part.R">R</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#da9f755b2dd01d49956ac8b6f40c9c5d">}</a></span>)<span class="id"> </span><span id="c:53" class="id"><a name="c:53" class="">c</a></span><span class="id">,</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#p:52">p</a></span>.<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">[</a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#x:54">x</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="x:54" class="id"><a name="x:54" class="">x</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#c:53">c</a></span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#p:52">p</a></span>.<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">[</a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#c:53">c</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">]</a></span>.<br/>
+<span class="vernacular">Goal</span><span class="gallina-kwd"> forall</span> (<span id="p:52" class="id"><a name="p:52" class="">p</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#da9f755b2dd01d49956ac8b6f40c9c5d">{poly</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#da9f755b2dd01d49956ac8b6f40c9c5d"> </a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#pi_irrational.analytic_part.R">R</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#da9f755b2dd01d49956ac8b6f40c9c5d">}</a></span>)<span class="id"> </span><span id="c:53" class="id"><a name="c:53" class="">c</a></span><span class="id">,</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#p:52">p</a></span>.<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">[</a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#x:54">x</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> @[</a></span><span id="x:54" class="id"><a name="x:54" class="">x</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f"> </a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#c:53">c</a></span><span class="id"><a href="mathcomp.analysis.topology_theory.num_topology.html#02fa8d8231c69eb0b6a7453874088890">^'+</a></span><span class="id"><a href="mathcomp.classical.filter.html#9ae20bc67dba0e37ea0806b2f353bb2f">]</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> --&gt;</a></span><span class="id"><a href="mathcomp.classical.filter.html#::classical_set_scope:x_'--&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#p:52">p</a></span>.<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">[</a></span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#c:53">c</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">]</a></span>.<br/>
 <span class="gallina-kwd">by</span><span class="id"> move=&gt;</span><span class="id"> p</span><span class="id"> c;</span><span class="id"> apply:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#cvg_at_right_filter">cvg_at_right_filter</a></span><span class="id">;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.derive.html#continuous_horner">continuous_horner</a></span>.<br/>
 <br/>
 <span class="vernacular">Let</span><span class="id"> </span><span id="pi_irrational.analytic_part.intfsinE" class="id"><a name="pi_irrational.analytic_part.intfsinE" class="">intfsinE</a></span><span class="id"> </span><span id="n:55" class="id"><a name="n:55" class="">n</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#pi_irrational.intfsin">intfsin</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#n:55">n</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span> (<span class="id"><a href="mathcomp.analysis.pi_irrational.html#pi_irrational.analytic_part.F">F</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#n:55">n</a></span>).<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">[</a></span><span class="id"><a href="mathcomp.analysis.trigo.html#pi">pi</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">]</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> +</a></span> (<span class="id"><a href="mathcomp.analysis.pi_irrational.html#pi_irrational.analytic_part.F">F</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.pi_irrational.html#n:55">n</a></span>).<span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">[</a></span><span class="id">0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_4_0/mathcomp.algebra.poly.html#e4361ce58e4de0a4b9786d0011b61316">]</a></span>.<br/>
@@ -628,13 +648,13 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pi_irrational.intfsin_int" class="id"><a name="pi_irrational.intfsin_int" class="" title="pi_irrational.intfsin_int :
 forall {R : realType} [na nb : nat],
-nb != 0 ->
+nb != 0%N ->
 pi_irrational.pirat na nb = pi ->
 forall n : nat, pi_irrational.intfsin na nb n \is a Num.int
 
 pi_irrational.intfsin_int is not universe polymorphic
-Arguments pi_irrational.intfsin_int {R} [na nb]%nat_scope 
-  nb0 piratE n%nat_scope
+Arguments pi_irrational.intfsin_int {R} [na nb]%_nat_scope 
+  nb0 piratE n%_nat_scope
 pi_irrational.intfsin_int is opaque
 Expands to: Constant
             mathcomp.analysis.pi_irrational.pi_irrational.intfsin_int
@@ -733,13 +753,13 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pi_irrational.intfsin_gt0" class="id"><a name="pi_irrational.intfsin_gt0" class="" title="pi_irrational.intfsin_gt0 :
 forall {R : realType} [na nb : nat],
-nb != 0 ->
+nb != 0%N ->
 pi_irrational.pirat na nb = pi ->
 forall n : nat, (0 < pi_irrational.intfsin na nb n)%R
 
 pi_irrational.intfsin_gt0 is not universe polymorphic
-Arguments pi_irrational.intfsin_gt0 {R} [na nb]%nat_scope 
-  nb0 piratE n%nat_scope
+Arguments pi_irrational.intfsin_gt0 {R} [na nb]%_nat_scope 
+  nb0 piratE n%_nat_scope
 pi_irrational.intfsin_gt0 is opaque
 Expands to: Constant
             mathcomp.analysis.pi_irrational.pi_irrational.intfsin_gt0
@@ -788,15 +808,17 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="pi_irrational.intfsin_small" class="id"><a name="pi_irrational.intfsin_small" class="" title="pi_irrational.intfsin_small :
 forall {R : realType} [na nb : nat],
-nb != 0 ->
+nb != 0%N ->
 pi_irrational.pirat na nb = pi ->
 forall [e : R],
 (0 < e)%R ->
-\forall n \near \oo%classic, (0 < pi_irrational.intfsin na nb n < e)%R
+filter.prop_near1 filter.eventually
+  (P:=fun n : nat => (0 < pi_irrational.intfsin na nb n < e)%R)
+  (inPhantom (forall n : nat, (0 < pi_irrational.intfsin na nb n < e)%R))
 
 pi_irrational.intfsin_small is not universe polymorphic
-Arguments pi_irrational.intfsin_small {R} [na nb]%nat_scope 
-  nb0 piratE [e]%ring_scope _
+Arguments pi_irrational.intfsin_small {R} [na nb]%_nat_scope 
+  nb0 piratE [e]%_ring_scope _
 pi_irrational.intfsin_small is opaque
 Expands to: Constant
             mathcomp.analysis.pi_irrational.pi_irrational.intfsin_small
