@@ -130,7 +130,7 @@ Add Search Blacklist "_mixin_".
 (*                                                                            *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -1148,7 +1148,7 @@ Context {f : {inv aT >-> aT}}.
 Lemma some_iter_inv n : olift (iter n f^-1) = 'oinv_(iter n f).
 Proof.
 elim: n => // n IH; rewrite iterfSr olift_comp IH ?oinv_iter -compA.
-rewrite (_ : Some \o f^-1 = 'oinv_f); first by rewrite iterfSr; congr (_ \o _).
+rewrite (_ : Some \o f^-1 = 'oinv_f); last by rewrite iterfSr; congr (_ \o _).
 by apply/funeqP => ? /=; rewrite some_inv.
 Qed.
 HB.instance Definition _ n := OInv_Inv.Build _ _ (iter n f) (some_iter_inv n).
@@ -1331,7 +1331,7 @@ set g := subfun _; set f := subfun _; apply/funext => x /=.
 apply: 'inj_(oapp f x) => //=.
 - by rewrite inE/=; eexists.
 - by rewrite inE/=; apply: 'oinvS_f; exists (g x) => //; apply/val_inj.
-rewrite oinvK ?inE//=; first exact/val_inj.
+rewrite oinvK ?inE//=; last exact/val_inj.
 by exists (g x) => //; apply/val_inj.
 Qed.
 (* Add a Inj_Can factory *)

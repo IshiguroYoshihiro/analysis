@@ -30,7 +30,7 @@ From mathcomp Require Import archimedean interval.
 Attributes warn(note="The unstable.v file should only be used inside analysis.",
   cats="internal-analysis").
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -83,7 +83,7 @@ rewrite big_cons; case: ifP => [Pa|nPa]; last first.
     by rewrite in_cons => /predU1P[->|]; [rewrite nPa|exact: Fidvdn].
   by apply: Fidvdn; rewrite in_cons il orbT.
 rewrite map_cons pairwise_cons => /andP[allcoprimea pairwisecoprime].
-rewrite Gauss_dvd; last exact: coprime_prodr.
+rewrite Gauss_dvd; first exact: coprime_prodr.
 apply: (equivP (andPP idP (HI pairwisecoprime))).
 split=> [[Fadvdn Fidvdn] i|Fidvdn].
   by rewrite in_cons => /predU1P[->//|]; exact: Fidvdn.
@@ -109,7 +109,7 @@ rewrite mulnC leq_mul//.
   by apply: leq_prod; move=> i _; rewrite leq_addr.
 rewrite subnKC//.
 rewrite -[in leqLHS](add0n m) big_addn.
-rewrite [in leqRHS](_ : y - m = ((y - m + x) - x))%N; last first.
+rewrite [in leqRHS](_ : y - m = ((y - m + x) - x))%N.
   by rewrite -addnBA// subnn addn0.
 rewrite -[X in iota X _](add0n x) big_addn -addnBA// subnn addn0.
 by apply: leq_prod => i _; rewrite leq_add2r leq_addr.
@@ -122,7 +122,7 @@ move=> nx my.
 rewrite (fact_split nx) -!mulnA leq_mul2l; apply/orP; right.
 rewrite (fact_split my) mulnCA -!mulnA leq_mul2l; apply/orP; right.
 rewrite [leqRHS](_ : _ =
-    (n + m).+1`! * \prod_((n + m).+2 <= i < (x + y).+2) i)%N; last first.
+    (n + m).+1`! * \prod_((n + m).+2 <= i < (x + y).+2) i)%N.
   by rewrite -fact_split// ltnS leq_add.
 rewrite mulnA mulnC leq_mul2l; apply/orP; right.
 do 2 rewrite -addSn -addnS.
@@ -491,11 +491,11 @@ have trivP : trivIfset P.
 have -> : (\bigcup_(i <- K) F i)%fset = fcover P.
   apply/esym; rewrite /P fcover_imfset big_mkcond /=; apply eq_bigr => i _.
   by case: ifPn => // /negPn/eqP.
-rewrite big_trivIfset // /rhs big_imfset => [|i j iK /andP[jK notFj0] eqFij] /=.
-  rewrite big_filter big_mkcond; apply eq_bigr => i _.
-  by case: ifPn => // /negPn /eqP ->;  rewrite big_seq_fset0.
-move: iK; rewrite !inE/= => /andP[iK Fi0].
-by apply: contraNeq (disjF _ _ iK jK) _; rewrite -fsetI_eq0 eqFij fsetIid.
+rewrite big_trivIfset // /rhs big_imfset => [i j iK /andP[jK notFj0] eqFij|] /=.
+  move: iK; rewrite !inE/= => /andP[iK Fi0].
+  by apply: contraNeq (disjF _ _ iK jK) _; rewrite -fsetI_eq0 eqFij fsetIid.
+rewrite big_filter big_mkcond; apply eq_bigr => i _.
+by case: ifPn => // /negPn /eqP ->;  rewrite big_seq_fset0.
 Qed.
 
 End FsetPartitions.

@@ -217,7 +217,7 @@ From mathcomp Require Import mathcomp_extra boolp wochoice.
 (*                                                                            *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -2222,9 +2222,9 @@ Lemma bigcup_pred [T : finType] [U : Type] (P : {pred T}) (f : T -> set U) :
 Proof.
 apply/predeqP => u; split=> [[x Px fxu]|]; first by rewrite (bigD1 x)//; left.
 move=> /mem_set; rewrite (@big_morph _ _ (fun X => u \in X) false orb).
-- by rewrite big_has_cond => /hasP[x _ /andP[xP]]; rewrite inE => ufx; exists x.
 - by move=> /= x y; apply/idP/orP; rewrite !inE.
 - by rewrite in_set0.
+- by rewrite big_has_cond => /hasP[x _ /andP[xP]]; rewrite inE => ufx; exists x.
 Qed.
 
 Section smallest.
@@ -3024,7 +3024,7 @@ Proof. by rewrite /supremum eqxx. Qed.
 
 Lemma supremum1 x0 x : supremum x0 [set x] = x.
 Proof.
-rewrite /supremum ifF; last first.
+rewrite /supremum ifF.
   by apply/eqP; rewrite predeqE => /(_ x)[+ _]; apply.
 by rewrite supremums1; case: xgetP => // /(_ x) /(_ erefl).
 Qed.

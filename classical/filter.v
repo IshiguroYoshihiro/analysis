@@ -169,7 +169,7 @@ From mathcomp Require Import cardinality mathcomp_extra fsbigop set_interval.
 (*   variable                                                                 *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -1419,7 +1419,7 @@ Lemma in_ultra_setVsetC T (F : set_system T) (A : set T) :
 Proof.
 move=> FU; case: (pselect (F (~` A))) => [|nFnA]; first by right.
 left; suff : ProperFilter (filter_from (F `|` [set A `&` B | B in F]) id).
-  move=> /max_filter <-; last by move=> B FB; exists B => //; left.
+  move=> /max_filter <-; first by move=> B FB; exists B => //; left.
   by exists A => //; right; exists setT; [exact: filterT|rewrite setIT].
 apply: filter_from_proper; last first.
   move=> B [|[C FC <-]]; first exact: filter_ex.

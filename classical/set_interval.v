@@ -38,7 +38,7 @@ From mathcomp Require Import functions.
 (*                                                                            *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -207,7 +207,7 @@ Lemma setUitv_set2 x y b1 b2 :
 Proof.
 rewrite le_eqVlt => /orP [/eqP->|xy].
   by case: b1; case: b2; rewrite !set_itvE !setUid // set0U.
-rewrite setUCA setUitv1; last by case: b1; rewrite bnd_simp// ltW.
+rewrite setUCA setUitv1; first by case: b1; rewrite bnd_simp// ltW.
 by rewrite setU1itv// bnd_simp ltW.
 Qed.
 
