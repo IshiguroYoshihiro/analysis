@@ -73,6 +73,7 @@ From mathcomp Require internal_Eqdep_dec.
 (*                                                                            *)
 (******************************************************************************)
 
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set   Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

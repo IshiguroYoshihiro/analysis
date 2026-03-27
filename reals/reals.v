@@ -52,7 +52,7 @@ From mathcomp Require Import mathcomp_extra boolp classical_sets set_interval.
 Declare Scope real_scope.
 
 (* -------------------------------------------------------------------- *)
-Set   SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set   Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -349,7 +349,7 @@ Lemma inf_sumE (A B : set R) :
 Proof.
 move/has_inf_supN => ? /has_inf_supN ?; rewrite /inf.
 rewrite [X in - sup X = _](_ : _ =
-    [set x + y | x in [set - x | x in A ] & y in [set - x | x in B]]).
+    [set x + y | x in [set - x | x in A ] & y in [set - x | x in B]]); last first.
   by rewrite sup_sumE // -opprD.
 rewrite eqEsubset; split => /= t [] /= x []a Aa.
   case => b Bb <- <-; exists (- a); first by exists a.
@@ -607,9 +607,9 @@ have [supA|supNA] := pselect (has_sup A); last first.
   by rewrite !sup_out // => /has_sup_down.
 have supDA : has_sup (down A) by apply/has_sup_down.
 apply/eqP; rewrite eq_le !sup_le //.
+- by case: supA => -[x xA] _; exists x; apply/le_down.
 - by rewrite downK; exact: le_down.
 - by case: supA.
-- by case: supA => -[x xA] _; exists x; apply/le_down.
 Qed.
 
 Lemma lt_sup_imfset {T : Type} (F : T -> R) l :
