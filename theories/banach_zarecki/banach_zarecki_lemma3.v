@@ -669,6 +669,12 @@ Abort.
   (*   by apply: sub_Rhullr. *)
 
 
+(* NB: available as PR https://github.com/math-comp/analysis/pull/1809 *)
+Lemma compact_unif_continuousP f :
+  {within `[a, b], continuous f} <-> @unif_continuous (subspace `[a, b]) R f.
+Proof.
+Admitted.
+
 Section main_lemma.
 
 Lemma limit_point_open (U : set R) (p : R) :

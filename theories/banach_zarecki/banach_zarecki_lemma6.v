@@ -1748,6 +1748,7 @@ have alphaH n : fine alpha < \sum_(i < n.+1) `|H (d_ n i) - H (c_ n i)|.
 (*
 rewrite addrAC ltrD2r.
 move/(@lt_trans _ _ _ (fine alpha / 2)).
+rewrite addrA.
 rewrite ltrBrDl -splitr; move/(_ alphaH).
 *)
 have cdIcplt_hull (S : set R) : measurable S -> S `<=` `[c, d] ->
