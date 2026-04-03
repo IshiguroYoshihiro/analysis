@@ -4,9 +4,9 @@
 (* Extension to Rstruct.v (lemmas about continuity)                           *)
 (******************************************************************************)
 
-Require Import Rdefinitions Raxioms RIneq Rbasic_fun Zwf.
-Require Import Epsilon FunctionalExtensionality Ranalysis1 Rsqrt_def.
-Require Import Rtrigo1 Reals.
+From Stdlib Require Import Rdefinitions Raxioms RIneq Rbasic_fun Zwf.
+From Stdlib Require Import Epsilon FunctionalExtensionality Ranalysis1 Rsqrt_def.
+From Stdlib Require Import Rtrigo1 Reals.
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect_compat ssralg ssrnum archimedean.
 From mathcomp Require Import boolp classical_sets reals interval_inference.
