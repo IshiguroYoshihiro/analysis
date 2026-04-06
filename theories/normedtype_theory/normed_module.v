@@ -1056,7 +1056,7 @@ have [a0 [a0a a0V0 a0E]] : exists a0, [/\ a0 != a, a0 \in V0 & a0 \in E].
 have [v [v0 Pv]] : {v : nat -> elt_type |
     v 0 = exist _ (a0, r0) (And5 ar0V a0E a0V0 r0_gt0 a0a) /\
     forall n, elt_rel (v n) (v n.+1)}.
-  apply: dependent_choice => -[[ai ri] [/= ariV xE aiari ri_gt0 aia]].
+apply: dependent_choice => -[[ai ri] [/= ariV xE aiari ri_gt0 aia]].
   pose rj : R := `|a - ai|.
   have rj_gt0 : 0 < rj by rewrite /rj normr_gt0 subr_eq0 eq_sym.
   apply/cid; move/cvgrPdist_lt : y_cvg_a => /(_ _ rj_gt0)[M/= _ May_rj].
@@ -1070,7 +1070,7 @@ have [v [v0 Pv]] : {v : nat -> elt_type |
   have y_ME : y_ M \in E by rewrite inE; apply/y_E/imageT.
   exists (exist _ (y_ M, rj) (And5 VjV y_ME y_MVj rj_gt0 (y_neq_a M))) => /=.
   split; first exact.
-  split; rewrite /a_ /r_/=.
+  split; rewrite /r_ /a_/=.
     by apply: le_ball; move: aiari; rewrite inE => /ltW.
   split; first by move: y_MVj; rewrite inE.
   by apply/eqP => aiyM; move: y_MVj; rewrite -aiyM inE /Vj /ball/= /rj ltxx.
