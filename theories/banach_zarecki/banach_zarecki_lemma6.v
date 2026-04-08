@@ -846,6 +846,40 @@ have mcgitv i : mu.-cara.-measurable (contiguous_intervals Z i).
   move=> k; apply: sub_caratheodory.
   apply: open_measurable.
   exact: open_contiguous_intervals.
+have nilambda : nonincreasing_fun lambda.
+  admit.
+have lambda0 : lambda @ \oo --> 0.
+  apply/cvgrPdist_lt => /= e e0.
+  apply/not_notP.
+  rewrite /eventually/filter_from/=.
+  move/forallPNP/(_ _ I) => H.
+  suff : ~ (forall N, exists n, (N <= n)%N /\ e <= lambda n).
+    apply => N.
+    have/= := H N.
+    move/existsNP => [n/=/not_implyP[Nn]].
+    move/negP; rewrite -leNgt sub0r normrN ger0_norm// => el.
+    by exists n; split.
+  move/choice => [n_ /all_and2[Nn eln]].
+  have : e <= limn lambda.
+    apply: limr_ge.
+      apply: (nonincreasing_is_cvgn nilambda).
+      by exists 0 => _ [n _ <-].
+    apply: nearW.
+    move=> i.
+    apply: (le_trans (eln i)).
+    exact: nilambda.
+  move/(lt_le_trans e0).
+  rewrite -lte_fin.
+  rewrite (_ : 0%:E = 0%E)// -Z0.
+  apply/negP; rewrite -leNgt.
+  rewrite -EFin_lim; last first.
+    apply: (nonincreasing_is_cvgn nilambda).
+    by exists 0 => _ [n _ <-].
+  apply: lime_le.
+    admit.
+  apply: nearW => n.
+  admit.
+(*
 have lambda0 : lambda @ \oo --> 0.
   suff : \sum_(i < n) mu (contiguous_intervals Z i) @[n --> \oo]
       --> mu (cplt_hull Z).
@@ -918,6 +952,7 @@ have lambda0 : lambda @ \oo --> 0.
   apply: ereal_nondecreasing_is_cvgn.
   apply/nondecreasing_seqP => n.
   by rewrite big_ord_recr/= leeDl.
+*)
 have construct_x n :
   exists x : seq R, [/\ itv_partition c d (behead x),
     (itv_partition_max c d (behead x) <= lambda n),
