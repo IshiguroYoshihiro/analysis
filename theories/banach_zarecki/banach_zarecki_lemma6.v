@@ -779,7 +779,25 @@ have fin_alpha : alpha \is a fin_num.
   rewrite completed_lebesgue_measure_itv ifT ?lte_fin//=.
   by rewrite -EFinB ltry.
 pose a_ n := sort <=%R [tuple A_ i | i < n].
-pose b_ n := sort <=%R [tuple B_ i | i < n].
+have sorted_index_prop : forall n,
+   {i_s : seq nat | perm_eq i_s (iota 0 n) &
+  a_ n = [seq nth d [tuple A_ i | i < n] i | i <- i_s]}.
+  move=> n.
+  have := perm_iota_sort <=%R _ [tuple A_ i | i < n].
+  by rewrite size_tuple.
+pose sI := fun n => (sval (sorted_index_prop n)).
+pose sIE := fun n => (svalP (sorted_index_prop n)).1.
+pose asIE := fun n => (svalP (sorted_index_prop n)).2.
+pose b_ n := [seq nth d [tuple B_ i0 | i0 < n] i | i <- sI n].
+have size_bE n : size (b_ n) = n.
+  by rewrite size_map (perm_size (sIE n)) size_iota.
+have sorted_b n : sorted <=%R (b_ n).
+  rewrite /b_.
+  apply/sortedP => i.
+  rewrite size_bE => i1n.
+  admit.
+have : forall n i, nth d (b_ n) i <= nth d (a_ n) i.+1.
+  admit.
 (*have A_lt_B_ n : if contiguous_intervals Z n == set0 then true else A_ n < B_ n.
   case: ifPn => // Zn0.
   rewrite /A_ /B_ fine_contiguous_intervals2// fine_contiguous_intervals1//.
@@ -807,17 +825,25 @@ have ubZb : ubound Z b.
   have := Zab r Zr.
   by rewrite /= in_itv/= => /andP[].
 *)
+pose c_ n i := nth d (c :: b_ n) i.
+have nth_b_ n (i j : 'I_n) : (i <= j)%N -> nth d (b_ n) i <= nth d (b_ n) j.
+  move=> ij.
+  by apply: le_sorted_leq_nth => //; rewrite inE size_bE.
 
-pose c_ n i := tnth (c :: b_ n) i.
-have tnth_b_ n (i j : 'I_n) : (i <= j)%N -> tnth (b_ n) i <= tnth (b_ n) j.
-  move => ij.
-  rewrite /tnth.
-  rewrite (set_nth_default (tnth_default (b_ n) j)) ?size_tuple//.
-  apply: sorted_leq_nth => //; rewrite ?inE ?size_tuple//.
-    exact: le_trans.
-  by apply: sort_sorted; exact: le_total.
-have Zb_ n i : Z (tnth (b_ n.+1) i).
-  suff: [set` (b_ n.+1)] `<=` Z by apply; apply/tnthP; exists i.
+have Za_ n (i : 'I_ n.+1) : Z (nth d (a_ n.+1) i).
+  suff: [set` (a_ n.+1)] `<=` Z.
+    by apply; apply/nthP; exists i => //; rewrite size_sort size_tuple.
+  move=> x/=; rewrite /b_ mem_sort/= => /mapP[/= j _ ->{x}].
+  rewrite /A_.
+  apply: mem_contiguous_intervals1 => //.
+  apply/set0P/negP => /eqP Z00.
+  by move: HZ; rewrite Z00 image_set0 measure0 ltxx.
+  
+have Zb_ n (i : 'I_ n.+1) : Z (nth d (b_ n.+1) i).
+  suff: [set` (b_ n.+1)] `<=` Z.
+    admit.
+  admit.
+(*
   move=> x/=; rewrite /b_ mem_sort/= => /mapP[/= j _ ->{x}].
   rewrite /B_.
   apply: mem_contiguous_intervals2 => //.
@@ -836,6 +862,9 @@ have c_b_ n i : c <= tnth (b_ n) i.
     by move: cZ; rewrite Rcompact_boundE/= => -[].
   rewrite /b_.
   exact: Zb_.
+*)
+ admit.
+
 pose d_ n i := tnth (rcons (a_ n) d) i.
 pose lambda n : R :=
   \big[Num.max/0%R]_(i < n.+1) `|d_ n i - c_ n i|.
@@ -846,7 +875,41 @@ have mcgitv i : mu.-cara.-measurable (contiguous_intervals Z i).
   move=> k; apply: sub_caratheodory.
   apply: open_measurable.
   exact: open_contiguous_intervals.
+have spl_ex : forall n, exists k : 'I_ n.+1,
+   `]A_ n.+1, B_ n.+1[ `<=` `[c_ n k, d_ n k].
+  move=> n.
+  
+  admit.
+set k_ := fun n => sval (cid (spl_ex n)).
+set ABncdk := fun n => svalP (cid (spl_ex n)).
+
 have nilambda : nonincreasing_fun lambda.
+  apply/nonincreasing_seqP => n.
+  rewrite /lambda.
+  rewrite /d_ /c_.
+  rewrite big_mknat.
+  have kn2 : (k_ n <= n.+2)%N.
+    by rewrite ltnW// ltnS ltnW.
+  rewrite (big_cat_nat_idem _ (leq0n (k_ n)) kn2)/=; last by rewrite maxxx.
+  rewrite big_nat_recl; last by rewrite ltnW.
+  rewrite big_nat_recl//; last by rewrite -ltnS.
+  rewrite big_mknat.
+  rewrite (big_cat_nat_idem _ (leq0n (k_ n)) (ltnW (ltn_ord (k_ n))))/=; last first.
+    by rewrite maxxx.
+  rewrite big_nat_recl//; last by rewrite -ltnS.
+  apply: le_max2 => //.
+    rewrite le_eqVlt; apply/orP; left; apply/eqP.
+    apply: eq_big_nat => i /andP[i0 ik].
+    congr `| _ - _ |.
+      admit.
+    admit.
+  rewrite maxA.
+  apply: le_max2.
+    rewrite ge_max; apply/andP; split.
+      admit.
+    admit.
+  rewrite le_eqVlt; apply/orP; left; apply/eqP.
+  apply: eq_big_nat => i /andP[ki iltn].
   admit.
 have lambda0 : lambda @ \oo --> 0.
   apply/cvgrPdist_lt => /= e e0.
@@ -870,8 +933,8 @@ have lambda0 : lambda @ \oo --> 0.
     exact: nilambda.
   move/(lt_le_trans e0).
   rewrite -lte_fin.
-  rewrite (_ : 0%:E = 0%E)// -Z0.
   apply/negP; rewrite -leNgt.
+  rewrite (_ : 0%:E = 0%E)// -Z0.
   rewrite -EFin_lim; last first.
     apply: (nonincreasing_is_cvgn nilambda).
     by exists 0 => _ [n _ <-].
@@ -956,9 +1019,9 @@ have lambda0 : lambda @ \oo --> 0.
 have construct_x n :
   exists x : seq R, [/\ itv_partition c d (behead x),
     (itv_partition_max c d (behead x) <= lambda n),
-    (forall i, c_ n i \in x /\ d_ n i \in x),
+    (forall i : 'I_ n.+1, c_ n i \in x /\ d_ n i \in x),
     (n < size x)%N &
-    (forall i j, nth d x j \notin `]c_ n i, d_ n i[) ].
+    (forall (i j : 'I_ n.+1), nth d x j \notin `]c_ n i, d_ n i[) ].
   admit.
 pose x := fun n => sval (cid (@construct_x n)).
 have pcdx n : itv_partition c d (behead (x n)).
@@ -1058,22 +1121,14 @@ have alphaH : fine alpha < \sum_(i < n.+1) `|H (d_ n i) - H (c_ n i)|.
 move/(@lt_trans _ _ _ (fine alpha / 2)).
 rewrite ltrBrDl -splitr; move/(_ alphaH).
 (* (6.5) (between (6) and (7)) *)
-pose abcd i := [set k | `[A_ k, B_ k] `<=` `[c_ n i, d_ n i]].
+pose abcd (i : 'I_ n.+1) := [set k | `[A_ k, B_ k] `<=` `[c_ n i, d_ n i]].
 have {}n0n : (n0 < n.+1)%N.
   admit.
 set on0 := Ordinal n0n.
 set Uabcdn := \bigcup_(j in abcd on0) `[A_ j, B_ j]%classic.
-have cdi i : c_ n i <= d_ n i.
+have cdi (i : 'I_ n.+1) : c_ n i <= d_ n i.
   admit.
 (*
-have sorted_index_prop : forall n,
-   {i_s : seq nat | perm_eq i_s (iota 0 n) &
-  sort_ta n = [seq nth d (ta n) i | i <- i_s]}.
-  move=> n.
-  have := perm_iota_sort <%R _ (ta n).
-  by rewrite size_tuple.
-pose fun_of_sort_index := fun n => (sval (sorted_index_prop n)).
-pose fun_of_sort_indexE := fun n => (svalP (sorted_index_prop n)).1.
 
 pose fun_of_sort_index_ta := fun n => (svalP (sorted_index_prop n)).2.
 have fun_of_sort_index_tb : forall n,
@@ -1105,7 +1160,7 @@ fun_of_sort : exists (p : {perm 'I_n}), (sort <%R (ta_ n))
       admit.
     admit.
 *)
-have itvfcd i : is_interval (f @` `[c_ n i, d_ n i]).
+have itvfcd (i : 'I_ n.+1) : is_interval (f @` `[c_ n i, d_ n i]).
   apply: (is_interval_image_cc cf).
   apply: subset_itv => //; rewrite bnd_simp.
     rewrite /c_.
@@ -1116,7 +1171,7 @@ have itvfcd i : is_interval (f @` `[c_ n i, d_ n i]).
   admit.
 have cUabcdn : closed Uabcdn.
     admit.
-have hull_Uabcd i : Rhull Uabcdn = `[(c_ n i), (d_ n i)].
+have hull_Uabcd (i : 'I_ n.+1) : Rhull Uabcdn = `[(c_ n i), (d_ n i)].
     admit.
 have prop65 : forall i : 'I_ n.+1, (`|f (d_ n i) - f (c_ n i)|%:E <=
   \sum_(n <= j <oo | `[< `[A_ j, B_ j] `<=` Uabcdn >])
