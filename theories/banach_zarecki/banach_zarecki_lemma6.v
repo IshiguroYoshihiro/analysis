@@ -753,7 +753,58 @@ have Z_nonempty : Z !=set0.
 have closedZ : closed Z by exact: compact_closed cZ.
 pose supp := open_disjoint_itv_support (closed_open_cplt_hull closedZ).
 have [finsupp|infsupp] := pselect (finite_set supp).
-  admit.
+have Z_nonempty : Z !=set0.
+  apply/set0P; apply/negP => /eqP Z0'.
+  by move: HZ; rewrite Z0' image_set0 measure0 ltxx.
+have closedZ : closed Z by exact: compact_closed cZ.
+pose supp := open_disjoint_itv_support (closed_open_cplt_hull closedZ).
+have [|infsupp] := pselect (finite_set supp).
+  move=> [n].
+  case: n => [|n].
+    (* Z = set0 *)
+    admit.
+  case: n => [|n].
+    admit.
+  move/ppcard_eqP => [/= h].
+  pose h1 : {bij `I_ n.+2 >-> supp} := h^-1%FUN.
+  have hh1 : {in supp, cancel h h1} by exact: funK.
+  have h1h : {in `I_ n.+2, cancel h1 h}.
+    by move=> x; rewrite inE => xn; apply: invK; rewrite inE.
+  have funh1: set_fun (`I_ n.+2) supp h1 by move=> x Ix; apply: invS.
+  have surjh1 : set_surj (`I_ n.+2) supp h1.
+    move=> x suppx.
+    exists (h x).
+      exact: funS.
+    by rewrite hh1 ?inE.
+  have chZE : cplt_hull Z = \bigcup_(i < n.+2) contiguous_intervals Z (h1 i).
+    rewrite bigcup_contiguous_intervals//.
+    rewrite -(reindex_bigcup _ _ _ _ funh1 surjh1).
+    rewrite [RHS]bigcup_mkcond.
+    apply: eq_bigcupr => i _.
+    case: ifP => //.
+    rewrite /contiguous_intervals.
+    case : pselect => // closedZ'.
+    have {closedZ'} -> : closed_open_cplt_hull closedZ' = closed_open_cplt_hull closedZ.
+      exact: Prop_irrelevance.
+    move/negP; rewrite inE.
+    rewrite /supp/open_disjoint_itv_support/=.
+    by move/set0P/negP/negbNE/eqP.
+  have : forall i, exists j, ((i < n.+2)%N -> (j < n.+2)%N) /\
+     ((i < n.+2)%N ->
+    sup (contiguous_intervals Z (h1 i)) = inf (contiguous_intervals Z (h1 j))).
+    admit.
+  move/choice => [next_i /all_and2[nextltn sup_eq_inf]].
+  have : forall i, i != next_i i.
+    
+  have := sup_eq_inf 0 (ltn0Sn _).
+    
+  move: isoZ0.
+  move/eqP; apply/negP/set0P.
+  exists (sup (contiguous_intervals Z (h1 0%N))).
+  split.
+    admit.
+  rewrite /=.
+admit.
 have countsupp : countable supp by exact: subset_card_le.
 have /ppcard_eqP[/= h] := eq_card_nat countsupp infsupp.
 pose h1 : {bij [set: nat] >-> supp} := h^-1%FUN.
