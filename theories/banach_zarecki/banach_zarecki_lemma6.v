@@ -701,6 +701,13 @@ have : sup (contiguous_intervals Z j) \in [set` Rhull Z].
 by rewrite inE  =>  ->.
 Qed.
 
+Lemma mem_contiguous_intervals1 (Z : set R) j :
+  compact Z ->
+  Z !=set0 ->
+  contiguous_intervals Z j !=set0 ->
+  Z (fine (contiguous_intervals1 Z j)).
+Admitted.
+
 Lemma compact_mem_sup (A : set R) : compact A -> A (sup A).
 Proof.
 rewrite Rcompact_boundE => -[cA ubA _].
@@ -752,18 +759,40 @@ have Z_nonempty : Z !=set0.
   by move: HZ; rewrite Z0' image_set0 measure0 ltxx.
 have closedZ : closed Z by exact: compact_closed cZ.
 pose supp := open_disjoint_itv_support (closed_open_cplt_hull closedZ).
-have [finsupp|infsupp] := pselect (finite_set supp).
-have Z_nonempty : Z !=set0.
-  apply/set0P; apply/negP => /eqP Z0'.
-  by move: HZ; rewrite Z0' image_set0 measure0 ltxx.
-have closedZ : closed Z by exact: compact_closed cZ.
-pose supp := open_disjoint_itv_support (closed_open_cplt_hull closedZ).
 have [|infsupp] := pselect (finite_set supp).
   move=> [n].
   case: n => [|n].
-    (* Z = set0 *)
-    admit.
+    rewrite II0 card_eq0 => supp0.
+    have H i : open_disjoint_itv (closed_open_cplt_hull closedZ) i = set0.
+      move/eqP : supp0.
+      rewrite /supp /open_disjoint_itv_support/=.
+      by move=> /(congr1 (fun f => (f i)))/= => /notT/set0P/negP/negPn/eqP.
+    have : cplt_hull Z = set0.
+      rewrite [LHS]open_disjoint_itv_bigcup//.
+        exact: closed_open_cplt_hull.
+      move=> ocplthullZ.
+      rewrite bigcup0// => i _.
+      by rewrite (Prop_irrelevance ocplthullZ (closed_open_cplt_hull closedZ))//.
+    rewrite /cplt_hull.
+    rewrite setD_eq0.
+    move=> ?.
+    have ZhullZ : Z = [set` Rhull Z].
+      apply/seteqP; split => //.
+      by apply: sub_Rhull.
+    have Zcd : Z = `[c, d]%classic by rewrite ZhullZ closed_Rhull.
+    move: Z0.
+    rewrite Zcd [X in X = _]lebesgue_measure_itv/= lte_fin cd -EFinD => -[].
+    move=> /eqP.
+    rewrite subr_eq0.
+    apply/negP.
+    by rewrite gt_eqF.
   case: n => [|n].
+    rewrite II1 => ?.
+    have H1 : open_disjoint_itv (closed_open_cplt_hull closedZ) 0 !=set0.
+      admit.
+    have H2 : cplt_hull Z = open_disjoint_itv (closed_open_cplt_hull closedZ) 0.
+      admit.
+    (* end points are isolated points *)
     admit.
   move/ppcard_eqP => [/= h].
   pose h1 : {bij `I_ n.+2 >-> supp} := h^-1%FUN.
@@ -776,7 +805,7 @@ have [|infsupp] := pselect (finite_set supp).
     exists (h x).
       exact: funS.
     by rewrite hh1 ?inE.
-  have chZE : cplt_hull Z = \bigcup_(i < n.+2) contiguous_intervals Z (h1 i).
+  have : cplt_hull Z = \bigcup_(i < n.+2) contiguous_intervals Z (h1 i).
     rewrite bigcup_contiguous_intervals//.
     rewrite -(reindex_bigcup _ _ _ _ funh1 surjh1).
     rewrite [RHS]bigcup_mkcond.
@@ -784,27 +813,37 @@ have [|infsupp] := pselect (finite_set supp).
     case: ifP => //.
     rewrite /contiguous_intervals.
     case : pselect => // closedZ'.
-    have {closedZ'} -> : closed_open_cplt_hull closedZ' = closed_open_cplt_hull closedZ.
-      exact: Prop_irrelevance.
+    rewrite (Prop_irrelevance closedZ' closedZ)//.
     move/negP; rewrite inE.
-    rewrite /supp/open_disjoint_itv_support/=.
-    by move/set0P/negP/negbNE/eqP.
-  have : forall i, exists j, ((i < n.+2)%N -> (j < n.+2)%N) /\
-     ((i < n.+2)%N ->
-    sup (contiguous_intervals Z (h1 i)) = inf (contiguous_intervals Z (h1 j))).
+    by rewrite /supp/open_disjoint_itv_support/= => /nonemptyPn.
+  rewrite /cplt_hull.
+(*  have [i [j [Hi Hij]]] : exists (i : 'I_n.+2) (j : 'I_n.+2),
+      sup (contiguous_intervals Z (h1 i)) != sup Z /\
+      sup (contiguous_intervals Z (h1 i)) < inf (contiguous_intervals Z (h1 j)).
     admit.
+  pose A := `[sup (contiguous_intervals Z (h1 i)),
+              inf (contiguous_intervals Z (h1 j))]%classic.
+  have A0 : (0 < mu A)%E.
+    admit.
+  have AZ : A `<=` Z.
+    admit.
+  admit. (* by contradiction *)
+*)
+
+
+(*
   move/choice => [next_i /all_and2[nextltn sup_eq_inf]].
   have : forall i, i != next_i i.
-    
+    admit.
   have := sup_eq_inf 0 (ltn0Sn _).
-    
+  move=> 
   move: isoZ0.
-  move/eqP; apply/negP/set0P.
+  move/eqP => /negPn. ; apply/negP/set0P.
   exists (sup (contiguous_intervals Z (h1 0%N))).
   split.
     admit.
-  rewrite /=.
-admit.
+  rewrite /=.*)
+  admit.
 have countsupp : countable supp by exact: subset_card_le.
 have /ppcard_eqP[/= h] := eq_card_nat countsupp infsupp.
 pose h1 : {bij [set: nat] >-> supp} := h^-1%FUN.
@@ -830,6 +869,7 @@ have fin_alpha : alpha \is a fin_num.
   rewrite completed_lebesgue_measure_itv ifT ?lte_fin//=.
   by rewrite -EFinB ltry.
 pose a_ n := sort <=%R [tuple A_ i | i < n].
+pose b_ n := sort <=%R [tuple B_ i | i < n].
 have sorted_index_prop : forall n,
    {i_s : seq nat | perm_eq i_s (iota 0 n) &
   a_ n = [seq nth d [tuple A_ i | i < n] i | i <- i_s]}.
@@ -839,16 +879,16 @@ have sorted_index_prop : forall n,
 pose sI := fun n => (sval (sorted_index_prop n)).
 pose sIE := fun n => (svalP (sorted_index_prop n)).1.
 pose asIE := fun n => (svalP (sorted_index_prop n)).2.
-pose b_ n := [seq nth d [tuple B_ i0 | i0 < n] i | i <- sI n].
-have size_bE n : size (b_ n) = n.
+(*pose b_ n := [seq nth d [tuple B_ i0 | i0 < n] i | i <- sI n].*)
+(*have size_bE n : size (b_ n) = n.
   by rewrite size_map (perm_size (sIE n)) size_iota.
 have sorted_b n : sorted <=%R (b_ n).
   rewrite /b_.
   apply/sortedP => i.
   rewrite size_bE => i1n.
-  admit.
-have : forall n i, nth d (b_ n) i <= nth d (a_ n) i.+1.
-  admit.
+  admit.*)
+(*have : forall n i, nth d (b_ n) i <= nth d (a_ n) i.+1.
+  admit.*)
 (*have A_lt_B_ n : if contiguous_intervals Z n == set0 then true else A_ n < B_ n.
   case: ifPn => // Zn0.
   rewrite /A_ /B_ fine_contiguous_intervals2// fine_contiguous_intervals1//.
@@ -861,12 +901,6 @@ have : forall n i, nth d (b_ n) i <= nth d (a_ n) i.+1.
     + exact/set0P.
     + exact: open_contiguous_intervals.
     + exact: is_interval_contiguous_intervals.*)
-
-(*
-have Z_set0 : Z !=set0.
-  apply/set0P/negP; move/eqP => Z_set0.
-  have := HZ.
-  by rewrite Z_set0 image_set0 measure0; apply/negP; rewrite -leNgt.
 have lbZa : lbound Z a.
   move=> r Zr.
   have := Zab r Zr.
@@ -875,26 +909,23 @@ have ubZb : ubound Z b.
   move=> r Zr.
   have := Zab r Zr.
   by rewrite /= in_itv/= => /andP[].
-*)
-pose c_ n i := nth d (c :: b_ n) i.
-have nth_b_ n (i j : 'I_n) : (i <= j)%N -> nth d (b_ n) i <= nth d (b_ n) j.
+pose c_ n i := tnth (c :: b_ n) i.
+have nth_b_ n (i j : 'I_n) : (i <= j)%N -> tnth (b_ n) i <= tnth (b_ n) j.
   move=> ij.
-  by apply: le_sorted_leq_nth => //; rewrite inE size_bE.
-
-have Za_ n (i : 'I_ n.+1) : Z (nth d (a_ n.+1) i).
+  (*by apply: le_sorted_leq_nth => //; rewrite inE size_bE.*) admit.
+have Za_ n (i : 'I_ n.+1) : Z (tnth (a_ n.+1) i).
   suff: [set` (a_ n.+1)] `<=` Z.
     by apply; apply/nthP; exists i => //; rewrite size_sort size_tuple.
   move=> x/=; rewrite /b_ mem_sort/= => /mapP[/= j _ ->{x}].
   rewrite /A_.
   apply: mem_contiguous_intervals1 => //.
-  apply/set0P/negP => /eqP Z00.
-  by move: HZ; rewrite Z00 image_set0 measure0 ltxx.
-  
-have Zb_ n (i : 'I_ n.+1) : Z (nth d (b_ n.+1) i).
-  suff: [set` (b_ n.+1)] `<=` Z.
-    admit.
-  admit.
-(*
+  suff: h1 j \in supp.
+    rewrite inE /supp/= /open_disjoint_itv_support/=.
+    rewrite /contiguous_intervals; case: pselect => // closedZ'.
+    by rewrite (Prop_irrelevance closedZ' closedZ).
+  exact/mem_set/funS.
+have Zb_ n (i : 'I_ n.+1) : Z (tnth (b_ n.+1) i).
+  suff: [set` (b_ n.+1)] `<=` Z by apply; apply/tnthP; exists i.
   move=> x/=; rewrite /b_ mem_sort/= => /mapP[/= j _ ->{x}].
   rewrite /B_.
   apply: mem_contiguous_intervals2 => //.
@@ -903,7 +934,7 @@ have Zb_ n (i : 'I_ n.+1) : Z (nth d (b_ n.+1) i).
     rewrite /contiguous_intervals; case: pselect => // closedZ'.
     by rewrite (Prop_irrelevance closedZ' closedZ).
   exact/mem_set/funS.
-have c_b_ n i : c <= tnth (b_ n) i.
+(*have c_b_ n i : c <= tnth (b_ n) i.
   move: n i => [[[]//]|n i].
   suff: c <= tnth (b_ n.+1) ord0.
     have [->//|i0] := eqVneq i ord0.
@@ -914,14 +945,10 @@ have c_b_ n i : c <= tnth (b_ n) i.
   rewrite /b_.
   exact: Zb_.
 *)
- admit.
-
 pose d_ n i := tnth (rcons (a_ n) d) i.
 pose lambda n : R :=
   \big[Num.max/0%R]_(i < n.+1) `|d_ n i - c_ n i|.
-have lambda_ge0 n : 0 <= lambda n.
-  apply: le_trans; last exact: (le_bigmax _ _ ord0).
-  by [].
+have lambda_ge0 n : 0 <= lambda n by exact: (le_trans _ (le_bigmax _ _ ord0)).
 have mcgitv i : mu.-cara.-measurable (contiguous_intervals Z i).
   move=> k; apply: sub_caratheodory.
   apply: open_measurable.
@@ -929,7 +956,6 @@ have mcgitv i : mu.-cara.-measurable (contiguous_intervals Z i).
 have spl_ex : forall n, exists k : 'I_ n.+1,
    `]A_ n.+1, B_ n.+1[ `<=` `[c_ n k, d_ n k].
   move=> n.
-  
   admit.
 set k_ := fun n => sval (cid (spl_ex n)).
 set ABncdk := fun n => svalP (cid (spl_ex n)).
@@ -993,8 +1019,7 @@ have lambda0 : lambda @ \oo --> 0.
     admit.
   apply: nearW => n.
   admit.
-(*
-have lambda0 : lambda @ \oo --> 0.
+(*have lambda0 : lambda @ \oo --> 0.
   suff : \sum_(i < n) mu (contiguous_intervals Z i) @[n --> \oo]
       --> mu (cplt_hull Z).
   move=> H.
@@ -1143,8 +1168,6 @@ have Z_set0 : Z !=set0.
   apply/set0P/negP; move/eqP => Z_set0.
   have := HZ.
   by rewrite Z_set0 image_set0 measure0; apply/negP; rewrite -leNgt.
-have lbZa : lbound Z a by move=> r /Zab/= /itvP ->.
-have ubZb : ubound Z b by move=> r /Zab/= /itvP ->.
 near \oo => n.
 have n0n : (n0 <= n)%N by near: n; exact: nbhs_infty_ge.
 move/(_ n n0n).
