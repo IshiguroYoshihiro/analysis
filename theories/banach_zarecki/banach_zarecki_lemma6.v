@@ -698,11 +698,16 @@ have Z_nonempty : Z !=set0.
   apply/set0P; apply/negP => /eqP Z0'.
   by move: HZ; rewrite Z0' image_set0 measure0 ltxx.
 have closedZ : closed Z by exact: compact_closed cZ.
-have [finsupp|infsupp] := pselect
-    (finite_set (open_disjoint_itv_support (closed_open_cplt_hull closedZ))).
+pose supp := open_disjoint_itv_support (closed_open_cplt_hull closedZ).
+have [finsupp|infsupp] := pselect (finite_set supp).
   admit.
-pose A_ n := fine (contiguous_intervals1 Z n).
-pose B_ n := fine (contiguous_intervals2 Z n).
+have countsupp : countable supp by exact: subset_card_le.
+have /ppcard_eqP[/= h] := eq_card_nat countsupp infsupp.
+pose h1 : {bij [set: nat] >-> supp} := h^-1%FUN.
+have hh1 : {in supp, cancel h h1} by exact: funK.
+have h1h : cancel h1 h by move=> x; apply: invK; rewrite inE.
+pose A_ n := fine (contiguous_intervals1 Z (h1 n)).
+pose B_ n := fine (contiguous_intervals2 Z (h1 n)).
 pose alpha := mu (H @` Z).
 have fin_alpha : alpha \is a fin_num.
   rewrite gt0_fin_numE//.
