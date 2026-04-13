@@ -822,7 +822,7 @@ have : inf (contiguous_intervals Z j) \in [set` Rhull Z].
     exact: has_lbound_contiguous_intervals.
   have H4 : closure (contiguous_intervals Z j) `<=` [set` Rhull Z].
     rewrite [X in _ `<=` X](closure_id _).1//; last first.
-      rewrite closed_Rhull//.
+      rewrite compact_Rhull//.
       exact: itv_closed_ends_closed.
     apply: (@subset_trans _ (closure (cplt_hull Z))).
       rewrite cpltZE.
