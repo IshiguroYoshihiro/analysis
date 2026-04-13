@@ -731,7 +731,7 @@ have /closureN := closure_sup A0 lbndA.
 by rewrite -/(inf A) setNK.
 Qed.
 
-Lemma closed_Rhull (Z : set R) : compact Z -> Z !=set0 -> Rhull Z = `[inf Z, sup Z].
+Lemma compact_Rhull (Z : set R) : compact Z -> Z !=set0 -> Rhull Z = `[inf Z, sup Z].
 Proof.
 rewrite Rcompact_boundE/= => -[closedZ ubndZ lbndZ] Z0.
 rewrite /Rhull !(introT (@asboolP _) _)//.
@@ -775,7 +775,7 @@ have : sup (contiguous_intervals Z j) \in [set` Rhull Z].
     exact: has_ubound_contiguous_intervals.
   have H4 : closure (contiguous_intervals Z j) `<=` [set` Rhull Z].
     rewrite [X in _ `<=` X](closure_id _).1//; last first.
-      rewrite closed_Rhull//.
+      rewrite compact_Rhull//.
       exact: itv_closed_ends_closed.
     apply: (@subset_trans _ (closure (cplt_hull Z))).
       rewrite cpltZE.
