@@ -1067,6 +1067,16 @@ Lemma compact_mem_inf (A : set R) : compact A -> A (inf A).
 Proof.
 Abort.
 
+(*
+Lemma completed_lebesgue_measure_eq_itv (A : set R) (x y : itv_bound R) :
+  (x < y)%E ->
+  A = [set` Interval x y] ->
+  (mu A = ereal_of_itv_bound y - ereal_of_itv_bound x)%E.
+Proof.
+by move=> xy ->; rewrite completed_lebesgue_measure_itv xy.
+Qed.
+*)
+
 (* https://math.stackexchange.com/questions/520209/removing-isolated-points-to-get-a-perfect-set *)
 Lemma lemma6_direct : lusinN `[a, b] H.
 Proof.
