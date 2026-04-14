@@ -1530,19 +1530,21 @@ Section absolute_continuity_def.
 Context {R : realType}.
 
 Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
-  exists d : {posnum R}, forall n (B : nat -> R * R), (* B : 'I_n -> R * R *)
-    [/\ (forall i, (i < n)%N -> ((B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b])),
+  exists d : {posnum R}, forall n (B : nat -> R * R),
+    [/\ (forall i, (i < n)%N ->
+          (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
         trivIset `I_n (fun i => `](B i).1, (B i).2[%classic) &
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
-    \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
+        \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
 
 Definition abs_cont_order (a b : R) (f : R -> R) := forall e : {posnum R},
-  exists d : {posnum R}, forall n (B : nat -> R * R), (* B : 'I_n -> R * R *)
-    [/\ (forall i, (i < n)%N -> ((B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b])),
+  exists d : {posnum R}, forall n (B : nat -> R * R),
+    [/\ (forall i, (i < n)%N ->
+          ((B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b])),
         (forall i j : 'I_n, (i < j)%N -> (B i).2 <= (B j).1),
         trivIset `I_n (fun i => `](B i).1, (B i).2[%classic) &
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
-    \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
+        \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
 
 End absolute_continuity_def.
 

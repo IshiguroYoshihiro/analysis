@@ -11,7 +11,9 @@ From mathcomp Require Import absolute_continuity.
 (**md**************************************************************************)
 (* # Banach–Zarecki Theorem (lemma 5)                                         *)
 (*                                                                            *)
-(* ref: https://archive.org/details/theoryoffunction00nata *)
+(* ```                                                                        *)
+(*    mesh a b s == mesh of the partition s over [a, b]                       *)
+(* ```                                                                        *)
 (******************************************************************************)
 
 Set Implicit Arguments.
@@ -1564,18 +1566,10 @@ Qed.
 
 End twice.
 
-Section itv_partition_length.
+Section omega_max.
 Context {R : realType}.
 Implicit Types (a b : R) (f : R -> R).
 Implicit Types (s : seq R) (x : R).
-
-Definition itv_partition_max a b s : R := let pnth := nth b (a :: s) in
-  (\big[maxr/0%:nng]_(0 <= n < size s) `|pnth n.+1 - pnth n|%:nng)%:num.
-
-(*
-Definition itv_partition_with_max a b l s :=
-  itv_partition a b s /\ itv_partition_max a b s = l.
-*)
 
 Definition omega_max a b f s : \bar R :=
    \big[maxe/-oo%E]_(0 <= n < size s) oscillation f
@@ -1645,7 +1639,6 @@ case: ifPn.
   case: s IHs phss qst => [|h s IHs phss qst].
 (*
     rewrite hsht.
-
     rewrite /omega_max/=.
     rewrite big_nat1/= big_nat_recl/=.
     apply: bigmax_le.
@@ -1658,7 +1651,6 @@ case: ifPn.
     admit.
   (* rewrite le_max; apply/orP. *)
     admit.
-
 Abort.
 (*
 rewrite /=; case: ifPn => hshht /andP[ahs] phss.
@@ -1680,8 +1672,6 @@ rewrite /=; case: ifPn => [/eqP|] at0.
 rewrite [X in subseq _ X](_ : _ = merge r (a :: s) t1)//.
 exact: ih.
 
-
-
   rewrite /=; case: ifPn => hsht phss.
   move=> sub_stt.
   have := @omega_max_cons a b f t ht.
@@ -1693,7 +1683,6 @@ rewrite /=; case: ifPn => [/eqP|] at0.
   exact: (subseq_trans (subseq_cons _ _) (ih s IH)).
 rewrite [X in subseq _ X](_ : _ = merge r (a :: s) t1)//.
 exact: ih.
-
 
 elim: t s.
   by move => ? /negP.
@@ -1739,7 +1728,7 @@ rewrite maxA le_max2// ge_max; apply/andP; split; apply: oscillation_sub.
 - exact: subset_itvr.
 Qed.
 
-End itv_partition_length.
+End omega_max.
 
 Section nonnegR_is_monoid.
 Context {R : realType}.
@@ -1778,14 +1767,16 @@ Context {R : realType}.
 Implicit Types (a b : R) (f : R -> R).
 Implicit Types (s : seq R) (x : R).
 
-Lemma itv_partition_max_ge0 a b s :
-  0 <= itv_partition_max a b s.
-Proof. by rewrite /itv_partition_max. Qed.
+Definition mesh a b s : R := let pnth := nth b (a :: s) in
+  (\big[maxr/0%:nng]_(0 <= n < size s) `|pnth n.+1 - pnth n|%:nng)%:num.
 
-Lemma itv_partition_max_eq_merge_subseq a b s t :
+Lemma mesh_ge0 a b s : 0 <= mesh a b s.
+Proof. by rewrite /mesh. Qed.
+
+Lemma mesh_eq_merge_subseq a b s t :
   path <=%R a s -> path <=%R a t ->
   subseq t s ->
-  itv_partition_max a b (merge <=%R s t) = itv_partition_max a b s.
+  mesh a b (merge <=%R s t) = mesh a b s.
 Proof.
 elim: t s => //=.
   move=> pas _ _.
@@ -1801,7 +1792,7 @@ rewrite IH; last 3 first.
 - apply: (@subseq_trans _ s); last exact: subseq_mergel.
   apply: subseq_trans subhts.
   exact: subseq_cons.
-rewrite /itv_partition_max => //.
+rewrite /mesh.
 rewrite size_merge.
 have hs : h \in s.
   have /mem_subseq/subsetP := subhts.
@@ -1821,13 +1812,13 @@ Abort.
 
 Lemma path_merge_ltW a b (s t : seq R) :
   path <=%R a s -> subseq t s ->
-itv_partition_max a b s = itv_partition_max a b (merge <=%R s t).
+  mesh a b s = mesh a b (merge <=%R s t).
 Proof.
 Abort.
 
-Lemma itv_partition_max_merge1_le a b s x :
+Lemma mesh_merge1_le a b s x :
   path <%R a s -> a <= x <= b -> last a s == b ->
-  itv_partition_max a b (merge <%R s [:: x]) <= itv_partition_max a b s.
+  mesh a b (merge <%R s [:: x]) <= mesh a b s.
 Proof.
 move=> ps /eqP sb.
 have [xs|xs] := boolP (x \in s).
@@ -1835,29 +1826,26 @@ have [xs|xs] := boolP (x \in s).
   admit.
 (*
 apply: subseq_itv_partition_max.
-have itv_partition_max_merge : 
+have itv_partition_max_merge :
 *)
 Abort.
 
-Lemma itv_partition_max_merge1' a b l s x :
+Lemma mesh_merge1' a b l s x :
   path <=%R a s -> last a s == b ->
-  itv_partition_max a b s <= l ->
-  itv_partition_max a b (merge <=%R s [:: x]) <= l.
+  mesh a b s <= l ->
+  mesh a b (merge <=%R s [:: x]) <= l.
 Proof.
 elim: s => //.
   move=> ? /=.
-  rewrite /itv_partition_max/=.
+  rewrite /mesh/=.
   rewrite big_nat_recl// big_nil/=.
-  
-rewrite /itv_partition_max/=.
-
+rewrite /mesh /=.
 Abort.
 
-Lemma itv_partition_max_merge a b l s t :
-  itv_partition_max a b s <= l ->
-  itv_partition_max a b (merge <=%R s t) <= l.
+Lemma mesh_merge a b l s t :
+  mesh a b s <= l ->
+  mesh a b (merge <=%R s t) <= l.
 Proof.
-
 Abort.
 
 End itv_partition_length_lemmas.
@@ -1993,7 +1981,7 @@ Hypothesis cf : {within `[a, b], continuous f}.
 Implicit Types (s : seq R) (x : R).
 
 Lemma variation_merge_tmp l s t :
-  itv_partition a b s -> itv_partition_max a b s <= l ->
+  itv_partition a b s -> mesh a b s <= l ->
   itv_partition a b t ->
   disj_seq s t ->
   ((variation a b f (merge <%R s t))%:E <= (variation a b f s)%:E +
@@ -2145,8 +2133,7 @@ elim : t s a b => [s a b ab abs _ abt i|t0 t1 ih].
   by exists i.
 move=> s.
 elim: s t0 t1 ih => //=.
-  move=> t0 t1 ih a b ab.
-  move/itv_partition_nil.
+  move=> t0 t1 ih a b ab /itv_partition_nil.
   move: ab => /[swap] ->.
   by rewrite ltxx.
 move=> s0 s1 ih' t0 t1 ih a b ab.
@@ -2155,9 +2142,9 @@ move=> abs t0t1 abt [_|i].
   exists O => //=.
   have [s0t0|t0s0] := ltP s0 t0.
     apply: subset_itvl.
-    by rewrite bnd_simp/=.
+    by rewrite bnd_simp.
   apply: subset_itvl.
-  by rewrite bnd_simp/=.
+  by rewrite bnd_simp.
 have [s0t0|t0s0] := ltP s0 t0.
   have : s0 <= b.
     case: abs => /= /andP[as0 s0s1 /eqP <-].
@@ -2165,8 +2152,7 @@ have [s0t0|t0s0] := ltP s0 t0.
   rewrite le_eqVlt => /predU1P[?|s0b].
     subst s0.
     destruct s1; last first.
-      clear ih'.
-      clear ih.
+      clear ih' ih.
       case: abs.
       rewrite [in X in X -> _]/= ab.
       rewrite [in X in _ -> X -> _]/=.
@@ -2315,7 +2301,7 @@ destruct i => /=.
 done.
 Qed.
 
-Lemma tmp a b s (t0 : seq R) (t : R) :
+Lemma itv_partition_sorted_rcons a b s (t0 : seq R) (t : R) :
   a < b -> itv_partition a b s ->
   sorted <%R (rcons t0 t) ->
   (forall x, x \in rcons t0 t -> (x \in `]a, b[) /\ x \notin s) ->
@@ -2327,8 +2313,8 @@ Proof.
 move=> ab abs sorted_t0t xnotin.
 have H0 : itv_partition a b (merge <%R s t0).
   apply: sorted_itv_partition_merge => //.
-  move: sorted_t0t.
-  by rewrite -cats1 => /cat_sorted2[].
+    move: sorted_t0t.
+    by rewrite -cats1 => /cat_sorted2[].
   move=> x xt0.
   have := xnotin x.
   by rewrite mem_rcons inE xt0 orbT => /(_ isT).
@@ -2346,7 +2332,7 @@ have H2 : a < t < b.
   have := xnotin t.
   rewrite mem_rcons inE eqxx/= => /(_ isT).
   by rewrite in_itv/= => -[].
-have [k K1 K2] := (@itv_partition_notin_inbetween _ R a b (merge <%R s t0) t H0 H1 H2).
+have [k K1 K2] := @itv_partition_notin_inbetween _ R a b (merge <%R s t0) t H0 H1 H2.
 by exists k.
 Qed.
 
@@ -2378,25 +2364,25 @@ have [k ks t1k] : exists2 k,
      t1 \in `](nth b (a :: merge <%R s t0) k),
      (nth b (a :: merge <%R s t0) k.+1)[.
   clear ih.
-  by apply: tmp.
+  exact: itv_partition_sorted_rcons.
 rewrite -merge_ltEle//; last first.
-  apply: merge_sorted => //; exact: le_total.
+  by rewrite merge_sorted//; exact: le_total.
 apply: le_trans.
   apply: (@variation_merge1_oscillation _ _ _ _ _ _ _ _ _ _ _ k) => //.
-  rewrite -merge_ltEle//.
-  apply: sorted_itv_partition_merge => //.
-  by move: st; rewrite -cats1 => /cat_sorted2[].
-  move=> x xt0.
-  apply: tabs.
-  by rewrite mem_rcons inE xt0 orbT.
-  have := tabs t1.
-  by rewrite mem_rcons inE eqxx/= => /(_ isT)[].
-  rewrite mem_merge mem_cat negb_or; apply/andP; split.
-    apply tabs.
+  - rewrite -merge_ltEle//.
+    apply: sorted_itv_partition_merge => //.
+      by move: st; rewrite -cats1 => /cat_sorted2[].
+    move=> x xt0.
+    apply: tabs.
+    by rewrite mem_rcons inE xt0 orbT.
+  - have := tabs t1.
+    by rewrite mem_rcons inE eqxx/= => /(_ isT)[].
+  - rewrite mem_merge mem_cat negb_or; apply/andP; split.
+      apply tabs.
       by rewrite mem_rcons mem_head.
     exact: lt_sorted_rcons_notin.
-  by rewrite -merge_ltEle.
-  by rewrite -merge_ltEle.
+  - by rewrite -merge_ltEle.
+  - by rewrite -merge_ltEle.
 (*  rewrite (leq_trans ks)//=. size_merge size_cat leq_addr.*)
 apply: (@le_trans _ _ (
   (variation a b f s)%:E + ((size t0)%:R)%:E * 2 * omega_max a b f s
@@ -2427,8 +2413,7 @@ have [?|] := boolP (omega_max a b f s \is a fin_num); last first.
   by rewrite lte_paddl//.
 rewrite muleDl//.
 rewrite leeD2l//.
-rewrite lee_pmul//.
-  exact: oscillation_ge0.
+rewrite lee_pmul//; first exact: oscillation_ge0.
 set st0 := merge <=%R s t0.
 pose hst0 := fun k => oscillation f `[(nth b (a :: st0) k), (nth b st0 k)].
 rewrite (@le_trans _ _ (omega_max a b f (merge <=%R s t0)))//.
@@ -2969,7 +2954,7 @@ Lemma lemma5' :
   forall A : R, (0%:E <= A%:E < total_variation a b f)%E ->
     exists2 delta, 0 < delta &
       (forall p, itv_partition a b p ->
-       itv_partition_max a b p < delta -> (* le? *)
+       mesh a b p < delta -> (* le? *)
               A < variation a b f p).
 Proof.
 move=> A /andP[].
@@ -3161,10 +3146,9 @@ have : forall x y, x \in `[(nth b (a :: p) n), (nth b p n)] ->
   apply: le_lt_trans abpd.
   apply: (@le_trans _ _ (\big[maxr/0]_(0 <= n0 < size p)
       `|nth b p n0 - nth b (a :: p) n0|)); last first.
-    rewrite /itv_partition_max/=.
-    by rewrite -bigmaxr_morph.
+    by rewrite /mesh/= -bigmaxr_morph.
   apply: (le_bigmax_seq _ _ _ (fun=> _)(*TODO: wtf*)) => //=.
-  by rewrite mem_index_iota leq0n/=.
+  by rewrite mem_index_iota leq0n.
 move=> H.
 rewrite lerBlDl; apply: ge_sup => //.
 move=> _/= [x px <-].
@@ -3178,12 +3162,12 @@ rewrite 2!mulrA -[leLHS]mul1r.
   rewrite -mulf_div divff// mulr1.
   rewrite ler_pdivlMr// mul1r mE.
   by rewrite ler_nat size_rcons.
-by apply/ltW/H => //.
+exact/ltW/H.
 Qed.
 
 Definition variations_with_max a b f l : set R :=
    [set r| exists s, [/\ r = variation a b f s,
- itv_partition a b s & (itv_partition_max a b s <= l)%R]].
+ itv_partition a b s & (mesh a b s <= l)%R]].
 
 (*lemma5' :
   bounded_variation a b f ->
@@ -3217,12 +3201,12 @@ Local Definition lambda_partition (a b : R) (lambda : R) :=
   let n := `|ceil ((b - a) / lambda)|%N in
   [seq (a + (b - a) * i.+1%:R / n%:R) | i <- iota 0 n].
 
-Lemma itv_partition_max_lambda x :
-  itv_partition_max a b (lambda_partition a b x) =
+Lemma mesh_lambda x :
+  mesh a b (lambda_partition a b x) =
      (b - a) / `|ceil ((b - a) / x)|%N%:R.
 Proof.
 apply/eqP; rewrite eq_le; apply/andP; split.
-  rewrite /itv_partition_max/=.
+  rewrite /mesh/=.
   (* apply: bigmax_le. *)
   admit.
 Abort.
@@ -3253,7 +3237,7 @@ Proof.
 Abort.
 
 Lemma variation_with_max0E :
-  \forall l \near 0^'+, 
+  \forall l \near 0^'+,
   variations_with_max a b f l =
   variations a b f.
 Proof.
@@ -3266,7 +3250,7 @@ Abort.
 
 Definition variations_with_restr a b f l : set R :=
    [set r| exists s, [/\ r = variation a b f s,
- itv_partition a b s & (l <= itv_partition_max a b s)%R]].
+ itv_partition a b s & (l <= mesh a b s)%R]].
 
 Lemma variation_with_restr0E l : l <= 0 ->
   variations_with_restr a b f l = variations a b f.
@@ -3276,7 +3260,7 @@ rewrite eqEsubset; split => A; first by move=> [p [? ? _]]; exists p.
 move=> [p pabp vA].
 exists p; split => //.
 apply: (le_trans l0).
-exact: itv_partition_max_ge0.
+exact: mesh_ge0.
 Abort.
 
 Lemma lemma5_sup :
@@ -3307,15 +3291,15 @@ Abort.
 
 Lemma lemma5 (l : nat -> R) (x_ : nat -> seq R) :
   (forall n, itv_partition a b (x_ n)) ->
-  (forall n, itv_partition_max a b (x_ n) <= l n) ->
-(*  {homo l : n m / (n <= m)%N >-> (m <= n)} -> *)
+  (forall n, mesh a b (x_ n) <= l n) ->
   l i @[i --> \oo] --> 0 ->
   (variation a b f (x_ n))%:E @[n --> \oo] --> total_variation a b f.
 Proof.
-move=> pabx xl (* ninl *) lcvg0.
+move=> pabx xl lcvg0.
 have vletv n : ((variation a b f (x_ n))%:E <= total_variation a b f)%E.
   apply: le_ereal_sup_tmp.
-  exists (variation a b f (x_ n))%:E=> //; exists (variation a b f (x_ n))=> //.
+  exists (variation a b f (x_ n))%:E => //=.
+  exists (variation a b f (x_ n))=> //.
   by exists (x_ n).
 have := total_variation_ge0 f (ltW ab).
 rewrite le_eqVlt => /predU1P[tvf0|tvfgt0].
@@ -3326,12 +3310,9 @@ have [tvfoo|] := eqVneq (total_variation a b f) +oo%E.
   rewrite tvfoo.
   move=> /= U.
   rewrite /nbhs/= => -[A [_ HA]].
-
   have [A0|A0] := ltP A 0.
     exists 0%N => // k/= => _; apply: HA.
-    rewrite -lte_fin in A0.
-    apply: (lt_le_trans A0).
-    exact: variation_ge0.
+    by rewrite (@lt_le_trans _ _ 0%E)// lee_fin variation_ge0.
   have : (0%:E <= A%:E < total_variation a b f)%E.
     by rewrite lee_fin A0 tvfoo ltry.
   move/lemma5' => /=[e e0].
@@ -3340,14 +3321,11 @@ have [tvfoo|] := eqVneq (total_variation a b f) +oo%E.
     move/(cvgr_dist_lt _ 0) /(_ e e0).
     under eq_near => n.
       rewrite sub0r normrN ger0_norm; last first.
-      apply: (le_trans _ (xl _)).
-      exact: itv_partition_max_ge0.
+        by rewrite (le_trans _ (xl _))// mesh_ge0.
       over.
-    done.
-  have mxe : \forall n \near \oo, itv_partition_max a b (x_ n) < e.
-    move: lne.
-    apply: filterS.
-    move=> n.
+    by [].
+  have mxe : \forall n \near \oo, mesh a b (x_ n) < e.
+    apply: filterS lne => n.
     exact: le_lt_trans.
   move=> abA.
   apply: filterS mxe.
@@ -3373,8 +3351,7 @@ have : (0%:E <= (fine (total_variation a b f) - e)%:E < total_variation a b f)%E
   by rewrite gte_subl// lte_fin.
 move/lemma5' => [d d0 H].
 near=> n.
-
-rewrite ger0_norm; last by rewrite subr_ge0 -lee_fin !fineK//.
+rewrite ger0_norm; last by rewrite subr_ge0 -lee_fin !fineK.
 rewrite ltrBlDl -ltrBlDr/=.
 apply: (H) => //.
 apply: (le_lt_trans (xl n)).
@@ -3549,7 +3526,6 @@ Unshelve. end_near. Admitted.
 
 have [tvfoo|] := eqVneq (total_variation a b f) +oo%E.
   rewrite tvfoo.
-  
   admit.
 have -> : total_variation a b f
     = ereal_inf [set v%:E | v in variations_with_max a b f 0].
