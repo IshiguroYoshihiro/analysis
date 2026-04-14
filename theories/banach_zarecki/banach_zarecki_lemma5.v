@@ -25,6 +25,13 @@ Import numFieldNormedType.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+Lemma eq_mem_sub_mem {A} {a1 a2 : {pred A}} :
+  (a1 =i a2) <-> {subset a1 <= a2} /\ {subset a2 <= a1}.
+Proof.
+split => [H | [H1 H2] a]; first by split=> a; rewrite H.
+case/boolP: (a \in a2); [exact: H2 | apply: contraNF; exact: H1].
+Qed.
+
 Lemma sorted_rconsE {T : eqType} (leT : rel T) :
   transitive leT ->
   forall {x : T} {s : seq T},
@@ -35,6 +42,10 @@ rewrite -rev_sorted rev_rcons/= path_sortedE; last exact: rev_trans.
 by rewrite all_rev rev_sorted andbC.
 Qed.
 
+Lemma sorted_ltW d {T : orderType d} (s : seq T) :
+  sorted <%O s -> sorted <=%O s.
+Proof. by apply: sub_sorted; exact: ltW. Qed.
+
 Lemma le_sorted_rconsE d {R : porderType d} (x : R) (s : seq R) :
   sorted <=%O (rcons s x) = sorted <=%O s && all (<=%O ^~ x) s.
 Proof. rewrite sorted_rconsE//; exact: le_trans. Qed.
@@ -43,9 +54,46 @@ Lemma lt_sorted_rconsE d {R : porderType d} (x : R) (s : seq R) :
   sorted <%O (rcons s x) = sorted <%O s && all (<%O ^~ x) s.
 Proof. rewrite sorted_rconsE//; exact: lt_trans. Qed.
 
-Lemma path_merge {R : realType} (a : R) s h :
-  a < h ->
-  path <%R a s -> path <=%R a (merge <%R s [:: h]).
+Lemma sorted_filter_rcons d {R : porderType d} y (l : seq R) : sorted <%O l ->
+  sorted <%O (rcons [seq x <- l | (x < y)%O] y).
+Proof.
+move=> sl; apply/(sortedP y)=> i; rewrite size_rcons ltnS => ily.
+rewrite lt_sorted_ltn_nth ?inE ?size_rcons ?ltnS//; last by rewrite ltnW.
+rewrite lt_sorted_pairwise pairwise_rcons.
+apply/andP; split; first exact: filter_all.
+by rewrite -lt_sorted_pairwise lt_sorted_filter.
+Qed.
+
+Lemma sorted_filter_path d {R : porderType d} y (l : seq R) :
+  sorted <%O l -> path <%O y [seq x <- l | (y < x)%O].
+Proof.
+move=> sl; rewrite lt_path_sortedE.
+by apply/andP; split; last exact: lt_sorted_filter; exact: filter_all.
+Qed.
+
+Lemma lt_sorted_rcons_notin d {R : porderType d} s (x : R) :
+  sorted <%O (rcons s x) -> x \notin s.
+Proof.
+elim: s x => // s0 [|s1 s2] ih x.
+  by rewrite /= inE andbT => ?; rewrite gt_eqF.
+rewrite [s1 :: s2]lock/= /= rcons_path => /andP[s0s1 s1x].
+rewrite inE negb_or; apply/andP; split.
+  rewrite gt_eqF//.
+  move/order_path_min : s0s1 => /(_ lt_trans)/allP s0s1.
+  rewrite (le_lt_trans _ s1x)//.
+  apply/ltW.
+  apply/s0s1.
+  by rewrite -lock/= mem_last.
+rewrite -lock.
+apply: ih.
+rewrite -lock in s0s1 s1x.
+apply: (@path_sorted _ _ s0). (* TODO: path_sorted implicits *)
+by rewrite rcons_path s1x s0s1.
+Qed.
+
+Lemma path_merge d {R : orderType d} (a : R) s h :
+  (a < h)%O ->
+  path <%O a s -> path <=%O a (merge <%O s [:: h]).
 Proof.
 elim: s a h => [a h ah _/=|s0 s1 ih a h ah].
   by rewrite ltW// andbT.
@@ -79,7 +127,7 @@ Section merge_lemmas_eqType.
 Context {T : eqType} {r : rel T}.
 Implicit Types (s t : seq T) (x : T).
 
-(* unused *)
+(* NB: unused *)
 Lemma merger_cons s t x : all (r x) t ->
   merge r (x :: s) t = x :: merge r s t.
 Proof.
@@ -93,7 +141,7 @@ apply: allxt.
 exact: mem_head.
 Qed.
 
-(* unused *)
+(* NB: unused *)
 Lemma merge_cons_mergel s t x :
   transitive r ->
   all (r x) t -> merge r s (x :: t) = merge r (merge r s [:: x]) t.
@@ -115,8 +163,7 @@ case: ifP.
   by rewrite merger_cons.
 Qed.
 
-Lemma subseq_mergel s t :
-   subseq s (merge r s t).
+Lemma subseq_mergel s t : subseq s (merge r s t).
 Proof.
 elim: s t => [t|a l ih t]; first exact: sub0seq.
 elim: t l ih => // t0 t1 ih s IH.
@@ -266,13 +313,6 @@ lt_sorted_uniq_le:
   uniq s -> sorted <%O s = sorted <=%O s
 *)
 
-Lemma eq_mem_sub_mem {A} {a1 a2 : {pred A}} :
-  (a1 =i a2) <-> {subset a1 <= a2} /\ {subset a2 <= a1}.
-Proof.
-split => [H | [H1 H2] a]; first by split=> a; rewrite H.
-case/boolP: (a \in a2); [exact: H2 | apply: contraNF; exact: H1].
-Qed.
-
 Lemma merge_step {T} (leT : rel T) (a : T) (s : seq T) (b : T) (t : seq T) :
   merge leT (a :: s) (b :: t) =
      if leT a b then a :: merge leT s (b :: t) else b :: merge leT (a :: s) t.
@@ -371,23 +411,6 @@ case: ifPn => [ba|]; last rewrite -leNgt le_eqVlt => /predU1P[ab|ab].
   by elim: s IH pas IH' dasbt.
 Qed.
 
-Lemma sorted_filter_rcons y l : sorted <%R l ->
-sorted <%R (rcons [seq x <- l | x < y] y).
-Proof.
-move=> sl; apply/(sortedP y)=> i; rewrite size_rcons ltnS => ily.
-rewrite lt_sorted_ltn_nth ?inE ?size_rcons ?ltnS//; last by rewrite ltnW.
-rewrite lt_sorted_pairwise pairwise_rcons.
-apply/andP; split; first exact: filter_all.
-by rewrite -lt_sorted_pairwise lt_sorted_filter.
-Qed.
-
-Lemma sorted_filter_path y l :
-  sorted <%R l -> path <%R y [seq x <- l | y < x].
-Proof.
-move=> sl; rewrite lt_path_sortedE.
-by apply/andP; split; last exact: lt_sorted_filter; exact: filter_all.
-Qed.
-
 Lemma sorted_merge_lt_seq l s :
   sorted <%R l -> sorted <%R s ->
   sorted <%R (merge_lt_seq l s).
@@ -410,10 +433,6 @@ rewrite /=; apply/andP; split.
 apply: IH => //.
 exact: lt_sorted_filter.
 Qed.
-
-Lemma sorted_ltW d {T : orderType d} (s : seq T) :
-  sorted <%O s -> sorted <=%O s.
-Proof. by apply: sub_sorted; exact: ltW. Qed.
 
 Lemma filterC_split (s t : seq R) :
   sorted <=%R s ->
@@ -701,25 +720,6 @@ move=> ab /andP[ah hb] hs abs; rewrite merge1E//.
     exact: itv_partitionLP abs.
   exact: itv_partitionRP abs.
 - exact: itv_partition_sorted abs.
-Qed.
-
-Lemma lt_sorted_rcons_notin s x : sorted <%O (rcons s x) -> x \notin s.
-Proof.
-elim: s x => // s0 [|s1 s2] ih x.
-  by rewrite /= inE andbT => ?; rewrite gt_eqF.
-rewrite [s1 :: s2]lock/= /= rcons_path => /andP[s0s1 s1x].
-rewrite inE negb_or; apply/andP; split.
-  rewrite gt_eqF//.
-  move/order_path_min : s0s1 => /(_ lt_trans)/allP s0s1.
-  rewrite (le_lt_trans _ s1x)//.
-  apply/ltW.
-  apply/s0s1.
-  by rewrite -lock/= mem_last.
-rewrite -lock.
-apply: ih.
-rewrite -lock in s0s1 s1x.
-apply: (@path_sorted _ _ s0). (* TODO: path_sorted implicits *)
-by rewrite rcons_path s1x s0s1.
 Qed.
 
 (*Lemma sorted_itv_partition_merge a b s t :
@@ -1014,6 +1014,25 @@ rewrite -/(rcons (a :: s) (last a s)).
 by rewrite nth_rcons/= ltnS (ltnW ks).
 Qed.
 
+Lemma sorted_variation_subseq a b f s t :
+  sorted <=%R s -> sorted <=%R t ->
+  subseq s t ->
+  variation a b f s <= variation a b f t.
+Proof.
+elim: s a t.
+- by move=> ? ? _; rewrite variation_nil variation_ge0.
+move=> + + + + t.
+elim: t => // t0 t1 IHt s0 s1 IHs a0 /= ps pt.
+have [s0t0 s1st1|s0t0 st1] := eqVneq s0 t0.
+  rewrite s0t0 2!variation_recl lerD2l IHs//.
+  + exact: path_sorted ps.
+  + exact: path_sorted pt.
+rewrite (@le_trans _ _ (variation a0 b f t1))//.
+  apply: IHt => //.
+  exact: path_sorted pt.
+exact: le_variation.
+Qed.
+
 Lemma in_variation_merge1 a b f s x : a < b -> itv_partition a b s ->
   x \in s ->
   variation a b f (merge <%O s [:: x]) = variation a b f s.
@@ -1229,13 +1248,6 @@ exists (d, e); split => //=.
 - 
 Abort.
 
-Lemma oscillation_set1 a f : oscillation f [set a] = 0.
-Proof.
-rewrite /oscillation ifF; last first.
-  by apply/negP/negP/set0P; exists a.
-by rewrite !image_set1 ereal_sup1 ereal_inf1 subee.
-Qed.
-
 Lemma variation_oscillation a b c1 c2 f :
   {within `[a, b], continuous f} -> c1 \in `[a, b] -> c2 \in `[a, b] ->
   (`|f c1 - f c2|%:E <= oscillation f `[a, b])%E.
@@ -1268,17 +1280,20 @@ rewrite EFinB leeB//.
 by apply: ge_ereal_inf; exists (f e)%:E => //=; exists e.
 Qed.
 
-Lemma variation_merge1_oscillation a b f s : a < b ->
+Lemma variation_merge1_oscillation a b f s :
   {within `[a, b], continuous f} ->
   itv_partition a b s ->
   forall x, x \in `]a, b[ -> x \notin s ->
-  forall k, (k < (size s))%N ->
+  forall k, (k < size s)%N ->
     x \in `]nth b (a :: s) k, nth b (a :: s) k.+1[ ->
   ((variation a b f (merge <%R s [:: x]))%:E <=
    (variation a b f s)%:E +
    2 * oscillation f `[nth b (a :: s) k, nth b (a :: s) k.+1])%E.
 Proof.
-move=> ab cf abs x xab xs k ks xk.
+have [ba cf /itv_partition_le|ab] := leP b a.
+  rewrite le_eqVlt ltNge ba orbF => /eqP -> x.
+  by rewrite itv_ge// -leNgt bnd_simp lexx.
+move=> cf abs x xab xs k ks xk.
 set s' := merge _ _ _.
 apply: (@le_trans _ _ (variation a b f
     (itv_partitionL s' x ++ itv_partitionR s' x))%:E).
@@ -1927,7 +1942,7 @@ Admitted.
 Section variation_merge_omega_max.
 Context {R : realType}.
 Variables (a b : R) (f : R -> R).
-Hypothesis (ab : a < b).
+Hypothesis ab : a < b.
 Hypothesis cf : {within `[a, b], continuous f}.
 Implicit Types (s : seq R) (x : R).
 
@@ -1958,7 +1973,7 @@ rewrite le_eqVlt => /predU1P[xb|xb].
   subst x.
   have bs := last_mem_itv_partition abs ab.
   by move/negP in xs.
-have := @variation_merge1_oscillation R a b f s ab cf abs x.
+have := @variation_merge1_oscillation R a b f s cf abs x.
 rewrite in_itv/= ax xb => /(_ isT xs).
 have := @itv_partition_notin_inbetween _ _ a b s x abs xs.
 rewrite ax xb => /(_ isT)[k ks xk].
@@ -2368,7 +2383,7 @@ have [k ks t1k] : exists2 k,
 rewrite -merge_ltEle//; last first.
   by rewrite merge_sorted//; exact: le_total.
 apply: le_trans.
-  apply: (@variation_merge1_oscillation _ _ _ _ _ _ _ _ _ _ _ k) => //.
+  apply: (@variation_merge1_oscillation _ _ _ _ _ _ _ _ _ _ k) => //.
   - rewrite -merge_ltEle//.
     apply: sorted_itv_partition_merge => //.
       by move: st; rewrite -cats1 => /cat_sorted2[].
@@ -2916,31 +2931,6 @@ Hypothesis (ab : a < b).
 Hypothesis cf : {within `[a, b], continuous f}.
 Implicit Types (s : seq R) (x : R).
 
-Lemma variation_subseq' s t :
-  sorted <=%R s -> sorted <=%R t ->
-  subseq s t ->
-  variation a b f s <= variation a b f t.
-Proof.
-elim: s a t.
-- move=> ? ? _; by rewrite variation_nil variation_ge0.
-move=> + + + + t.
-elim: t => //.
-move=> t0 t1 IHt s0 s1 IHs a0.
-rewrite /= => ps pt.
-case: ifPn.
-  move/eqP=> s0t0 s1t1.
-  subst s0.
-  rewrite 2!variation_recl lerD2l.
-  apply: IHs => //.
-    exact: path_sorted ps.
-  exact: path_sorted pt.
-move=> s0t0 sst.
-apply: (@le_trans _ _ (variation a0 b f t1)).
-  apply: IHt => //.
-  exact: path_sorted pt.
-exact: le_variation.
-Qed.
-
 Lemma le_sorted_lt_sorted_undup (s : seq R) :
   sorted <=%R s -> sorted <%R (undup s).
 Proof.
@@ -2992,17 +2982,14 @@ apply: (@le_trans _ _ (V0 - (V' - A) / 2)).
     by rewrite mulrDl mulNr addrK.
   rewrite lerDr subr_ge0.
   rewrite -X'V'.
-  apply: variation_subseq' => //.
-    rewrite merge_ltEle ?merge_sorted//.
-    exact: le_total.
-  apply: subseq_merger.
-    exact: lt_trans.
+  rewrite sorted_variation_subseq //.
+    by rewrite merge_ltEle ?merge_sorted//; exact: le_total.
+  apply: (subseq_merger _ lt_trans).
   exact: itv_partition_sorted partX'.
 rewrite lerBlDr -lee_fin EFinD.
 have sorted_X' : (sorted <%R X') by have [/path_sorted] := partX'.
 have V0E : V0 = variation a b f (merge <%R p X') by [].
 have epsE : eps = (V' - A) / (4 * m)%:R by [].
-
 elim/last_ind : X' partX' X'V' m mE eps epsE eps0 unifcf V0 sleX' V0E sorted_X'.
   by move/(itv_partitionNnil ab).
 move=> X'0 X'1 _(* ih *); pose X' := rcons X'0 X'1.
@@ -3289,18 +3276,18 @@ apply: le_ereal_sup_tmp.
 exists (total_variation a b f).
 Abort.
 
-Lemma lemma5 (l : nat -> R) (x_ : nat -> seq R) :
-  (forall n, itv_partition a b (x_ n)) ->
-  (forall n, mesh a b (x_ n) <= l n) ->
+Lemma lemma5 (l : R^nat) (s : (seq R)^nat) :
+  (forall n, itv_partition a b (s n)) ->
+  (forall n, mesh a b (s n) <= l n) ->
   l i @[i --> \oo] --> 0 ->
-  (variation a b f (x_ n))%:E @[n --> \oo] --> total_variation a b f.
+  (variation a b f (s n))%:E @[n --> \oo] --> total_variation a b f.
 Proof.
 move=> pabx xl lcvg0.
-have vletv n : ((variation a b f (x_ n))%:E <= total_variation a b f)%E.
+have vletv n : ((variation a b f (s n))%:E <= total_variation a b f)%E.
   apply: le_ereal_sup_tmp.
-  exists (variation a b f (x_ n))%:E => //=.
-  exists (variation a b f (x_ n))=> //.
-  by exists (x_ n).
+  exists (variation a b f (s n))%:E => //=.
+  exists (variation a b f (s n))=> //.
+  by exists (s n).
 have := total_variation_ge0 f (ltW ab).
 rewrite le_eqVlt => /predU1P[tvf0|tvfgt0].
   apply: cvg_near_cst; apply: nearW => n.
@@ -3324,31 +3311,23 @@ have [tvfoo|] := eqVneq (total_variation a b f) +oo%E.
         by rewrite (le_trans _ (xl _))// mesh_ge0.
       over.
     by [].
-  have mxe : \forall n \near \oo, mesh a b (x_ n) < e.
-    apply: filterS lne => n.
-    exact: le_lt_trans.
+  have mxe : \forall n \near \oo, mesh a b (s n) < e.
+    by apply: filterS lne => n; exact: le_lt_trans.
   move=> abA.
-  apply: filterS mxe.
-  move=> n /abA => /(_ (pabx n)).
+  apply: filterS mxe => n /abA - /(_ (pabx n)).
   by rewrite -lte_fin => /HA.
-rewrite -ltey.
-move=> tvfltey.
+rewrite -ltey => tvfltey.
 have tvf_fin : total_variation a b f \is a fin_num.
-  rewrite ge0_fin_numE => //.
-  exact: (total_variation_ge0 _ (ltW ab)).
-rewrite -(@fineK _ (total_variation a b f)) => //.
-apply/fine_cvgP.
-split => //.
-  exact: nearW.
-apply/cvgrPdist_ltp.
-near=> e.
+  by rewrite ge0_fin_numE // (total_variation_ge0 _ (ltW ab)).
+rewrite -(@fineK _ (total_variation a b f))//; apply/fine_cvgP.
+split; first exact: nearW.
+apply/cvgrPdist_ltp; near=> e.
 have : (0%:E <= (fine (total_variation a b f) - e)%:E < total_variation a b f)%E.
   apply/andP; split; rewrite ?lee_fin.
-    rewrite subr_ge0; near: e.
-    apply: nbhs_right_le.
+    rewrite subr_ge0.
+    near: e; apply: nbhs_right_le.
     by rewrite fine_gt0// tvfgt0.
-  rewrite EFinB fineK//.
-  by rewrite gte_subl// lte_fin.
+  by rewrite EFinB fineK// gte_subl// lte_fin.
 move/lemma5' => [d d0 H].
 near=> n.
 rewrite ger0_norm; last by rewrite subr_ge0 -lee_fin !fineK.

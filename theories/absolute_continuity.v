@@ -18,7 +18,7 @@ From mathcomp Require Import realfun exp derive borel_hierarchy.
 (*   abs_cont_order a bf == equivalent definition of abs_cont where the       *)
 (*                          (non-overlapping) intervals forming the           *)
 (*                          subdivision or ordered                            *)
-(*           lusin N A f == the function f : R -> R satisfies the Lusin N     *)
+(*            lusinN A f == the function f : R -> R satisfies the Lusin N     *)
 (*                          condition over A : set R                          *)
 (*       oscillation f A == oscillation of function f : R -> R on A : set R   *)
 (*                          This is an extended real number.                  *)
@@ -34,6 +34,24 @@ Import numFieldNormedType.Exports.
 
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
+
+(* TODO: PR? *)
+Lemma setNEFin {R : realType} (f : R -> R) (A : set R) :
+  [set (- x)%E | x in ((EFin \o f) @` A)] = (EFin \o (\- f)%R) @` A.
+Proof.
+apply/seteqP; split => [_ [_/= [r Ar] <- <-]|_/= [r Ar] <-].
+  by exists r.
+by exists (f r)%:E => //; exists r.
+Qed.
+
+(* TODO: PR? *)
+Lemma ereal_inf_sup {R : realType} (A : set (\bar R)) : A !=set0 ->
+  (ereal_inf A <= ereal_sup A)%E.
+Proof.
+move=> [a Aa].
+by rewrite (@le_trans _ _ a)//;
+  [exact: ereal_inf_lbound|exact: ereal_sup_ubound].
+Qed.
 
 Section Rbounded_closed_compact.
 Context {R : realType}.
@@ -2690,23 +2708,6 @@ Definition oscillation {R : realType} (f : R -> R) (A : set R) : \bar R :=
    else
      ereal_sup ((EFin \o f) @` A) - ereal_inf ((EFin \o f) @` A))%E.
 
-(* TODO: PR? *)
-Lemma setNEFin {R : realType} (f : R -> R) (A : set R) :
-  [set (- x)%E | x in ((EFin \o f) @` A)] = (EFin \o (\- f)%R) @` A.
-Proof.
-apply/seteqP; split => [_ [_/= [r Ar] <- <-]|_/= [r Ar] <-].
-  by exists r.
-by exists (f r)%:E => //; exists r.
-Qed.
-
-(* TODO: PR? *)
-Lemma ereal_inf_sup {R : realType} (A : set (\bar R)) : A !=set0 ->
-  (ereal_inf A <= ereal_sup A)%E.
-Proof.
-move=> [a Aa].
-by rewrite (@le_trans _ _ a)//;
-  [exact: ereal_inf_lbound|exact: ereal_sup_ubound].
-Qed.
 
 Section oscillation_lemma.
 Context (R : realType).
@@ -2715,6 +2716,13 @@ Implicit Types (f : R -> R) (A : set R).
 
 Lemma oscillation0 f : oscillation f set0 = 0.
 Proof. by rewrite /oscillation eqxx. Qed.
+
+Lemma oscillation_set1 (a : R) f : oscillation f [set a] = 0.
+Proof.
+rewrite /oscillation ifF; last first.
+  by apply/negP/negP/set0P; exists a.
+by rewrite !image_set1 ereal_sup1 ereal_inf1 subee.
+Qed.
 
 Lemma oscillationN f A : oscillation (\- f)%R A = oscillation f A.
 Proof.
