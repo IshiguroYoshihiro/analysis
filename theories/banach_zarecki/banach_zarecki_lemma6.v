@@ -855,7 +855,7 @@ Lemma lebesgue_measure_gt0 (P : set R) :
 Proof.
 rewrite Rcompact_boundE => /= -[closedP ubndP lbndP].
 move/is_intervalP => PE P0 P1.
-rewrite PE closed_Rhull//; last by rewrite Rcompact_boundE.
+rewrite PE compact_Rhull//; last by rewrite Rcompact_boundE.
 rewrite lebesgue_measure_itv/= lte_fin -EFinD.
 rewrite has_bound_not_subset1_inf_sup//.
 by rewrite lte_fin subr_gt0 has_bound_not_subset1_inf_sup.
@@ -1043,7 +1043,7 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
     `|` `[(nth 0 sorted_bnds n.-1).2, sup P]%classic.
   rewrite [in LHS]UE.
   rewrite -[in LHS](@prednK (size p)); last by rewrite lt0n size_eq0.
-  rewrite closed_Rhull//.
+  rewrite compact_Rhull//.
   rewrite (@setD_bigcup_itvoo _ _ (fun k => (sorted_bnds`_k).1)
                               (fun k => (sorted_bnds`_k).2))//.
   move=> i ni.
