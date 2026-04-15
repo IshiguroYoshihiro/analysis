@@ -946,6 +946,11 @@ Definition continuous_at (T U : nbhsType) (x : T) (f : T -> U) :=
   (f%function @ x --> f%function x).
 Notation continuous f := (forall x, continuous_at x f).
 
+Lemma continuous_comp (R S T : nbhsType) (f : R -> S) (g : S -> T) x :
+  {for x, continuous f} -> {for (f x), continuous g} ->
+  {for x, continuous (g \o f)}.
+Proof. exact: cvg_comp. Qed.
+
 Lemma near_fun (T T' : nbhsType) (f : T -> T') (x : T) (P : T' -> Prop) :
     {for x, continuous f} ->
   (\forall y \near f x, P y) -> (\near x, P (f x)).

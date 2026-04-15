@@ -128,6 +128,19 @@ Add Search Blacklist "_mixin_".
 (*                   fctE == multi-rule for fct                               *)
 (* ```                                                                        *)
 (*                                                                            *)
+(* ```                                                                        *)
+(*           linfun E F s == membership predicate for linear functions of     *)
+(*                           type E -> F with scalar operator                 *)
+(*                           s : K -> F -> F                                  *)
+(*                           E and F have type lmodType K.                    *)
+(*                           This is used in particular to attach a type of   *)
+(*                           lmodType to {linear E -> F | s}.                 *)
+(*          linfun_spec f == specification for membership of the linear       *)
+(*                           function f                                       *)
+(* ```                                                                        *)
+(*                                                                            *)
+(*                                                                            *)
+(*                                                                            *)
 (******************************************************************************)
 
 Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
@@ -2750,3 +2763,96 @@ End function_space_lemmas.
 
 Lemma inv_funK T (R : unitRingType) (f : T -> R) : (f\^-1\^-1)%R = f.
 Proof. by apply/funeqP => x; rewrite /inv_fun/= GRing.invrK. Qed.
+
+Local Open Scope ring_scope.
+Import GRing.Theory.
+
+Section linfun_pred.
+Context {K : numDomainType} {E : lmodType K}  {F : lmodType K}
+  {s : K -> F -> F}.
+
+(**md Beware that `lfun` is reserved for vector types, hence this one has been
+ named `linfun` *)
+Definition linfun : {pred E -> F} := mem [set f | linear_for s f ].
+
+Definition linfun_key : pred_key linfun. Proof. exact. Qed.
+
+Canonical linfun_keyed := KeyedPred linfun_key.
+
+End linfun_pred.
+
+Section linfun.
+Context {R : numDomainType} {E : lmodType R}
+  {F : lmodType R} {s : GRing.Scale.law R F}.
+
+Notation T := {linear E -> F | s}.
+
+Notation linfun := (@linfun _ E F s).
+
+Section Sub.
+Context (f : E -> F) (fP : f \in linfun).
+
+#[local] Definition linfun_Sub_subproof :=
+  @GRing.isLinear.Build _ E F s f (set_mem fP).
+
+#[local] HB.instance Definition _ := linfun_Sub_subproof.
+Definition linfun_Sub : {linear _  -> _ | _ } := f.
+End Sub.
+
+Let linfun_rect (K : T -> Type) :
+  (forall f (Pf : f \in linfun), K (linfun_Sub Pf)) -> forall u : T, K u.
+Proof.
+move=> Ksub [f] [[[Pf1 Pf2]] [Pf3]].
+set G := (G in K G).
+have Pf : f \in linfun by rewrite inE /= => // x u y; rewrite Pf2 Pf3.
+suff -> : G = linfun_Sub Pf by apply: Ksub.
+rewrite {}/G.
+congr (GRing.Linear.Pack (GRing.Linear.Class _ _)).
+- by congr GRing.isNmodMorphism.Axioms_; exact: Prop_irrelevance.
+- by congr GRing.isScalable.Axioms_; exact: Prop_irrelevance.
+Qed.
+
+Let linfun_valP f (Pf : f \in linfun) : linfun_Sub Pf = f :> (_ -> _).
+Proof. by []. Qed.
+
+HB.instance Definition _ := isSub.Build _ _ T linfun_rect linfun_valP.
+
+Lemma linfun_eqP (f g : {linear E -> F | s}) : f = g <-> f =1 g.
+Proof. by split=> [->//|fg]; exact/val_inj/funext. Qed.
+
+HB.instance Definition _ := [Choice of {linear E -> F | s} by <:].
+
+Variant linfun_spec (f : E -> F) : (E -> F) -> bool -> Type :=
+| Islinfun (l : {linear E -> F | s}) : linfun_spec f l true.
+
+Lemma linfunP (f : E -> F) : f \in linfun -> linfun_spec f f (f \in linfun).
+Proof.
+move=> /[dup] f_lc ->.
+have {2}-> : f = linfun_Sub f_lc by rewrite linfun_valP.
+by constructor.
+Qed.
+
+End linfun.
+
+Section linfun_lmodtype.
+Context {R : numDomainType} {E F : lmodType R}.
+Import GRing.Theory.
+
+Let linfun_submod_closed : submod_closed (@linfun R E F *:%R).
+Proof.
+split; first by rewrite inE; exact/linearP.
+move=> r /= _ _ /linfunP[f] /linfunP[g].
+by rewrite inE /=; exact: linearP.
+Qed.
+
+HB.instance Definition _ :=
+  @GRing.isSubmodClosed.Build _  _ linfun linfun_submod_closed.
+
+HB.instance Definition _ :=
+  [SubChoice_isSubLmodule of {linear E -> F } by <:].
+
+End linfun_lmodtype.
+
+(* TODO: we wanted to declare this instance in classical_sets.v but failed and did not understand why, also we couldn't generalize *)
+HB.instance Definition _ {R : numDomainType} (E F : lmodType R) :=
+  isPointed.Build {linear E -> F} 0.

@@ -25,20 +25,46 @@
   + definition `preimage_set_system`
   + lemmas `preimage_set_system0`, `preimage_set_systemU`, `preimage_set_system_comp`,
     `preimage_set_system_id`
+- in `functions.v`:
+  + lemmas `linfunP`, `linfun_eqP`
+  + instances of `SubLmodule` and `pointedType` on `{linear _->_ | _ }`
+
+- in `tvs.v`:
+  + structure `LinearContinuous`
+  + factory `isLinearContinuous`
+  + instance of `ChoiceType` on `{linear_continuous _ -> _ }`
+  + instance of `LinearContinuous` with the composition of two functions of type `LinearContinuous`
+  + instance of `LinearContinuous` with the sum of two functions of type `LinearContinuous`
+  + instance of `LinearContinuous` with the scalar multiplication of a function of type
+    `LinearContinuous`
+  + instance of `Continuous` on \-f when f is of type `LinearContinuous`
+  + instance of `SubModClosed` on `{linear_continuous _ -> _}`
+  + instance of `SubLModule` on  `{linear_continuous _ -> _ }`
+  + instance of `LinearContinuous` on the null function
+  + notations `{linear_continuous _ -> _ | _ }` and `{linear_continuous _ -> _ }`
+  + definitions `lcfun`, `lcfun_key, `lcfunP`
+  + lemmas `lcfun_eqP`, `null_fun_continuous`, `fun_cvgD`,
+   `fun_cvgN`, `fun_cvgZ`, `fun_cvgZr`
+  + lemmas `lcfun_continuous` and `lcfun_linear`
+  
+### Changed
+
+- moved from `topology_structure.v` to `filter.v`:
+  + lemma `continuous_comp` (and generalized)
 
 ### Renamed
 
 - in `tvs.v`:
   + definition `tvsType` -> `convexTvsType`
-  + HB class `Tvs` -> `ConvexTvs`
-  + HB mixin `Uniform_isTvs` -> `Uniform_isConvexTvs`
-  + HB factory `PreTopologicalLmod_isTvs` -> `PreTopologicalLmod_isConvexTvs`
-  + Section `Tvs_numDomain` -> `ConvexTvs_numDomain`
-  + Section `Tvs_numField` -> `ConvexTvs_numField`
-  + Section `prod_Tvs` -> `prod_ConvexTvs`
+  + class `Tvs` -> `ConvexTvs`
+  + mixin `Uniform_isTvs` -> `Uniform_isConvexTvs`
+  + factory `PreTopologicalLmod_isTvs` -> `PreTopologicalLmod_isConvexTvs`
+  + section `Tvs_numDomain` -> `ConvexTvs_numDomain`
+  + section `Tvs_numField` -> `ConvexTvs_numField`
+  + section `prod_Tvs` -> `prod_ConvexTvs`
 
 - in `normed_module.v`
-  + HB mixin ` PseudoMetricNormedZmod_Tvs_isNormedModule` ->
+  + mixin ` PseudoMetricNormedZmod_Tvs_isNormedModule` ->
     ` PseudoMetricNormedZmod_ConvexTvs_isNormedModule`
 
 ### Generalized

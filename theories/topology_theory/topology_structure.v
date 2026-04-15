@@ -260,11 +260,6 @@ move=> s A; rewrite nbhs_simpl /= !nbhsE => - [B [Bop Bfs] sBA].
 by exists (f @^-1` B); [split=> //; apply/fcont|move=> ? /sBA].
 Qed.
 
-Lemma continuous_comp (R S T : topologicalType) (f : R -> S) (g : S -> T) x :
-  {for x, continuous f} -> {for (f x), continuous g} ->
-  {for x, continuous (g \o f)}.
-Proof. exact: cvg_comp. Qed.
-
 Lemma open_comp  {T U : topologicalType} (f : T -> U) (D : set U) :
   {in f @^-1` D, continuous f} -> open D -> open (f @^-1` D).
 Proof.
