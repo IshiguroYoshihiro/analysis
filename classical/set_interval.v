@@ -36,6 +36,22 @@ From mathcomp Require Import functions.
 (*          open_itv_cover A == the set A can be covered by open intervals    *)
 (* ```                                                                        *)
 (*                                                                            *)
+(* Naming convention for lemmas about intervals:                              *)
+(* ```                                                                        *)
+(*                 itv??                                                      *)
+(*                    ||                                                      *)
+(*    left boundary --+|                                                      *)
+(*   right boundary ---+                                                      *)
+(* ```                                                                        *)
+(* where `?` can be:                                                          *)
+(* | Substring |   | Meaning |                                                *)
+(* |----------:|---|:--------|                                                *)
+(* |         o |==| open                                                      *)
+(* |         c |==| closed                                                    *)
+(* |         y |==| +oo%O                                                     *)
+(* |        Ny |==| -oo%O                                                     *)
+(* |   b, bnd  |==| any of the above                                          *)
+(*                                                                            *)
 (******************************************************************************)
 
 Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
@@ -183,22 +199,32 @@ Definition set_itvE := (set_itv1, set_itvoo0, set_itvoc0, set_itvco0, set_itvoo,
 Lemma set_itvxx a : [set` Interval a a] = set0.
 Proof. by move: a => [[|] a |[|]]; rewrite !set_itvE. Qed.
 
+Lemma setU_itvob1 a x : (a <= BLeft x)%O ->
+  [set` Interval a (BLeft x)] `|` [set x] = [set` Interval a (BRight x)].
+Proof.
+move=> ax; apply/predeqP => z /=; rewrite itv_splitU1// [in X in _ <-> X]inE.
+by rewrite (rwP eqP) (rwP orP) orbC.
+Qed.
+
+Lemma setU_1itvob a x : (BRight x <= a)%O ->
+  x |` [set` Interval (BRight x) a] = [set` Interval (BLeft x) a].
+Proof.
+move=> ax; apply/predeqP => z /=; rewrite itv_split1U// [in X in _ <-> X]inE.
+by rewrite (rwP eqP) (rwP orP) orbC.
+Qed.
+
 Lemma setUitv1 a x b : (a <= BLeft x)%O ->
   [set` Interval a (BSide b x)] `|` [set x] = [set` Interval a (BRight x)].
 Proof.
-move=> ax; case: b; last first.
-  by apply: setUidl => ? /= ->; rewrite itv_boundlr ax lexx.
-apply/predeqP => z /=; rewrite itv_splitU1// [in X in _ <-> X]inE.
-by rewrite (rwP eqP) (rwP orP) orbC.
+move=> ax; case: b; [exact: setU_itvob1|].
+by apply: setUidl => ? /= ->; rewrite itv_boundlr ax lexx.
 Qed.
 
 Lemma setU1itv a x b : (BRight x <= a)%O ->
   x |` [set` Interval (BSide b x) a] = [set` Interval (BLeft x) a].
 Proof.
-move=> ax; case: b.
-  by apply: setUidr => ? /= ->; rewrite itv_boundlr ax lexx.
-apply/predeqP => z /=; rewrite itv_split1U// [in X in _ <-> X]inE.
-by rewrite (rwP eqP) (rwP orP) orbC.
+move=> ax; case: b; [|exact: setU_1itvob].
+by apply: setUidr => ? /= ->; rewrite itv_boundlr ax lexx.
 Qed.
 
 Lemma setUitv_set2 x y b1 b2 :
