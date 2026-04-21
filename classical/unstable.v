@@ -1,6 +1,7 @@
 (* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
+From HB Require Import structures.
 From mathcomp Require Import all_ssreflect_compat finmap ssralg ssrnum ssrint.
-From mathcomp Require Import archimedean interval.
+From mathcomp Require Import vector archimedean interval.
 
 (**md**************************************************************************)
 (* # MathComp extra                                                           *)
@@ -23,6 +24,14 @@ From mathcomp Require Import archimedean interval.
 (*                           the dependent sum                                *)
 (*                prodA x := sends (X * Y) * Z to X * (Y * Z)                 *)
 (*               prodAr x := sends X * (Y * Z) to (X * Y) * Z                 *)
+(*           isSemiNorm f == f : K -> L is a seminorm                         *)
+(*                           K is a numDomainType.                            *)
+(*                           L is a lmodType K.                               *)
+(*                           The HB class is SemiNorm.                        *)
+(*               isNorm f == f : K -> L is a norm                             *)
+(*                           K is a numDomainType.                            *)
+(*                           L is a lmodType K.                               *)
+(*                           The HB class is Norm.                            *)
 (* ```                                                                        *)
 (*                                                                            *)
 (******************************************************************************)
@@ -592,3 +601,48 @@ Proof. exact: real_ltr_bound. Qed.
 
 Lemma ltrNbound {R : archiRealDomainType} (x : R) : - x < (Num.bound x)%:R.
 Proof. exact: real_ltrNbound. Qed.
+
+(* normedZmodType provide norms but the subject is not the norm. We define here
+   a structure of norm where the subject is the function from the left-module to
+   its scalar field. *)
+Module Norm.
+
+HB.mixin Record isSemiNorm (K : numDomainType) (L : lmodType K) (norm : L -> K) := {
+  norm0 : norm 0 = 0 ;
+  norm_ge0 : forall x, 0 <= norm x ;
+  ler_normD : forall x y, norm (x + y) <= norm x + norm y ;
+  normZ : forall r x, norm (r *: x) = `|r| * norm x
+}.
+
+#[export]
+HB.structure Definition SemiNorm K L := { norm of @isSemiNorm K L norm }.
+
+HB.mixin Record SemiNorm_isNorm (K : numDomainType) (L : lmodType K)
+  (norm : L -> K) := { norm0_eq0 : forall x, norm x = 0 -> x = 0 }.
+
+#[export]
+HB.structure Definition Norm K L :=
+  { norm of @SemiNorm_isNorm K L norm & @SemiNorm K L norm }.
+
+Module Import Theory.
+Section Theory.
+Variables (K : numDomainType) (L : lmodType K) (norm : SemiNorm.type L).
+
+Lemma normMn x n : norm (x *+ n) = norm x *+ n.
+Proof. by rewrite -scaler_nat normZ normr_nat mulr_natl. Qed.
+
+Lemma normN x : norm (- x) = norm x.
+Proof. by rewrite -scaleN1r normZ normrN1 mul1r. Qed.
+
+Lemma ler_norm_sum (I : Type) (r : seq I) (F : I -> L) :
+  norm (\sum_(i <- r) F i) <= \sum_(i <- r) norm (F i).
+Proof.
+by elim/big_ind2 : _ => *; rewrite ?norm0// (le_trans (ler_normD _ _))// lerD.
+Qed.
+
+End Theory.
+End Theory.
+
+Module Import Exports. HB.reexport. End Exports.
+End Norm.
+Export Norm.Exports.
