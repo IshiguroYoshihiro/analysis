@@ -883,116 +883,6 @@ Qed.
 Lemma setD_bigcup_itvoo (c d : R) (a_ b_ : R^nat) n :
   (forall i, (i < n.+1)%N -> a_ i \in `[c, d]) ->
   (forall i, (i < n.+1)%N -> b_ i \in `[c, d]) ->
-  sorted <=%R [seq a_ i | i <- iota 0 n.+1] ->
-  sorted <=%R [seq b_ i | i <- iota 0 n.+1] ->
-  `[c, d] `\` \big[setU/set0]_(i < n.+1) `]a_ i, b_ i[%classic =
-  `[c, a_ 0]  `|`
-  \big[setU/set0]_(i < n) `[b_ i, a_ i.+1]%classic `|`
-  `[b_ n, d].
-Proof.
-elim: n c d a_ b_ => [c d a_ b_ acd bcd sorteda sortedb|].
-  rewrite big_ord0 setU0 big_ord_recl/= big_ord0 setU0.
-  rewrite setDE setCitv/= setIUr; congr setU.
-  - rewrite -itv_setI/=.
-    rewrite /Order.meet/=.
-    rewrite meet_r ?bnd_simp//.
-    by rewrite (itvP (acd 0 _)).
-  - rewrite -itv_setI/=.
-    rewrite /Order.meet/=.
-    rewrite meet_l//.
-    rewrite join_r ?bnd_simp//.
-    by rewrite (itvP (bcd 0 _)).
-move=> n ih c d a_ b_ acd bcd sorteda sortedb.
-rewrite big_ord_recr/=.
-rewrite setDE.
-rewrite setCU.
-rewrite setIA.
-rewrite setIAC.
-have [an1bn|bnan1] := ltP (a_ n.+1) (b_ n).
-rewrite (_ : `[c, d] `&` _ = `[c, b_ n] `|` `[b_ n.+1, d]); last first.
-  admit.
-rewrite setIUl.
-rewrite -setDE.
-rewrite ih//; last 4 first.
-move=> i ni.
-  rewrite in_itv/=.
-  rewrite (itvP (acd _ _))/=; last by rewrite (ltn_trans ni).
-  have := sorted_leq_nth le_trans le_refl 0 sorteda i n.+1 => //.
-  rewrite !inE !size_map size_iota.
-  move=> /(_ (leqW ni) ltac:(by []) (ltnW ni)).
-  rewrite (nth_map 0) ?size_iota; last exact: ltnW.
-  rewrite nth_iota//; last exact: ltnW.
-  rewrite (nth_map 0) ?size_iota// nth_iota.
-  move/le_trans; apply.
-  Abort.
-(*
-rewrite (_ : `[c, d] `&` _ = `[c, a_ n.+1] `|` `[b_ n.+1, d]); last first.
-  rewrite setCitv//= setIUr.
-  rewrite -!itv_setI/=.
-  rewrite /Order.meet/=.
-  rewrite meet_r ?bnd_simp//; last first.
-    by rewrite (itvP (acd _ _)).
-  rewrite join_l//.
-  rewrite meet_l ?bnd_simp//.
-  rewrite join_r// bnd_simp.
-  by rewrite (itvP (bcd _ _)).
-rewrite setIUl.
-rewrite -setDE.
-rewrite ih//; last 4 first.
-- move=> i ni.
-  rewrite in_itv/=.
-  rewrite (itvP (acd _ _))/=; last by rewrite (ltn_trans ni).
-  have := sorted_leq_nth le_trans le_refl 0 sorteda i n.+1 => //.
-  rewrite !inE !size_map size_iota.
-  move=> /(_ (leqW ni) ltac:(by []) (ltnW ni)).
-  rewrite (nth_map 0) ?size_iota; last exact: ltnW.
-  rewrite nth_iota//; last exact: ltnW.
-  by rewrite (nth_map 0) ?size_iota// nth_iota.
-- move=> i ni.
-  rewrite in_itv/=.
-  rewrite (itvP (bcd _ _))/=; last by rewrite (ltn_trans ni).
-  have := sorted_leq_nth le_trans le_refl 0 sortedb i n.+1 => //.
-  rewrite !inE !size_map size_iota.
-  move=> /(_ (leqW ni) ltac:(by []) (ltnW ni)).
-  rewrite (nth_map 0) ?size_iota; last exact: ltnW.
-  rewrite nth_iota//; last exact: ltnW.
-  rewrite (nth_map 0) ?size_iota// nth_iota//.
-  move/le_trans; apply.
-  apply: (le_trans bbS).
-  have := sorted_ltn_nth lt_trans 0 sortedb i n.+1.
-  rewrite !inE !size_map size_iota.
-  move=> /(_ (ltnW ni) ltac:(by []) ni).
-  rewrite (nth_map 0) ?size_iota; last exact: ltnW.
-  rewrite nth_iota//; last exact: ltnW.
-  rewrite (nth_map 0) ?size_iota// nth_iota//.
-  rewrite! add0n => /ltW.
-
-- move=> i ni.
-  rewrite in_itv/=.
-  rewrite (itvP (bcd _ _))/=.
-  admit.
-  by rewrite (ltn_trans ni).
-- apply: subseq_sorted sorteda.
-    exact: lt_trans.
-  apply: map_subseq.
-  rewrite -(addn1 n.+1).
-  rewrite iotaD.
-  exact: prefix_subseq.
-rewrite [in RHS]big_ord_recr/=.
-rewrite -!setUA.
-congr setU.
-congr setU.
-congr setU.
-rewrite setIidl//.
-apply: subsetCr.
-rewrite -[X in X `<=` _](bigcup_mkord _ (fun i => `]a_ i, b_ i[%classic)).
-move=> r [i ni/= rab].
-Admitted.
-*)
-
-Lemma setD_bigcup_itvoo (c d : R) (a_ b_ : R^nat) n :
-  (forall i, (i < n.+1)%N -> a_ i \in `[c, d]) ->
-  (forall i, (i < n.+1)%N -> b_ i \in `[c, d]) ->
   sorted <%R [seq a_ i | i <- iota 0 n.+1] ->
   (forall i, (i < n.+1)%N -> b_ i <= a_ i.+1) ->
   `[c, d] `\` \big[setU/set0]_(i < n.+1) `]a_ i, b_ i[%classic =
@@ -1195,10 +1085,10 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
     apply => /=; split.
       admit.
     admit.
-    apply: ub_le_sup.
-      by move: compactP; rewrite Rcompact_boundE => /= -[].
-    admit.
+  apply: ub_le_sup.
+    by move: compactP; rewrite Rcompact_boundE => /= -[].
   admit.
+
 
 Admitted.
 
@@ -1302,8 +1192,18 @@ pose ab_ n := sort (fun x y => x.1 <= y.1)
    [tuple (A_ i, B_ i) | i < n].
 pose a_ n i := (nth (d, d) (ab_ n) i).1.
 pose b_ n i := (nth (d, d) (ab_ n) i).2.
-have blta : forall n i, (i < n)%N -> b_ n.+1 i < a_ n.+1 i.+1.
+
+have : perm_eq [tuple (ab_ n)
+  
+
+have blta : forall n i, (i < n)%N -> b_ n.+1 i <= a_ n.+1 i.+1.
   (* disjoint_contiguous_intervals *)
+  move=> n i ni.
+  rewrite leNgt; apply/negP => aibi.
+  have : `]a_ n.+1 i, b_ n.+1 i[ `&` `]a_ n.+1 i.+1, b_ n.+1 i.+1[ !=set0.
+    exists ((a_ n.+1 i.+1 + b_ n.+1 i.+1) / 2).
+    rewrite /a_ /b_ /ab_.
+  
   admit.
 (*
 pose sI := fun n => (sval (sorted_index_prop n)).
