@@ -296,10 +296,10 @@ by case: A0 => s As /(_ s).
 Qed.
 
 (* TODO: move near has_bound_not_subset1_inf_sup in absolute_continuity.v *)
-Lemma has_bound_inf_sup {R : realType} (A : set R) : A !=set0 ->
+Lemma has_bound_inf_sup {R : realType} (A : set R) :
   has_lbound A -> has_ubound A -> (inf A <= sup A)%R.
 Proof.
-move=> A0 lbA ubA.
+have [-> _ _|/set0P A0 lbA ubA] := eqVneq A set0; first by rewrite inf0 sup0.
 have [|/has_bound_not_subset1_inf_sup] := pselect (is_subset1 A); last first.
   by move=> /(_ lbA ubA) /ltW.
 move/is_subset1_set1 => /(_ A0) ->.
@@ -398,9 +398,6 @@ Lemma contiguous_intervals1_le_contiguous_intervals2 A n :
 Proof.
 move=> ? ?.
 rewrite /contiguous_intervals1 /contiguous_intervals2.
-have [An0|] := pselect ((contiguous_intervals A n) !=set0); last first.
-  move/set0P/negP/negPn/eqP ->.
-  by rewrite inf0 sup0.
 rewrite has_bound_inf_sup//.
   exact: has_lbound_contiguous_intervals.
 exact: has_ubound_contiguous_intervals.
@@ -548,7 +545,6 @@ Qed.
 
 Lemma Rull_fst_snd (A : set R) : (Rhull A).1 <= (Rhull A).2.
 Proof.
-have [->|A0] := eqVneq A set0; first by rewrite !Rhull0.
 rewrite /Rhull; case: ifPn => /asboolP lA; case: ifPn => // /asboolP uA /=.
 - by rewrite lee_fin has_bound_inf_sup//; exact/set0P.
 - by rewrite leey.
@@ -582,10 +578,6 @@ Proof.
 move=> lP uP.
 rewrite /= /contiguous_intervals1 /contiguous_intervals2.
 apply/trivIsetP => i j _ _ ij.
-have [->|/set0P ?]  := eqVneq (contiguous_intervals P i) set0.
-  by rewrite inf0 sup0 set_itv_ge ?bnd_simp// set0I.
-have [->|/set0P ?]  := eqVneq (contiguous_intervals P j) set0.
-  by rewrite inf0 sup0 setIC set_itv_ge ?bnd_simp// set0I.
 have /trivIsetP/(_ i j Logic.I Logic.I ij) := @disjoint_contiguous_intervals _ P.
 apply: subsetI_eq0. (* TODO: generalize this lemma to trivIset *)
 - have /is_intervalP H := @is_interval_contiguous_intervals _ P i.
@@ -720,7 +712,7 @@ rewrite measurable_mu_extE/=; last first.
   apply: sub_caratheodory.
   exact: measurable_itv.
 rewrite completed_lebesgue_measure_itv.
-have fab0 : [set f x | x in `[((a_ n)), ((b_ n))]] !=set0.
+have fab0 : [set f x | x in `[(a_ n), (b_ n)]] !=set0.
   exists (f ((a_ n))) => //.
   exists ((a_ n)) => //=.
   rewrite boundl_in_itv//= bnd_simp.
@@ -741,7 +733,7 @@ have [hasubf|hasNubf] :=
   rewrite /=; move/asboolF : (hasNubf) => ->.
   by case: ifP.
 have [haslbf|hasNlbf] :=
-   pselect (has_lbound (f @` `[((a_ n)), ((b_ n))])); last first.
+   pselect (has_lbound (f @` `[(a_ n), (b_ n)])); last first.
   rewrite -[X in _ - ereal_inf X = _]image_comp hasNlb_ereal_inf//; last first.
   rewrite ifT; last first.
     rewrite /=; move/asboolF: (hasNlbf) => ->.
@@ -757,7 +749,7 @@ case: ifP => /=; last first.
 - move/negP/negP; rewrite -leNgt.
   rewrite le_eqVlt => /predU1P[|]; last first.
   + rewrite lte_fin ltNge => /negP Ninfsup.
-    by have := has_bound_inf_sup fab0 haslbf hasubf.
+    by have := has_bound_inf_sup haslbf hasubf.
   + rewrite -ereal_sup_EFin -?ereal_inf_EFin// image_comp => ->;
     rewrite subee//.
     by rewrite -image_comp ereal_inf_EFin.
