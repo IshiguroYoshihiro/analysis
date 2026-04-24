@@ -1537,17 +1537,17 @@ Context d0 d1 d2 (T0 : measurableType d0)
   (T1 : measurableType d1) (T2 : measurableType d2) {R : realType}
   (k1 : R.-ftker T0 ~> T1) (k2 : R.-ftker (T0 * T1) ~> T2).
 
-#[local] Lemma kproduct0 x : kproduct k1 k2 x set0 = 0.
+Let kproduct0 x : kproduct k1 k2 x set0 = 0.
 Proof.
 by apply: integral0_eq => y _; apply: integral0_eq => z _; rewrite indic0.
 Qed.
 
-#[local] Lemma kproduct_ge0 x A : 0 <= kproduct k1 k2 x A.
+Let kproduct_ge0 x A : 0 <= kproduct k1 k2 x A.
 Proof.
 by apply: integral_ge0 => y _; apply: integral_ge0 => z _; rewrite lee_fin.
 Qed.
 
-#[local] Lemma kproduct_additive x : semi_sigma_additive (kproduct k1 k2 x).
+Let kproduct_additive x : semi_sigma_additive (kproduct k1 k2 x).
 Proof. exact: semi_sigma_additive_kproduct. Qed.
 
 HB.instance Definition _ x := isMeasure.Build
@@ -1638,7 +1638,7 @@ Context d0 d1 d2 (T0 : measurableType d0)
 Local Definition kernel_snd : (T0 * T1)%type -> {measure set T2 -> \bar R} :=
   k \o snd.
 
-#[local] Lemma measurable_kernel_snd U : measurable U ->
+Let measurable_kernel_snd U : measurable U ->
   measurable_fun [set: _] (kernel_snd ^~ U).
 Proof.
 move=> mU; have /= mk1 := measurable_kernel k _ mU.
@@ -1652,7 +1652,7 @@ Qed.
 HB.instance Definition _ :=
   @isKernel.Build _ _ _ _ _ kernel_snd measurable_kernel_snd.
 
-#[local] Lemma measure_uub_kernel_snd : measure_fam_uub kernel_snd.
+Let measure_uub_kernel_snd : measure_fam_uub kernel_snd.
 Proof.
 exists 2%R => /= -[x y].
 rewrite /kernel_snd/= (@le_lt_trans _ _ 1%:E) ?lte1n//.
@@ -1662,7 +1662,7 @@ Qed.
 HB.instance Definition _ :=
   @Kernel_isFinite.Build _ _ _ _ _ kernel_snd measure_uub_kernel_snd.
 
-#[local] Lemma sprob_kernel_kernel_snd :
+Let sprob_kernel_kernel_snd :
   ereal_sup [set kernel_snd z [set: _] | z in [set: _]] <= 1.
 Proof.
 by apply: (sprob_kernelP kernel_snd).2 => -[x y]; exact: sprob_kernel_le1.
@@ -1671,7 +1671,7 @@ Qed.
 HB.instance Definition _ := isSubProbabilityKernel.Build _ _ _ _ _
   kernel_snd sprob_kernel_kernel_snd.
 
-#[local] Lemma intker_indic_snd (A : set T2) x y : measurable A ->
+Lemma intker_indic_snd (A : set T2) x y : measurable A ->
   intker_indic kernel_snd ([set: _] `*` A) (x, y) = k y A.
 Proof.
 move=> mA; rewrite intker_indicE//=; first exact: measurableX.
@@ -1698,13 +1698,13 @@ Context d0 d1 d2 (T0 : measurableType d0)
   (T1 : measurableType d1) (T2 : measurableType d2) {R : realType}
   (k1 : R.-spker T0 ~> T1) (k2 : R.-spker T1 ~> T2).
 
-#[local] Lemma kcomp_noparam0 x : kcomp_noparam k1 k2 x set0 = 0.
+Let kcomp_noparam0 x : kcomp_noparam k1 k2 x set0 = 0.
 Proof. by apply: integral0_eq => y _; rewrite measure0. Qed.
 
-#[local] Lemma kcomp_noparam_ge0 x A : 0 <= kcomp_noparam k1 k2 x A.
+Let kcomp_noparam_ge0 x A : 0 <= kcomp_noparam k1 k2 x A.
 Proof. by apply: integral_ge0 => y _; exact: measure_ge0. Qed.
 
-#[local] Lemma kcomp_noparam_additive x :
+Let kcomp_noparam_additive x :
   semi_sigma_additive (kcomp_noparam k1 k2 x).
 Proof.
 move=> F mF tF mUF.
@@ -1736,7 +1736,7 @@ HB.instance Definition _ x := isMeasure.Build d2 T2 R (kcomp_noparam k1 k2 x)
 Definition mkcomp_noparam :=
   (kcomp_noparam k1 k2 : T0 -> {measure set T2 -> \bar R}).
 
-#[local] Lemma measurable_kernel_mkcomp_noparam U :
+Let measurable_kernel_mkcomp_noparam U :
   measurable U -> measurable_fun [set: _] (mkcomp_noparam ^~ U).
 Proof.
 move=> mU.
@@ -1776,7 +1776,7 @@ apply: ge0_le_integral => //; first exact: measurable_kernel.
 by move=> y _; exact: sprob_kernel_le1.
 Qed.
 
-#[local] Lemma sprob_kernel_kcomp_noparam :
+Let sprob_kernel_kcomp_noparam :
   ereal_sup [set (kcomp_noparam k1 k2) x setT | x in [set: T0]] <= 1.
 Proof. by apply/sprob_kernelP => x; exact: sprob_mkcomp_noparam. Qed.
 
