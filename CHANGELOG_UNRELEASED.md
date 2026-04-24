@@ -76,6 +76,9 @@
 - in `ereal.v`:
   + lemma `ge0_addBefctE`
 
+- in `measure_extension.v`:
+  + definition `caratheodory_measure`
+
 ### Changed
 
 - moved from `measurable_structure.v` to `classical_sets.v`:
