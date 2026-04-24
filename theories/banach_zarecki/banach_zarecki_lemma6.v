@@ -1289,6 +1289,7 @@ Qed.
 
 From mathcomp Require Import esum.
 
+
 Lemma completed_lebesgue_measure_eq_itv (A : set R) (x y : itv_bound R) :
   (x < y)%E ->
   A = [set` Interval x y] ->
@@ -1296,6 +1297,59 @@ Lemma completed_lebesgue_measure_eq_itv (A : set R) (x y : itv_bound R) :
 Proof.
 by move=> xy ->; rewrite completed_lebesgue_measure_itv xy.
 Qed.
+
+Section diam.
+
+Definition diam (A : set R) :=
+  ereal_sup [set `|a.1 - a.2|%:E | a in setX A A].
+
+Lemma diam0 : diam set0 = -oo%E.
+Proof.
+by rewrite /diam set0X image_set0 ereal_sup0.
+Qed.
+
+Definition diam_max (s : seq (set R)) := \big[maxe/-oo%E]_(A <- s) (diam A).
+
+(* unnecessary? *)
+Definition diam_defaultE (s : seq (set R)) :
+  s != [::] -> (exists2 A, A \in s & A !=set0) ->
+diam_max s = \big[maxe/0%E]_(A <- s) (diam A).
+Proof.
+elim: s => // s0 s1 ih _ [/= A sA [x Ax]].
+apply/eqP; rewrite eq_le; apply/andP; split.
+  apply: le_bigmax_seq2 => /=.
+    by exists s0; rewrite ?mem_head ?leNye.
+  move=> i.
+  rewrite in_cons => /predU1P[->|is1].
+    by exists s0 => //; rewrite mem_head.
+  exists i => //.
+  by rewrite in_cons is1 orbT.
+apply: le_bigmax_seq2 => /=.
+  exists A => //.
+  rewrite /diam.
+  apply: le_ereal_sup_tmp.
+    exists (sigT_of_setX R R (x, x)).
+Lemma diam_max0 : diam_max [::] = -oo%E.
+Proof.
+by rewrite /diam_max big_nil.
+Qed.
+
+Lemma diam_max_seq1 (A : set R) : diam_max [:: A] = diam A.
+Proof.
+by rewrite /diam_max big_seq1.
+Qed.
+
+Lemma diam_maxS (s t : seq (set R)) :
+ (forall A, A \in s -> exists2 B, B \in t & A `<=` B) ->
+  (diam_max s <= diam_max t)%E.
+Proof.
+elim: s => //[_|/= s0 s1 ih h].
+  by rewrite /diam_max big_nil leNye.
+rewrite /diam_max.
+
+move/mem_subseq/subsetP => /= st.
+rewrite /diam_max.
+apply: le_bigmax_seq2 => /=.
 
 (* https://math.stackexchange.com/questions/520209/removing-isolated-points-to-get-a-perfect-set *)
 Lemma lemma6_direct : lusinN `[a, b] H.
@@ -1367,7 +1421,7 @@ have fin_alpha : alpha \is a fin_num.
   rewrite completed_lebesgue_measure_itv ifT ?lte_fin//=.
   by rewrite -EFinB ltry.
 pose ab_ n := sort (fun x y => x.1 <= y.1)
-   [tuple (A_ i, B_ i) | i < n].
+   [tuple (A_ i, B_ i) | i < n.+1].
 pose a_ n i := (nth (d, d) (ab_ n) i).1.
 pose b_ n i := (nth (d, d) (ab_ n) i).2.
 have blta : forall n i, (i < n)%N -> b_ n.+1 i <= a_ n.+1 i.+1.
@@ -1513,11 +1567,19 @@ have lambda0 : lambda @ \oo --> 0.
     by left; left.
   have [|] := leqP n k.
     rewrite leq_eqVlt => /predU1P[->|].
-      move=> x/= cdx; right.
+      case: k kn k0 => // k kn k0 x/= cdx; right.
+      move: cdx.
+      rewrite /c_ /d_.
+      have -> : nth d (c :: [seq b_ k.+1 i | i <- iota 0 k.+1]) k.+1 =
+                   nth d [seq b_ k.+1 i | i <- iota 0 k.+1] k by [].
+      rewrite nth_map_iota//.
+      rewrite nth_rcons ifF; last first.
+        rewrite size_map size_iota ltnn//.
+      rewrite size_map size_iota eq_refl.
+        
       admit.
     move=> nk.
-    have -> //: `[c_ n k, d_ n k]%classic = set0.
-    admit.
+    by rewrite ltnS leqNgt nk in kn.
   case: k kn k0 => // k kn _ kltn.
   rewrite /=/ocitv_type => x/= cdx; left; right.
   rewrite -(bigcup_mkord n (fun k => `[b_ n k, a_ n k.+1]%classic)).

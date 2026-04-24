@@ -2108,22 +2108,41 @@ Abort.
 End variation_merge_tmp.
 
 Section bigmax.
-Context {R : realType}.
-Local Open Scope ereal_scope.
 
-Lemma le_bigmax_seq2 (r s : seq nat) (F F' : nat -> \bar R) :
-  (forall i, i \in r -> exists2 j, j \in s & F i <= F' j) ->
-  \big[maxe/-oo]_(i <- r) F i <= \big[maxe/-oo]_(i <- s) F' i.
+Lemma le_bigmax_seq2 {T: eqType} d {T' : orderType d} idx idx' (r s : seq T)
+   (F F' : T -> T') :
+  (exists2 j, j \in s & (idx <= F' j)%O) ->
+  (forall i, i \in r -> exists2 j, j \in s & (F i <= F' j)%O) ->
+  (\big[Order.Def.max/idx]_(i <- r) F i <=
+        \big[Order.Def.max/idx']_(i <- s) F' i)%O.
 Proof.
-elim: r s F F' => [s F F' _|/= r0 r1 ih s F F' h].
-  by rewrite big_nil// leNye.
+elim: r s F F' => [s F F' [j0 hj0 lej0] _|/= r0 r1 ih s F F' idx_min h].
+  rewrite big_nil//.
+  exact: (bigmax_sup_seq idx' j0 _).
 rewrite big_cons ge_max; apply/andP; split.
   have := h r0.
   rewrite mem_head => /(_ isT)[j js] /le_trans; apply.
   by apply: le_bigmax_seq.
-apply: ih => i ir1.
+apply: ih => [//|i ir1].
 have := h i.
 by rewrite inE ir1 orbT => /(_ isT).
+Qed.
+
+Context {R : realType}.
+Local Open Scope ereal_scope.
+
+Lemma ereal_le_bigmax_seq2 {T : eqType} (r s : seq T) (F F' : T -> \bar R) :
+  (forall i, i \in r -> exists2 j, j \in s & (F i <= F' j)%O) ->
+  (\big[maxe/-oo%E]_(i <- r) F i <=
+        \big[maxe/-oo%E]_(i <- s) F' i)%O.
+Proof.
+case: s => [h|r0 r1 h].
+  rewrite big_nil leeNy_eq; apply/eqP.
+  rewrite big_seq_cond.
+  apply: bigmax_eq_id => i.
+  by rewrite andbT => /(h i) -[?].
+apply: le_bigmax_seq2 => //.
+by exists r0; rewrite ?mem_head ?leNye.
 Qed.
 
 End bigmax.
@@ -2439,7 +2458,7 @@ rewrite (@le_trans _ _ (omega_max a b f (merge <=%R s t0)))//.
 rewrite /omega_max.
 rewrite -/st0.
 pose hs := fun k => oscillation f `[(nth b (a :: s) k), (nth b s k)].
-apply: le_bigmax_seq2 => /= i.
+apply: ereal_le_bigmax_seq2 => /= i.
 rewrite mem_index_iota leq0n/= => ist0.
 move: st; rewrite -cats1 => /cat_sorted2[sorted_t0 _].
 have Htmp : forall x, x \in t0 -> (x \in `]a, b[) /\ x \notin s.
