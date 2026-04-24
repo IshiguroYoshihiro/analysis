@@ -113,13 +113,13 @@ Context (f : {path i from x to y}) (phi : {path j from zero to one in i}).
 *)
 Definition reparameterize := f \o phi.
 
-#[local] Lemma fphi_zero : reparameterize zero = x.
+Let fphi_zero : reparameterize zero = x.
 Proof. by rewrite /reparameterize /= ?path_zero. Qed.
 
-#[loca] Lemma fphi_one : reparameterize one = y.
+Let fphi_one : reparameterize one = y.
 Proof. by rewrite /reparameterize /= ?path_one. Qed.
 
-#[local] Lemma fphi_cts : continuous reparameterize.
+Let fphi_cts : continuous reparameterize.
 Proof. by move=> ?; apply: continuous_comp; exact: continuous_fun. Qed.
 
 HB.instance Definition _ := isContinuous.Build _ _ reparameterize fphi_cts.
@@ -156,19 +156,19 @@ Section chain_path.
 Context {T : topologicalType} {i j : bpTopologicalType} (x y z: T).
 Context (p : {path i from x to y}) (q : {path j from y to z}).
 
-#[local] Lemma chain_path_zero : chain_path p q zero = x.
+Let chain_path_zero : chain_path p q zero = x.
 Proof.
 rewrite /chain_path /= wedge_lift_funE ?path_one ?path_zero //.
 by case => //= [][] //=; rewrite ?path_one ?path_zero.
 Qed.
 
-#[local] Lemma chain_path_one : chain_path p q one = z.
+Let chain_path_one : chain_path p q one = z.
 Proof.
 rewrite /chain_path /= wedge_lift_funE ?path_zero ?path_one //.
 by case => //= [][] //=; rewrite ?path_one ?path_zero.
 Qed.
 
-#[local] Lemma chain_path_cts : continuous (chain_path p q).
+Let chain_path_cts : continuous (chain_path p q).
 Proof.
 apply: chain_path_cts_point; [exact: continuous_fun..|].
 by rewrite path_zero path_one.
