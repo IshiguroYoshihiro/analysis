@@ -1289,6 +1289,33 @@ Qed.
 
 From mathcomp Require Import esum.
 
+Section max_nngr.
+
+Definition max_nngr := (@Order.max ring_display {nonneg R}).
+
+(* HB.instance Definition _ := Monoid.Law.on max_nngr. *)
+
+Lemma opA : @associative {nonneg R} max_nngr.
+Admitted.
+
+Lemma op1m : left_id (0%:nng : {nonneg R}) max_nngr.
+Admitted.
+
+Lemma opm1 : right_id (0%:nng : {nonneg R}) max_nngr.
+Admitted.
+
+HB.instance Definition _ := Monoid.isLaw.Build {nonneg R} 0%:nng
+  max_nngr
+   opA op1m opm1.
+
+Lemma big_max_nngr_eq (r : seq nat) :
+\big[max_nngr/0%:nng]_(i <- r) 0%:nng = 0%:nng.
+Proof.
+apply: big1_eq.
+Abort.
+
+End max_nngr.
+
 
 Lemma completed_lebesgue_measure_eq_itv (A : set R) (x y : itv_bound R) :
   (x < y)%E ->
@@ -1301,21 +1328,44 @@ Qed.
 Section diam.
 
 Definition diam (A : set R) :=
-  ereal_sup [set `|a.1 - a.2|%:E | a in setX A A].
+  if A == set0 then 0%:E else
+  ereal_sup ([set `|a.1 - a.2|%:E | a in setX A A]).
 
-Lemma diam0 : diam set0 = -oo%E.
+Lemma diam0 : diam set0 = 0%:E.
 Proof.
-by rewrite /diam set0X image_set0 ereal_sup0.
+by rewrite /diam eqxx.
+Qed.
+
+Lemma diam_ge0 (A : set R) : (0 <= diam A)%E.
+Proof.
+rewrite /diam; case: ifPn => //.
+move/set0P => [x Ax].
+apply: le_ereal_sup_tmp.
+by exists 0 => //; exists (x, x) => /=; rewrite ?subrr ?normr0//.
 Qed.
 
 Definition diam_max (s : seq (set R)) := \big[maxe/-oo%E]_(A <- s) (diam A).
 
+Definition diam_max_ge0 (s : seq (set R)) : (0 <= diam_max s)%E .
+Proof.
+Admitted.
+
+Definition diam_max_seq1 (s0 : set R) : diam_max [:: s0] = diam s0.
+Proof.
+by rewrite /diam_max big_seq1.
+Qed.
+
+Definition diam_max_cons (s0 : set R) (s : seq (set R)) :
+  (diam s0 <= diam_max (s0 :: s))%E .
+Proof.
+Admitted.
+
 (* unnecessary? *)
 Definition diam_defaultE (s : seq (set R)) :
-  s != [::] -> (exists2 A, A \in s & A !=set0) ->
+  s != [::] ->
 diam_max s = \big[maxe/0%E]_(A <- s) (diam A).
 Proof.
-elim: s => // s0 s1 ih _ [/= A sA [x Ax]].
+elim: s => // s0 s1 ih _.
 apply/eqP; rewrite eq_le; apply/andP; split.
   apply: le_bigmax_seq2 => /=.
     by exists s0; rewrite ?mem_head ?leNye.
@@ -1324,19 +1374,22 @@ apply/eqP; rewrite eq_le; apply/andP; split.
     by exists s0 => //; rewrite mem_head.
   exists i => //.
   by rewrite in_cons is1 orbT.
-apply: le_bigmax_seq2 => /=.
-  exists A => //.
-  rewrite /diam.
-  apply: le_ereal_sup_tmp.
-    exists (sigT_of_setX R R (x, x)).
+rewrite big_seq_cond.
+apply: bigmax_le.
+  exact: diam_max_ge0.
+move=> /= A; rewrite andbT in_cons => /predU1P[->|s1A].
+  exact: diam_max_cons.
+rewrite /diam_max.
+rewrite big_cons le_max; apply/orP; right.
+have : s1 != [::].
+  by apply/negP; move/eqP=> s10; rewrite s10 in s1A.
+move/ih; rewrite /diam_max => ->.
+exact: le_bigmax_seq.
+Qed.
+
 Lemma diam_max0 : diam_max [::] = -oo%E.
 Proof.
 by rewrite /diam_max big_nil.
-Qed.
-
-Lemma diam_max_seq1 (A : set R) : diam_max [:: A] = diam A.
-Proof.
-by rewrite /diam_max big_seq1.
 Qed.
 
 Lemma diam_maxS (s t : seq (set R)) :
@@ -1346,10 +1399,9 @@ Proof.
 elim: s => //[_|/= s0 s1 ih h].
   by rewrite /diam_max big_nil leNye.
 rewrite /diam_max.
+Admitted.
 
-move/mem_subseq/subsetP => /= st.
-rewrite /diam_max.
-apply: le_bigmax_seq2 => /=.
+End diam.
 
 (* https://math.stackexchange.com/questions/520209/removing-isolated-points-to-get-a-perfect-set *)
 Lemma lemma6_direct : lusinN `[a, b] H.
