@@ -1236,14 +1236,26 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
     apply: contiguous_intervals_sort => //.
     by move: compactP; rewrite Rcompact_boundE => -[].
     by move: compactP; rewrite Rcompact_boundE => -[].
-    have : [set` q] = [set` p].
-      rewrite /q.
-      admit.
-    admit.
+    have ->// : [set` q] = [set` p].
+    apply/seteqP; split.
+      move=> /=r /mapP[/= i].
+      rewrite (perm_mem hsorted_bnds) mem_iota leq0n/= add0n.
+      rewrite size_map => pi ->.
+      by apply/(nthP 0); exists i.
+    move=> /= i /(nthP 0)[j jp <-].
+    apply/mapP; exists j => //.
+    rewrite (perm_mem hsorted_bnds) mem_iota leq0n/= add0n.
+    by rewrite size_map.
     by rewrite -qE1.
   - move=> i.
     rewrite prednK; last by rewrite lt0n size_eq0.
     move=> pi.
+    have H2 : (sorted_bnds`_i).1 <= (sorted_bnds`_i.+1).1.
+      (*sorted_leq_nth*)
+      admit.
+    have H3 : (sorted_bnds`_i).2 <= (sorted_bnds`_i.+1).2.
+      (*apply: contiguous_intervals_sort'.*) admit.
+    rewrite leNgt; apply/negP => i1i.
     admit.
   - move=> i ni.
     rewrite in_itv/=; apply/andP; split.

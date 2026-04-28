@@ -1640,7 +1640,8 @@ have nbBg_nat (i j : 'I_n ) : (i < j)%N -> (Bg_nat i).2 <= (Bg_nat j).1.
   - by rewrite inE size_sort size_iota.
   - by rewrite inE size_sort size_iota.
 pose permg : {perm 'I_n} := Perm g_inj.
-have K : \sum_(k < n) (f (B k).2 - f (B k).1) = \sum_(k < n) (f (Bg_nat k).2 - f (Bg_nat k).1).
+have K : \sum_(k < n) (f (B k).2 - f (B k).1) =
+     \sum_(k < n) (f (Bg_nat k).2 - f (Bg_nat k).1).
   rewrite (reindex_onto permg permg^-1%g)//=; last by move=> i _; rewrite permKV.
   apply/eq_big.
     by move=> i; rewrite /= permK eqxx.
