@@ -953,7 +953,7 @@ Lemma setD_bigcup_itvoo (c d : R) (a_ b_ : R^nat) n :
   (forall i, (i < n.+1)%N -> b_ i \in `[c, d]) ->
   sorted <=%R [seq a_ i | i <- iota 0 n.+1] ->
   sorted <=%R [seq b_ i | i <- iota 0 n.+1] ->
-  (forall i, (i < n.+1)%N -> b_ i <= a_ i.+1) ->
+  (forall i, (i < n)%N -> b_ i <= a_ i.+1) ->
   `[c, d] `\` \big[setU/set0]_(i < n.+1) `]a_ i, b_ i[%classic =
   `[c, a_ 0]  `|`
   \big[setU/set0]_(i < n) `[b_ i, a_ i.+1]%classic `|`
@@ -1003,7 +1003,6 @@ rewrite ih//; last 5 first.
   rewrite in_itv/=.
   rewrite (itvP (bcd _ _))/=; last by rewrite ltnS ltnW.
   rewrite (le_trans (blea i _))//.
-    rewrite ltnS ltnW//.
   have [->//|] := eqVneq i n.
   rewrite eq_le negb_and -!ltNge => /orP[|].
     rewrite ltEnat/= => ltni.
@@ -1052,6 +1051,14 @@ rewrite !(nth_map 0) ?size_iota//; last exact: ltnW.
 by rewrite !nth_iota//; last exact: ltnW.
 Qed.
 
+Lemma finite_seqP_new {T : eqType} A :
+   finite_set A <-> exists2 s : seq T, uniq s & A = [set` s].
+Proof.
+elim/eqPchoice: T => T in A *; rewrite finite_fsetP.
+split=> [[X ->]|[s us ->]]; first by exists X.
+by exists [fset x | x in s]%fset; apply/seteqP; split=> x /=; rewrite inE.
+Qed.
+
 Lemma contiguous_infinite (P : set R) :
   P `<=` `[a, b] ->
   compact P ->
@@ -1065,7 +1072,7 @@ have closedP : closed P by case: perfectP.
 pose U := cplt_hull P.
 have openU : open U by apply: closed_open_cplt_hull.
 have UE := open_disjoint_itv_bigcup openU.
-move=> /finite_seqP[/= p Pp].
+move=> /finite_seqP_new[/= p up Pp].
 have [p0|p0] := eqVneq p [::].
   have : contiguous_intervals_support P = set0.
     by rewrite Pp p0 -subset0 => x/=; rewrite inE.
@@ -1124,6 +1131,57 @@ have {}UE : U = \big[setU/set0]_(k < size p)
 pose n := size p.
 have PU : P = [set` Rhull P] `\` U.
   by rewrite /U /cplt_hull setDD setIidr//; exact: sub_Rhull.
+have L3 : forall i, (i < (size p).-1)%N ->
+  exists2 j, (j < size p)%N & unsorted_bnds`_j = sorted_bnds`_i.
+  move=> i0 i0p.
+  have K1 : sorted_bnds`_i0 \in unsorted_bnds.
+    (* TODO: too long! *)
+    rewrite sorted_bndsE.
+    rewrite (nth_map 0); last first.
+      by rewrite (perm_size hsorted_bnds) size_iota size_map (leq_trans i0p)// leq_pred.
+    apply/(nthP 0).
+    exists (h`_i0) => //.
+    have : h`_i0 \in h.
+      apply/(nthP 0); exists i0 => //.
+      by rewrite (perm_size hsorted_bnds) size_iota size_map (leq_trans i0p)// leq_pred.
+    by rewrite (perm_mem hsorted_bnds) mem_iota leq0n add0n/=.
+  move: K1 => /(nthP 0)[j]; rewrite size_map => Hj HjE.
+  by exists j.
+have L4 : forall i, (i < (size p).-1)%N ->
+  exists2 j, (j < size p)%N & unsorted_bnds`_j = sorted_bnds`_i.+1.
+  move=> i0 i0p.
+  have K2 : sorted_bnds`_i0.+1 \in unsorted_bnds.
+    rewrite sorted_bndsE.
+    rewrite (nth_map 0); last first.
+      rewrite (perm_size hsorted_bnds) size_iota size_map.
+      by rewrite -(@prednK (size p))// lt0n size_eq0.
+    apply/(nthP 0); exists (h`_i0.+1) => //.
+    rewrite size_map.
+    have : h`_i0.+1 \in h.
+      apply/(nthP 0); exists i0.+1 => //.
+      rewrite (perm_size hsorted_bnds) size_iota size_map.
+      by rewrite -(@prednK (size p))// lt0n size_eq0.
+    rewrite (perm_mem hsorted_bnds) mem_iota leq0n add0n/=.
+    by rewrite size_map.
+  move: K2 => /(nthP 0)[k]; rewrite size_map => Hk HkE.
+  by exists k.
+have L5 : forall i, (i < size p)%N ->
+    exists2 j, (j \in p)%N &
+      (sorted_bnds`_i) = (contiguous_intervals1 P j, contiguous_intervals2 P j).
+    move=> i pi.
+    have hih : nth 0 h i \in h.
+      apply/(nthP 0); exists i => //.
+      by rewrite (perm_size hsorted_bnds) size_iota size_map.
+    exists (nth 0 p (nth 0 h i)) => //.
+      apply/(nthP 0).
+      exists (h`_i) => //.
+      move: hih.
+      by rewrite (perm_mem hsorted_bnds) mem_iota add0n leq0n/= size_map.
+    rewrite sorted_bndsE (nth_map 0)//; last first.
+      by rewrite (perm_size hsorted_bnds)// size_iota size_map.
+    rewrite (nth_map 0)//.
+    move: hih.
+    by rewrite (perm_mem hsorted_bnds) mem_iota add0n leq0n/= size_map.
 have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
     `|` (\big[setU/set0]_(k < n.-1)
         `[(nth 0 sorted_bnds k).2, (nth 0 sorted_bnds k.+1).1]%classic)
@@ -1161,16 +1219,7 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
   - move=> i.
     rewrite prednK; last by rewrite lt0n size_eq0.
     move=> ip.
-    have [j ij] : exists j,
-        (sorted_bnds`_i) = (contiguous_intervals1 P j, contiguous_intervals2 P j).
-      exists (nth 0 p (nth 0 h i)).
-      rewrite sorted_bndsE (nth_map 0)//; last first.
-        by rewrite (perm_size hsorted_bnds)// size_iota size_map.
-      rewrite (nth_map 0)//.
-      have : nth 0 h i \in h.
-        apply/(nthP 0); exists i => //.
-        by rewrite (perm_size hsorted_bnds) size_iota size_map.
-      by rewrite (perm_mem hsorted_bnds) mem_iota add0n leq0n/= size_map.
+    have [j [jp ij]] := L5 _ ip.
     rewrite ij -compact_Rhull//.
     apply/sub_Rhull.
     apply: mem_contiguous_intervals2 => //.
@@ -1247,30 +1296,126 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
     rewrite (perm_mem hsorted_bnds) mem_iota leq0n/= add0n.
     by rewrite size_map.
     by rewrite -qE1.
-  - move=> i.
-    rewrite prednK; last by rewrite lt0n size_eq0.
-    move=> pi.
+  - move=> i pi.
+    have ? : (i < size p)%N by rewrite (leq_trans pi)// leq_pred.
+    have ? : (i.+1 < size p)%N by rewrite -(@prednK (size p)) ?lt0n ?size_eq0.
     have H2 : (sorted_bnds`_i).1 <= (sorted_bnds`_i.+1).1.
-      (*sorted_leq_nth*)
-      admit.
+      rewrite fst_map; last by rewrite size_sort size_map.
+      rewrite fst_map; last by rewrite size_sort size_map.
+      apply: sorted_leq_nth => //.
+      exact: le_trans.
+      apply: sort_sorted_fst => //.
+      apply: sort_sorted => x y.
+      exact: le_total.
+      by rewrite inE size_map size_sort size_map (leq_trans pi)// leq_pred.
+      by rewrite inE/= size_map size_sort size_map.
     have H3 : (sorted_bnds`_i).2 <= (sorted_bnds`_i.+1).2.
-      (*apply: contiguous_intervals_sort'.*) admit.
-    rewrite leNgt; apply/negP => i1i.
-    admit.
-  - move=> i ni.
-    rewrite in_itv/=; apply/andP; split.
-      apply: ge_inf.
-        by move: compactP; rewrite Rcompact_boundE => /= -[].
-      move: PU.
-      rewrite UE.
-      rewrite eqEsubset => -[_ ].
-      move/(_ (sorted_bnds`_i).1).
-      apply => /=; split.
-        admit.
-      admit.
-    apply: ub_le_sup.
-      by move: compactP; rewrite Rcompact_boundE => /= -[].
-    admit.
+      have [j Hj HjE] := L3 i pi.
+      have [k Hk HkE] := L4 i pi.
+      rewrite -HjE -HkE !(nth_map 0)//=.
+      apply: contiguous_intervals_sort' => //.
+      by move: compactP; rewrite Rcompact_boundE/= => -[].
+      by move: compactP; rewrite Rcompact_boundE/= => -[].
+      suff: contiguous_intervals_support P p`_k by [].
+      rewrite Pp/=.
+      by apply/(nthP 0); exists k.
+      move: H2.
+      move: HjE; rewrite (nth_map 0)//=.
+      move: HkE; rewrite (nth_map 0)//=.
+      by move=> <- <-.
+    have [j Hj HjE] := L3 i pi.
+    have [k Hk HkE] := L4 i pi.
+    move: H2 H3.
+    rewrite -HkE -HjE.
+    rewrite !(nth_map 0)//= => H2 H3.
+    have [jk|jk] := eqVneq (p`_j) (p`_k); last first.
+      rewrite leNgt; apply/negP => i1i.
+      pose m := ((contiguous_intervals1 P p`_k) + (contiguous_intervals2 P p`_j)) / 2.
+      have : m \in contiguous_intervals P p`_j `&` contiguous_intervals P p`_k.
+        rewrite contiguous_ooitv//; last 2 first.
+        by move: compactP; rewrite Rcompact_boundE/= => -[].
+        by move: compactP; rewrite Rcompact_boundE/= => -[].
+        rewrite contiguous_ooitv//; last 2 first.
+        by move: compactP; rewrite Rcompact_boundE/= => -[].
+        by move: compactP; rewrite Rcompact_boundE/= => -[].
+        rewrite !inE/= !in_itv/=; split.
+          apply/andP; split.
+            by rewrite /m (le_lt_trans H2)// midf_lt//.
+          by rewrite /m midf_lt//.
+        apply/andP; split.
+          by rewrite /m midf_lt//.
+        rewrite /m.
+        rewrite (lt_le_trans _ H3)//.
+        by rewrite midf_lt//.
+      have /trivIsetP/(_ _ _ Logic.I Logic.I jk) := @disjoint_contiguous_intervals _ P.
+      move=> ->.
+      by rewrite in_set0.
+    move: jk => /eqP.
+    rewrite nth_uniq// => /eqP jk; subst k.
+    move: HjE.
+    rewrite HkE.
+    rewrite sorted_bndsE.
+    rewrite (nth_map 0)//; last first.
+      by rewrite (perm_size hsorted_bnds) size_iota size_map.
+    rewrite [in X in _ = X -> _](nth_map 0); last first.
+      by rewrite (perm_size hsorted_bnds) size_iota size_map.
+    rewrite /unsorted_bnds/= => /eqP.
+    rewrite nth_uniq; last 3 first.
+      rewrite size_map.
+      have : h`_i.+1 \in h.
+        apply/(nthP 0); exists i.+1 => //.
+        by rewrite (perm_size hsorted_bnds) size_iota size_map.
+      rewrite (perm_mem hsorted_bnds) mem_iota leq0n add0n/=.
+      by rewrite size_map.
+      rewrite size_map.
+      have : h`_i \in h.
+        apply/(nthP 0); exists i => //.
+        by rewrite (perm_size hsorted_bnds) size_iota size_map.
+      rewrite (perm_mem hsorted_bnds) mem_iota leq0n add0n/=.
+      by rewrite size_map.
+      apply/(uniqP 0) => x y/=.
+      rewrite !inE !size_map => xp yp Hxy.
+      apply/eqP/negPn/negP => xy.
+      rewrite !(nth_map 0)// in Hxy.
+      have {}xy : p`_x != p`_y by rewrite (nth_uniq 0).
+      have /trivIsetP/(_ _ _ Logic.I Logic.I xy) := @disjoint_contiguous_intervals _ P.
+      rewrite (contiguous_ooitv); last 2 first.
+        exact: (subset_has_ubound Pab).
+        exact: (subset_has_lbound Pab).
+      rewrite (contiguous_ooitv); last 2 first.
+        exact: (subset_has_ubound Pab).
+        exact: (subset_has_lbound Pab).
+      case: Hxy => -> ->.
+      rewrite setIid => /eqP.
+      apply/negP/set0P.
+      rewrite -(contiguous_ooitv); last 2 first.
+        exact: (subset_has_ubound Pab).
+        exact: (subset_has_lbound Pab).
+      move: Pp.
+      rewrite /contiguous_intervals_support/= => /(congr1 (fun x => x p`_y))/= ->.
+      by apply/(nthP 0); exists y.
+    have := perm_uniq hsorted_bnds.
+    rewrite iota_uniq => hu.
+    rewrite nth_uniq//; last 2 first.
+      by rewrite (perm_size hsorted_bnds) size_iota size_map.
+      by rewrite (perm_size hsorted_bnds) size_iota size_map.
+    rewrite -addn1.
+    rewrite -{2}(addn0 i).
+    by rewrite eqn_add2l.
+  - move=> i.
+    rewrite prednK// ?lt0n ?size_eq0// => pi.
+    have [j jp ij] := L5 _ pi.
+    rewrite ij/=.
+    have : P (contiguous_intervals1 P j).
+      apply: mem_contiguous_intervals1 => //.
+      move: Pp.
+      rewrite /contiguous_intervals_support/=.
+      move/(congr1 (fun x => x j)).
+      by rewrite /= jp => ->.
+    suff : P `<=` `[inf P, sup P].
+      by move=> /[apply] /=.
+    apply: (subset_trans (@sub_Rhull _ _)) => //.
+    by rewrite (compact_Rhull compactP P0)//.
 admit.
 Admitted.
 
