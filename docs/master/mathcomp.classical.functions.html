@@ -25500,7 +25500,8 @@ Declared in library mathcomp.classical.functions, line 2541, characters 6-15
 <span class="vernacular">Definition</span><span class="id"> </span><span id="cst" class="id"><a name="cst" class="" title="cst : forall {T T' : Type}, T' -> T -> T'
 
 cst is not universe polymorphic
-Arguments cst {T T'}%_type_scope x _
+Arguments cst {T T'}%_type_scope x _ /
+The reduction tactics unfold cst when applied to 4 arguments
 cst is transparent
 Expands to: Constant mathcomp.classical.functions.cst
 Declared in library mathcomp.classical.functions, line 2562, characters 11-14
@@ -26036,7 +26037,7 @@ Declared in library mathcomp.classical.functions, line 2676, characters 6-14
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="addrfctE" class="id"><a name="addrfctE" class="" title="addrfctE :
 forall [T : Type] [K : GRing.Nmodule.Exports.nmodType] (f g : T -> K),
-(f + g)%R = (fun x : T => (f x + g x)%R)
+(f + g)%R = (f \+ g)%E
 
 addrfctE is not universe polymorphic
 Arguments addrfctE [T]%_type_scope [K] (f g)%_function_scope
@@ -26198,7 +26199,7 @@ Declared in library mathcomp.classical.functions, line 2721, characters 6-11
 (forall (T : Type) (K : GRing.Zmodule.Exports.zmodType) (f : T -> K),
  (- f)%R = (fun x : T => (- f x)%R)) *
 (forall (T : Type) (K : GRing.Nmodule.Exports.nmodType) (f g : T -> K),
- (f + g)%R = (fun x : T => (f x + g x)%R)) *
+ (f + g)%R = (f \+ g)%E) *
 (forall (T : Type) (K : pzRingType) (f g : T -> K),
  (f * g)%R = (fun x : T => (f x * g x)%R)) *
 (forall (T : Type) (K : pzRingType) (L : lmodType K) (k : K) (f : T -> L),
@@ -26216,7 +26217,8 @@ Declared in library mathcomp.classical.functions, line 2725, characters 11-15
 <span class="vernacular">End</span><span class="id"> function_space_lemmas</span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="inv_funK" class="id"><a name="inv_funK" class="" title="inv_funK :
-forall [T : Type] [R : unitRingType] (f : T -> R), ((f\^-1)\^-1)%R = f
+forall [T : Type] [R : unitRingType] (f : T -> R),
+unstable.inv_fun (unstable.inv_fun f) = f
 
 inv_funK is not universe polymorphic
 Arguments inv_funK [T]%_type_scope [R] f%_function_scope
