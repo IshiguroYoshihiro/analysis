@@ -448,6 +448,120 @@ Qed.
 
 End continuous_interval.
 
+
+Section diam.
+Context {R : realType}.
+
+Definition diam (A : set R) :=
+  if A == set0 then 0%:E else
+  ereal_sup ([set `|a.1 - a.2|%:E | a in setX A A]).
+
+Lemma diam0 : diam set0 = 0%:E.
+Proof.
+by rewrite /diam eqxx.
+Qed.
+
+Lemma diam_ge0 (A : set R) : (0 <= diam A)%E.
+Proof.
+rewrite /diam; case: ifPn => //.
+move/set0P => [x Ax].
+apply: le_ereal_sup_tmp.
+by exists 0 => //; exists (x, x) => /=; rewrite ?subrr ?normr0//.
+Qed.
+
+Lemma diamS (A B : set R) : A `<=` B -> (diam A <= diam B)%E.
+Proof.
+move=> AB.
+rewrite {1}/diam; case : ifPn => [_|].
+  exact: diam_ge0.
+move/set0P => [a Aa].
+rewrite /diam; case: ifPn => [|_].
+  move/eqP => B0.
+  have := AB a Aa.
+  by rewrite B0.
+apply: ereal_sup_le => r/= [[x y] [/= Ax Ay] <-].
+exists (x, y) => //=.
+by split; apply: AB.
+Qed.
+
+Definition diam_max (s : seq (set R)) := \big[maxe/-oo%E]_(A <- s) (diam A).
+
+Lemma diam_max_ge0 (s : seq (set R)) : (0 <= diam_max s)%E .
+Proof.
+rewrite /diam_max.
+
+Admitted.
+
+Lemma diam_max_seq1 (s0 : set R) : diam_max [:: s0] = diam s0.
+Proof.
+by rewrite /diam_max big_seq1.
+Qed.
+
+Lemma diam_max_cons (s0 : set R) (s : seq (set R)) :
+  (diam s0 <= diam_max (s0 :: s))%E .
+Proof.
+Admitted.
+
+(* unnecessary? *)
+Lemma diam_defaultE (s : seq (set R)) :
+  s != [::] ->
+diam_max s = \big[maxe/0%E]_(A <- s) (diam A).
+Proof.
+elim: s => // s0 s1 ih _.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  apply: le_bigmax_seq2 => /=.
+    by exists s0; rewrite ?mem_head ?leNye.
+  move=> i.
+  rewrite in_cons => /predU1P[->|is1].
+    by exists s0 => //; rewrite mem_head.
+  exists i => //.
+  by rewrite in_cons is1 orbT.
+rewrite big_seq_cond.
+apply: bigmax_le.
+  exact: diam_max_ge0.
+move=> /= A; rewrite andbT in_cons => /predU1P[->|s1A].
+  exact: diam_max_cons.
+rewrite /diam_max.
+rewrite big_cons le_max; apply/orP; right.
+have : s1 != [::].
+  by apply/negP; move/eqP=> s10; rewrite s10 in s1A.
+move/ih; rewrite /diam_max => ->.
+exact: le_bigmax_seq.
+Qed.
+
+Lemma diam_max0 : diam_max [::] = -oo%E.
+Proof.
+by rewrite /diam_max big_nil.
+Qed.
+
+Lemma diam_maxS (s t : seq (set R)) :
+ (forall A, A \in s -> exists2 B, B \in t & A `<=` B) ->
+  (diam_max s <= diam_max t)%E.
+Proof.
+elim: s => //[_|/= s0 s1 ih h].
+  by rewrite /diam_max big_nil leNye.
+rewrite /diam_max.
+rewrite big_cons.
+rewrite ge_max; apply/andP; split.
+  have [t0 t0t st0] := h s0 (mem_head _ _).
+  apply: (@le_trans _ _ (diam t0)).
+    exact: diamS.
+  exact: le_bigmax_seq.
+rewrite big_seq_cond.
+apply: bigmax_le.
+  exact: leNye.
+move=> X.
+rewrite andbT => s1X.
+have := h X.
+rewrite in_cons s1X orbT; move/(_ isT).
+move=> [Y s1Y XY].
+apply: (@le_trans _ _ (diam Y)).
+  exact: diamS.
+exact: le_bigmax_seq.
+Qed.
+
+End diam.
+
 Module lemma6_direct_new.
 Section lemma6_direct.
 Context {R : realType}.
