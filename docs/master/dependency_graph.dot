@@ -20,24 +20,24 @@ digraph depend {
 		"theories/homotopy_theory/wedge_sigT"	[URL="mathcomp.analysis.wedge_sigT.html",
 			fillcolor=5,
 			label=wedge_sigT];
-		"theories/function_spaces"	[URL="mathcomp.analysis.function_spaces.html",
-			fillcolor=5,
-			label=function_spaces];
 		"theories/ess_sup_inf"	[URL="mathcomp.analysis.ess_sup_inf.html",
 			fillcolor=5,
 			label=ess_sup_inf];
 		"theories/lebesgue_measure"	[URL="mathcomp.analysis.lebesgue_measure.html",
 			fillcolor=5,
 			label=lebesgue_measure];
+		"theories/measurable_realfun"	[URL="mathcomp.analysis.measurable_realfun.html",
+			fillcolor=5,
+			label=measurable_realfun];
 		"theories/sequences"	[URL="mathcomp.analysis.sequences.html",
 			fillcolor=5,
 			label=sequences];
 		"theories/cantor"	[URL="mathcomp.analysis.cantor.html",
 			fillcolor=5,
 			label=cantor];
-		"theories/tvs"	[URL="mathcomp.analysis.tvs.html",
+		"theories/convex"	[URL="mathcomp.analysis.convex.html",
 			fillcolor=5,
-			label=tvs];
+			label=convex];
 		"theories/realfun"	[URL="mathcomp.analysis.realfun.html",
 			fillcolor=5,
 			label=realfun];
@@ -50,9 +50,6 @@ digraph depend {
 		"theories/exp"	[URL="mathcomp.analysis.exp.html",
 			fillcolor=5,
 			label=exp];
-		"theories/convex"	[URL="mathcomp.analysis.convex.html",
-			fillcolor=5,
-			label=convex];
 		"theories/trigo"	[URL="mathcomp.analysis.trigo.html",
 			fillcolor=5,
 			label=trigo];
@@ -62,9 +59,6 @@ digraph depend {
 		"theories/esum"	[URL="mathcomp.analysis.esum.html",
 			fillcolor=5,
 			label=esum];
-		"theories/measurable_realfun"	[URL="mathcomp.analysis.measurable_realfun.html",
-			fillcolor=5,
-			label=measurable_realfun];
 		"theories/lebesgue_stieltjes_measure"	[URL="mathcomp.analysis.lebesgue_stieltjes_measure.html",
 			fillcolor=5,
 			label=lebesgue_stieltjes_measure];
@@ -77,39 +71,15 @@ digraph depend {
 		"theories/hoelder"	[URL="mathcomp.analysis.hoelder.html",
 			fillcolor=5,
 			label=hoelder];
-		"theories/probability_theory/random_variable"	[URL="mathcomp.analysis.random_variable.html",
-			fillcolor=5,
-			label=random_variable];
-		"theories/probability_theory/bernoulli_distribution"	[URL="mathcomp.analysis.bernoulli_distribution.html",
-			fillcolor=5,
-			label=bernoulli_distribution];
 		"theories/kernel"	[URL="mathcomp.analysis.kernel.html",
 			fillcolor=5,
 			label=kernel];
-		"theories/probability_theory/binomial_distribution"	[URL="mathcomp.analysis.binomial_distribution.html",
-			fillcolor=5,
-			label=binomial_distribution];
-		"theories/probability_theory/uniform_distribution"	[URL="mathcomp.analysis.uniform_distribution.html",
-			fillcolor=5,
-			label=uniform_distribution];
-		"theories/probability_theory/normal_distribution"	[URL="mathcomp.analysis.normal_distribution.html",
-			fillcolor=5,
-			label=normal_distribution];
 		"theories/gauss_integral"	[URL="mathcomp.analysis.gauss_integral.html",
 			fillcolor=5,
 			label=gauss_integral];
-		"theories/probability_theory/exponential_distribution"	[URL="mathcomp.analysis.exponential_distribution.html",
+		"theories/independence"	[URL="mathcomp.analysis.independence.html",
 			fillcolor=5,
-			label=exponential_distribution];
-		"theories/probability_theory/poisson_distribution"	[URL="mathcomp.analysis.poisson_distribution.html",
-			fillcolor=5,
-			label=poisson_distribution];
-		"theories/probability_theory/beta_distribution"	[URL="mathcomp.analysis.beta_distribution.html",
-			fillcolor=5,
-			label=beta_distribution];
-		"theories/probability_theory/probability"	[URL="mathcomp.analysis.probability.html",
-			fillcolor=5,
-			label=probability];
+			label=independence];
 		"theories/pi_irrational"	[URL="mathcomp.analysis.pi_irrational.html",
 			fillcolor=5,
 			label=pi_irrational];
@@ -167,6 +137,9 @@ digraph depend {
 		"classical/internal_Eqdep_dec"	[URL="mathcomp.classical.internal_Eqdep_dec.html",
 			fillcolor=1,
 			label=internal_Eqdep_dec];
+		"classical/all_ssreflect_compat"	[URL="mathcomp.classical.all_ssreflect_compat.html",
+			fillcolor=1,
+			label=all_ssreflect_compat];
 		"classical/wochoice"	[URL="mathcomp.classical.wochoice.html",
 			fillcolor=1,
 			label=wochoice];
@@ -188,10 +161,6 @@ digraph depend {
 			fillcolor=2,
 			fontcolor=white,
 			label=real_interval];
-		"reals/signed"	[URL="mathcomp.reals.signed.html",
-			fillcolor=2,
-			fontcolor=white,
-			label=signed];
 		"reals/prodnormedzmodule"	[URL="mathcomp.reals.prodnormedzmodule.html",
 			fillcolor=2,
 			fontcolor=white,
@@ -254,6 +223,10 @@ digraph depend {
 			fillcolor=4,
 			fontcolor=white,
 			label=discrete_topology];
+		"theories/topology_theory/function_spaces"	[URL="mathcomp.analysis.topology_theory.function_spaces.html",
+			fillcolor=4,
+			fontcolor=white,
+			label=function_spaces];
 		"theories/topology_theory/initial_topology"	[URL="mathcomp.analysis.topology_theory.initial_topology.html",
 			fillcolor=4,
 			fontcolor=white,
@@ -344,6 +317,9 @@ digraph depend {
 		"theories/normedtype_theory/pseudometric_normed_Zmodule"	[URL="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html",
 			fillcolor=9,
 			label=pseudometric_normed_Zmodule];
+		"theories/normedtype_theory/tvs"	[URL="mathcomp.analysis.normedtype_theory.tvs.html",
+			fillcolor=9,
+			label=tvs];
 		"theories/normedtype_theory/ereal_normedtype"	[URL="mathcomp.analysis.normedtype_theory.ereal_normedtype.html",
 			fillcolor=9,
 			label=ereal_normedtype];
@@ -442,6 +418,36 @@ digraph depend {
 			fontcolor=white,
 			label=giry];
 	}
+	subgraph cluster_probability {
+		graph [label=Probability];
+		"theories/probability_theory/random_variable"	[URL="mathcomp.analysis.probability_theory.random_variable.html",
+			fillcolor=12,
+			label=random_variable];
+		"theories/probability_theory/bernoulli_distribution"	[URL="mathcomp.analysis.probability_theory.bernoulli_distribution.html",
+			fillcolor=12,
+			label=bernoulli_distribution];
+		"theories/probability_theory/binomial_distribution"	[URL="mathcomp.analysis.probability_theory.binomial_distribution.html",
+			fillcolor=12,
+			label=binomial_distribution];
+		"theories/probability_theory/uniform_distribution"	[URL="mathcomp.analysis.probability_theory.uniform_distribution.html",
+			fillcolor=12,
+			label=uniform_distribution];
+		"theories/probability_theory/normal_distribution"	[URL="mathcomp.analysis.probability_theory.normal_distribution.html",
+			fillcolor=12,
+			label=normal_distribution];
+		"theories/probability_theory/exponential_distribution"	[URL="mathcomp.analysis.probability_theory.exponential_distribution.html",
+			fillcolor=12,
+			label=exponential_distribution];
+		"theories/probability_theory/poisson_distribution"	[URL="mathcomp.analysis.probability_theory.poisson_distribution.html",
+			fillcolor=12,
+			label=poisson_distribution];
+		"theories/probability_theory/beta_distribution"	[URL="mathcomp.analysis.probability_theory.beta_distribution.html",
+			fillcolor=12,
+			label=beta_distribution];
+		"theories/probability_theory/probability"	[URL="mathcomp.analysis.probability_theory.probability.html",
+			fillcolor=12,
+			label=probability];
+	}
 	"classical/all_classical" -> "reals/prodnormedzmodule";
 	"classical/all_classical" -> "theories/topology_theory/topology_structure";
 	"classical/boolp" -> "classical/contra";
@@ -455,14 +461,15 @@ digraph depend {
 	"classical/functions" -> "classical/set_interval";
 	"classical/mathcomp_extra" -> "classical/boolp";
 	"classical/mathcomp_extra" -> "reals/constructive_ereal";
-	"classical/mathcomp_extra" -> "reals/signed";
 	"classical/set_interval" -> "classical/classical_orders";
 	"classical/set_interval" -> "classical/filter";
 	"classical/set_interval" -> "reals/reals";
 	"classical/internal_Eqdep_dec" -> "classical/boolp";
+	"classical/all_ssreflect_compat" -> "classical/mathcomp_extra";
+	"classical/all_ssreflect_compat" -> "classical/unstable";
+	"classical/all_ssreflect_compat" -> "experimental_reals/xfinmap";
 	"classical/wochoice" -> "classical/classical_sets";
 	"classical/unstable" -> "classical/functions";
-	"classical/unstable" -> "reals/signed";
 	"reals/constructive_ereal" -> "reals/real_interval";
 	"reals/constructive_ereal" -> "experimental_reals/realseq";
 	"reals/constructive_ereal" -> "reals_stdlib/nsatz_realtype";
@@ -482,7 +489,10 @@ digraph depend {
 	"theories/ereal" -> "theories/normedtype_theory/pseudometric_normed_Zmodule";
 	"theories/ereal" -> "theories/normedtype_theory/ereal_normedtype";
 	"theories/topology_theory/topology" -> "theories/ereal";
-	"theories/topology_theory/topology" -> "theories/function_spaces";
+	"theories/topology_theory/topology" -> "theories/homotopy_theory/wedge_sigT";
+	"theories/topology_theory/topology" -> "theories/cantor";
+	"theories/topology_theory/topology" -> "theories/normedtype_theory/num_normedtype";
+	"theories/topology_theory/topology" -> "theories/convex";
 	"theories/landau" -> "theories/sequences";
 	"theories/landau" -> "theories/derive";
 	"theories/normedtype_theory/normedtype" -> "theories/landau";
@@ -493,6 +503,7 @@ digraph depend {
 	"theories/topology_theory/discrete_topology" -> "theories/topology_theory/bool_topology";
 	"theories/topology_theory/discrete_topology" -> "theories/topology_theory/nat_topology";
 	"theories/topology_theory/discrete_topology" -> "theories/topology_theory/separation_axioms";
+	"theories/topology_theory/function_spaces" -> "theories/topology_theory/topology";
 	"theories/topology_theory/initial_topology" -> "theories/topology_theory/one_point_compactification";
 	"theories/topology_theory/initial_topology" -> "theories/topology_theory/subspace_topology";
 	"theories/topology_theory/matrix_topology" -> "theories/topology_theory/num_topology";
@@ -508,6 +519,7 @@ digraph depend {
 	"theories/topology_theory/pseudometric_structure" -> "theories/topology_theory/compact";
 	"theories/topology_theory/pseudometric_structure" -> "theories/topology_theory/matrix_topology";
 	"theories/topology_theory/quotient_topology" -> "theories/topology_theory/topology";
+	"theories/topology_theory/separation_axioms" -> "theories/topology_theory/function_spaces";
 	"theories/topology_theory/separation_axioms" -> "theories/topology_theory/metric_structure";
 	"theories/topology_theory/sigT_topology" -> "theories/topology_theory/separation_axioms";
 	"theories/topology_theory/subspace_topology" -> "theories/topology_theory/sigT_topology";
@@ -521,19 +533,16 @@ digraph depend {
 	"theories/topology_theory/uniform_structure" -> "theories/topology_theory/supremum_topology";
 	"theories/homotopy_theory/continuous_path" -> "theories/homotopy_theory/homotopy";
 	"theories/homotopy_theory/wedge_sigT" -> "theories/homotopy_theory/continuous_path";
-	"theories/function_spaces" -> "theories/homotopy_theory/wedge_sigT";
-	"theories/function_spaces" -> "theories/cantor";
-	"theories/function_spaces" -> "theories/tvs";
 	"theories/ess_sup_inf" -> "theories/hoelder";
 	"theories/lebesgue_measure" -> "theories/ess_sup_inf";
 	"theories/lebesgue_measure" -> "theories/borel_hierarchy";
 	"theories/lebesgue_measure" -> "theories/lebesgue_integral_theory/simple_functions";
+	"theories/measurable_realfun" -> "theories/lebesgue_measure";
 	"theories/measure_theory/measure" -> "theories/lebesgue_stieltjes_measure";
 	"theories/sequences" -> "theories/numfun";
 	"theories/sequences" -> "theories/measure_theory/measurable_structure";
 	"theories/sequences" -> "theories/showcase/pnt";
 	"theories/cantor" -> "theories/all_analysis";
-	"theories/tvs" -> "theories/normedtype_theory/num_normedtype";
 	"theories/normedtype_theory/num_normedtype" -> "theories/normedtype_theory/pseudometric_normed_Zmodule";
 	"theories/normedtype_theory/num_normedtype" -> "theories/normedtype_theory/ereal_normedtype";
 	"theories/normedtype_theory/matrix_normedtype" -> "theories/normedtype_theory/normedtype";
@@ -541,19 +550,20 @@ digraph depend {
 	"theories/normedtype_theory/normed_module" -> "theories/normedtype_theory/complete_normed_module";
 	"theories/normedtype_theory/normed_module" -> "theories/normedtype_theory/urysohn";
 	"theories/normedtype_theory/normed_module" -> "theories/normedtype_theory/vitali_lemma";
-	"theories/normedtype_theory/pseudometric_normed_Zmodule" -> "theories/normedtype_theory/normed_module";
+	"theories/normedtype_theory/pseudometric_normed_Zmodule" -> "theories/normedtype_theory/tvs";
+	"theories/normedtype_theory/tvs" -> "theories/normedtype_theory/normed_module";
 	"theories/normedtype_theory/ereal_normedtype" -> "theories/normedtype_theory/normed_module";
+	"theories/convex" -> "theories/normedtype_theory/tvs";
 	"theories/normedtype_theory/complete_normed_module" -> "theories/normedtype_theory/normedtype";
 	"theories/normedtype_theory/urysohn" -> "theories/normedtype_theory/normedtype";
 	"theories/normedtype_theory/vitali_lemma" -> "theories/normedtype_theory/normedtype";
-	"theories/realfun" -> "theories/convex";
+	"theories/realfun" -> "theories/exp";
 	"theories/realfun" -> "theories/lebesgue_stieltjes_measure";
 	"theories/derive" -> "theories/realfun";
 	"theories/numfun" -> "theories/realfun";
 	"theories/numfun" -> "theories/esum";
 	"theories/exp" -> "theories/measurable_realfun";
 	"theories/exp" -> "analysis_stdlib/Rstruct_topology";
-	"theories/convex" -> "theories/exp";
 	"theories/trigo" -> "theories/gauss_integral";
 	"theories/trigo" -> "theories/pi_irrational";
 	"theories/ftc" -> "theories/trigo";
@@ -576,7 +586,6 @@ digraph depend {
 	"theories/measure_theory/probability_measure" -> "theories/measure_theory/measure";
 	"theories/measure_theory/measure_negligible" -> "theories/measure_theory/measure_extension";
 	"theories/measure_theory/measure_extension" -> "theories/measure_theory/measure";
-	"theories/measurable_realfun" -> "theories/lebesgue_measure";
 	"theories/lebesgue_stieltjes_measure" -> "theories/measurable_realfun";
 	"theories/lebesgue_integral_theory/simple_functions" -> "theories/lebesgue_integral_theory/lebesgue_integral_definition";
 	"theories/lebesgue_integral_theory/simple_functions" -> "theories/lebesgue_integral_theory/measurable_fun_approximation";
@@ -605,6 +614,7 @@ digraph depend {
 	"theories/probability_theory/exponential_distribution" -> "theories/probability_theory/probability";
 	"theories/probability_theory/poisson_distribution" -> "theories/probability_theory/probability";
 	"theories/probability_theory/beta_distribution" -> "theories/probability_theory/probability";
+	"theories/probability_theory/probability" -> "theories/independence";
 	"theories/probability_theory/probability" -> "theories/all_analysis";
 	"theories/pi_irrational" -> "theories/all_analysis";
 	"analysis_stdlib/Rstruct_topology" -> "analysis_stdlib/showcase/uniform_bigO";
