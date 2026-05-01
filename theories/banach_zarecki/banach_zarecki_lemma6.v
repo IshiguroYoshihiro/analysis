@@ -484,13 +484,32 @@ exists (x, y) => //=.
 by split; apply: AB.
 Qed.
 
+Lemma diam_Rhull (A : set R) : diam [set` Rhull A] = diam A.
+Proof.
+Admitted.
+
+Lemma diam_closure (A : set R) : diam (closure A) = diam A.
+Proof.
+have [->|A0] := eqVneq A set0.
+  by rewrite closure0.
+rewrite -diam_Rhull -(diam_Rhull A).
+Admitted.
+
+Lemma diam_itv (x y: R) (b0 b1 : bool) :
+  diam [set` (Interval (BSide b0 x) (BSide b1 y))] = `|x - y|%:E.
+Proof.
+Admitted.
+
 Definition diam_max (s : seq (set R)) := \big[maxe/-oo%E]_(A <- s) (diam A).
 
-Lemma diam_max_ge0 (s : seq (set R)) : (0 <= diam_max s)%E .
+Lemma diam_max_ge0 (s : seq (set R)) : s != [::] -> (0 <= diam_max s)%E .
 Proof.
+case: s => // s0 s1 _.
 rewrite /diam_max.
-
-Admitted.
+apply: (bigmax_sup_seq _ s0) => //.
+  exact: mem_head.
+exact: diam_ge0.
+Qed.
 
 Lemma diam_max_seq1 (s0 : set R) : diam_max [:: s0] = diam s0.
 Proof.
@@ -500,7 +519,9 @@ Qed.
 Lemma diam_max_cons (s0 : set R) (s : seq (set R)) :
   (diam s0 <= diam_max (s0 :: s))%E .
 Proof.
-Admitted.
+apply: (bigmax_sup_seq _ s0) => //.
+exact: mem_head.
+Qed.
 
 (* unnecessary? *)
 Lemma diam_defaultE (s : seq (set R)) :
@@ -1587,7 +1608,6 @@ Abort.
 
 End max_nngr.
 
-
 Lemma completed_lebesgue_measure_eq_itv (A : set R) (x y : itv_bound R) :
   (x < y)%E ->
   A = [set` Interval x y] ->
@@ -1595,84 +1615,6 @@ Lemma completed_lebesgue_measure_eq_itv (A : set R) (x y : itv_bound R) :
 Proof.
 by move=> xy ->; rewrite completed_lebesgue_measure_itv xy.
 Qed.
-
-Section diam.
-
-Definition diam (A : set R) :=
-  if A == set0 then 0%:E else
-  ereal_sup ([set `|a.1 - a.2|%:E | a in setX A A]).
-
-Lemma diam0 : diam set0 = 0%:E.
-Proof.
-by rewrite /diam eqxx.
-Qed.
-
-Lemma diam_ge0 (A : set R) : (0 <= diam A)%E.
-Proof.
-rewrite /diam; case: ifPn => //.
-move/set0P => [x Ax].
-apply: le_ereal_sup_tmp.
-by exists 0 => //; exists (x, x) => /=; rewrite ?subrr ?normr0//.
-Qed.
-
-Definition diam_max (s : seq (set R)) := \big[maxe/-oo%E]_(A <- s) (diam A).
-
-Definition diam_max_ge0 (s : seq (set R)) : (0 <= diam_max s)%E .
-Proof.
-Admitted.
-
-Definition diam_max_seq1 (s0 : set R) : diam_max [:: s0] = diam s0.
-Proof.
-by rewrite /diam_max big_seq1.
-Qed.
-
-Definition diam_max_cons (s0 : set R) (s : seq (set R)) :
-  (diam s0 <= diam_max (s0 :: s))%E .
-Proof.
-Admitted.
-
-(* unnecessary? *)
-Definition diam_defaultE (s : seq (set R)) :
-  s != [::] ->
-diam_max s = \big[maxe/0%E]_(A <- s) (diam A).
-Proof.
-elim: s => // s0 s1 ih _.
-apply/eqP; rewrite eq_le; apply/andP; split.
-  apply: le_bigmax_seq2 => /=.
-    by exists s0; rewrite ?mem_head ?leNye.
-  move=> i.
-  rewrite in_cons => /predU1P[->|is1].
-    by exists s0 => //; rewrite mem_head.
-  exists i => //.
-  by rewrite in_cons is1 orbT.
-rewrite big_seq_cond.
-apply: bigmax_le.
-  exact: diam_max_ge0.
-move=> /= A; rewrite andbT in_cons => /predU1P[->|s1A].
-  exact: diam_max_cons.
-rewrite /diam_max.
-rewrite big_cons le_max; apply/orP; right.
-have : s1 != [::].
-  by apply/negP; move/eqP=> s10; rewrite s10 in s1A.
-move/ih; rewrite /diam_max => ->.
-exact: le_bigmax_seq.
-Qed.
-
-Lemma diam_max0 : diam_max [::] = -oo%E.
-Proof.
-by rewrite /diam_max big_nil.
-Qed.
-
-Lemma diam_maxS (s t : seq (set R)) :
- (forall A, A \in s -> exists2 B, B \in t & A `<=` B) ->
-  (diam_max s <= diam_max t)%E.
-Proof.
-elim: s => //[_|/= s0 s1 ih h].
-  by rewrite /diam_max big_nil leNye.
-rewrite /diam_max.
-Admitted.
-
-End diam.
 
 (* https://math.stackexchange.com/questions/520209/removing-isolated-points-to-get-a-perfect-set *)
 Lemma lemma6_direct : lusinN `[a, b] H.
@@ -1794,9 +1736,17 @@ have ubZb : ubound Z b.
   by rewrite /= in_itv/= => /andP[].
 pose c_ n j := nth d (c :: [seq b_ n i | i <- iota 0 n]) j.
 pose d_ n j := nth d (rcons [seq a_ n i | i <- iota 0 n] d) j.
-pose lambda n : R :=
-  \big[Num.max/0%R]_(i < n.+1) `|d_ n i - c_ n i|.
-have lambda_ge0 n : 0 <= lambda n by exact: (le_trans _ (le_bigmax _ _ ord0)).
+pose lambda' n := diam_max [seq `[c_ n i, d_ n i]%classic | i <- iota 0 n.+1].
+have lambda'_fin n : lambda' n \is a fin_num.
+  rewrite ge0_fin_numE; last exact: diam_max_ge0.
+  rewrite /lambda'/diam_max big_seq_cond; apply: bigmax_lt => //= s.
+  rewrite andbT in_cons => /predU1P[->|].
+    by rewrite diam_itv ltey.
+  admit.
+pose lambda n := fine (lambda' n).
+have lambda_ge0 n : 0 <= lambda n.
+  rewrite fine_ge0//.
+  exact: diam_max_ge0.
 have mcgitv i : mu.-cara.-measurable (contiguous_intervals Z i).
   move=> k; apply: sub_caratheodory.
   apply: open_measurable.
@@ -1814,7 +1764,7 @@ have nilambda : nonincreasing_fun lambda.
   apply/nonincreasing_seqP => n.
   rewrite /lambda.
   rewrite /d_ /c_.
-  rewrite big_mknat.
+(*  rewrite big_mknat.
   have kn2 : (k_ n <= n.+2)%N.
     by rewrite ltnW// ltnS ltnW.
   rewrite (big_cat_nat_idem _ (leq0n (k_ n)) kn2)/=; last by rewrite maxxx.
@@ -1838,11 +1788,14 @@ have nilambda : nonincreasing_fun lambda.
   rewrite le_eqVlt; apply/orP; left; apply/eqP.
   apply: eq_big_nat => i /andP[ki iltn].
   admit.
+*)
+  admit.
 have lambda0 : lambda @ \oo --> 0.
   apply/cvgrPdist_lt => /= e e0.
   apply/not_notP.
   rewrite /eventually/filter_from/=.
   move/forallPNP/(_ _ I) => H.
+(*
   suff : ~ (forall N, exists n, (N <= n)%N /\ e <= lambda n).
     apply => N.
     have/= := H N.
@@ -1910,6 +1863,9 @@ have lambda0 : lambda @ \oo --> 0.
   move: cdx.
   rewrite /c_ /d_ /= nth_rcons/= ifT; last by rewrite size_map size_iota.
   by rewrite !nth_map_iota.
+  admit.
+*)
+  admit.
 have nth_b_ n (i j : 'I_n) : (i <= j)%N -> b_ n i <= b_ n j.
   move=> ij.
   (*by apply: le_sorted_leq_nth => //; rewrite inE size_bE.*) admit.
