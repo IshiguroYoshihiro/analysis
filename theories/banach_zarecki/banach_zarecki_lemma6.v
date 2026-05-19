@@ -1777,9 +1777,11 @@ have lambda0 : lambda @ \oo --> 0.
       rewrite nth_map_iota; last by [].
       by rewrite ltNge biled.
     exact: cvg_cst.
-  have -> : \sum_(i < n.+2) mu `[c_ n.+1 i, d_ n.+1 i] @[n --> \oo] =
- mu (\bigcap_(i < n.+2) ([set` Rhull Z] `\` (contiguous_intervals Z i)))
-               @[n --> \oo].
+  apply: (@cvg_trans _
+  (mu (\bigcap_(i < n.+2) ([set` Rhull Z] `\` (contiguous_intervals Z i)))
+             @[n --> \oo])).
+    apply: near_eq_cvg.
+    near=> n.
     admit.
   have <- : mu (\bigcap_n ([set` Rhull Z] `\` (contiguous_intervals Z n))) = 0%:E.
     rewrite bigcupDr//.
