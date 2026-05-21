@@ -299,13 +299,16 @@ where `?` can be:
 <span class="vernacular">Variables</span> (<span id="set_itv_porderType.disp" class="id"><a name="set_itv_porderType.disp" class="">disp</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.order.preorder.html#Order.disp_t">Order</a></span>.<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.order.preorder.html#Order.disp_t">disp_t</a></span>) (<span id="set_itv_porderType.T" class="id"><a name="set_itv_porderType.T" class="">T</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.order.order.html#Order.POrder.Exports.porderType">porderType</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#disp:2">disp</a></span>).<br/>
 <span class="vernacular">Implicit</span><span class="id"> Types</span> (<span class="id">i</span><span class="id"> j</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.interval.html#interval">interval</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itv_porderType.T">T</a></span>) (<span class="id">x</span><span class="id"> y</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itv_porderType.T">T</a></span>) (<span class="id">a</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.interval.html#itv_bound">itv_bound</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itv_porderType.T">T</a></span>).<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="neitv" class="id"><div name="neitv" class=" tooltip">neitv<span class='tooltip-area'><p>frechet_filter : forall [T : Type], set (set T)
+<span class="vernacular">Definition</span><span class="id"> </span><span id="neitv" class="id"><div name="neitv" class=" tooltip">neitv<span class='tooltip-area'><p>in_filter_prod :
+forall {T U : Type} {F : set_system T} {G : set_system U},
+in_filter (T:=T) F ->
+in_filter (T:=U) G -> in_filter (T:=T * U) (filter_prod F G)
 
-frechet_filter is not universe polymorphic
-Arguments frechet_filter [T]%_type_scope _
-frechet_filter is transparent
-Expands to: Constant mathcomp.classical.filter.frechet_filter
-Declared in library mathcomp.classical.filter, line 984, characters 11-25
+in_filter_prod is not universe polymorphic
+Arguments in_filter_prod {T U}%_type_scope {F G} P Q
+in_filter_prod is transparent
+Expands to: Constant mathcomp.classical.filter.in_filter_prod
+Declared in library mathcomp.classical.filter, line 1039, characters 19-33
 </p></span></div></span><span class="id"> </span><span id="i:5" class="id"><a name="i:5" class="">i</a></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7">[set`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#i:5">i</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#fd1315670760bbd104fd4b87ca2730c7">]</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#c385a484ee9d1b4e0615924561a9b75e"> !=</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#c385a484ee9d1b4e0615924561a9b75e"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#set0">set0</a></span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="neitv_lt_bnd" class="id"><a name="neitv_lt_bnd" class="">neitv_lt_bnd</a></span><span class="id"> </span><span id="i:6" class="id"><a name="i:6" class="">i</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#neitv">neitv</a></span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#i:6">i</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span> (<span class="id"><a href="mathcomp.classical.set_interval.html#i:6">i</a></span>.<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#::pair_scope:x_'.1'">1</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.order.preorder.html#Order.PreOSyntax.::order_scope:x_'&lt;'_x"> &lt;</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.order.preorder.html#Order.PreOSyntax.::order_scope:x_'&lt;'_x"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#i:6">i</a></span>.<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#::pair_scope:x_'.2'">2</a></span>)<span class="id">%O</span>.<br/>
@@ -497,26 +500,34 @@ Qed.</div></details>
 <div class="proofscript">
 <span class="gallina-kwd"> by</span><span class="id"> apply/</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#eqP">eqP</a></span><span class="id">/</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#negPn">negPn</a></span><span class="id">/</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#negP">negP</a></span><span class="id"> =&gt;</span><span class="id"> /</span><span class="id"><a href="mathcomp.classical.set_interval.html#neitv_lt_bnd">neitv_lt_bnd</a></span><span class="id"> /=;</span><span class="id"> case:</span><span class="id"> a</span><span class="id"> =&gt;</span><span class="id"> [[]a|[]]</span>. Qed.</div></details>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="set_itv_infty_set0" class="id"><div name="set_itv_infty_set0" class=" tooltip">set_itv_infty_set0<span class='tooltip-area'><p>prod_filter_on :
-forall [T U : Type], filter_on T -> filter_on U -> filter_on (T * U)
-
-prod_filter_on is not universe polymorphic
-Arguments prod_filter_on [T U]%_type_scope F G
-prod_filter_on is transparent
-Expands to: Constant mathcomp.classical.filter.prod_filter_on
-Declared in library mathcomp.classical.filter, line 1013, characters 10-24
-</p></span></div></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.classical.set_interval.html#set_itv_bndNy">set_itv_bndNy</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itv_ybnd">set_itv_ybnd</a></span>).<br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="set_itv_infty_set0" class="id"><div name="set_itv_infty_set0" class=" tooltip">set_itv_infty_set0<span class='tooltip-area'></span></div></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.classical.set_interval.html#set_itv_bndNy">set_itv_bndNy</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itv_ybnd">set_itv_ybnd</a></span>).<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="set_itvE" class="id"><div name="set_itvE" class=" tooltip">set_itvE<span class='tooltip-area'><p>in_filter_prod :
-forall {T U : Type} {F : set_system T} {G : set_system U},
-in_filter (T:=T) F ->
-in_filter (T:=U) G -> in_filter (T:=T * U) (filter_prod F G)
+<span class="vernacular">Definition</span><span class="id"> </span><span id="set_itvE" class="id"><div name="set_itvE" class=" tooltip">set_itvE<span class='tooltip-area'><p>near_simpl :
+(forall (U : Type) (T : filteredType U) (x : T) (P : set U),
+ (\forall x0 \near nbhs x, P x0) = (\near x, P x)) *
+(forall (U : Type) (T : filteredType U) (x : T) (P : set U),
+ nbhs x P = (\near x, P x)) *
+(forall (X : Type) (fX : filteredType X) (x : fX) (P : set X),
+ nbhs x P = (\near x, P x)) *
+(forall (T : Type) (F : filter_on T) (P : set T),
+ (\near F, P F) = (\forall x \near F, P x)) *
+(forall (T U : Type) (f : T -> U) (F : set_system T) (P : set U),
+ (\forall y \near (f x @[x --> F])%classic, P y) = (\near F, P (f F))) *
+(forall (T U : Type) (f : T -> set U) (F : set_system T) (P : set U),
+ (\forall y \near (f x `@[x --> F])%classic, P y) =
+ (\near F, exists y : U, f F y /\ P y)) *
+(forall (T T' U U' : Type) (f : T -> U) (g : T' -> U') 
+   (F : set_system T) (G : set_system T') (P : U -> set U'),
+ Filter F ->
+ Filter G ->
+ (\forall y \near (f x @[x --> F])%classic & y' \near 
+  (g x @[x --> G])%classic, P y y') =
+ (\near F & G, P (f F) (g G)))
 
-in_filter_prod is not universe polymorphic
-Arguments in_filter_prod {T U}%_type_scope {F G} P Q
-in_filter_prod is transparent
-Expands to: Constant mathcomp.classical.filter.in_filter_prod
-Declared in library mathcomp.classical.filter, line 1039, characters 19-33
+near_simpl is not universe polymorphic
+near_simpl is transparent
+Expands to: Constant mathcomp.classical.filter.NearMap.near_simpl
+Declared in library mathcomp.classical.filter, line 1109, characters 11-21
 </p></span></div></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.classical.set_interval.html#set_itv1">set_itv1</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvoo0">set_itvoo0</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvoc0">set_itvoc0</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvco0">set_itvco0</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvoo">set_itvoo</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.set_interval.html#set_itvcc">set_itvcc</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvoc">set_itvoc</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvco">set_itvco</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvNyy">set_itvNyy</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvoy">set_itvoy</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.set_interval.html#set_itvcy">set_itvcy</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvNyo">set_itvNyo</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itvNyc">set_itvNyc</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#set_itv_infty_set0">set_itv_infty_set0</a></span>).<br/>
@@ -1145,33 +1156,7 @@ Qed.</div></details>
 <div class="proofscript">
 <span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#memB_itv0">memB_itv0</a></span>. Qed.</div></details>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="line_path" class="id"><div name="line_path" class=" tooltip">line_path<span class='tooltip-area'><p>near_simpl :
-(forall (U : Type) (T : filteredType U) (x : T) (P : set U),
- (\forall x0 \near nbhs x, P x0) = (\near x, P x)) *
-(forall (U : Type) (T : filteredType U) (x : T) (P : set U),
- nbhs x P = (\near x, P x)) *
-(forall (X : Type) (fX : filteredType X) (x : fX) (P : set X),
- nbhs x P = (\near x, P x)) *
-(forall (T : Type) (F : filter_on T) (P : set T),
- (\near F, P F) = (\forall x \near F, P x)) *
-(forall (T U : Type) (f : T -> U) (F : set_system T) (P : set U),
- (\forall y \near (f x @[x --> F])%classic, P y) = (\near F, P (f F))) *
-(forall (T U : Type) (f : T -> set U) (F : set_system T) (P : set U),
- (\forall y \near (f x `@[x --> F])%classic, P y) =
- (\near F, exists y : U, f F y /\ P y)) *
-(forall (T T' U U' : Type) (f : T -> U) (g : T' -> U') 
-   (F : set_system T) (G : set_system T') (P : U -> set U'),
- Filter F ->
- Filter G ->
- (\forall y \near (f x @[x --> F])%classic & y' \near 
-  (g x @[x --> G])%classic, P y y') =
- (\near F & G, P (f F) (g G)))
-
-near_simpl is not universe polymorphic
-near_simpl is transparent
-Expands to: Constant mathcomp.classical.filter.NearMap.near_simpl
-Declared in library mathcomp.classical.filter, line 1109, characters 11-21
-</p></span></div></span><span class="id"> </span><span id="a:221" class="id"><a name="a:221" class="">a</a></span><span class="id"> </span><span id="b:222" class="id"><a name="b:222" class="">b</a></span><span class="id"> </span><span id="t:223" class="id"><a name="t:223" class="">t</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#line_path_factor_numDomainType.R">R</a></span><span class="id"> :=</span> (<span class="id">1</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> -</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#t:223">t</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#a:221">a</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> +</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#t:223">t</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#b:222">b</a></span>.<br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="line_path" class="id"><div name="line_path" class=" tooltip">line_path<span class='tooltip-area'></span></div></span><span class="id"> </span><span id="a:221" class="id"><a name="a:221" class="">a</a></span><span class="id"> </span><span id="b:222" class="id"><a name="b:222" class="">b</a></span><span class="id"> </span><span id="t:223" class="id"><a name="t:223" class="">t</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#line_path_factor_numDomainType.R">R</a></span><span class="id"> :=</span> (<span class="id">1</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> -</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#::ring_scope:x_'-'_x"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#t:223">t</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#a:221">a</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> +</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#t:223">t</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="mathcomp.classical.set_interval.html#b:222">b</a></span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="line_path_id" class="id"><a name="line_path_id" class="">line_path_id</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.set_interval.html#line_path">line_path</a></span><span class="id"> 0</span><span class="id"> 1</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#id">id</a></span>.<br/>
 <details>
