@@ -584,6 +584,37 @@ Qed.
 
 End diam.
 
+(*
+Section oscillation_measure.
+Context {R : realType}.
+
+Variable (f : R -> R).
+Definition osc_mu (g : R -> R) := (oscillation g).
+
+Lemma osc_mu0 : osc_mu f set0 = 0.
+Proof. by rewrite /osc_mu oscillation0. Qed.
+
+Lemma osc_mu_ge0 A : (0 <= osc_mu f A)%E.
+Proof. by rewrite oscillation_ge0. Qed.
+
+Lemma le_osc_mu A B : A `<=` B -> (osc_mu f A <= osc_mu f B)%E.
+Proof. exact: oscillation_sub. Qed.
+
+(* oscillation_subadditive2? *)
+Lemma osc_mu_subadditive2 A B :
+   {within A `|` B, continuous f} -> 
+   (osc_mu f (A `|` B) <= osc_mu f A + osc_mu f B)%E.
+Proof.
+move=> cf.
+have := derive.EVT_max cf.
+
+Lemma osc_mu_sigma_subadditive : sigma_subadditive (osc_mu f).
+Proof.
+move=> A.
+rewrite seqDU_bigcup_eq.
+Admitted.
+*)
+
 Module lemma6_direct_new.
 Section lemma6_direct.
 Context {R : realType}.
@@ -839,6 +870,274 @@ rewrite /Rhull !(introT (@asboolP _) _)//.
 - rewrite {1}((closure_id _).1 closedZ).
   by apply: closure_inf.
 Qed.
+
+Lemma Ritv_open_bounded (b0 b1 : bool) (x y : R) :
+  open [set` (Interval (BSide b0 x) (BSide b1 y))] =
+   (~~ b0 && b1) || (y < x ?<= if ~~ b0 || b1).
+Proof.
+have e20 (e : R) (e0 : 0 < e) : 0 < e / 2 by rewrite divr_gt0.
+have e2e (e : R) (e0 : 0 < e) : e / 2 < e.
+  by rewrite {2}(splitr e) ltrDr (e20 _ e0).
+have e40 (e : R) (e0 : 0 < e) : 0 < e / 2^+2 by rewrite divr_gt0.
+have e42 (e : R) (e0 : 0 < e) : e / 2 ^+ 2 < e / 2.
+  rewrite expr2 invfM mulrA.
+  rewrite gtr_pMr//; last exact: e20.
+  rewrite invf_lt1//.
+  by rewrite (_ : 1 = 1%:R)// ltr_nat.
+case: b0; case: b1 => //=; rewrite ?orbF ?orbT.
+- rewrite propeqE; split; last first.
+    move=> yx.
+    by rewrite set_itv_ge// bnd_simp -leNgt.
+  apply: contraPP.
+  move/negP; rewrite -ltNge => xy.
+  move/open_itvoo_subset.
+  move/(_ x).
+  rewrite /= in_itv/= xy lexx/= => /(_ isT).
+  move=> [e /= e0].
+  move/(_ (e / 2)) => /=.
+  rewrite sub0r normrN gtr0_norm ?e20// e2e// => /(_ isT isT).
+  move/(_ (x - e / (2^+2))) => /=.
+  have sub_itv : x - e / 2 ^+ 2 \in `]x - e / 2, x + e / 2[.
+    rewrite in_itv/=; apply/andP; split.
+      by rewrite ler_ltB// e42//.
+    rewrite ltrD2l.
+    apply: (lt_trans _ (e42 _ e0)).
+    by rewrite gtrN ?e40.
+  move/(_ sub_itv).
+  rewrite in_itv/=.
+  apply/negP.
+  rewrite negb_and; apply/orP; left.
+  rewrite -ltNge.
+  by rewrite gtrBl e40.
+- rewrite propeqE; split; last first.
+    by move=> yx; rewrite set_itv_ge// bnd_simp -ltNge.
+  apply: contraPP; move/negP; rewrite -leNgt => xy.
+  move/open_itvoo_subset.
+  move/(_ x).
+  rewrite /= in_itv/= xy lexx/= => /(_ isT).
+  move=> [e /= e0].
+  move/(_ (e / 2)) => /=.
+  rewrite sub0r normrN gtr0_norm ?e20// e2e// => /(_ isT isT).
+  move/(_ (x - e / (2^+2))) => /=.
+  have sub_itv : x - e / 2 ^+ 2 \in `]x - e / 2, x + e / 2[.
+    rewrite in_itv/=; apply/andP; split.
+      by rewrite ler_ltB//  e42//.
+    rewrite ltrD2l.
+    apply: (lt_trans _ (e42 _ e0)).
+    by rewrite gtrN ?e40.
+  move/(_ sub_itv).
+  rewrite in_itv/=.
+  apply/negP.
+  rewrite negb_and; apply/orP; left.
+  rewrite -ltNge.
+  by rewrite gtrBl e40.
+- by rewrite propeqE; split.
+- rewrite propeqE; split; last first.
+    by move=> yx; rewrite set_itv_ge// bnd_simp -leNgt.
+  apply: contraPP; move/negP; rewrite -ltNge => xy.
+  move/open_itvoo_subset.
+  move/(_ y).
+  rewrite /= in_itv/= xy lexx/= => /(_ isT).
+  move=> [e /= e0].
+  move/(_ (e / 2)) => /=.
+  rewrite sub0r normrN gtr0_norm ?e20// e2e// => /(_ isT isT).
+  move/(_ (y + e / (2^+2))) => /=.
+  have sub_itv : y + e / 2 ^+ 2 \in `]y - e / 2, y + e / 2[.
+    rewrite in_itv/=; apply/andP; split.
+      rewrite ler_ltD//.
+      apply: (lt_trans _ (e40 _ e0)).
+      by rewrite ltrNl oppr0 e20.
+    by rewrite ltrD2l e42.
+  move/(_ sub_itv).
+  rewrite in_itv/=.
+  apply/negP.
+  rewrite negb_and; apply/orP; right.
+  rewrite -ltNge.
+  by rewrite ltrDl e40.
+Qed.
+
+Lemma Ritv_open_lray (b0 : bool) (x : R) :
+  open [set` (Interval (BSide b0 x) (BInfty _ false))] = ~~ b0.
+Proof.
+have e20 (e : R) (e0 : 0 < e) : 0 < e / 2 by rewrite divr_gt0.
+have e2e (e : R) (e0 : 0 < e) : e / 2 < e.
+  by rewrite {2}(splitr e) ltrDr (e20 _ e0).
+have e40 (e : R) (e0 : 0 < e) : 0 < e / 2^+2 by rewrite divr_gt0.
+have e42 (e : R) (e0 : 0 < e) : e / 2 ^+ 2 < e / 2.
+  rewrite expr2 invfM mulrA.
+  rewrite gtr_pMr//; last exact: e20.
+  rewrite invf_lt1//.
+  by rewrite (_ : 1 = 1%:R)// ltr_nat.
+case: b0 => /=.
+- rewrite propeqE; split => //.
+  rewrite falseE.
+  move/open_itvoo_subset.
+  move/(_ x).
+  rewrite /= in_itv/= lexx/= => /(_ isT).
+  move=> [e /= e0].
+  move/(_ (e / 2)) => /=.
+  rewrite sub0r normrN gtr0_norm ?e20// e2e// => /(_ isT isT).
+  move/(_ (x - e / (2^+2))) => /=.
+  have sub_itv : x - e / 2 ^+ 2 \in `]x - e / 2, x + e / 2[.
+    rewrite in_itv/=; apply/andP; split.
+      by rewrite ler_ltB// e42//.
+    rewrite ltrD2l.
+    apply: (lt_trans _ (e42 _ e0)).
+    by rewrite gtrN ?e40.
+  move/(_ sub_itv).
+  rewrite in_itv/=.
+  apply/negP.
+  rewrite negb_and; apply/orP; left.
+  rewrite -ltNge.
+  by rewrite gtrBl e40.
+by rewrite propeqE; split.
+Qed.
+
+Lemma Ritv_open_rray (b1 : bool) (y : R) :
+  open [set` (Interval (BInfty _ true) (BSide b1 y))] = b1.
+Proof.
+have e20 (e : R) (e0 : 0 < e) : 0 < e / 2 by rewrite divr_gt0.
+have e2e (e : R) (e0 : 0 < e) : e / 2 < e.
+  by rewrite {2}(splitr e) ltrDr (e20 _ e0).
+have e40 (e : R) (e0 : 0 < e) : 0 < e / 2^+2 by rewrite divr_gt0.
+have e42 (e : R) (e0 : 0 < e) : e / 2 ^+ 2 < e / 2.
+  rewrite expr2 invfM mulrA.
+  rewrite gtr_pMr//; last exact: e20.
+  rewrite invf_lt1//.
+  by rewrite (_ : 1 = 1%:R)// ltr_nat.
+  case: b1 => //=.
+- by rewrite propeqE; split.
+rewrite propeqE; split => //.
+rewrite falseE.
+move/open_itvoo_subset.
+move/(_ y).
+rewrite /= in_itv/= lexx/= => /(_ isT).
+move=> [e /= e0].
+move/(_ (e / 2)) => /=.
+rewrite sub0r normrN gtr0_norm ?e20// e2e// => /(_ isT isT).
+move/(_ (y + e / (2^+2))) => /=.
+have sub_itv : y + e / 2 ^+ 2 \in `]y - e / 2, y + e / 2[.
+  rewrite in_itv/=; apply/andP; split.
+    rewrite ler_ltD//.
+    apply: (lt_trans _ (e40 _ e0)).
+    by rewrite ltrNl oppr0 e20.
+  by rewrite ltrD2l e42.
+move/(_ sub_itv).
+rewrite in_itv/=.
+apply/negP.
+rewrite -ltNge.
+by rewrite ltrDl e40.
+Qed.
+
+Lemma not_bounded_set_lray (b0 : bool) (r : R) :
+   ~ bounded_set [set` (Interval (BSide b0 r) (BInfty _ false))].
+Proof.
+suff hubr : ~ has_ubound [set z | r < z].
+case: b0; rewrite set_itvE Rbounded_setE; apply/not_andP; right => //.
+  apply/forallNP => x.
+  have/forallNP/(_ x) := hubr.
+  move/existsNP => [z/= /not_implyP[rz /negP]]; rewrite -ltNge => xz.
+  apply/existsNP; exists z.
+  by apply/not_implyP; split; [|apply/negP]; rewrite /= -?ltNge ?ltW.
+apply/forallNP => x.
+move/(_ (`|r| + 1 + (`|x| + 1))) => /=.
+have rrx : r < `|r| + 1 + (`|x| + 1).
+  rewrite -{1}(addr0 r).
+  apply: ltrD => //.
+  by rewrite (@le_lt_trans _ _ `|r|) ?ltrDl ?ler_norm.
+move/(_ rrx).
+apply/negP.
+rewrite -ltNge -{1}(add0r x).
+rewrite ltrD => //.
+by rewrite (@le_lt_trans _ _ `|x|) ?ltrDl ?ler_norm.
+Qed.
+
+
+Lemma not_bounded_set_rray (b0 : bool) (r : R) :
+   ~ bounded_set [set` (Interval (BInfty _ true) (BSide b0 r))].
+Proof.
+suff hubr : ~ has_lbound [set z | z < r].
+case: b0; rewrite set_itvE Rbounded_setE; apply/not_andP; left => //.
+  apply/forallNP => x.
+  have/forallNP/(_ x) := hubr.
+  move/existsNP => [z/= /not_implyP[rz /negP]]; rewrite -ltNge => xz.
+  apply/existsNP; exists z.
+  by apply/not_implyP; split; [|apply/negP]; rewrite /= -?ltNge ?ltW.
+apply/forallNP => x.
+move/(_ (- (`|r| + 1 + (`|x| + 1)))) => /=.
+have rxr : - (`|r| + 1 + (`|x| + 1)) < r.
+  rewrite -{2}(addr0 r) opprD.
+  apply: ltrD => //.
+  rewrite (@lt_le_trans _ _ (- `|r|))//.
+    by rewrite ltrN2 ltrDl.
+  by rewrite lerNl -normrN ler_norm.
+move/(_ rxr).
+apply/negP.
+rewrite -ltNge -{2}(add0r x).
+rewrite opprD ltrD => //.
+rewrite (@lt_le_trans _ _ (- `|x|))//.
+  by rewrite ltrN2 ltrDl.
+by rewrite lerNl -normrN ler_norm.
+Qed.
+
+Lemma not_bounded_setT : ~ (bounded_set (@setT R)).
+Proof.
+apply/forallNP => x.
+rewrite -implypN => _.
+move/(_ (`|x| + 1)).
+have xx1 : x < `|x| + 1.
+  apply: (le_lt_trans (ler_norm _)).
+  by rewrite ltrDl.
+move/(_ xx1).
+apply/existsNP => /=.
+exists (`|x| + 1 + 1).
+apply/not_implyP; split => //.
+apply/negP; rewrite -ltNge.
+rewrite [ltRHS]ger0_norm//.
+by rewrite ltrDl.
+Qed.
+
+Lemma nonempty_bounded_Rooitv (i : interval R) :
+  [set` i] !=set0 -> open [set` i] -> bounded_set [set` i] ->
+  exists a b : R, a < b /\ i = `]a, b[.
+Proof.
+case: i.
+move=> [[l|l]|[]][[r|r]|[]];
+  rewrite ?Ritv_open_bounded ?Ritv_open_lray ?Ritv_open_rray//=; last 10 first.
+- move/[swap] => rl.
+  by move/set0P; rewrite set_itv_ge ?eqxx// bnd_simp -leNgt.
+- by rewrite set_itvE; move/set0P; rewrite eqxx.
+- by move=> _ _ /not_bounded_set_lray.
+- by move=> _ _ /not_bounded_set_rray.
+- by rewrite set_itvE => /set0P/negP.
+- by rewrite set_itvE => _ _ /not_bounded_setT.
+- by rewrite set_itvE => /set0P/negP.
+- by rewrite set_itvE => /set0P/negP.
+- by rewrite set_itvE => /set0P/negP.
+- by rewrite set_itvE => /set0P/negP.
+- move/[swap] => rl; rewrite set_itv_ge; last by rewrite bnd_simp -leNgt.
+  by move/set0P/negP.
+- move/[swap] => rl; rewrite set_itv_ge; last by rewrite bnd_simp -ltNge.
+  by move/set0P/negP.
+- by rewrite set_itvE => /set0P/negP.
+move=> [x/=]; rewrite in_itv/= => /andP[lx] /(lt_trans lx) {x lx} lr.
+by exists l, r; split.
+Qed.
+
+Lemma nonempty_open_Rinterval_is_not_subset1 (i : interval R) :
+  open [set` i] -> [set` i] !=set0 ->
+  ~ (is_subset1 [set` i]).
+Proof.
+move=> oi.
+have : itv_open_ends i.
+  case: i oi; case; case.
+case: i.
+case.
+case.
+move=> oi.
+
+Admitted.
+
 
 Lemma mem_contiguous_intervals2 (Z : set R) j :
   compact Z ->
@@ -1580,6 +1879,29 @@ by case: b0; case: b1; rewrite lebesgue_measure_itv lte_fin xy.
 Qed.
 *)
 
+Lemma contiguous_intervals_nonempty (Z : set R) :
+   (exists n : nat, contiguous_intervals_support Z n) -> Z !=set0.
+Proof.
+
+Lemma contiguous_support_bnd_lt (Z : set R) (i : nat) :
+  compact Z ->
+  contiguous_intervals_support Z i ->
+  contiguous_intervals1 Z i < contiguous_intervals2 Z i.
+Proof.
+move=> cZ.
+rewrite /contiguous_intervals_support/= => cgiZ0.
+have Z0 : Z !=set0.
+  have[x xcgiZ] := cgiZ0.
+  exists x.
+  apply: 
+apply: has_bound_not_subset1_inf_sup.
+    apply: (@subset_has_lbound _ _ _ ([set` Rhull Z])).
+      apply: (subset_trans (@contiguous_intervalsS _ _ _)).
+      exact: cplt_hull_subset_Rhull.
+    rewrite (compact_Rhull cZ).
+have := @is_interval_contiguous_intervals _ Z i.
+
+
 From mathcomp Require Import esum.
 
 Section max_nngr.
@@ -1616,6 +1938,7 @@ Lemma completed_lebesgue_measure_eq_itv (A : set R) (x y : itv_bound R) :
 Proof.
 by move=> xy ->; rewrite completed_lebesgue_measure_itv xy.
 Qed.
+
 
 (* https://math.stackexchange.com/questions/520209/removing-isolated-points-to-get-a-perfect-set *)
 Lemma lemma6_direct : lusinN `[a, b] H.
@@ -1669,6 +1992,16 @@ have ne_cgitvs n : contiguous_intervals Z (h1 n) !=set0.
   by rewrite /supp/contiguous_intervals_support/=.
 pose A_ n := (contiguous_intervals1 Z (h1 n)).
 pose B_ n := (contiguous_intervals2 Z (h1 n)).
+have AB n : A_ n < B_ n.
+  have : contiguous_intervals_support Z (h1 n).
+  have := @bij _ _ _ _ h1.
+  move=> [].
+  by move/(_ n I).
+  move=> [x].
+  move: cZ.
+  rewrite Rcompact_boundE => -[cZ ubZ lbZ].
+  rewrite contiguous_ooitv//= in_itv/= => /andP[Ax xB].
+  exact: lt_trans Ax xB.
 pose alpha := mu (H @` Z).
 have fin_alpha : alpha \is a fin_num.
   rewrite gt0_fin_numE//.
@@ -1696,8 +2029,11 @@ have blea : forall n i, (i < n)%N -> b_ n.+1 i <= a_ n.+1 i.+1.
   rewrite leNgt; apply/negP => aibi.
   have : `]a_ n.+1 i, b_ n.+1 i[ `&` `]a_ n.+1 i.+1, b_ n.+1 i.+1[ !=set0.
     exists ((a_ n.+1 i.+1 + b_ n.+1 i.+1) / 2).
-    rewrite /a_ /b_ /ab_.
-    admit.
+    split => /=; rewrite in_itv/=; apply/andP; split.
+    - admit.
+    - admit.
+    - admit.
+    - admit.
   admit.
 have lbZa : lbound Z a.
   move=> r Zr.
@@ -1709,17 +2045,15 @@ have ubZb : ubound Z b.
   by rewrite /= in_itv/= => /andP[].
 pose c_ n j := nth d (c :: [seq b_ n i | i <- iota 0 n]) j.
 pose d_ n j := nth d (rcons [seq a_ n i | i <- iota 0 n] d) j.
-pose lambda' n := diam_max [seq `[c_ n i, d_ n i]%classic | i <- iota 0 n.+1].
-have lambda'_fin n : lambda' n \is a fin_num.
+pose lambda n := diam_max [seq `[c_ n i, d_ n i]%classic | i <- iota 0 n.+1].
+have lambda_fin n : lambda n \is a fin_num.
   rewrite ge0_fin_numE; last exact: diam_max_ge0.
-  rewrite /lambda'/diam_max big_seq_cond; apply: bigmax_lt => //= s.
+  rewrite /lambda /diam_max big_seq_cond; apply: bigmax_lt => //= s.
   rewrite andbT in_cons => /predU1P[->|].
     rewrite diam_itv ?ltey//.
     admit.
   admit.
-pose lambda n := fine (lambda' n).
-have lambda_ge0 n : 0 <= lambda n.
-  rewrite fine_ge0//.
+have lambda_ge0 n : (0 <= lambda n)%E.
   exact: diam_max_ge0.
 have mcgitv i : mu.-cara.-measurable (contiguous_intervals Z i).
   move=> k; apply: sub_caratheodory.
@@ -1729,16 +2063,15 @@ have ca0 n : c <= a_ n 0%N.
   admit.
 have biled n i : b_ n i <= d.
   admit.
-have lambda0 : lambda @ \oo --> 0.
+have lambda0 : (fine \o lambda) @ \oo --> 0%R.
   apply: fine_cvg.
-  suff : lambda' x.+1 @[x --> \oo] --> 0%:E.
+  suff : lambda x.+1 @[x --> \oo] --> 0%:E.
     by rewrite cvg_shiftS.
   apply (@squeeze_cvge _ _ _ R (cst 0) _
     (fun n => \sum_(i < n.+2) mu `[c_ n.+1 i, d_ n.+1 i])).
       near=> n; apply/andP; split.
         exact: diam_max_ge0.
-      rewrite /lambda'.
-      rewrite /diam_max.
+      rewrite /lambda /diam_max.
       rewrite big_tuple.
       apply: bigmax_le.
         exact: leNye.
@@ -1812,7 +2145,7 @@ have nth_b_ n (i j : 'I_n) : (i <= j)%N -> b_ n i <= b_ n j.
   (*by apply: le_sorted_leq_nth => //; rewrite inE size_bE.*) admit.
 have construct_x n :
   exists x : seq R, [/\ itv_partition c d (behead x),
-    (mesh c d (behead x) <= lambda n),
+    ((mesh c d (behead x))%:E <= lambda n)%E,
     (forall i : 'I_ n.+1, c_ n i \in x /\ d_ n i \in x),
     (n < size x)%N &
     (forall (i j : 'I_ n.+1), nth d x j \notin `]c_ n i, d_ n i[) ].
@@ -1820,84 +2153,109 @@ have construct_x n :
 pose x := fun n => sval (cid (@construct_x n)).
 have pcdx n : itv_partition c d (behead (x n)).
   by have [] := proj2_sig (cid (@construct_x n)).
-have max_x n : mesh c d (behead (x n)) <= lambda n.
-  by have [] := proj2_sig (cid (construct_x n)).
+have max_x n : mesh c d (behead (x n)) <= fine (lambda n).
+  have [_ +] := proj2_sig (cid (construct_x n)).
+  rewrite -[X in (_ <= X)%E](@fineK _ (lambda n)); last first.
+    admit.
+  admit.
 pose S_ n : R := variation c d f (behead (x n)).
-pose V_ n : R := \sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)| +
-     (\sum_(i < n) fine (total_variation (A_ i) (B_ i) f))%R.
+pose V_ n : \bar R := \sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)|%:E +
+     (\sum_(i < n) total_variation (A_ i) (B_ i) f).
 pose CD_ n := merge <=%R [tuple c_ n i | i < n.+1] [tuple d_ n i | i < n.+1].
 have sub_xcd n : subseq (CD_ n) (x n).
   admit.
-have SV n : S_ n <= V_ n.
+have SV n : ((S_ n)%:E <= V_ n)%E.
   rewrite /S_ /V_.
   rewrite /variation.
   rewrite /=.
   admit.
-pose Vcd := fine (total_variation c d f).
-have V_tv n : V_ n <= Vcd.
+set Vcd : \bar R := total_variation c d f.
+have V_tv n : (V_ n <= Vcd)%E.
   admit.
-have Soo_tv : S_ n @[n --> \oo] --> Vcd.
-  have ac : a <= c.
-    apply: lb_le_inf; last by move=> ? /Zab /=; rewrite in_itv/= => /andP[].
-    apply/set0P/negP; move/eqP => Z0'.
-    have := HZ; apply/negP.
-    rewrite -leNgt le_eqVlt; apply/predU1P; left.
-    by rewrite Z0' image_set0 measure0.
-  have db : d <= b.
-    apply: ge_sup; last by move=> ? /Zab /=; rewrite in_itv/= => /andP[].
-    apply/set0P/negP; move/eqP => Z0'.
-    have := HZ; apply/negP.
-    rewrite -leNgt le_eqVlt; apply/predU1P; left.
-    by rewrite Z0' image_set0 measure0.
+have ac : a <= c.
+  apply: lb_le_inf; last by move=> ? /Zab /=; rewrite in_itv/= => /andP[].
+  apply/set0P/negP; move/eqP => Z0'.
+  have := HZ; apply/negP.
+  rewrite -leNgt le_eqVlt; apply/predU1P; left.
+  by rewrite Z0' image_set0 measure0.
+have db : d <= b.
+  apply: ge_sup; last by move=> ? /Zab /=; rewrite in_itv/= => /andP[].
+  apply/set0P/negP; move/eqP => Z0'.
+  have := HZ; apply/negP.
+  rewrite -leNgt le_eqVlt; apply/predU1P; left.
+  by rewrite Z0' image_set0 measure0.
+have cdbvf : bounded_variation c d f.
+  apply: (bounded_variationl (ltW cd) db).
+  apply: bounded_variationr ac _ bvf.
+  by apply: ltW; exact: (lt_le_trans cd).
+have Soo_tv : (S_ n)%:E @[n --> \oo] --> Vcd.
   have cdcf : {within `[c, d], continuous f}.
     apply: continuous_subspaceW cf.
     by apply: subset_itv; rewrite bnd_simp.
-  have cdbvf : bounded_variation c d f.
-    apply: (bounded_variationl (ltW cd) db).
-    apply: bounded_variationr ac _ bvf.
-    by apply: ltW; exact: (lt_le_trans cd).
   have := lemma5 cd cdcf pcdx max_x lambda0.
-  rewrite /S_ /Vcd.
-  rewrite -[X in _ --> X -> _](@fineK _ (total_variation c d f)); last first.
-    admit.
-  by move/fine_cvgP => -[_ /=].
+  by rewrite /S_ /Vcd.
 have Voo_V : V_ n @[n --> \oo] --> Vcd.
-  apply: (squeeze_cvgr _ Soo_tv); last first.
+  apply: (squeeze_cvge _ Soo_tv); last first.
     exact: cvg_cst.
   apply: nearW => n.
   apply/andP; split.
     exact: SV.
   exact: V_tv.
-have [n0] : exists2 n0, (0 < n0)%N & forall n, (n >= n0)%N -> V_ n > Vcd - (fine alpha) / 2.
-  have alpha20 : 0 < fine alpha / 2.
-    rewrite divr_gt0//.
-    rewrite -lte_fin fineK//.
-  have := Voo_V (ball Vcd (fine alpha / 2)) (nbhsx_ballx _ _ alpha20).
+have [n0 n00 tvV] : exists2 n0, (0 < n0)%N &
+      forall n, (n0 <= n)%N -> (Vcd - alpha / 2 < V_ n)%E.
+  have alpha20 : 0 < fine (alpha / 2).
+    apply: fine_gt0; rewrite mule_gt0//=; last first.
+      by rewrite inver ifF; exact/negP/negP.
+    rewrite inver ifF; last exact/negP/negP.
+    by rewrite lte_mul_pinfty ?measure_ge0 ?ltry.
+  move: Voo_V.
+  rewrite -{1}(@fineK _ Vcd); last first.
+    by apply/bounded_variationP => //; exact: ltW.
+  move/fine_cvg.
+  move/(_ (ball (fine Vcd) (fine (alpha / 2))) (nbhsx_ballx _ _ alpha20)).
   move=> [n0 _ H].
   exists n0.+1 => //n n0n.
   have := H n (ltnW n0n).
   rewrite /ball/=.
+  rewrite /ereal_ball/=.
+  have Vcdoo : (Vcd < +oo)%E.
+    rewrite -ge0_fin_numE; first by apply/bounded_variationP => //; exact: ltW.
+    by apply: total_variation_ge0; exact: ltW.
+  have Vn_fin : V_ n \is a fin_num.
+    rewrite ge0_fin_numE; last first.
+      apply: adde_ge0.
+        exact: sume_ge0.
+      apply: sume_ge0 => ? _.
+      apply: total_variation_ge0.
+      exact: ltW.
+    exact: (le_lt_trans (V_tv n)).
+  have al2fin : (alpha / 2)%E \is a fin_num.
+    rewrite inver ifF; last exact/negP/negP.
+    rewrite ge0_fin_numE.
+      rewrite lte_mul_pinfty ?ltW//.
+      exact: ltry.
+    by rewrite mule_ge0 ?ltW.
   rewrite ger0_norm; last first.
     rewrite subr_ge0.
-    exact: V_tv.
-  by rewrite ltrBlDl -ltrBlDr.
-move=> n00.
-have Z_set0 : Z !=set0.
-  apply/set0P/negP; move/eqP => Z_set0.
-  have := HZ.
-  by rewrite Z_set0 image_set0 measure0; apply/negP; rewrite -leNgt.
-near \oo => n.
-have n0n : (n0 <= n)%N by near: n; exact: nbhs_infty_ge.
-move/(_ n n0n).
+    rewrite fine_le//; last first.
+      apply/bounded_variationP => //.
+      exact: ltW.
+  rewrite ltrBlDl -ltrBlDr.
+  rewrite -fineB//; last first.
+    by apply/bounded_variationP => //; exact: ltW.
+  rewrite -lte_fin !fineK//.
+  rewrite fin_numB; apply/andP; split => //.
+  by apply/bounded_variationP => //; exact: ltW.
 (* (4) *)
-rewrite /Vcd/V_.
-have -> : fine (total_variation c d f) =
-  \sum_(i < n.+1) `|H (d_ n i) - H (c_ n i)| +
-   (\sum_(i < n) fine (total_variation (A_ i) (B_ i) f))%R.
+(* total_variationD? *)
+have eq4 n : total_variation c d f =
+  \sum_(i < n.+1) (H (d_ n i) - H (c_ n i))%:E +
+   \sum_(i < n) (total_variation (A_ i) (B_ i) f).
   admit.
-rewrite addrAC ltrD2r.
+(* (5) *)
+(* have eq5 n : (n0 <= n)%N -> \sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)|%:E. *)
 (* (5.5) (between (5) and (6)) *)
-have alphaH : fine alpha < \sum_(i < n.+1) `|H (d_ n i) - H (c_ n i)|.
+have alphaH n : fine alpha < \sum_(i < n.+1) `|H (d_ n i) - H (c_ n i)|.
   rewrite /alpha.
   have -> : Z = ([set` Rhull Z] `\` cplt_hull Z).
    admit.
@@ -1910,17 +2268,17 @@ have alphaH : fine alpha < \sum_(i < n.+1) `|H (d_ n i) - H (c_ n i)|.
     apply: le_outer_measure.
     exact: sub_image_setI.
   admit.
+(*
+rewrite addrAC ltrD2r.
 move/(@lt_trans _ _ _ (fine alpha / 2)).
 rewrite ltrBrDl -splitr; move/(_ alphaH).
+*)
 (* (6.5) (between (6) and (7)) *)
-pose abcd (i : 'I_ n.+1) := [set k | `[A_ k, B_ k] `<=` `[c_ n i, d_ n i]].
-have {}n0n : (n0 < n.+1)%N.
+pose abcd n (i : 'I_ n.+1) := [set k | `[A_ k, B_ k] `<=` `[c_ n i, d_ n i]].
+set Uabcd := fun n i =>  \bigcup_(j in abcd n i) `[A_ j, B_ j]%classic.
+have cdi n (i : 'I_ n.+1) : c_ n i <= d_ n i.
   admit.
-set on0 := Ordinal n0n.
-set Uabcdn := \bigcup_(j in abcd on0) `[A_ j, B_ j]%classic.
-have cdi (i : 'I_ n.+1) : c_ n i <= d_ n i.
-  admit.
-have itvfcd (i : 'I_ n.+1) : is_interval (f @` `[c_ n i, d_ n i]).
+have itvfcd n (i : 'I_ n.+1) : is_interval (f @` `[c_ n i, d_ n i]).
   apply: (is_interval_image_cc cf).
   apply: subset_itv => //; rewrite bnd_simp.
     rewrite /c_.
@@ -1929,12 +2287,12 @@ have itvfcd (i : 'I_ n.+1) : is_interval (f @` `[c_ n i, d_ n i]).
   rewrite /d_.
   (* d_ n i <= b *)
   admit.
-have cUabcdn : closed Uabcdn.
+have cUabcd n i : closed (Uabcd n i).
     admit.
-have hull_Uabcd (i : 'I_ n.+1) : Rhull Uabcdn = `[(c_ n i), (d_ n i)].
+have hull_Uabcd n (i : 'I_ n.+1) : Rhull (Uabcd n i) = `[(c_ n i), (d_ n i)].
     admit.
-have prop65 : forall i : 'I_ n.+1, (`|f (d_ n i) - f (c_ n i)|%:E <=
-  \sum_(n <= j <oo | `[< `[A_ j, B_ j] `<=` Uabcdn >])
+have prop65 n : forall i : 'I_ n.+1, (`|f (d_ n i) - f (c_ n i)|%:E <=
+  \sum_(n <= j <oo | `[< `[A_ j, B_ j] `<=` Uabcd n i >])
      oscillation f `[A_ j, B_ j])%E.
   move => i.
   apply: lime_ge.
@@ -1942,11 +2300,15 @@ have prop65 : forall i : 'I_ n.+1, (`|f (d_ n i) - f (c_ n i)|%:E <=
     apply: ereal_nondecreasing_series => k _ _.
     exact: oscillation_ge0.
   apply/nearW => k.
-  have := @lemma4 _ (c_ n i) (d_ n i) (cdi i) f Uabcdn
-                 (itvfcd i) cUabcdn (hull_Uabcd i).
+  have := @lemma4 _ (c_ n i) (d_ n i) (cdi n i) f (Uabcd n i)
+                 (itvfcd n i) (cUabcd n i) (hull_Uabcd n i).
   move/andP => [le1 le2].
-  apply: (le_trans (le_trans le1 le2)).
-  have -> : (mu^*%mu [set f x | x in Uabcdn] = 0)%E.
+  apply: (le_trans le1).
+  rewrite -(@setIidr _ [set` Rhull Z] `[c_ n i, d_ n i]%classic); last first.
+    admit.
+  rewrite -contiguous_intervals_Rhull; last by [].
+    
+  have -> : (mu^*%mu [set f x | x in (Uabcd n i)] = 0)%E.
     apply/eqP; rewrite eq_le; apply/andP; split; last first.
       exact: outer_measure_ge0.
     have <- : mu^*%mu (f @` Z) = 0.
@@ -1968,7 +2330,14 @@ have prop65 : forall i : 'I_ n.+1, (`|f (d_ n i) - f (c_ n i)|%:E <=
     rewrite /a_.
 *)
     admit.
+  rewrite add0r.
+  
   admit.
+rewrite -fine_invr -fineM//; last exact: fin_numV.
+rewrite -lte_fin fineK; last first.
+  apply: fin_numM => //; exact: fin_numV.
+apply/negP.
+rewrite -leNgt.
 (* (7) *)
 have : ((\sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)|)%:E <=
   \sum_(n <= i <oo) oscillation f `[A_ i, B_ i])%E.
@@ -1979,6 +2348,7 @@ have : ((\sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)|)%:E <=
   near=> m.
   admit.
   (* have := lemma4. *)
+move/le_trans; apply.
 have ifcd : is_interval (f @` `[c, d]).
   by apply: (is_interval_image_cc cf); apply: subset_itv; rewrite bnd_simp;
     [exact: lb_le_inf|exact: ge_sup].
@@ -1994,14 +2364,28 @@ have hZE : Rhull Z = `[c, d].
     apply/asboolPn.
     rewrite not_notE.
     admit.
+
+
 have := (@lemma4 _ _ _ (ltW cd) f Z ifcd clZ hZE).
 rewrite measurable_mu_extE/=; last first.
+  apply: sub_caratheodory.
+  apply: image_apply: measurable_imgage_
   admit.
 have -> : mu (f @` Z) = 0.
   apply: lusinf => //=.
   apply: sub_caratheodory.
   exact: compact_measurable.
 rewrite add0r.
+move/andP=> [H].
+move/(le_trans H).
+have -> : (\big[+%E/0%R]_(0 <= i <oo)
+      oscillation f `[contiguous_intervals1 Z i, contiguous_intervals2 Z i] =
+  \big[+%E/0%R]_(0 <= i <oo) oscillation f
+          `[contiguous_intervals1 Z (h1 i), contiguous_intervals2 Z (h1 i)])%E.
+  admit.
+rewrite /A_ /B_.
+move/le_trans; apply.
+
 admit.
 Admitted.
 

@@ -1,6 +1,6 @@
 From HB Require Import structures.
 From Stdlib Require Import Bool.
-From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
+From mathcomp Require Import all_boot all_order ssralg ssrnum ssrint interval finmap.
 From mathcomp Require Import interval_inference archimedean.
 From mathcomp Require Import mathcomp_extra boolp contra classical_sets functions.
 From mathcomp Require Import cardinality fsbigop interval set_interval.
@@ -169,7 +169,6 @@ move=> haslbA cA.
 Abort.
 
 End open_mem_lemmas.
-
 
 Section completed_algebra_lemmas.
 Context {d : measure_display}.
@@ -611,9 +610,11 @@ have [fa|fa] := pselect (\forall x \near a^'+, f x = f a).
       |by exists r; rewrite // in_itv/= ar rb].
 Unshelve. all: by end_near. Qed.
 
+(* name? *)
+(* why "integral" is in name in spite of not using integral *)
 Lemma integral_continuous_nondecreasing_itv (a b : R) (f : R -> R) :
   a < b ->
-  {within `[a, b] , continuous f} ->
+  {within `[a, b], continuous f} ->
   {in `]a, b[ &, {homo f : x y / (x <= y)%O}} ->
   lebesgue_measure (f @` `]a, b[) = ((f b)%:E - (f a)%:E)%E.
 Proof.
@@ -627,6 +628,50 @@ have: f a <= f b.
 rewrite le_eqVlt.
 move/orP; case; rewrite lte_fin; [move/eqP|]; move=> -> //.
 by rewrite ltxx -EFinD subrr.
+Qed.
+
+Lemma continuous_image_segment (a b : R) (f : R -> R) :
+  a <= b ->
+  {within `[a, b], continuous f} ->
+  exists c d, [/\ c \in `[a, b]%classic, d \in `[a, b]%classic,
+     f @` `[a, b] = `[f c, f d]%classic &
+    lebesgue_measure (f @` `[a, b]) = (f d - f c)%:E].
+Proof.
+move=> ab cf.
+have ab0 : `[a, b] !=set0 by exists a => /=; rewrite boundl_in_itv.
+have cpt_ab : compact `[a, b] by exact: segment_compact.
+have [/= c /[dup]cab + minc] := compact_EVT_min ab0 cpt_ab cf.
+rewrite inE/= in_itv/= => /andP[ac cb].
+have [/= d /[dup]dab + maxd] := compact_EVT_max ab0 cpt_ab cf.
+rewrite inE/= in_itv/= => /andP[ad db].
+have fcfd : f c <= f d by exact: minc.
+have -> : [set f x | x in `[a, b]] = `[f c, f d]%classic.
+  rewrite eqEsubset; split => y.
+    move=> [x xab <-]/=; rewrite in_itv/=; apply/andP; split.
+      by apply: minc; rewrite inE.
+    by apply: maxd; rewrite inE.
+  move=> yfcfd.
+  have le_y : minr (f c) (f d) <= y <= maxr (f c) (f d).
+    by rewrite minEle maxEle !ifT//.
+  have /orP[cd|dc] := le_total c d.
+    have cfcd : {within `[c, d], continuous f}.
+      apply: continuous_subspaceW cf.
+      by apply: subset_itv; rewrite bnd_simp.
+    have [x xcd <-] := IVT cd cfcd le_y.
+    exists x => //=.
+    by apply: subset_itv xcd; rewrite bnd_simp.
+  have cfdc : {within `[d, c], continuous f}.
+    apply: continuous_subspaceW cf.
+    by apply: subset_itv; rewrite bnd_simp.
+  rewrite minC maxC in le_y.
+  have [x xcd <-] := IVT dc cfdc le_y.
+  exists x => //=.
+  by apply: subset_itv xcd; rewrite bnd_simp.
+exists c, d; split => //.
+rewrite lebesgue_measure_itv.
+move: fcfd; rewrite le_eqVlt => /predU1P[<-|fcfd].
+  by rewrite subrr ifF.
+by rewrite ifT.
 Qed.
 
 End move_to_realfun.
