@@ -274,16 +274,16 @@ rewrite !(nth_map 0) ?size_iota//; last exact: ltnW.
 by rewrite !nth_iota//; last exact: ltnW.
 Qed.
 
+(* duplicated of get_subset1? *)
 Lemma is_subset1_set1 (A : set R) :
   A !=set0 -> is_subset1 A -> exists x, A = [set x].
 Proof.
 move=> [x Ax] A1; exists x; apply/seteqP; split => [|y ->//].
 by move=> y Ay; exact: A1.
-Qed.
+Abort.
 
 Lemma set1_not_open (x : R) : ~ open [set x].
 Proof. by rewrite openE/= interior_set1 => /(_ x); exact. Qed.
-
 
 Lemma snd_map (l : seq (R * R)) i : (i < size l)%N ->
   (l`_i).2 = (map snd l)`_i.
@@ -326,7 +326,7 @@ have ? : inf (contiguous_intervals Z j) < sup (contiguous_intervals Z j).
   apply: has_bound_not_subset1_inf_sup.
   exact: has_lbound_contiguous_intervals.
   exact: has_ubound_contiguous_intervals.
-  move/is_subset1_set1 => /(_ Zj0)[x Zj1].
+  move/is_subset1_set1 => /(_ Zj0)Zj1.
   have := @open_contiguous_intervals _ Z j.
   by rewrite Zj1; exact: set1_not_open.
 have H1 : inf (contiguous_intervals Z j) < inf (contiguous_intervals Z l).
@@ -384,7 +384,7 @@ have ? : inf (contiguous_intervals Z j) < sup (contiguous_intervals Z j).
   apply: has_bound_not_subset1_inf_sup.
   exact: has_lbound_contiguous_intervals.
   exact: has_ubound_contiguous_intervals.
-  move/is_subset1_set1 => /(_ Zj0)[x Zj1].
+  move/is_subset1_set1 => /(_ Zj0)Zj1.
   have := @open_contiguous_intervals _ Z j.
   by rewrite Zj1; exact: set1_not_open.
 have H1 : sup (contiguous_intervals Z l) < sup (contiguous_intervals Z j).
@@ -1196,7 +1196,7 @@ have [p0|p0] := eqVneq p [::].
   have {}Pp : P = [set` Rhull P] by apply/seteqP; split => //; exact: sub_Rhull.
   move/is_intervalP : Pp => itv_P.
   have : ~ is_subset1 P.
-    move/is_subset1_set1 => /(_ P0)[r Pr].
+    move/is_subset1_set1 => /(_ P0)Pr.
     move: perfectP.
     rewrite Pr.
     exact: perfect_set1.
@@ -1533,7 +1533,6 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
 admit.
 Admitted.
 
-
 Lemma contiguous_intervals_support0 (Z : set R) :
   ~ (closed Z) ->
   contiguous_intervals_support Z = set0.
@@ -1557,12 +1556,32 @@ have cZ : closed Z.
   apply: contrapT => /contiguous_intervals_support0.
   by apply/eqP/negP/negP/set0P; exists n; exists x.
 apply/set0P/negP => /eqP Z0.
-have [[ubZ|lbZ]|] := (pselect ((has_ubound Z) \/ (has_lbound Z))); last first.
-- rewrite not_orE Z0 => -[].
-  by move/(_ (has_ubound0 _)).
-- have : Z (inf Z).
-  
-Admitted.
+have : cplt_hull Z !=set0.
+  rewrite bigcup_contiguous_intervals//.
+  exists x; exists n => //.
+apply/set0P/negP/negPn/eqP; rewrite Z0; exact: cplt_hull0.
+Qed.
+
+Lemma contiguous_intervals_set0 (i : nat) :
+  @contiguous_intervals R set0 i = set0.
+Proof.
+apply/eqP/not_notP; move/negP/set0P => -[x i0].
+have := @cplt_hull_set0 R.
+move/eqP; apply/negP/set0P.
+exists x.
+rewrite bigcup_contiguous_intervals; last exact: closed0.
+by exists i.
+Qed.
+
+Lemma contiguous_intervals_support_not_subset1 (Z : set R) n :
+  contiguous_intervals_support Z n ->
+  ~ is_subset1 (contiguous_intervals Z n).
+Proof.
+move/(is_subset1_set1) => H /H {}H.
+apply: (@set1_not_open _ (xget point (contiguous_intervals Z n))).
+rewrite -H.
+exact: open_contiguous_intervals.
+Qed.
 
 Lemma contiguous_support_bnd_lt (Z : set R) (i : nat) :
   compact Z ->
@@ -1571,17 +1590,21 @@ Lemma contiguous_support_bnd_lt (Z : set R) (i : nat) :
 Proof.
 move=> cZ.
 rewrite /contiguous_intervals_support/= => cgiZ0.
-have Z0 : Z !=set0.
-  have[x xcgiZ] := cgiZ0.
-  exists x.
-  admit.
+have [Z0|Z0] := pselect (Z !=set0); last first.
+  have {}Z0 : Z = set0 by apply/eqP/not_notP; move/negP/set0P.
+  move: cgiZ0; rewrite Z0 contiguous_intervals_set0.
+  by move/set0P/negP.
 apply: has_bound_not_subset1_inf_sup.
-    apply: (@subset_has_lbound _ _ _ ([set` Rhull Z])).
-      apply: (subset_trans (@contiguous_intervalsS _ _ _)).
-      exact: cplt_hull_subset_Rhull.
-    rewrite (compact_Rhull cZ).
-have := @is_interval_contiguous_intervals _ Z i.
-Admitted.
+- apply: (@subset_has_lbound _ _ _ ([set` Rhull Z])).
+    apply: (subset_trans (@contiguous_intervalsS _ _ _)).
+    exact: cplt_hull_subset_Rhull.
+- rewrite (compact_Rhull cZ Z0).
+  exact: has_lbound_itv.
+- move: cZ; rewrite Rcompact_boundE => -[_ ubZ lbZ].
+  rewrite (contiguous_ooitv ubZ lbZ).
+  exact: has_ubound_itv.
+exact: contiguous_intervals_support_not_subset1.
+Qed.
 
 End contiguous_intervals_support.
 

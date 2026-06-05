@@ -877,24 +877,7 @@ End not_subset1P.
 
 From mathcomp Require Import rat.
 
-Section open_disjoint_refined.
-Context {R : realType}.
-
-Lemma open_disjoint_refined (U : set R) :
- open U ->
-  exists I : (nat -> set R) * (set R * set R),
-  (forall q, open (I.1 q) /\ is_interval (I.1 q)
-     (*  /\ has_ubound (I.1 q) /\ has_lbound (I.1 q) *) ) (* bounded_set? *)
-  /\ open I.2.1 /\ is_interval I.2.1 /\ ~ has_ubound I.2.1 /\
-    open I.2.2 /\ is_interval I.2.2 /\ has_ubound I.2.2 /\ ~ has_lbound I.2.2
-   /\ trivIset setT (fun n => if n == 0 then I.2.1 else
-                               if n == 1 then I.2.2 else I.1 n.-2)
-   /\ U = \bigcup_q I.1 q.
-Proof.
-Abort.
-
-End open_disjoint_refined.
-
+(* unused *)
 Section locally_finite.
 Context {T : topologicalType}.
 
@@ -1734,7 +1717,8 @@ End abs_contP.
 Section tmp.
 Context {R : realType}.
 
-Lemma nonincreasing_at_right_cvgr2 (f : R -> R) a (b : itv_bound R) : (BRight a < b)%O ->
+Lemma nonincreasing_at_right_cvgr2 (f : R -> R) a (b : itv_bound R) :
+ (BRight a < b)%O ->
     {in Interval (BLeft a) b &, nonincreasing_fun f} ->
     has_ubound (f @` [set` Interval (BLeft a) b]) ->
   f x @[x --> a ^'+] --> sup (f @` [set` Interval (BLeft a) b]).
