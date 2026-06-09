@@ -2116,6 +2116,10 @@ pose ab_ n := sort (fun x y => x.1 <= y.1)
    [tuple (A_ i, B_ i) | i < n.+1].
 pose a_ n i := (nth (d, d) (ab_ n) i).1.
 pose b_ n i := (nth (d, d) (ab_ n) i).2.
+have ca0 n : c <= a_ n 0%N.
+  admit.
+have biled n i : b_ n i <= d.
+  admit.
 have blea : forall n i, (i < n)%N -> b_ n.+1 i <= a_ n.+1 i.+1.
   (* disjoint_contiguous_intervals *)
   move=> n i ni.
@@ -2138,24 +2142,44 @@ have ubZb : ubound Z b.
   by rewrite /= in_itv/= => /andP[].
 pose c_ n j := nth d (c :: [seq b_ n i | i <- iota 0 n]) j.
 pose d_ n j := nth d (rcons [seq a_ n i | i <- iota 0 n] d) j.
+have cled n i : c_ n.+1 i <= d_ n.+1 i.
+  rewrite /c_ /d_.
+  rewrite nth_rcons size_map size_iota.
+  case: ifP => n0.
+    rewrite nth_map_iota//.
+    case: i n0.
+      move=> _ /=.
+      rewrite /a_.
+      rewrite /ab_.
+      rewrite /=.
+      (* rewrite nth_zip. *)
+      admit.
+    move=> i.
+    rewrite ltnS => iltn.
+    rewrite (lock n.+1) /= -lock nth_map_iota; last by rewrite ltnS ltnW.
+    by rewrite blea.
+  rewrite if_same.
+  move: n0.
+  move/negP/negP; rewrite -ltnNge ltnS leq_eqVlt => /predU1P[<-|n1lti].
+    rewrite [leLHS](_:_ = nth d [seq b_ n.+1 i0 | i0 <- iota 0 n.+1] n)//.
+    rewrite nth_map_iota; last by [].
+    exact: biled.
+  by rewrite nth_default//= size_map size_iota.
 pose lambda n := diam_max [seq `[c_ n i, d_ n i]%classic | i <- iota 0 n.+1].
 have lambda_fin n : lambda n \is a fin_num.
   rewrite ge0_fin_numE; last exact: diam_max_ge0.
-  rewrite /lambda /diam_max big_seq_cond; apply: bigmax_lt => //= s.
-  rewrite andbT in_cons => /predU1P[->|].
-    rewrite diam_itv ?ltey//.
-    admit.
-  admit.
+  case: n => [|n]; first by rewrite /lambda diam_max_seq1 diam_itv ?ltry// ltW.
+  rewrite /lambda /diam_max big_seq_cond; apply: bigmax_lt; first by [].
+  move=> s; rewrite andbT.
+  move/mapP => [i].
+  rewrite mem_iota add0n => /andP[_ iltn2 ->].
+  by rewrite diam_itv ?ltry ?cled.
 have lambda_ge0 n : (0 <= lambda n)%E.
   exact: diam_max_ge0.
 have mcgitv i : mu.-cara.-measurable (contiguous_intervals Z i).
   move=> k; apply: sub_caratheodory.
   apply: open_measurable.
   exact: open_contiguous_intervals.
-have ca0 n : c <= a_ n 0%N.
-  admit.
-have biled n i : b_ n i <= d.
-  admit.
 have lambda0 : (fine \o lambda) @ \oo --> 0%R.
   apply: fine_cvg.
   suff : lambda x.+1 @[x --> \oo] --> 0%:E.
@@ -2173,6 +2197,7 @@ have lambda0 : (fine \o lambda) @ \oo --> 0%R.
       rewrite (tnth_nth 0).
       rewrite nth_iota// add0n.
       rewrite diam_itv; last first.
+        rewrite /c_ /d_.
         admit.
       rewrite (bigD1 i)//=.
       rewrite completed_lebesgue_measure_itv lte_fin.
