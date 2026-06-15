@@ -188,7 +188,7 @@ Lemma rcons_snd_iota {T : nzSemiRingType} (s : seq (T * T)) (x : T * T) m :
   [seq ((rcons s x)`_i).2 | i <- iota 0 m.+1] =
   rcons [seq (s`_i).2 | i <- iota 0 m] (x.2).
 Proof.
-Admitted.
+Abort.
 
 Lemma sort_sorted_snd' (p : seq (R * R)) n :
   let le1 := (fun x y : R * R => x.1 <= y.1) in
@@ -207,11 +207,7 @@ move=> pn sp ltp disjp.
 have p21m : ((rcons p1 p2)`_m).2 <= ((rcons p1 p2)`_m.+1).1.
   admit.
 split.
-  rewrite rcons_snd_iota.
-  rewrite le_sorted_rconsE; apply/andP; split.
-    admit.
-  admit.
-Admitted.
+Abort.
 
 Lemma setD_bigcup_itvoo (c d : R) (a_ b_ : R^nat) n :
   (forall i, (i < n.+1)%N -> a_ i \in `[c, d]) ->
@@ -327,9 +323,9 @@ Abort.
 Lemma set1_not_open (x : R) : ~ open [set x].
 Proof. by rewrite openE/= interior_set1 => /(_ x); exact. Qed.
 
-Lemma snd_map (l : seq (R * R)) i : (i < size l)%N ->
-  (l`_i).2 = (map snd l)`_i.
-Proof. by move=> ?; rewrite (nth_map 0). Qed.
+Lemma snd_map (l : seq (R * R)) def i : (i < size l)%N ->
+  (nth (def, def) l i).2 = nth def (map snd l) i.
+Proof. by move=> ?; rewrite (nth_map (def, def)). Qed.
 
 Lemma fst_map (l : seq (R * R)) i : (i < size l)%N ->
   (l`_i).1 = (map fst l)`_i.
@@ -1192,7 +1188,7 @@ Qed.
 
 Lemma contiguous_intervals_sort (P : set R) p :
   has_lbound P -> has_ubound P ->
-  contiguous_intervals_support P = [set` p] ->
+  [set` p] `<=` contiguous_intervals_support P ->
   sorted <=%R [seq contiguous_intervals1 P j | j <- p] ->
   sorted <=%R [seq contiguous_intervals2 P j | j <- p].
 Proof.
@@ -1202,7 +1198,7 @@ rewrite size_map [in X in X -> _]/= ltnS => ti.
 rewrite (nth_map 0)//; last by rewrite /= ltnW.
 rewrite (nth_map 0)//.
 apply: contiguous_intervals_sort' => //.
-  move/seteqP : Pp => [_] => /(_ (t`_i)).
+  move: Pp => /(_ t`_i)/=.
   rewrite /contiguous_intervals_support/=.
   apply.
   rewrite inE; apply/orP; right.
@@ -1451,6 +1447,7 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
     apply/mapP; exists j => //.
     rewrite (perm_mem hsorted_bnds) mem_iota leq0n/= add0n.
     by rewrite size_map.
+    by rewrite Pp.
     by rewrite -qE1.
   - move=> i pi.
     have ? : (i < size p)%N by rewrite (leq_trans pi)// leq_pred.
@@ -2153,8 +2150,18 @@ have fin_alpha : alpha \is a fin_num.
     by rewrite set_itv1 completed_lebesgue_measureE lebesgue_measure_set1.
   rewrite completed_lebesgue_measure_itv ifT ?lte_fin//=.
   by rewrite -EFinB ltry.
-pose ab_ n := sort (fun x y => x.1 <= y.1)
-   [tuple (A_ i, B_ i) | i < n.+1].
+(*
+Z : set R
+contiguous_intervals Z :
+[c   = c_0, d_0 = a_0]  ]a_0, b_0[
+[c_1 = b_0, d_1 = a_1]  ]a_1, b_1[
+[c_2 = b_1, d_2 = a_2]  ]a_2, b_2[
+...
+[c_n.-1 = b_m.-2, d_n.-1 = a_n.-1] ]a_n.-1, b_n.-1[
+[c_n    = b_n.-1, d_n = a_n]       ]a_n, b_n[
+[c_n.+1 = b_n, d_n.+1 = d]
+*)
+pose ab_ n := sort (fun x y => x.1 <= y.1) [tuple (A_ i, B_ i) | i < n.+1].
 pose seq_a n := unzip1 (ab_ n).
 pose seq_b n := unzip2 (ab_ n).
 have sorted_a n : sorted <=%R (seq_a n).
@@ -2162,7 +2169,35 @@ have sorted_a n : sorted <=%R (seq_a n).
   by move=> ? ?/=; rewrite le_total.
 have sorted_b n : sorted <=%R (seq_b n).
   rewrite /seq_b.
-  have := (@sort_sorted_snd' _ (ab_ n) n).
+  have [q H1 H2] := perm_iota_sort (fun x y : R * R => x.1 <= y.1) (d, d) [tuple (A_ i, B_ i) | i < n.+1].
+  rewrite -/(ab_ _) in H2.
+  rewrite H2.
+  rewrite [X in sorted _ X](_ : _ = ([seq nth d [tuple B_ i | i < n.+1] i | i <- q])); last first.
+    rewrite /unzip2.
+    rewrite -map_comp/=.
+    apply/eq_in_map => i/= iq.
+    rewrite snd_map; last first.
+      rewrite size_map size_enum_ord.
+      move: iq.
+      by rewrite (perm_mem H1) mem_iota leq0n/= add0n size_map size_enum_ord.
+    congr nth.
+    by rewrite -map_comp.
+  rewrite [X in sorted _ X](_ : _ = [seq B_ i | i <- q]); last first.
+    apply/eq_in_map => i iq.
+    rewrite /B_.
+    have ? : (i < n.+1)%N.
+      move: iq.
+      by rewrite (perm_mem H1) mem_iota leq0n/= add0n size_map size_enum_ord.
+    rewrite (nth_map ord0); last first.
+      by rewrite size_tuple.
+    by rewrite /= nth_enum_ord//.
+  rewrite /B_.
+  rewrite map_comp.
+  apply: contiguous_intervals_sort => //.
+  admit.
+  admit.
+  admit.
+  rewrite -map_comp/=.
   admit.
 pose a_ n := nth d (seq_a n).
 pose b_ n := nth d (seq_b n).
