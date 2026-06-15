@@ -171,6 +171,48 @@ rewrite -/lt1 -pn.
 by rewrite map_nth_iota ?subn0// drop0 take_size.
 Qed.
 
+(* unused *)
+Lemma rcons_fst {T : Type} (s : seq (T * T)) (x : T * T) :
+  unzip1 (rcons s x) = rcons (unzip1 s) x.1.
+Proof.
+by move: s x; elim => // s1 s2 + s3/= => ->.
+Qed.
+
+Lemma rcons_snd {T : Type} (s : seq (T * T)) (x : T * T) :
+  unzip2 (rcons s x) = rcons (unzip2 s) x.2.
+Proof.
+by move: s x; elim => // s1 s2 + s3/= => ->.
+Qed.
+
+Lemma rcons_snd_iota {T : nzSemiRingType} (s : seq (T * T)) (x : T * T) m :
+  [seq ((rcons s x)`_i).2 | i <- iota 0 m.+1] =
+  rcons [seq (s`_i).2 | i <- iota 0 m] (x.2).
+Proof.
+Admitted.
+
+Lemma sort_sorted_snd' (p : seq (R * R)) n :
+  let le1 := (fun x y : R * R => x.1 <= y.1) in
+  size p = n.+1 ->
+  sorted le1 p ->
+  (forall i, (p`_i).1 < (p`_i).2) ->
+  ((forall i j, `](p`_i).1, (p`_i).2[ `&` `](p`_j).1, (p`_j).2[ = set0) ->
+    sorted <=%R [seq (p`_i).2 | i <- iota 0 n.+1] /\
+      (forall i, (i < n)%N -> (p`_i).2 <= (p`_i.+1).1)).
+Proof.
+move=> le1.
+move: p; elim: n => // m IHn.
+apply: last_ind => // p1 p2 _.
+rewrite size_rcons; move/eq_add_S.
+move=> pn sp ltp disjp.
+have p21m : ((rcons p1 p2)`_m).2 <= ((rcons p1 p2)`_m.+1).1.
+  admit.
+split.
+  rewrite rcons_snd_iota.
+  rewrite le_sorted_rconsE; apply/andP; split.
+    admit.
+  admit.
+Admitted.
+
 Lemma setD_bigcup_itvoo (c d : R) (a_ b_ : R^nat) n :
   (forall i, (i < n.+1)%N -> a_ i \in `[c, d]) ->
   (forall i, (i < n.+1)%N -> b_ i \in `[c, d]) ->
@@ -2032,7 +2074,6 @@ Proof.
 by move=> xy ->; rewrite completed_lebesgue_measure_itv xy.
 Qed.
 
-
 (* https://math.stackexchange.com/questions/520209/removing-isolated-points-to-get-a-perfect-set *)
 Lemma lemma6_direct : lusinN `[a, b] H.
 Proof.
@@ -2114,12 +2155,22 @@ have fin_alpha : alpha \is a fin_num.
   by rewrite -EFinB ltry.
 pose ab_ n := sort (fun x y => x.1 <= y.1)
    [tuple (A_ i, B_ i) | i < n.+1].
-pose a_ n i := (nth (d, d) (ab_ n) i).1.
-pose b_ n i := (nth (d, d) (ab_ n) i).2.
+pose seq_a n := unzip1 (ab_ n).
+pose seq_b n := unzip2 (ab_ n).
+have sorted_a n : sorted <=%R (seq_a n).
+  rewrite sort_sorted_fst ?sort_sorted//.
+  by move=> ? ?/=; rewrite le_total.
+have sorted_b n : sorted <=%R (seq_b n).
+  rewrite /seq_b.
+  have := (@sort_sorted_snd' _ (ab_ n) n).
+  admit.
+pose a_ n := nth d (seq_a n).
+pose b_ n := nth d (seq_b n).
 have ca0 n : c <= a_ n 0%N.
   admit.
 have biled n i : b_ n i <= d.
   admit.
+
 have blea : forall n i, (i < n)%N -> b_ n.+1 i <= a_ n.+1 i.+1.
   (* disjoint_contiguous_intervals *)
   move=> n i ni.
