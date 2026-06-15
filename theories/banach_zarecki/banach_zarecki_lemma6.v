@@ -2193,11 +2193,16 @@ have sorted_b n : sorted <=%R (seq_b n).
     by rewrite /= nth_enum_ord//.
   rewrite /B_.
   rewrite map_comp.
+  move: cZ; rewrite Rcompact_boundE => -[cZ ubZ lbZ].
   apply: contiguous_intervals_sort => //.
-  admit.
-  admit.
-  admit.
+    move=> i/=.
+    move/mapP => /= [j jq ->].
+    have [+ _ _] := @bij _ _ _ _ h1; exact.
   rewrite -map_comp/=.
+  have : total (fun x y : R * R => x.1 <= y.1).
+    move=> [? ?] [? ?]; exact: le_total.
+  have :=(@sort_sorted _ (fun x y : R * R => x.1 <= y.1) _ [tuple (A_ i, B_ i) | i < n.+1]).
+  have := (@sort_sorted_fst _).
   admit.
 pose a_ n := nth d (seq_a n).
 pose b_ n := nth d (seq_b n).
