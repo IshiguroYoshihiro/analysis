@@ -1904,7 +1904,6 @@ rewrite ltrD => //.
 by rewrite (@le_lt_trans _ _ `|x|) ?ltrDl ?ler_norm.
 Qed.
 
-
 Lemma not_bounded_set_rray (b0 : bool) (r : R) :
    ~ bounded_set [set` (Interval (BInfty _ true) (BSide b0 r))].
 Proof.
@@ -2150,18 +2149,8 @@ have fin_alpha : alpha \is a fin_num.
     by rewrite set_itv1 completed_lebesgue_measureE lebesgue_measure_set1.
   rewrite completed_lebesgue_measure_itv ifT ?lte_fin//=.
   by rewrite -EFinB ltry.
-(*
-Z : set R
-contiguous_intervals Z :
-[c   = c_0, d_0 = a_0]  ]a_0, b_0[
-[c_1 = b_0, d_1 = a_1]  ]a_1, b_1[
-[c_2 = b_1, d_2 = a_2]  ]a_2, b_2[
-...
-[c_n.-1 = b_m.-2, d_n.-1 = a_n.-1] ]a_n.-1, b_n.-1[
-[c_n    = b_n.-1, d_n = a_n]       ]a_n, b_n[
-[c_n.+1 = b_n, d_n.+1 = d]
-*)
-pose ab_ n := sort (fun x y => x.1 <= y.1) [tuple (A_ i, B_ i) | i < n.+1].
+pose AB_ n := zip [tuple A_ i | i < n.+1] [tuple B_ i | i < n.+1].
+pose ab_ n := sort (fun x y => x.1 <= y.1) (AB_ n).
 pose seq_a n := unzip1 (ab_ n).
 pose seq_b n := unzip2 (ab_ n).
 have sorted_a n : sorted <=%R (seq_a n).
@@ -2169,7 +2158,7 @@ have sorted_a n : sorted <=%R (seq_a n).
   by move=> ? ?/=; rewrite le_total.
 have sorted_b n : sorted <=%R (seq_b n).
   rewrite /seq_b.
-  have [q H1 H2] := perm_iota_sort (fun x y : R * R => x.1 <= y.1) (d, d) [tuple (A_ i, B_ i) | i < n.+1].
+  have [q H1 H2] := perm_iota_sort (fun x y : R * R => x.1 <= y.1) (d, d) (AB_ n).
   rewrite -/(ab_ _) in H2.
   rewrite H2.
   rewrite [X in sorted _ X](_ : _ = ([seq nth d [tuple B_ i | i < n.+1] i | i <- q])); last first.
@@ -2177,17 +2166,20 @@ have sorted_b n : sorted <=%R (seq_b n).
     rewrite -map_comp/=.
     apply/eq_in_map => i/= iq.
     rewrite snd_map; last first.
-      rewrite size_map size_enum_ord.
+      rewrite size_zip !size_map/= minnn/= -enumT size_enum_ord.
       move: iq.
-      by rewrite (perm_mem H1) mem_iota leq0n/= add0n size_map size_enum_ord.
+      rewrite (perm_mem H1) mem_iota leq0n/= add0n.
+      by rewrite size_zip !size_map/= minnn/= -enumT size_enum_ord.
     congr nth.
+    rewrite /AB_ zip_map.
     by rewrite -map_comp.
   rewrite [X in sorted _ X](_ : _ = [seq B_ i | i <- q]); last first.
     apply/eq_in_map => i iq.
     rewrite /B_.
     have ? : (i < n.+1)%N.
       move: iq.
-      by rewrite (perm_mem H1) mem_iota leq0n/= add0n size_map size_enum_ord.
+      rewrite (perm_mem H1) mem_iota leq0n/= add0n.
+      by rewrite size_zip !size_map/= minnn/= -enumT size_enum_ord.
     rewrite (nth_map ord0); last first.
       by rewrite size_tuple.
     by rewrite /= nth_enum_ord//.
@@ -2199,29 +2191,75 @@ have sorted_b n : sorted <=%R (seq_b n).
     move/mapP => /= [j jq ->].
     have [+ _ _] := @bij _ _ _ _ h1; exact.
   rewrite -map_comp/=.
-  have : total (fun x y : R * R => x.1 <= y.1).
-    move=> [? ?] [? ?]; exact: le_total.
-  have :=(@sort_sorted _ (fun x y : R * R => x.1 <= y.1) _ [tuple (A_ i, B_ i) | i < n.+1]).
-  have := (@sort_sorted_fst _).
-  admit.
+  rewrite [X in sorted _ X](_ : _ = [seq A_ i | i <- q])//.
+  suff: sorted (fun x y : R * R => x.1 <= y.1) (ab_ n).
+    rewrite H2.
+    evar (l : seq (R * R)).
+    rewrite (_ : [seq nth (d, d) (AB_ n) i | i <- q] = l); last first.
+      apply: eq_map => i.
+      rewrite nth_zip; last first.
+        by rewrite !size_tuple.
+      reflexivity.
+    rewrite {}/l.
+    move/sort_sorted_fst.
+    rewrite -!map_comp/=.
+    rewrite [X in sorted _ X -> _](_ : _ = [seq A_ i | i <- q])//.
+    apply/eq_in_map => i iq/=.
+    have ? : (i < n.+1)%N.
+      move: iq.
+      rewrite (perm_mem H1) mem_iota leq0n/= add0n.
+      by rewrite size_zip !size_map/= minnn/= -enumT size_enum_ord.
+    rewrite (nth_map ord0)//.
+      by rewrite nth_enum_ord.
+    by rewrite size_enum_ord.
+  rewrite /ab_.
+  apply: sort_sorted.
+  by move=> ? ?/=; rewrite le_total.
 pose a_ n := nth d (seq_a n).
 pose b_ n := nth d (seq_b n).
 have ca0 n : c <= a_ n 0%N.
   admit.
 have biled n i : b_ n i <= d.
   admit.
-
+(*
+Z : set R
+contiguous_intervals Z :
+[c   = c_0, d_0 = a_0]  ]a_0, b_0[
+[c_1 = b_0, d_1 = a_1]  ]a_1, b_1[
+[c_2 = b_1, d_2 = a_2]  ]a_2, b_2[
+...
+[c_n.-1 = b_m.-2, d_n.-1 = a_n.-1] ]a_n.-1, b_n.-1[
+[c_n    = b_n.-1, d_n = a_n]       ]a_n, b_n[
+[c_n.+1 = b_n, d_n.+1 = d]
+*)
 have blea : forall n i, (i < n)%N -> b_ n.+1 i <= a_ n.+1 i.+1.
   (* disjoint_contiguous_intervals *)
   move=> n i ni.
   rewrite leNgt; apply/negP => aibi.
   have : `]a_ n.+1 i, b_ n.+1 i[ `&` `]a_ n.+1 i.+1, b_ n.+1 i.+1[ !=set0.
-    exists ((a_ n.+1 i.+1 + b_ n.+1 i.+1) / 2).
-    split => /=; rewrite in_itv/=; apply/andP; split.
-    - admit.
-    - admit.
-    - admit.
-    - admit.
+    rewrite [X in X !=set0](_ : _ = [set` `]a_ n.+1 i.+1, b_ n.+1 i[]); last first.
+      rewrite -set_itvI/=.
+      rewrite /Order.meet/=.
+      apply/set_itvP => r/=.
+      congr (_ \in _).
+      rewrite join_r; last first.
+        rewrite bnd_simp /a_.
+        rewrite sorted_leq_nth ?inE//.
+        exact: le_trans.
+        rewrite size_map size_sort size_zip !size_tuple minnn (leq_trans ni)//.
+        by rewrite ltnW//.
+        by rewrite size_map size_sort size_zip !size_tuple minnn ltnS (leq_trans ni).
+      rewrite meet_l//.
+      rewrite bnd_simp.
+      rewrite sorted_leq_nth ?inE//.
+      exact: le_trans.
+      rewrite size_map size_sort size_zip !size_tuple minnn (leq_trans ni)//.
+      by rewrite ltnW//.
+      by rewrite size_map size_sort size_zip !size_tuple minnn ltnS (leq_trans ni).
+    exists ((a_ n.+1 i.+1 + b_ n.+1 i) / 2).
+    rewrite /=.
+    rewrite in_itv/= midf_lt//=.
+    by rewrite midf_lt.
   admit.
 have lbZa : lbound Z a.
   move=> r Zr.
