@@ -575,7 +575,7 @@ End contiguous_intervals_lemmas.
 Section preliminaries.
 Context {R : realType}.
 
-Lemma nth_map_iota (x : R) (n : nat) (f : nat -> R) (i : nat) :
+Lemma nth_map_iota {T} (x : T) (n : nat) (f : nat -> T) (i : nat) :
   (i < n)%N ->
   nth x [seq f k | k <- iota 0 n] i = f i.
 Proof.
@@ -2085,6 +2085,7 @@ have [Z [Zab cZ isoZ0 Z0 HZ]] : exists Z : set R,
 /not_implyP[muZ0]]]]].
   move/eqP; rewrite neq_lt ltNge measure_ge0/= => muHZ_gt0.
   by exists Z.
+move: (cZ); rewrite Rcompact_boundE => -[clZ ubZ lbZ].
 have cHZ : compact (H @` Z).
   apply: (@continuous_compact _ _ H Z); last exact: cZ.
   exact: (continuous_subspaceW Zab).
@@ -2102,8 +2103,7 @@ have cd : c < d.
     exact: card_image_le.
   exact: is_subset1_countable.
 have perfectZ : perfect_set Z.
-  apply/perfectP; split => //.
-  exact: compact_closed.
+  by apply/perfectP; split.
 have Z_nonempty : Z !=set0.
   apply/set0P; apply/negP => /eqP Z0'.
   by move: HZ; rewrite Z0' image_set0 measure0 ltxx.
@@ -2128,8 +2128,6 @@ have AB n : A_ n < B_ n.
   move=> [].
   by move/(_ n I).
   move=> [x].
-  move: cZ.
-  rewrite Rcompact_boundE => -[cZ ubZ lbZ].
   rewrite contiguous_ooitv//= in_itv/= => /andP[Ax xB].
   exact: lt_trans Ax xB.
 pose alpha := mu (H @` Z).
@@ -2185,7 +2183,6 @@ have sorted_b n : sorted <=%R (seq_b n).
     by rewrite /= nth_enum_ord//.
   rewrite /B_.
   rewrite map_comp.
-  move: cZ; rewrite Rcompact_boundE => -[cZ ubZ lbZ].
   apply: contiguous_intervals_sort => //.
     move=> i/=.
     move/mapP => /= [j jq ->].
@@ -2260,7 +2257,44 @@ have blea : forall n i, (i < n)%N -> b_ n.+1 i <= a_ n.+1 i.+1.
     rewrite /=.
     rewrite in_itv/= midf_lt//=.
     by rewrite midf_lt.
-  admit.
+  rewrite /a_ /b_ /seq_a /seq_b.
+  have : perm_eq [seq (contiguous_intervals Z (h1 i)) | i <- iota 0 n.+1]
+         [seq `]a_ n.+1 i, b_ n.+1 i[%classic | i <- iota 0 n.+1].
+    (* contiguous_ooitv *)
+    under eq_map do rewrite contiguous_ooitv//.
+    (* *)
+    admit.
+  move/(@perm_eq_trivIset _ _ _ setT (subsetT _)).
+  have triv_cgitv : trivIset [set: nat]
+     [eta nth set0 [seq contiguous_intervals Z (h1 i1) | i1 <- iota 0 n.+1]].
+    apply/trivIsetP.
+    move=> j1 j2 _ _ => j12.
+    rewrite map_comp.
+    have [nj1|j1n] := ltnP n.+1 j1.+1.
+      by rewrite nth_default ?size_map ?size_iota ?set0I.
+    have [nj2|j2n] := ltnP n.+1 j2.+1.
+      by rewrite [X in _ `&` X]nth_default ?size_map ?size_iota ?setI0.
+    rewrite !(nth_map 0%N) ?size_map ?size_iota ?nth_iota// !add0n.
+    have/trivIsetP := (@disjoint_contiguous_intervals _ Z).
+    apply => //.
+    apply/negP; move/eqP.
+    have [_ injh1 _] := @bij _ _ _ _ h1; move/injh1.
+    rewrite inE/= => /(_ I I).
+    by move/eqP; apply/negP.
+  move/(_ triv_cgitv).
+  move/trivIsetP.
+  move/(_ _ _ I I (negbT (ltn_eqF (ltnSn i)))).
+  have nth_map_iota_itv k : (k < n.+1)%N ->
+ nth set0 [seq `]a_ n.+1 i0, b_ n.+1 i0[%classic | i0 <- iota 0 n.+1] k =
+     `]a_ n.+1 k, b_ n.+1 k[%classic.
+    move=> kn.
+    admit.
+  rewrite !nth_map_iota_itv//; last exact: leq_trans ni.
+  move=> H.
+  move/set0P/negP.
+  apply/negP.
+  apply/eqP.
+  done.
 have lbZa : lbound Z a.
   move=> r Zr.
   have := Zab r Zr.
