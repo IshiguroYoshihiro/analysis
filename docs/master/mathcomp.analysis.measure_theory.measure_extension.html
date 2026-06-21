@@ -315,18 +315,18 @@ completed_measure_extension mu == similar to measure_extension but returns
 <br/>
 <span class="vernacular">Local</span><span class="vernacular"> Open</span><span class="vernacular"> Scope</span><span class="id"> ereal_scope</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="sigma_subadditive" class="id"><div name="sigma_subadditive" class=" tooltip">sigma_subadditive<span class='tooltip-area'><p>sigma_finite :
-forall [d : measure_display] [T : semiRingOfSetsType d] [R : numDomainType],
-set T -> (set T -> \bar R) -> Prop
+<span class="vernacular">Definition</span><span class="id"> </span><span id="sigma_subadditive" class="id"><div name="sigma_subadditive" class=" tooltip">sigma_subadditive<span class='tooltip-area'><p>mrestr :
+forall [d : measure_display] [T : sigmaRingType d] 
+  [R : realFieldType] [D : set T],
+(set T -> \bar R) -> d.-measurable%classic D -> set T -> \bar R
 
-sigma_finite is not universe polymorphic
-Arguments sigma_finite [d]%_measure_display_scope 
-  [T R] A%_classical_set_scope mu%_function_scope
-sigma_finite is transparent
-Expands to: Constant
-            mathcomp.analysis.measure_theory.measure_function.sigma_finite
+mrestr is not universe polymorphic
+Arguments mrestr [d]%_measure_display_scope [T R] 
+  [D]%_classical_set_scope f%_function_scope mD X%_classical_set_scope
+mrestr is transparent
+Expands to: Constant mathcomp.analysis.measure_theory.measure_function.mrestr
 Declared in
-library mathcomp.analysis.measure_theory.measure_function, line 1275, characters 11-23
+library mathcomp.analysis.measure_theory.measure_function, line 1289, characters 11-17
 </p></span></div></span><span class="id"> {</span><span id="T:1" class="id"><a name="T:1" class="">T</a></span><span class="id">}</span><span class="id"> {</span><span id="R:2" class="id"><a name="R:2" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.numfield.html#Num.NumField.Exports.numFieldType">numFieldType</a></span><span class="id">}</span><br/>
 &nbsp;&nbsp;(<span id="mu:3" class="id"><a name="mu:3" class="">mu</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:1">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#R:2">R</a></span>)<span class="id"> :=</span><span class="gallina-kwd"> forall</span> (<span id="F:4" class="id"><a name="F:4" class="">F</a></span><span class="id"> :</span> (<span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:1">T</a></span>)<span class="id"><a href="mathcomp.analysis.sequences.html#0bbe80633d78a4f277dbfba268ab7c04"> ^nat</a></span>)<span class="id">,</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#mu:3">mu</a></span> (<span class="id"><a href="mathcomp.classical.classical_sets.html#4652af423267d4923a164c1104e1273f">\bigcup_</a></span><span id="n:5" class="id"><a name="n:5" class="">n</a></span> (<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#F:4">F</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#n:5">n</a></span>))<span class="id"><a href="mathcomp.reals.constructive_ereal.html#63b01a542aec2e4c61e028256cf5a548"> &lt;=</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#63b01a542aec2e4c61e028256cf5a548"> </a></span><span class="id"><a href="mathcomp.analysis.sequences.html#acaaf5f54a6a8a222320424b6e0ccad5">\sum_</a></span>(<span id="i:8" class="id"><span id="i:7" class="id"><span id="i:6" class="id"><a name="i:8" class="">i</a></span></span></span><span class="id"><a href="mathcomp.analysis.sequences.html#acaaf5f54a6a8a222320424b6e0ccad5"> &lt;oo</a></span>)<span class="id"><a href="mathcomp.analysis.sequences.html#acaaf5f54a6a8a222320424b6e0ccad5"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#mu:3">mu</a></span> (<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#F:4">F</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#i:6">i</a></span>).<br/>
@@ -464,18 +464,18 @@ Qed.</div></details>
 <span class="id">Unshelve</span>. <span class="id">all:</span><span class="gallina-kwd"> by</span><span class="id"> end_near</span>. Qed.</div></details>
 <span class="vernacular">Local</span><span class="vernacular"> Close</span><span class="vernacular"> Scope</span><span class="id"> ereal_scope</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="caratheodory_measurable" class="id"><div name="caratheodory_measurable" class=" tooltip">caratheodory_measurable<span class='tooltip-area'><p>mrestr :
-forall [d : measure_display] [T : sigmaRingType d] 
-  [R : realFieldType] [D : set T],
-(set T -> \bar R) -> d.-measurable%classic D -> set T -> \bar R
+<span class="vernacular">Definition</span><span class="id"> </span><span id="caratheodory_measurable" class="id"><div name="caratheodory_measurable" class=" tooltip">caratheodory_measurable<span class='tooltip-area'><p>sfinite_measure_seq :
+forall [d : measure_display] [T : measurableType d] [R : realType],
+{sfinite_measure set T -> \bar R}%R ->
+({finite_measure set T -> \bar R}%R) ^nat
 
-mrestr is not universe polymorphic
-Arguments mrestr [d]%_measure_display_scope [T R] 
-  [D]%_classical_set_scope f%_function_scope mD X%_classical_set_scope
-mrestr is transparent
-Expands to: Constant mathcomp.analysis.measure_theory.measure_function.mrestr
+sfinite_measure_seq is not universe polymorphic
+Arguments sfinite_measure_seq [d]%_measure_display_scope [T R] mu _
+sfinite_measure_seq is transparent
+Expands to: Constant
+            mathcomp.analysis.measure_theory.measure_function.sfinite_measure_seq
 Declared in
-library mathcomp.analysis.measure_theory.measure_function, line 1289, characters 11-17
+library mathcomp.analysis.measure_theory.measure_function, line 1529, characters 11-30
 </p></span></div></span> (<span id="R:98" class="id"><a name="R:98" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span>) (<span id="T:99" class="id"><a name="T:99" class="">T</a></span><span class="id"> :</span><span class="gallina-kwd"> Type</span>)<br/>
 &nbsp;&nbsp;(<span id="mu:100" class="id"><a name="mu:100" class="">mu</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:99">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#R:98">R</a></span>) (<span id="A:101" class="id"><a name="A:101" class="">A</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:99">T</a></span>)<span class="id"> :=</span><span class="gallina-kwd"> forall</span><span class="id"> </span><span id="X:102" class="id"><a name="X:102" class="">X</a></span><span class="id">,</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#mu:100">mu</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#X:102">X</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#mu:100">mu</a></span> (<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#X:102">X</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> `&amp;`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#A:101">A</a></span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> +</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#c7f78cf1f6a5e4f664654f7d671ca752"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#mu:100">mu</a></span> (<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#X:102">X</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> `&amp;`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#c7636f45aa1745dbf533da3d408cece1"> </a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#a89cad8a77dea0eb3c15a935f79663f1">~`</a></span><span class="id"><a href="mathcomp.classical.classical_sets.html#a89cad8a77dea0eb3c15a935f79663f1"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#A:101">A</a></span>).<br/>
@@ -691,25 +691,7 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">End</span><span class="id"> caratheodory_theorem_sigma_algebra</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="caratheodory_type" class="id"><div name="caratheodory_type" class=" tooltip">caratheodory_type<span class='tooltip-area'><p>sfinite_measure_seq :
-forall [d : measure_display] [T : measurableType d] [R : realType],
-{sfinite_measure set T -> \bar R}%R ->
-({finite_measure set T -> \bar R}%R) ^nat
-
-sfinite_measure_seq is not universe polymorphic
-Arguments sfinite_measure_seq [d]%_measure_display_scope [T R] mu _
-sfinite_measure_seq is transparent
-Expands to: Constant
-            mathcomp.analysis.measure_theory.measure_function.sfinite_measure_seq
-Declared in
-library mathcomp.analysis.measure_theory.measure_function, line 1529, characters 11-30
-</p></span></div></span> (<span id="R:215" class="id"><a name="R:215" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span>) (<span id="T:216" class="id"><a name="T:216" class="">T</a></span><span class="id"> :</span><span class="gallina-kwd"> Type</span>)<br/>
-&nbsp;&nbsp;(<span id="mu:217" class="id"><a name="mu:217" class="">mu</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:216">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#R:215">R</a></span>)<span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:216">T</a></span>.<br/>
-<br/>
-<span class="vernacular">Notation</span> <span id="::classical_set_scope:x_'.-cara.-measurable'" class="id"><a name="::classical_set_scope:x_'.-cara.-measurable'" class="">&quot;mu .-cara.-measurable&quot;</a></span><span class="id"> :=</span><br/>
-&nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#measurable">measurable</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span> (<span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span> (<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#caratheodory_type">caratheodory_type</a></span><span class="id"> mu</span>)))<span class="id"> :</span><span class="id"> classical_set_scope</span>.<br/>
-<br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="caratheodory_display" class="id"><div name="caratheodory_display" class=" tooltip">caratheodory_display<span class='tooltip-area'><p>mfrestr :
+<span class="vernacular">Definition</span><span class="id"> </span><span id="caratheodory_type" class="id"><div name="caratheodory_type" class=" tooltip">caratheodory_type<span class='tooltip-area'><p>mfrestr :
 forall [d : measure_display] [T : measurableType d] 
   [R : realFieldType] [D : set T] [f : set T -> \bar R],
 d.-measurable%classic D -> (f D < +oo)%E -> set T -> \bar R
@@ -723,6 +705,21 @@ Expands to: Constant
             mathcomp.analysis.measure_theory.measure_function.mfrestr
 Declared in
 library mathcomp.analysis.measure_theory.measure_function, line 1539, characters 11-18
+</p></span></div></span> (<span id="R:215" class="id"><a name="R:215" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span>) (<span id="T:216" class="id"><a name="T:216" class="">T</a></span><span class="id"> :</span><span class="gallina-kwd"> Type</span>)<br/>
+&nbsp;&nbsp;(<span id="mu:217" class="id"><a name="mu:217" class="">mu</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:216">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#R:215">R</a></span>)<span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:216">T</a></span>.<br/>
+<br/>
+<span class="vernacular">Notation</span> <span id="::classical_set_scope:x_'.-cara.-measurable'" class="id"><a name="::classical_set_scope:x_'.-cara.-measurable'" class="">&quot;mu .-cara.-measurable&quot;</a></span><span class="id"> :=</span><br/>
+&nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#measurable">measurable</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span> (<span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span> (<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#caratheodory_type">caratheodory_type</a></span><span class="id"> mu</span>)))<span class="id"> :</span><span class="id"> classical_set_scope</span>.<br/>
+<br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="caratheodory_display" class="id"><div name="caratheodory_display" class=" tooltip">caratheodory_display<span class='tooltip-area'><p>lim_sup_set : forall [T : Type], (set T) ^nat -> set T
+
+lim_sup_set is not universe polymorphic
+Arguments lim_sup_set [T]%_type_scope F _
+lim_sup_set is transparent
+Expands to: Constant
+            mathcomp.analysis.measure_theory.measure_function.lim_sup_set
+Declared in
+library mathcomp.analysis.measure_theory.measure_function, line 1762, characters 11-22
 </p></span></div></span><span class="id"> </span><span id="R:218" class="id"><a name="R:218" class="">R</a></span><span class="id"> </span><span id="T:219" class="id"><a name="T:219" class="">T</a></span><span class="id"> :</span> (<span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:219">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#R:218">R</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#measure_display">measure_display</a></span>.<br/>
 <details>
 <summary class="toggleproof">Proof.</summary>
@@ -743,16 +740,7 @@ library mathcomp.analysis.measure_theory.measure_function, line 1539, characters
 <br/>
 <span class="vernacular">End</span><span class="id"> caratheodory_sigma_algebra</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="caratheodory_measure" class="id"><div name="caratheodory_measure" class=" tooltip">caratheodory_measure<span class='tooltip-area'><p>lim_sup_set : forall [T : Type], (set T) ^nat -> set T
-
-lim_sup_set is not universe polymorphic
-Arguments lim_sup_set [T]%_type_scope F _
-lim_sup_set is transparent
-Expands to: Constant
-            mathcomp.analysis.measure_theory.measure_function.lim_sup_set
-Declared in
-library mathcomp.analysis.measure_theory.measure_function, line 1762, characters 11-22
-</p></span></div></span><span class="id"> {</span><span id="R:226" class="id"><a name="R:226" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span><span class="id">}</span> (<span id="T:227" class="id"><a name="T:227" class="">T</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#Pointed.Exports.pointedType">pointedType</a></span>)<br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="caratheodory_measure" class="id"><div name="caratheodory_measure" class=" tooltip">caratheodory_measure<span class='tooltip-area'></span></div></span><span class="id"> {</span><span id="R:226" class="id"><a name="R:226" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span><span class="id">}</span> (<span id="T:227" class="id"><a name="T:227" class="">T</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#Pointed.Exports.pointedType">pointedType</a></span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<span id="mu:228" class="id"><a name="mu:228" class="">mu</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#12d3cfc32464a8a004b7554c614593d5">{outer_measure</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#12d3cfc32464a8a004b7554c614593d5"> set</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#12d3cfc32464a8a004b7554c614593d5"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#T:227">T</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#12d3cfc32464a8a004b7554c614593d5"> -&gt;</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#12d3cfc32464a8a004b7554c614593d5"> \bar</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#12d3cfc32464a8a004b7554c614593d5"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#R:226">R</a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#12d3cfc32464a8a004b7554c614593d5">}</a></span>)<br/>
 &nbsp;&nbsp;<span class="id">:</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span> (<span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#caratheodory_type">caratheodory_type</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#mu:228">mu</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#R:226">R</a></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#mu:228">mu</a></span>.<br/>
 <span class="vernacular">Arguments</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measure_extension.html#caratheodory_measure">caratheodory_measure</a></span><span class="id"> {R</span><span class="id"> T}</span><span class="id"> mu</span>.<br/>
