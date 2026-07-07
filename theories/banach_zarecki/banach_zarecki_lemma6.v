@@ -340,6 +340,51 @@ move=> li lA.
 by have /lA := mem_nth 0 li.
 Abort.
 
+Lemma subset_neitvE (a b c d : R) : a < b ->
+  `]a, b[ `<=` `[c, d] ->
+c <= a /\ b <= d.
+Proof.
+(*
+have [clea bled]: (forall n i, c <= a_ n i) /\ (forall n i, b_ n i <= d).
+  apply/all_and2 => n; apply/all_and2 => i.
+  have [ni|] := leqP n.+1 i.
+    by rewrite /a_ /b_ !nth_default ?size_seq//; split => //; apply: ltW.
+  move/(nth_abE n i) => [+ + _].
+  rewrite -anth -bnth -idxE => -> ->.
+  have ABcd : `]A_ (idx n i), B_ (idx n i)[ `<=` `[c, d].
+    rewrite -compact_Rhull// -contiguous_ooitv//.
+    apply: (subset_trans (@contiguous_intervalsS _ _ _)).
+    exact: cplt_hull_subset_Rhull.
+  split.
+    rewrite leNgt; apply/negP => Ac.
+    set x := ((A_ (idx n i)) + minr (B_ (idx n i)) c) / 2.
+    have : x < c.
+      rewrite /x [in ltRHS](splitr c) mulrDl ltr_leD// ?ltr_pM2r ?ler_pM2r//.
+      by rewrite /minr; case: ifP => //; apply: ltW.
+    apply/negP; rewrite -leNgt.
+    have : x \in `]A_ (idx n i), B_ (idx n i)[.
+      rewrite in_itv/=; apply/andP; split.
+        by rewrite midf_lt// /minr; case: ifP.
+      rewrite (splitr (B_ _)) /x mulrDl ltr_leD// ?ltr_pM2r ?ler_pM2r//.
+      by rewrite /minr; case: ifPn => //; rewrite -leNgt.
+    move/(ABcd x) => /=.
+    by rewrite in_itv/= => /andP[].
+  rewrite leNgt; apply/negP => Bd.
+    set y := (maxr (A_ (idx n i)) d + B_ (idx n i)) / 2.
+    have : d < y.
+      rewrite /y [in ltLHS](splitr d) mulrDl ler_ltD// ?ltr_pM2r ?ler_pM2r//.
+      by rewrite /maxr; case: ifPn => //; rewrite -leNgt.
+    apply/negP; rewrite -leNgt.
+    have : y \in `]A_ (idx n i), B_ (idx n i)[.
+      rewrite in_itv/=; apply/andP; split.
+        rewrite (splitr (A_ _)) /y mulrDl ler_ltD// ?ltr_pM2r ?ler_pM2r//.
+        by rewrite /maxr; case: ifPn => //; apply: ltW.
+      by rewrite midf_lt// /maxr; case: ifP.
+    move/(ABcd y) => /=.
+    by rewrite in_itv/= => /andP[].
+*)
+Abort.
+
 End lemmas.
 
 Section contiguous_intervals_lemmas.
@@ -2188,9 +2233,30 @@ have nth_abE n i :
 *)
 pose seq_a n := unzip1 (unzip1 (ab_ n)).
 pose seq_b n := unzip2 (unzip1 (ab_ n)).
-have size_seq mp n : size (map mp (unzip1 (ab_ n))) = n.+1.
+have size_seq_ab mp n : size (map mp (unzip1 (ab_ n))) = n.+1.
   by rewrite !size_map size_sort size_map size_iota.
 pose idxs n := unzip2 (ab_ n).
+pose a_ n := nth d (seq_a n).
+pose b_ n := nth d (seq_b n).
+pose idx n := nth 0 (idxs n) : nat -> nat.
+have abidE n i : (a_ n i, b_ n i, idx n i) = nth (d, d, 0) (ab_ n) i.
+  rewrite -(zip_unzip (ab_ n)) -(zip_unzip (unzip1 _)).
+  by rewrite !nth_zip ?size_zip ?size_map ?minnn.
+have anth n i : a_ n i = (nth (d, d, 0) (ab_ n) i).1.1 by rewrite -abidE.
+have bnth n i : b_ n i = (nth (d, d, 0) (ab_ n) i).1.2 by rewrite -abidE.
+have idxE n i : idx n i = (nth (d, d, 0) (ab_ n) i).2 by rewrite -abidE.
+have nth_abE n i :
+  (i < n.+1)%N ->
+  let p := nth (d, d, 0%N) (ab_ n) i in
+  [/\ p.1.1 = A_ p.2, p.1.2 = B_ p.2 & (p.2 < n.+1)%N].
+  have abE : (ab_ n) =i (AB_ n).
+    apply: perm_mem.
+    by rewrite perm_sort; exact: perm_refl.
+  move=> ilen p.
+  have isize : (i < size (ab_ n))%N by rewrite size_sort size_map size_iota.
+  have : p \in (AB_ n) by rewrite -(abE p); exact: mem_nth.
+  move/mapP => [m]; rewrite mem_iota add0n => /andP[_ mn] ->.
+  by split.
 have sorted_a n : sorted <=%R (seq_a n).
   rewrite sorted_map ?sort_sorted// sorted_map sort_sorted//=.
   by move=> ? ?/=; rewrite le_total.
@@ -2256,37 +2322,17 @@ have sorted_b n : sorted <=%R (seq_b n).
   rewrite /ab_.
   apply: sort_sorted.
   by move=> ? ?/=; rewrite le_total.
-pose a_ n := nth d (seq_a n).
-pose b_ n := nth d (seq_b n).
-pose idx n := nth 0 (idxs n) : nat -> nat.
-have abidE n i : (a_ n i, b_ n i, idx n i) = nth (d, d, 0) (ab_ n) i.
-  rewrite -(zip_unzip (ab_ n)) -(zip_unzip (unzip1 _)).
-  by rewrite !nth_zip ?size_zip ?size_map ?minnn.
-have anth n i : a_ n i = (nth (d, d, 0) (ab_ n) i).1.1 by rewrite -abidE.
-have bnth n i : b_ n i = (nth (d, d, 0) (ab_ n) i).1.2 by rewrite -abidE.
-have idxE n i : idx n i = (nth (d, d, 0) (ab_ n) i).2 by rewrite -abidE.
-have nth_abE n i :
-  (i < n.+1)%N ->
-  let p := nth (d, d, 0%N) (ab_ n) i in
-  [/\ p.1.1 = A_ p.2, p.1.2 = B_ p.2 & (p.2 < n.+1)%N].
-  have abE : (ab_ n) =i (AB_ n).
-    apply: perm_mem.
-    by rewrite perm_sort; exact: perm_refl.
-  move=> ilen p.
-  have isize : (i < size (ab_ n))%N by rewrite size_sort size_map size_iota.
-  have : p \in (AB_ n) by rewrite -(abE p); exact: mem_nth.
-  move/mapP => [m]; rewrite mem_iota add0n => /andP[_ mn] ->.
-  by split.
 have aleb n i : a_ n i <= b_ n i.
   have [ni|] := leqP n.+1 i.
-    by rewrite /a_ /b_ !nth_default// size_seq.
+    by rewrite /a_ /b_ !nth_default// size_seq_ab.
   rewrite anth bnth.
   move/(nth_abE n i) => [-> -> idxn].
   exact/ltW/AB.
+(* lemma, subset_itvE *)
 have [clea bled]: (forall n i, c <= a_ n i) /\ (forall n i, b_ n i <= d).
   apply/all_and2 => n; apply/all_and2 => i.
   have [ni|] := leqP n.+1 i.
-    by rewrite /a_ /b_ !nth_default ?size_seq//; split => //; apply: ltW.
+    by rewrite /a_ /b_ !nth_default ?size_seq_ab//; split => //; apply: ltW.
   move/(nth_abE n i) => [+ + _].
   rewrite -anth -bnth -idxE => -> ->.
   have ABcd : `]A_ (idx n i), B_ (idx n i)[ `<=` `[c, d].
@@ -2361,6 +2407,7 @@ have blea : forall n i, b_ n i <= a_ n i.+1.
     rewrite /=.
     rewrite in_itv/= midf_lt//=.
     by rewrite midf_lt.
+
   rewrite /a_ /b_ /seq_a /seq_b.
   have : perm_eq [seq (contiguous_intervals Z (h1 i)) | i <- iota 0 n.+1]
          [seq `]a_ n i, b_ n i[%classic | i <- iota 0 n.+1].
@@ -2412,41 +2459,57 @@ have ubZb : ubound Z b.
   move=> r Zr.
   have := Zab r Zr.
   by rewrite /= in_itv/= => /andP[].
-pose c_ n j := nth d (c :: [seq b_ n i | i <- iota 0 n]) j.
-pose d_ n j := nth d (rcons [seq a_ n i | i <- iota 0 n] d) j.
+pose cd_ n := zip ((c, None) :: [seq (ab.1.2, Some ab.2) | ab <- ab_ n])
+                  (rcons [seq (ab.1.1, Some ab.2) | ab <- ab_ n] (d, None)).
+pose seq_c n := unzip1 (cd_ n).
+pose seq_d n := unzip2 (cd_ n).
+pose c_ n j := (nth (d, None) (seq_c n) j).1.
+pose cidx n j := (nth (d, None) (seq_c n) j).2.
+pose d_ n j := (nth (d, None) (seq_d n) j).1.
+pose didx n j := (nth (d, None) (seq_d n) j).2.
 
+have size_seq_cd mp n : size (map mp (cd_ n)) = n.+2.
+  rewrite size_map size_zip size_rcons/= !size_map minnn.
+  by rewrite size_sort size_map size_iota.
+
+have cbE n j : c_ n j = if j == 0 then c else b_ n j.-1.
+  case: j => [|j/=].
+    rewrite eqxx /c_ /seq_c /cd_ unzip1_zip//=.
+    by rewrite size_rcons !size_map.
+  have [nj|jn] := leqP n.+2 j.+1.
+    rewrite /c_ /seq_c bnth !nth_default ?size_seq_cd//.
+    by rewrite size_sort size_map size_iota -ltnS.
+  rewrite /c_ /seq_c.
+  rewrite /cd_ unzip1_zip/=; last by rewrite size_rcons/= !size_map.
+  rewrite (nth_map (d, d, 0))/=; last first.
+    by rewrite size_sort size_map size_iota -ltnS.
+  by rewrite bnth.
+have daE n j : d_ n j = a_ n j.
+  rewrite /d_ /seq_d /cd_.
+  rewrite unzip2_zip; last by rewrite size_rcons/= !size_map.
+  rewrite nth_rcons size_map size_sort size_map size_iota.
+  case: ifPn => [jn|].
+    rewrite -(nth_map _ d); last first.
+      by rewrite size_map size_sort size_map size_iota.
+    by rewrite -zip_map -/unzip1 unzip1_zip map_comp// !size_map.
+  rewrite if_same /a_ -leqNgt => nj.
+  by rewrite nth_default// size_seq_ab.
 have cled n i : c_ n i <= d_ n i.
-  rewrite /c_ /d_.
-  rewrite nth_rcons size_map size_iota.
-  case: ifP => n0.
-    rewrite nth_map_iota//.
-    case: i n0.
-      move=> _ /=.
-      rewrite /a_.
-      rewrite /ab_.
-      rewrite /=.
-      rewrite /seq_a.
-      rewrite -(fst_map _ d); last first.
- -(fst_map _ 0).
-      rewrite (nth_map (d, d))//.
-      rewrite (nth_map (d, d, 0)).
-      rewrite nth_map_iota.
-      (* rewrite nth_zip. *)
-      admit.
-    move=> i.
-    rewrite ltnS => iltn.
-    rewrite (lock n.+1) /= -lock nth_map_iota; last by rewrite ltnS ltnW.
-    by rewrite blea// (leq_trans iltn).
-  rewrite if_same.
-  move: n0.
-  move/negP/negP; rewrite -ltnNge ltnS leq_eqVlt => /predU1P[<-|n1lti].
-    rewrite [leLHS](_:_ = nth d [seq b_ n i0 | i0 <- iota 0 n.+1] n)//.
-    rewrite nth_map_iota; last by [].
-    exact: biled.
-  by rewrite nth_default//= size_map size_iota.
+  rewrite cbE daE.
+  case: i => /=[|i]; first exact: clea.
+  exact: blea.
 have hullZ_abcd n : [set` Rhull Z] = \bigcup_(i < n.+1) `[c_ n i, d_ n i]%classic
     `|` \bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic.
   admit.
+
+have cdS_split n j : exists k, [/\ (k < n.+2)%N,
+  c_ n.+1 k \in `[A_ (idx n k), (B_ (idx n k))],
+  d_ n.+1 k \in `[A_ (idx n k), (B_ (idx n k))] &
+  cd_ n.+1 = take k (cd_ n) ++
+   [:: ((B_ n.+1, Some n.+1), (A_ n.+1, Some n.+1))] ++
+   drop k (cd_ n)].
+  admit.
+
 pose lambda n := diam_max [seq `[c_ n i, d_ n i]%classic | i <- iota 0 n.+2].
 have lambda_fin n : lambda n \is a fin_num.
   rewrite ge0_fin_numE; last exact: diam_max_ge0.
@@ -2463,52 +2526,27 @@ have mcgitv i : mu.-cara.-measurable (contiguous_intervals Z i).
   exact: open_contiguous_intervals.
 have lambda0 : (fine \o lambda) @ \oo --> 0%R.
   apply: fine_cvg.
-  suff : lambda x.+1 @[x --> \oo] --> 0%:E.
-    by rewrite cvg_shiftS.
   apply (@squeeze_cvge _ _ _ R (cst 0) _
-    (fun n => \sum_(i < n.+3) mu `[c_ n.+1 i, d_ n.+1 i])).
-      near=> n; apply/andP; split.
-        exact: diam_max_ge0.
-      rewrite /lambda /diam_max.
-      rewrite big_tuple.
+    (fun n => \sum_(i < n.+2) mu `[c_ n i, d_ n i])).
+  - near=> n; apply/andP; split; first exact: lambda_ge0.
+      rewrite /lambda /diam_max big_tuple.
       apply: bigmax_le.
-        exact: leNye.
-      move=> /= i _.
-      rewrite tnth_map.
-      rewrite (tnth_nth 0).
-      rewrite nth_iota// add0n.
-      rewrite diam_itv; last exact: cled.
-      rewrite (bigD1 i)//=.
+      exact: leNye.
+    move=> /= i _.
+    rewrite tnth_map (tnth_nth 0) nth_iota// add0n.
+    rewrite diam_itv; last exact: cled.
+    rewrite (bigD1 i)//=.
+    have -> : mu `[c_ n i, d_ n i] = (d_ n i - c_ n i)%:E.
       rewrite completed_lebesgue_measure_itv lte_fin.
-        have [_|] := ltP (c_ n.+1 i) (d_ n.+1 i).
-          rewrite /= -EFinB leeDl//.
-          by rewrite sume_ge0.
-        rewrite (le_eqVlt (d_ n.+1 i) (c_ n.+1 i)) => /predU1P[->|].
-        rewrite subrr add0e.
-        by apply: sume_ge0 => ? _.
-      rewrite /c_ /d_.
-      case: i; case => [? /=|].
-        rewrite ltNge.
-        have -> //: (c <= a_ n.+1 0%N).
-        exact: clea.
-      move=> i iltn.
-      rewrite nth_rcons if_same.
-      have -> : nth d (c :: [seq b_ n.+1 i0 | i0 <- iota 0 n.+2]) i.+1 =
-         nth d [seq b_ n.+1 i0 | i0 <- iota 0 n.+2] i by [].
-      case: ifPn.
-        rewrite size_map size_iota => ilen.
-        rewrite nth_map_iota//.
-        rewrite nth_map_iota; last exact: ltn_trans ilen.
-        by rewrite ltNge blea.
-      rewrite -leqNgt size_map size_iota => ni.
-      rewrite /= ltnS in ni.
-      have ieqn : i = n.
-        apply/eqP; rewrite eqn_leq; apply/andP; split.
-          
-        exact: ltnW.
-      rewrite nth_map_iota; last by rewrite ieqn.
-      by rewrite ltNge biled.
-    exact: cvg_cst.
+      have [_|] := ltP (c_ n i) (d_ n i).
+        by rewrite /= -EFinB.
+      rewrite le_eqVlt; move/predU1P => [->|].
+        by rewrite subrr.
+      by rewrite ltNge cled.
+    apply: leeDl.
+    by rewrite sume_ge0.
+  - exact: cvg_cst.
+  - 
   apply: (@cvg_trans _
   (mu (\bigcap_(i < n.+1) ([set` Rhull Z] `\` (contiguous_intervals Z i)))
              @[n --> \oo])).
@@ -2532,9 +2570,7 @@ have lambda0 : (fine \o lambda) @ \oo --> 0%R.
     rewrite setDD.
     rewrite setIidr; last exact: sub_Rhull.
     exact: Z0.
-  rewrite (cvg_shiftS (fun n => mu (\bigcap_(i < n.+1)
-              ([set` Rhull Z] `\` contiguous_intervals Z i)))).
-  apply: bigcap_cvg_mu => /=; last 2 first.
+    apply: bigcap_cvg_mu => /=; last 2 first.
       move=> ?.
       apply: measurableD => //.
       exact: sub_caratheodory.
@@ -2548,10 +2584,6 @@ have lambda0 : (fine \o lambda) @ \oo --> 0%R.
   rewrite completed_lebesgue_measure_itv//= lte_fin.
   rewrite cd.
   by rewrite -EFinB ltry.
-have nth_b_ n (i j : 'I_n) : (i <= j)%N -> b_ n i <= b_ n j.
-  move=> ij.
-  (*by apply: le_sorted_leq_nth => //; rewrite inE size_bE.*) admit.
-
 have construct_x n :
   exists x : seq R, [/\ itv_partition c d (behead x),
     ((mesh c d (behead x))%:E <= lambda n)%E,
@@ -2718,24 +2750,14 @@ have itvfcd n (i : 'I_ n.+1) : is_interval (f @` `[c_ n i, d_ n i]).
   apply: (is_interval_image_cc cf).
   apply: subset_itv => //; rewrite bnd_simp.
     apply: (le_trans ac).
-    case: i; case => /=; first by [].
-    move=> i.
-    rewrite ltnS => iltn.
-    rewrite /c_/= nth_map_iota//.
-    apply: le_trans (aleb n i).
-    exact: clea.
-  have := leq_ord i.
-  rewrite leq_eqVlt => /predU1P[->|].
-    by rewrite /d_ nth_rcons ifF ?if_same// size_map size_iota ltnn.
-  move=> iltn.
-  rewrite /d_ nth_rcons ifT ?size_map ?size_iota//.
-  rewrite nth_map_iota//.
-  apply: (le_trans (aleb n i)).
-  exact: le_trans db.
-have cdi n (i : 'I_ n.+1) : c_ n i <= d_ n i.
-  admit.
+    rewrite cbE; case: i; case => //= i _.
+    by apply: le_trans (aleb n i); apply: clea.
+  apply: le_trans db.
+  rewrite daE.
+  by apply: (le_trans (aleb n i)); apply: bled.
+(*
 have hull_Uabcd n (i : 'I_ n.+1) : Rhull (Zsub n i) = `[(c_ n i), (d_ n i)].
-  
+  admit.
 have prop65 n : forall i : 'I_ n.+1, (`|f (d_ n i) - f (c_ n i)|%:E <=
   \sum_(n <= j <oo | `[< `[A_ j, B_ j] `<=` Uabcd n i >])
      oscillation f `[A_ j, B_ j])%E.
@@ -2834,6 +2856,7 @@ rewrite /A_ /B_.
 move/le_trans; apply.
 
 admit.
+*)
 *)
 Admitted.
 
