@@ -1,6 +1,6 @@
 From HB Require Import structures.
 From Stdlib Require Import Bool.
-From mathcomp Require Import all_boot all_order ssralg ssrnum ssrint interval finmap.
+From mathcomp Require Import boot order ssralg ssrnum ssrint interval finmap.
 From mathcomp Require Import interval_inference archimedean.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable.
