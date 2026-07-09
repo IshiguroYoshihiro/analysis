@@ -1,6 +1,6 @@
 From HB Require Import structures.
 From Stdlib Require Import Bool.
-From mathcomp Require Import all_ssreflect interval_inference ssralg ssrnum.
+From mathcomp Require Import all_boot all_order interval_inference ssralg ssrnum.
 From mathcomp Require Import ssrint interval archimedean.
 From mathcomp Require Import mathcomp_extra boolp contra classical_sets functions.
 From mathcomp Require Import reals ereal topology normedtype.
@@ -37,455 +37,6 @@ apply/seteqP; split => [_ [x [i Di Six <-]]|_ [i Di [x Six <-]]].
   by exists i.
 by exists x => //; exists i.
 Qed.
-
-Section cplt_hull.
-Context {R : realType}.
-Implicit Type (A : set R).
-
-(* complement hull? *)
-Definition cplt_hull A := [set` Rhull A] `\` A.
-
-Lemma cplt_hull0 A : is_interval A -> cplt_hull A = set0.
-Proof.
-by move=> itvA; rewrite /cplt_hull -((is_intervalP A).1 itvA) setDv.
-Qed.
-
-Lemma cplt_hull_set0 : cplt_hull set0 = set0.
-Proof. by rewrite cplt_hull0. Qed.
-
-Lemma cplt_hullT : cplt_hull setT = set0.
-Proof. by rewrite cplt_hull0. Qed.
-
-Lemma cplt_hull_subset_Rhull A : cplt_hull A `<=` [set` Rhull A].
-Proof. exact: subDsetl. Qed.
-
-(* NB: PR in progress *)
-Lemma not_nonemptyP A : ~ (A !=set0) <-> A = set0.
-Proof. by split; [|move=> ->]; move/set0P/negP; [move/negbNE/eqP|]. Qed.
-
-Lemma has_ubound_cplt_hull A :
-  has_ubound A -> has_ubound (cplt_hull A).
-Proof.
-move=> /[dup]/asboolP u [ub ubAub]; exists ub => x [+ _].
-have [|/=/contrapT A0] := pselect (~ (A !=set0)).
-  by move/not_nonemptyP ->; rewrite RhullK ?inE.
-by rewrite in_itv/= u => /andP[_]/lteifW/le_trans; apply; exact: ge_sup.
-Qed.
-
-Lemma has_lbound_cplt_hull A :
-  has_lbound A -> has_lbound (cplt_hull A).
-Proof.
-move=> /[dup]/asboolP l [lb lbAlb]; exists lb => x [+ _].
-have [/= A0|] := pselect (A !=set0); last first.
-  by move/set0P/negP/negbNE/eqP => ->; rewrite Rhull0 set_itvoo0.
-rewrite in_itv/= l => /andP[+ _] => /lteifW; apply: le_trans; exact: lb_le_inf.
-Qed.
-
-Lemma cplt_hull_complement A : cplt_hull A `<=` ~` A.
-Proof. rewrite /cplt_hull; exact: subDsetr. Qed.
-
-(* unused *)
-Lemma cplt_hull_sup A : has_ubound A -> ~ (cplt_hull A) (sup A).
-Proof.
-move=> ubA; rewrite /cplt_hull/= in_itv/= andC -implypN => Asup.
-by move/asboolPn: (Asup); move/asboolP: (ubA) => -> -> /=; rewrite ltxx andbF.
-Qed.
-
-(* notable property of cplt_hull *)
-(*
-Lemma rray_has_ubound_cplt_hull A :
-  A \in (nbhs +oo) -> has_ubound (cplt_hull A).
-Proof.
-rewrite inE.
-move=> [b [_ Hb]].
-Abort.
-*)
-
-Lemma cplt_hull_lt_sup A :
-  has_ubound A -> cplt_hull A `<=` [set x | x < sup A].
-Proof.
-move=> hasubA x [/= + nAx].
-rewrite in_itv/=; move/andP => [_]; rewrite ifT; last by exact/asboolP.
-have [/asboolP/= ?|//] := boolP `[< A (sup A)>];
-by rewrite le_eqVlt => /predU1P[|//]=> ?; subst.
-Qed.
-
-(* unused *)
-Lemma cplt_hull_inf A :
-  has_lbound A -> ~ (cplt_hull A) (inf A).
-Proof.
-move=> haslbA.
-rewrite /cplt_hull/=.
-apply/not_andP.
-rewrite orpN => Ainf.
-have gt_inf := inf_lb_strict haslbA Ainf.
-rewrite in_itv/=.
-case: ifP; move/asboolP => //= _.
-move/asboolPn/negPf : Ainf => -> /=.
-by rewrite ltxx.
-Qed.
-
-Lemma inf_lt_cplt_hull A :
-  has_lbound A -> cplt_hull A `<=` [set x | inf A < x].
-Proof.
-move=> haslbA x [/= + nAx].
-rewrite in_itv/=.
-move/andP => [+ _]; move/asboolP : (haslbA) => ->.
-have [|/asboolF -> //] := pselect (A (inf A)).
-move=> /[dup]/asboolP -> AinfA/=.
-rewrite le_eqVlt => /orP[|//]; move/eqP => xinfA.
-by move: nAx; rewrite -xinfA.
-Qed.
-
-Lemma cplt_hullEitvoo A :
-  has_ubound A -> has_lbound A ->
-  cplt_hull A = `]inf A, sup A[ `&` ~` A.
-Proof.
-move/[dup]/cplt_hull_lt_sup => ciAsup hasubA.
-move/[dup]/inf_lt_cplt_hull => ciAinf haslbA.
-rewrite eqEsubset; split.
-- move=> x ciA/=; split.
-  + rewrite in_itv/=; apply/andP; split.
-    * exact: ciAinf.
-    * exact: ciAsup.
-  + by move: ciA; rewrite /cplt_hull/= => -[].
-rewrite /cplt_hull setDE; apply: setSI.
-rewrite/Rhull.
-move: hasubA haslbA => /asboolP -> /asboolP ->.
-case: `[< A (inf A) >]; case: `[< A (sup A) >] => //=.
-- exact: subset_itv_oo_cc.
-- exact: subset_itv_oo_co.
-- exact: subset_itv_oo_oc.
-Qed.
-
-Lemma cplt_hullEitvyo A :
-  has_ubound A -> ~ has_lbound A ->
-  cplt_hull A = `]-oo, sup A[ `&` ~` A.
-Proof.
-move/[dup]/cplt_hull_lt_sup => ciAsup hasubA.
-move=> hasNlbA.
-rewrite /cplt_hull.
-rewrite /Rhull.
-move/asboolP : (hasubA) => ->.
-move/asboolF : (hasNlbA) => -> /=.
-have [Asup|nAsup] := pselect (A (sup A)).
-  move/asboolP : (Asup) => ->/=.
-  rewrite -(setUitv1 true)// setDUl -[RHS]setU0; congr setU.
-  rewrite setD_eq0.
-  by rewrite sub1set inE.
-by move/asboolF : nAsup => ->.
-Qed.
-
-Lemma cplt_hullEitvoy A :
-  ~ has_ubound A -> has_lbound A ->
-  cplt_hull A = `]inf A, +oo[ `&` ~` A.
-Proof.
-move=> hasNubA.
-move/[dup]/inf_lt_cplt_hull => ciAinf haslbA.
-rewrite /cplt_hull.
-rewrite /Rhull.
-move/asboolP : (haslbA) => ->.
-move/asboolF : (hasNubA) => -> /=.
-have [Ainf|nAinf] := pselect (A (inf A)).
-  move/asboolP : (Ainf) => ->/=.
-  rewrite -(setU1itv false)// setDUl -[RHS]set0U; congr setU.
-  rewrite setD_eq0.
-  by rewrite sub1set inE.
-by move/asboolF : nAinf => ->.
-Qed.
-
-Lemma cplt_hull_unboundEitvoo A :
-  A !=set0 -> ~ has_ubound A -> ~ has_lbound A ->
-  cplt_hull A = ~` A.
-Proof.
-move=> [x Ax].
-move=> hasNubA hasNlbA.
-rewrite -setTD; congr setD.
-rewrite/Rhull.
-move/asboolF : hasNlbA => ->.
-move/asboolF : hasNubA => ->.
-exact: interval_unbounded_setT.
-Qed.
-
-Let compact_open_complement A : compact A -> open (cplt_hull A).
-Proof.
-move=> cpA.
-have := compact_bounded cpA.
-move=> -[bnd [_ bndA]].
-rewrite cplt_hullEitvoo; last 2 first.
-- exists (bnd + 1) => x Ax.
-  rewrite ler_normlW//.
-  apply: bndA => //.
-  by rewrite ltrDl.
-- exists (- (bnd + 1)) => x Ax.
-  rewrite lerNnormlW//.
-  apply: bndA => //.
-  by rewrite ltrDl.
-apply: openI => //.
-apply: closed_openC.
-exact: (compact_closed _ cpA).
-Qed.
-
-Lemma closed_open_cplt_hull A : closed A -> open (cplt_hull A).
-Proof.
-move=> cA.
-have [ubA|ubA] := pselect (has_ubound A).
-- have [lbA|lbA] := pselect (has_lbound A).
-  + rewrite cplt_hullEitvoo//.
-    by apply: openI => //; rewrite openC.
-  + rewrite cplt_hullEitvyo//.
-    by apply: openI => //; rewrite openC.
-- have [lbA|lbA] := pselect (has_lbound A).
-  + rewrite cplt_hullEitvoy//.
-    by apply: openI => //; rewrite openC.
-  + have [A0|/set0P/negP/negPn/eqP ->] := pselect (A !=set0).
-      by rewrite cplt_hull_unboundEitvoo// openC.
-    by rewrite cplt_hull_set0.
-Qed.
-
-End cplt_hull.
-
-(* TODO *)
-Definition cont_itv1 {R : realType} (A : set R) (s_ : R^nat) :=
-  fun k => Num.min (sup A) (s_ k.-1).
-
-Definition cont_itv2 {R : realType} (A : set R) (i_ : R^nat) :=
-  fun k => Num.max (i_ k) (inf A).
-
-Definition cont_itvs {R : realType} (A : set R) (i_ s_ : R^nat) : (set R)^nat :=
-  fun k => [set` `[cont_itv1 A s_ k, cont_itv2 A i_ k]].
-
-Section cont_itvs.
-Context {R : realType}.
-Variables A : set R.
-
-Lemma cont_itvsS i_ s_ k :
-  (forall k, i_ k \in `[inf A, sup A]) ->
-  (forall k, s_ k \in `[inf A, sup A]) ->
-  cont_itvs A i_ s_ k `<=` `[inf A, sup A].
-Proof.
-move=> icd scd r.
-rewrite /cont_itvs /cont_itv1 /cont_itv2/=.
-rewrite !in_itv/= => /andP[H1 H2].
-apply/andP; split.
-Abort.
-
-End cont_itvs.
-
-(* NB: A is supposed to be a perfect set so that A is closed *)
-Definition contiguous_intervals {R : realType} (A : set R) : (set R)^nat :=
-  match pselect (closed A) with
-  | left H => open_disjoint_itv (closed_open_cplt_hull H)
-  | right _ => cst set0
-  end.
-
-Definition contiguous_intervals1 {R : realType} (A : set R) : R^nat :=
-  fun n => inf (contiguous_intervals A n).
-
-Definition contiguous_intervals2 {R : realType} (A : set R) : R^nat :=
-  fun n => sup (contiguous_intervals A n).
-
-Lemma is_subset1_set1 {R : realType} (A : set R) : A !=set0 -> is_subset1 A ->
-  A = [set xget point A].
-Proof.
-move=> A0 A1.
-case: xgetP => /= [_ -> Aget|].
-  apply/seteqP; split => [x Ax/=|x/= ->//].
-  exact: A1.
-by case: A0 => s As /(_ s).
-Qed.
-
-(* TODO: move near has_bound_not_subset1_inf_sup in absolute_continuity.v *)
-Lemma has_bound_inf_sup {R : realType} (A : set R) :
-  has_lbound A -> has_ubound A -> (inf A <= sup A)%R.
-Proof.
-have [-> _ _|/set0P A0 lbA ubA] := eqVneq A set0; first by rewrite inf0 sup0.
-have [|/has_bound_not_subset1_inf_sup] := pselect (is_subset1 A); last first.
-  by move=> /(_ lbA ubA) /ltW.
-move/is_subset1_set1 => /(_ A0) ->.
-by rewrite inf1 sup1.
-Qed.
-
-Section contiguous_intervals_lemmas.
-Context {R : realType}.
-Implicit Type (A : set R).
-
-Lemma open_contiguous_intervals A n : open (contiguous_intervals A n).
-Proof.
-rewrite /contiguous_intervals; case: pselect => cA//.
-exact: open_disjoint_itv_open.
-Qed.
-
-Lemma is_interval_contiguous_intervals A n :
-  is_interval (contiguous_intervals A n).
-Proof.
-rewrite /contiguous_intervals; case: pselect => cA//.
-exact: open_disjoint_itv_is_interval.
-Qed.
-
-Lemma disjoint_contiguous_intervals A :
-  trivIset [set: nat] (contiguous_intervals A).
-Proof.
-rewrite /contiguous_intervals; case: pselect => cA//.
-  exact: open_disjoint_itv_trivIset.
-exact: trivIset_set0.
-Qed.
-
-Lemma bigcup_contiguous_intervals A :
-  closed A -> cplt_hull A = \bigcup_k (contiguous_intervals A) k.
-Proof.
-move=> cA.
-rewrite /contiguous_intervals; case: pselect => ? //.
-by rewrite -open_disjoint_itv_bigcup.
-Qed.
-
-Lemma contiguous_intervals_subsetC A n :
-  contiguous_intervals A n `<=` ~` A.
-Proof.
-rewrite /contiguous_intervals; case: pselect => cA//=.
-apply: (@subset_trans _ (cplt_hull A)); last first.
-  exact: cplt_hull_complement.
-rewrite [in X in _ `<=` X](open_disjoint_itv_bigcup (closed_open_cplt_hull cA)).
-exact: bigcup_sup.
-Qed.
-
-Lemma contiguous_intervalsS A n :
-  contiguous_intervals A n `<=` cplt_hull A.
-Proof.
-have [cA|cA] := pselect (closed A).
-  by rewrite (bigcup_contiguous_intervals cA); exact: bigcup_sup.
-(* NB: needs lemma here *)
-by rewrite /contiguous_intervals; case: pselect.
-Qed.
-
-Lemma has_lbound_contiguous_intervals A :
-  has_lbound A -> forall n, has_lbound (contiguous_intervals A n).
-Proof.
-move/inf_lt_cplt_hull => lbA i; exists (inf A) => r.
-by move/contiguous_intervalsS/lbA => /= /ltW.
-Qed.
-
-Lemma has_ubound_contiguous_intervals A :
-  has_ubound A -> forall n, has_ubound (contiguous_intervals A n).
-Proof.
-move/cplt_hull_lt_sup => lbA i; exists (sup A) => r.
-by move/contiguous_intervalsS/lbA => /= /ltW.
-Qed.
-
-(*Lemma contiguous_intervals1_fin_num A : has_lbound A ->
- forall n, contiguous_intervals1 A n \is a fin_num.
-Proof.
-move=> + i.
-move/has_lbound_contiguous_intervals => /(_ i) lbA.
-rewrite /contiguous_intervals1 /Rhull; case: ifPn => //=.
-by move/asboolP.
-Qed.
-
-Lemma contiguous_intervals2_fin_num A : has_ubound A ->
- forall i, contiguous_intervals2 A i \is a fin_num.
-Proof.
-move=> + i.
-move/has_ubound_contiguous_intervals => /(_ i) ubA.
-rewrite /contiguous_intervals2 /Rhull; case: ifPn => /=; case: ifPn => //.
-  by move/asboolP.
-by move/asboolP.
-Qed.*)
-
-Lemma contiguous_intervals1_le_contiguous_intervals2 A n :
-  has_lbound A ->
-  has_ubound A ->
-  (contiguous_intervals1 A n <= contiguous_intervals2 A n)%R.
-Proof.
-move=> ? ?.
-rewrite /contiguous_intervals1 /contiguous_intervals2.
-rewrite has_bound_inf_sup//.
-  exact: has_lbound_contiguous_intervals.
-exact: has_ubound_contiguous_intervals.
-Qed.
-
-Lemma bigcup_contiguous_intervals_fine A :
-  compact A -> cplt_hull A =
-      \bigcup_k `](contiguous_intervals1 A k),
-                  (contiguous_intervals2 A k)[%classic.
-Proof.
-move=> cA.
-have closedA : closed A by exact: compact_closed.
-rewrite bigcup_contiguous_intervals//.
-apply: eq_bigcupr => n _.
-transitivity [set` Rhull (contiguous_intervals A n)].
-  by rewrite RhullK//; rewrite inE; exact: is_interval_contiguous_intervals.
-have haslbA : has_lbound A.
-  apply: bounded_has_lbound.
-  exact: compact_bounded.
-have hasubA : has_ubound A.
-  apply: bounded_has_ubound.
-  exact: compact_bounded.
-have [haslbciA hasubciA citvAinf citvAsup] :
-  [/\ has_lbound (contiguous_intervals A n),
-       has_ubound (contiguous_intervals A n),
-       ~ contiguous_intervals A n (inf (contiguous_intervals A n))&
-       ~ contiguous_intervals A n (sup (contiguous_intervals A n))].
-  split.
-  - exact: has_lbound_contiguous_intervals.
-  - exact: has_ubound_contiguous_intervals.
-  - apply: open_haslb_memNinf.
-    + exact: has_lbound_contiguous_intervals.
-    + exact: open_contiguous_intervals.
-  - apply: open_hasub_memNsup.
-    + exact: has_ubound_contiguous_intervals.
-    + exact: open_contiguous_intervals.
-rewrite /contiguous_intervals1/contiguous_intervals2/Rhull/=.
-move/asboolP: haslbciA ->; move/asboolP: hasubciA ->.
-by move/asboolF: citvAinf ->;move/asboolF: citvAsup ->.
-Qed.
-
-Lemma fine_contiguous_intervals1 A : (*compact A ->*)
-  forall i, contiguous_intervals1 A i = inf (contiguous_intervals A i).
-Proof. by []. Qed.
-
-Lemma fine_contiguous_intervals2 A : (*compact A ->*)
-  forall i, contiguous_intervals2 A i = sup (contiguous_intervals A i).
-Proof. by []. Qed.
-
-(* unused *)
-Lemma contiguous_ooitv A :
-  has_ubound A -> has_lbound A ->
-  forall i, (contiguous_intervals A i) =
-   `]contiguous_intervals1 A i, contiguous_intervals2 A i[%classic.
-Proof.
-move=> /[dup] hasubA [u Au] /[dup] haslbA [l Al] i.
-rewrite /contiguous_intervals1/contiguous_intervals2.
-
-rewrite -{1}(@RhullK _ (contiguous_intervals A i)); last first.
-  by rewrite inE; exact: is_interval_contiguous_intervals.
-
-rewrite /Rhull.
-rewrite 2?ifT/=; last 2 first.
-- exact/asboolP/has_ubound_contiguous_intervals.
-- exact/asboolP/has_lbound_contiguous_intervals.
-have : ~ contiguous_intervals A i(inf (contiguous_intervals A i)).
-   apply: open_haslb_memNinf.
-    exact: has_lbound_contiguous_intervals.
-  exact: open_contiguous_intervals.
-have : ~ contiguous_intervals A i (sup (contiguous_intervals A i)).
-  apply: open_hasub_memNsup.
-    exact: has_ubound_contiguous_intervals.
-  exact: open_contiguous_intervals.
-by move=> /asboolF -> /asboolF ->//=.
-(* lemma? *)
-(*rewrite eqEsubset; split.
-  by move=> z [x/= + <-]; rewrite 2!in_itv/= 2!lte_fin.
-move=> z/=; rewrite in_itv/= => /andP[infz zsup].
-have finz : z \is a fin_num.
-  rewrite fin_numElt; apply/andP; split.
-  - by apply: lt_trans infz; rewrite ltNyr.
-  - by apply: (lt_trans zsup); rewrite ltry.
-move: infz zsup.
-move/EFin_fin_numP : finz => [x ->]; rewrite 2!lte_fin => infx xsup.
-by exists x => //; rewrite in_itv/= infx xsup.*)
-Qed.
-
-End contiguous_intervals_lemmas.
 
 Section lemma4_preliminaries.
 Context {R : realType}.
@@ -773,3 +324,162 @@ Proof.
 Abort.
 
 End lemma4.
+
+Section lemma4_cover.
+Context {R: realType}.
+Variables a b : R.
+Hypothesis ab : a <= b.
+Local Notation mu := (@completed_lebesgue_measure R).
+
+Local Open Scope ereal_scope.
+
+Lemma lemma4_cover (f : R -> R) (P : set R) (xy : nat -> R * R) :
+  is_interval (f @` `[a, b]) ->
+  (* perfect_set P *) closed P ->
+ (*  a = inf P -> b = sup P -> *)
+  Rhull P = `[a, b] ->
+  (forall n, (xy n).1 <= (xy n).2)%R ->
+ `[a, b]%classic `<=` P `|`
+   (\bigcup_i `](xy i).1, (xy i).2[%classic) ->
+  `|f b - f a|%:E <= mu (f @` `[a, b])
+     <= (mu^*)%mu (f @` P) +
+        \sum_(0 <= i <oo) oscillation f `[(xy i).1, (xy i).2]%classic.
+Proof.
+move=> fab closedP + xy12 abSubPxy.
+move/[dup]/eq_Rhull_itvccP => [[haslbP Pinf infa] [hasubP Psup supa]] Pab.
+have compactP : compact P.
+  apply: Rbounded_closed_compact => //.
+  by rewrite Rbounded_setE.
+have H1 : f @` `[a, b] `<=` (f @` P) `|` \bigcup_i f @` `](xy i).1, (xy i).2[.
+  rewrite -image_bigcup -image_setU.
+  exact: image_subset.
+apply/andP; split.
+  (* wlog? *)
+  have [fafb|] := pselect (f a < f b)%R.
+    have -> : `|f b - f a|%:E = mu `[f a, f b].
+      rewrite completed_lebesgue_measure_itv/= lte_fin fafb -EFinD.
+      move: fafb.
+      rewrite -subr_gt0.
+      by move/ltW/normr_idP ->.
+    apply: le_outer_measure => /= x/= xfab.
+    apply: (fab (f a) (f b)).
+    - by exists a => //=; rewrite bound_itvE.
+    - by exists b => //=; rewrite bound_itvE.
+    - by rewrite in_itv/= in xfab.
+    move/negP; rewrite -leNgt.
+    rewrite le_eqVlt => /predU1P[-> |].
+      by rewrite subrr normr0 measure_ge0.
+  rewrite -normrN opprB => fbfa.
+  have -> : `|f a - f b|%:E = mu `[f b, f a].
+    rewrite completed_lebesgue_measure_itv/= lte_fin fbfa -EFinD.
+    move: fbfa.
+    rewrite -subr_gt0.
+    by move/ltW/normr_idP ->.
+  apply: le_outer_measure => /= x/= xfba.
+  apply: (fab (f b) (f a)).
+  - by exists b => //=; rewrite bound_itvE.
+  - by exists a => //=; rewrite bound_itvE.
+  - by rewrite in_itv/= in xfba.
+rewrite -measurable_mu_extE; last first.
+  apply: sub_caratheodory.
+  rewrite -(@RhullK _ (f @` `[a, b]))//.
+  by rewrite inE.
+apply: (le_trans (le_outer_measure mu^*%mu _ _ H1)).
+apply: (le_trans (outer_measureU2 _ _ _)).
+rewrite leeD2l//.
+apply: (le_trans (outer_measure_sigma_subadditive _ _)).
+apply: lee_nneseries => // n _.
+rewrite [leLHS](_ : mu^*%mu (f @` `](xy n).1, (xy n).2[) =
+                    mu (f @` `[(xy n).1, (xy n).2]))%E; last first.
+  admit.
+have isitv_xy : is_interval (f @` `[(xy n).1, (xy n).2]).
+  admit.
+set P' := [set (xy n).1; (xy n).2].
+have cP' : closed P'.
+  admit.
+have RhullP' : Rhull P' = `[(xy n).1, (xy n).2].
+  admit.
+
+have := lemma4 (xy12 n) isitv_xy cP' RhullP'.
+move/andP => [_].
+have -> : mu^*%mu [set f x | x in P'] = 0.
+  admit.
+rewrite add0e.
+move/le_trans; apply.
+admit.
+(*
+rewrite le_outer_measure.
+rewrite H1.
+apply: (@le_trans _ _ (mu^*%mu [set f x | x in P] +
+         mu^*%mu (\bigcup_i [set f x | x in `](a_ i), (b_ i)[]))).
+  exact: outer_measureU2.
+apply: leeD2l.
+apply: le_trans.
+  exact: outer_measure_sigma_subadditive.
+rewrite /=.
+apply: lee_nneseries; first by move=> i _ _; exact: outer_measure_ge0.
+move=> n _.
+rewrite /oscillation.
+case: ifPn => [/eqP ab0|ab0].
+  have anbn : ((a_ n) > (b_ n))%R.
+    rewrite ltNge; contra: ab0 => anbn.
+    apply/set0P; exists ((a_ n)).
+    by rewrite /= in_itv/= lexx anbn.
+  rewrite set_itv_ge ?bnd_simp -?leNgt//; last exact/ltW.
+  by rewrite image_set0 mu_ext0.
+rewrite [leRHS](_ : _ =
+       mu^*%mu [set` Rhull (f @` `[((a_ n)), ((b_ n))] )]).
+  apply: le_outer_measure.
+  apply: subset_trans (@sub_Rhull _ _).
+  apply: image_subset.
+  exact: subset_itv_oo_cc.
+rewrite measurable_mu_extE/=; last first.
+  apply: sub_caratheodory.
+  exact: measurable_itv.
+rewrite completed_lebesgue_measure_itv.
+have fab0 : [set f x | x in `[(a_ n), (b_ n)]] !=set0.
+  exists (f ((a_ n))) => //.
+  exists ((a_ n)) => //=.
+  rewrite boundl_in_itv//= bnd_simp.
+  exact: intervals1_le_contiguous_intervals2.
+have [hasubf|hasNubf] :=
+  pselect (has_ubound (f @` `[((a_ n)), ((b_ n))])); last first.
+  rewrite -image_comp hasNub_ereal_sup//.
+  rewrite addye; last first.
+    apply/eqP.
+    move/eqe_oppLRP => /=.
+    move/ereal_inf_pinfty.
+    apply/not_forallP; rewrite not_notE.
+    have [y [x/= xab fax]] := fab0.
+    by exists y%:E; rewrite ?not_implyP; split => //; exists y => //; exists x.
+  rewrite ifT; last first.
+    rewrite /=; move/asboolF : (hasNubf) => ->.
+    by case: ifP => // _; exact: ltry.
+  rewrite /=; move/asboolF : (hasNubf) => ->.
+  by case: ifP.
+have [haslbf|hasNlbf] :=
+   pselect (has_lbound (f @` `[(a_ n), (b_ n)])); last first.
+  rewrite -[X in _ - ereal_inf X = _]image_comp hasNlb_ereal_inf//; last first.
+  rewrite ifT; last first.
+    rewrite /=; move/asboolF: (hasNlbf) => ->.
+    move/asboolP: (hasubf) => ->; exact: ltNyr.
+  rewrite /=; move/asboolF: (hasNlbf) => -> /=.
+  have supNy: ereal_sup ((EFin \o f) @` `[((a_ n)), ((b_ n))]) != -oo.
+    apply/eqP; move/ereal_sup_ninfty; apply/not_forallP; rewrite not_notE.
+    have [y [x/= xab fax]] := fab0.
+    by exists y%:E; rewrite ?not_implyP; split => //; exists x=> //; congr EFin.
+  by case: ifP; rewrite addey.
+rewrite /Rhull; move/asboolP: (hasubf) ->; move/asboolP: (haslbf) -> => //.
+case: ifP => /=; last first.
+- move/negP/negP; rewrite -leNgt.
+  rewrite le_eqVlt => /predU1P[|]; last first.
+  + rewrite lte_fin ltNge => /negP Ninfsup.
+    by have := has_bound_inf_sup haslbf hasubf.
+  + rewrite -ereal_sup_EFin -?ereal_inf_EFin// image_comp => ->;
+    rewrite subee//.
+    by rewrite -image_comp ereal_inf_EFin.
+- move=> _; rewrite EFinN -ereal_sup_EFin -?ereal_inf_EFin// 2?image_comp//.
+*)
+Admitted.
+
+End lemma4_cover.
