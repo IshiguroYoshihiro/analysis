@@ -2,6 +2,8 @@ From HB Require Import structures.
 From Stdlib Require Import Bool.
 From mathcomp Require Import all_boot all_order interval_inference ssralg ssrnum.
 From mathcomp Require Import ssrint interval archimedean.
+#[warning="-warn-library-file-internal-analysis"]
+From mathcomp Require Import unstable.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import cardinality.
 From mathcomp Require Import reals ereal topology normedtype sequences.
@@ -85,10 +87,10 @@ Proof. by move=> s /= [+ _]; rewrite in_itv/= => /andP[]. Qed.
 Let infsuppref y : `]infpre y, suppre y[ `<=` f @^-1` [set y].
 Proof.
 apply: (@subset_trans _ (`[a, b] `&` f @^-1` [set y])); last exact: subIsetr.
-rewrite -[X in _ `<=` X]RhullK.
-  rewrite /Rhull /= -/(infpre _) -/(suppre _) !ifT; last 2 first.
-  - by apply: asboolT; exists b; exact: ubb.
+rewrite -[X in _ `<=` X]RhullK; last first.
+  rewrite /Rhull /= -/(infpre _) -/(suppre _) !ifT.
   - by apply: asboolT; exists a; exact: lba.
+  - by apply: asboolT; exists b; exact: ubb.
   by apply: subset_itvW; rewrite lexx.
 rewrite inE => p q/=.
 rewrite !in_itv/= => -[/andP[ap pb] Fpy] [/andP[aq qb] Fqy].
@@ -114,7 +116,7 @@ apply/seteqP; split; last by move=> ? [? _ []].
 move=> x Fx.
 near \oo => n.
 exists n => //; split => //=.
-rewrite ltr_pdivrMr// -ltr_pdivrMl; last first.
+rewrite ltr_pdivrMr// -ltr_pdivrMl.
   by rewrite subr_gt0 preimages_gt1_inf_sup.
 rewrite -addn1 natrD -ltrBlDr.
 by near: n; exact: nbhs_infty_gtr.
@@ -138,18 +140,18 @@ have Bh m : preimages_gt1 f (h m) by have [] := Xnh m.
 have : (\sum_(n <oo) ((suppre (h n) - infpre (h n))%:E) <= mu `[a, b])%E.
 (* by Uab, ty *)
   rewrite (@eq_eseriesr _ _
-        (fun n => lebesgue_measure `]infpre (h n), suppre (h n)[)); last first.
+        (fun n => lebesgue_measure `]infpre (h n), suppre (h n)[)).
     move=> k _.
     by rewrite lebesgue_measure_itv /= lte_fin (@infsuppre _ _ (Xnh k)) EFinD.
   rewrite [leLHS](_ : _ = lebesgue_measure
-        (\bigcup_i `]infpre (h i), suppre (h i)[%classic)); last first.
+        (\bigcup_i `]infpre (h i), suppre (h i)[%classic)).
     apply: cvg_lim => //.
     apply: measure_semi_sigma_additive; last exact: bigcup_measurable.
     - by [].
     - apply: ltn_trivIset => m1 m2 m12.
       have neqhm12 : h m1 != h m2.
         apply/eqP => /(f_equal g).
-        rewrite !pinvK => //; [|by rewrite inE; exact: surjg..].
+        rewrite !pinvK => //; [by rewrite inE; exact: surjg..|].
         by apply/eqP; rewrite gt_eqF.
       apply: (subsetI_eq0 (@infsuppref (h m2)) (@infsuppref (h m1))).
       apply: (@preimage_setI_eq0 _ _ f [set h m2] [set h m1]).1.
@@ -165,7 +167,7 @@ have ty : trivIset [set: nat] (fun n => `]infpre (h n), suppre (h n)[%classic).
   apply: ltn_trivIset => m1 m2 m12.
   have neqhm12 : h m1 != h m2.
     apply/eqP => /(f_equal g).
-    rewrite !pinvK => //; [|by rewrite inE; exact: surjg..].
+    rewrite !pinvK => //; [by rewrite inE; exact: surjg..|].
     by apply/eqP; rewrite gt_eqF.
   apply: (subsetI_eq0 (@infsuppref (h m2)) (@infsuppref (h m1))).
   apply: (@preimage_setI_eq0 _ _ f [set h m2] [set h m1]).1.
@@ -179,7 +181,7 @@ have Hsum : (\sum_(0 <= s <oo) ((b - a) / n.+1%:R)%:E = +oo)%E.
   apply/cvgeryP.
   apply/cvgryPge => r.
   near=> m.
-  rewrite sumr_const_nat subn0 -[X in _ <= X]mulr_natr -ler_pdivrMl; last first.
+  rewrite sumr_const_nat subn0 -[X in _ <= X]mulr_natr -ler_pdivrMl.
     by rewrite divr_gt0// subr_gt0.
   by near: m; exact: nbhs_infty_ger.
 apply/eqP; rewrite eq_le; apply/andP; split; first exact: leey.
@@ -363,14 +365,14 @@ have : exists l r, [/\ a <= l, l <= r, r <= b & bigcup_ointsub Z (index n) = `]l
       apply: ub_le_sup => //.
       by exists b.
     exact: ge_sup.
-  rewrite {1}(_:bigcup_ointsub _ _ = interior (bigcup_ointsub Z (index n))); last first.
+  rewrite {1}(_:bigcup_ointsub _ _ = interior (bigcup_ointsub Z (index n))).
     rewrite eqEsubset; split.
       have := @openE R.
       rewrite eqEsubset => -[+ _].
       apply.
       exact: open_bigcup_ointsub.
     exact: interior_subset.
-  rewrite (@interval_bounded_interior _ (bigcup_ointsub _ _)); last 3 first.
+  rewrite (@interval_bounded_interior _ (bigcup_ointsub _ _)).
         exact: is_interval_bigcup_ointsub.
       by exists a.
     by exists b.
@@ -426,17 +428,17 @@ have IGab : \bigcap_i G_ i `<=` `]a, b[.
   exact: subIsetr.
 have -> : \bigcap_i G' i = \bigcap_i G_ i.
   rewrite bigcapIr.
-  rewrite setIidr//.
-  by exists 0%N.
+    by exists 0%N.
+  by rewrite setIidr//.
 move: G'ab => _.
 have Gab_cc i : G_ i `<=` `[a, b].
   apply: (@subset_trans _ `]a, b[%classic).
     exact: subIsetl.
   exact: subset_itv_oo_cc.
-have mFG k : 'measurable [set f x | x in G_ k].
+have mFG k : measurable [set f x | x in G_ k].
   apply: measurable_image_open_nondecreasing_fun => //.
   exact: subIsetl.
-have mIFG : 'measurable (\bigcap_i [set f x | x in G_ i]) by apply: bigcap_measurable.
+have mIFG : measurable (\bigcap_i [set f x | x in G_ i]) by apply: bigcap_measurable.
 have [eq1 eq2] := (@lemma1 _ _ _ f nat G_ homof Gab_cc).
 apply: measure_squeeze_measurable eq1 eq2.
 - apply: measurableD.
@@ -477,8 +479,8 @@ apply/eqP; rewrite eq_le; apply/andP; split.
   apply: (subset_trans HSr).
   apply: subset_bigcap => /= i _.
   exact: image_subset.
-rewrite [leLHS](_:_= mu (\bigcap_i [set f x | x in G i] `\` preimages_gt1 f)); last first.
-  rewrite measureD /=; last 3 first.
+rewrite [leLHS](_:_= mu (\bigcap_i [set f x | x in G i] `\` preimages_gt1 f)).
+  rewrite measureD /=.
         apply: bigcap_measurable => // k _.
         exact: measurable_image_open_nondecreasing_fun.
       exact: is_borel_preimages_gt1_nondecreasing_fun => //.
@@ -489,14 +491,14 @@ rewrite [leLHS](_:_= mu (\bigcap_i [set f x | x in G i] `\` preimages_gt1 f)); l
       apply: le_outer_measure.
       apply: image_subset.
       exact: Gab.
-    rewrite integral_continuous_nondecreasing_itv //; last first.
+    rewrite integral_continuous_nondecreasing_itv //.
       move: ndf.
       apply: itv_sub_in2.
       exact: subset_itv_oo_cc.
     by rewrite -EFinB ltey.
   rewrite [X in (_ - X)%E](_:_ = 0) ?sube0//.
   apply/eqP; rewrite eq_le; apply/andP; split.
-    rewrite [leRHS](_:_ = mu (preimages_gt1 f)); last first.
+    rewrite [leRHS](_:_ = mu (preimages_gt1 f)).
       apply: esym.
       rewrite countable_lebesgue_measure0//.
       exact: is_countable_preimages_gt1_nondecreasing_fun.

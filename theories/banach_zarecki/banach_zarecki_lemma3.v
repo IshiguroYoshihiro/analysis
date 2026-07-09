@@ -26,7 +26,7 @@ Local Open Scope ring_scope.
 
 Lemma cvg_half {R : realType} : (2^-1 ^+ x) @[x --> \oo] --> (0 : R).
 Proof.
-rewrite (_:(fun n => (2^-1 ^+ n)) = (fun n => geometric 1 2^-1 n)); last first.
+rewrite (_:(fun n => (2^-1 ^+ n)) = (fun n => geometric 1 2^-1 n)).
    apply: funext => n.
    by rewrite /geometric/= mul1r.
 apply: cvg_geometric.
@@ -223,7 +223,7 @@ have G0 : mu (X `&` G) = 0.
       by rewrite setI0 [LHS]measure0.
     rewrite GE.
     rewrite bigcup_mkcondr.
-    rewrite (reindex_bigcup f B)//; last 2 first.
+    rewrite (reindex_bigcup f B)//.
       by case: bijf.
       by case: bijf.
     rewrite bigcup_mkcond.
@@ -262,7 +262,7 @@ have isoK : isolated K = set0.
     rewrite setIAC.
     rewrite -setDE.
     have mU : measurable U by apply: open_measurable; case: xU.
-    rewrite [ltRHS](@measureD _ _ _ mu (X `&` U) G)//; last 2 first.
+    rewrite [ltRHS](@measureD _ _ _ mu (X `&` U) G)//.
       exact: measurableI.
       rewrite (le_lt_trans _ boundedX)// le_measure// ?inE//.
       exact: measurableI.
@@ -340,7 +340,7 @@ exists V_; split.
 - by move=> n; exact: sub_bigcap.
 - by move=> n; exact: bigcap_open.
 - exact: niV.
-- rewrite [X in _ = _ X](_ : _ = \bigcap_i U_ i); last first.
+- rewrite [X in _ = _ X](_ : _ = \bigcap_i U_ i).
     rewrite eqEsubset; split.
       move=> x Hx n _.
       by apply: (Hx n.+1) => /=.
@@ -587,11 +587,11 @@ have K1K : F @` K1 = K.
       rewrite maxElt Fab.
       move: Kr => /KFZ1[t [/= tab _] <-].
       rewrite 2?ltW ?incF//.
+      - by rewrite bound_itvE// ltW.
       - exact: subset_itv_oo_cc.
-      - by rewrite boundr_in_itv ?bnd_simp ?ltW.
       - by move: tab; rewrite in_itv/= => /andP[].
-      - by rewrite boundl_in_itv ?bnd_simp ?ltW.
       - exact: subset_itv_oo_cc.
+      - by rewrite bound_itvE// ltW.
       - by move: tab; rewrite in_itv/= => /andP[].
     by move=> x xab; rewrite /L; move <-; exists x.
   move: (L0) => [r'] /[dup] Lr'.
@@ -602,16 +602,16 @@ have K1K : F @` K1 = K.
 have : (0 < mu (F @` K1))%E.
   rewrite K1K.
   have := Z1Ke.
-  rewrite measureD//; last exact: compact_measurable.
+  rewrite measureD//; first exact: compact_measurable.
   rewrite setIidr//.
-  rewrite lteBlDl; last first.
+  rewrite lteBlDl.
     rewrite ge0_fin_numE//.
     apply: le_lt_trans FZ1oo.
     exact: le_outer_measure.
   rewrite -lteBlDr//.
   rewrite completed_lebesgue_measureE.
   apply: le_lt_trans.
-  rewrite sube_ge0// /e EFinM fineK; last by rewrite ge0_fin_numE.
+  rewrite sube_ge0// /e EFinM fineK; first by rewrite ge0_fin_numE.
   rewrite muleC gee_pMl//.
   rewrite lee_fin invf_le1//.
   by rewrite -[leLHS](mulr1n 1) ler_nat.
@@ -624,13 +624,13 @@ apply: lusinN'.
 - rewrite /K1 setIC.
   rewrite -(setIid `[a, b]%classic) setICA.
   apply: compact_closedI => //; first exact: segment_compact.
-  rewrite closed_setIS; last exact: interval_closed.
+  rewrite closed_setIS; first exact: interval_closed.
   apply: (continuous_closedP _).1 => //.
   exact: compact_closed.
 - apply/eqP; rewrite -measure_le0/= -muZ10.
   have bijF := continuous_increasing_set_bij ab cF incF.
   have [F' FF'] := pPbij bijF.
-  rewrite /K1 FF' -inv_sub_image; last first.
+  rewrite /K1 FF' -inv_sub_image.
     apply: (subset_trans KFZ1).
     rewrite -continuous_increasing_image_itv//.
     apply: image_subset.
@@ -718,7 +718,7 @@ rewrite /nbhs/= /nbhs_ball_ => -[d /= d0 xdV].
 have [xa|[xb|{}xab]] : x = a \/ x = b \/ x \in `]a, b[.
   have : x \in `[a, b]%classic.
     by rewrite inE.
-  rewrite -(setU1itv false) ?bnd_simp//; last exact/ltW.
+  rewrite -(setU1itv false) ?bnd_simp//; first exact/ltW.
   rewrite -(setUitv1 true) ?bnd_simp//.
   by rewrite setUA setUAC inE/= orA.
 - subst x.
@@ -768,8 +768,8 @@ have [xa|[xb|{}xab]] : x = a \/ x = b \/ x \in `]a, b[.
     rewrite -lerBrDl.
     rewrite /k -/y.
     rewrite ger_pMr.
-      by rewrite invf_le1// ler1n//.
-    by rewrite subr_gt0.
+      by rewrite subr_gt0.
+    by rewrite invf_le1// ler1n//.
   have H3 : {within `[a, a + d'], continuous F}.
     apply: continuous_subspaceW cF.
     apply: subset_itv; rewrite bnd_simp//=.
@@ -838,8 +838,8 @@ have [xa|[xb|{}xab]] : x = a \/ x = b \/ x \in `]a, b[.
       rewrite lerBrDr -lerBrDl /y.
       rewrite /k.
       rewrite ger_pMr.
-        by rewrite invf_le1// ler1n//.
-      by rewrite subr_gt0.
+        by rewrite subr_gt0.
+      by rewrite invf_le1// ler1n//.
     rewrite lt_neqAle; apply/andP; split.
       by rewrite y_neq.
     have := y_K (y_ n).
@@ -955,8 +955,8 @@ have [yE|] := eqVneq (F (x - d')) y.
       apply: xdV.
       rewrite /ball_/=.
       rewrite opprD addrA subrr add0r normrN ltr0_norm//.
-      by rewrite opprK.
       by rewrite oppr_lt0.
+      by rewrite opprK.
     rewrite /A/=; split.
       by rewrite in_itv/= axd'/=.
     by rewrite yE.
@@ -982,15 +982,15 @@ have [n /andP[xd'yn ynxd']] : exists n, F (x - d') < y_ n < F (x + d').
   pose k := Num.min ((F (x + d') - y) / 2) ((y - F (x - d')) / 2).
   have k0 : 0 < k.
     rewrite lt_min !divr_gt0//.
-    rewrite subr_gt0 lt_neqAle Fxd'y ndF//.
-      by rewrite in_itv/= axd'//= (le_trans _ xd'b)//.
-    by apply: subset_itv_oo_cc.
-    by rewrite lerBlDl lerDr ltW.
     rewrite subr_gt0.
     rewrite lt_neqAle eq_sym yFxd'/= ndF//.
     by apply: subset_itv_oo_cc.
     rewrite in_itv/= axDd'//=.
     by rewrite lerDl ltW.
+    rewrite subr_gt0 lt_neqAle Fxd'y ndF//.
+      by rewrite in_itv/= axd'//= (le_trans _ xd'b)//.
+    by apply: subset_itv_oo_cc.
+    by rewrite lerBlDl lerDr ltW.
   move/cvgrPdist_lt : y_cvg => /(_ _ k0)[n _]/(_ n (@leqnn n)).
   rewrite ltr_distlC => /andP[ykyn ynyk].
   exists n.
@@ -1131,7 +1131,7 @@ have mpreF0 : mu ([set F x | x in Z1] `&` preimages_gt1 `[a, b] [set: R] F) = 0.
     exact: subIsetr.
   exact: is_countable_preimages_gt1_nondecreasing_fun.
 have e'0 : 0 < e'.
-  rewrite /e' measureD//=; last 2 first.
+  rewrite /e' measureD//=.
   - exact: sub_caratheodory.
   - apply: sub_caratheodory.
     apply: countable_measurable => //.
@@ -1168,11 +1168,11 @@ have K1K : F @` K1 = K.
       move: Kr=> /KFZ1'.
       case=> -[t [/= tab _] <-] _.
       rewrite 2?ndF//.
+      - by rewrite bound_itvE// ltW.
       - exact: subset_itv_oo_cc.
-      - by rewrite boundr_in_itv ?bnd_simp ?ltW.
       - by apply/ltW; move: tab; rewrite in_itv/= => /andP[].
-      - by rewrite boundl_in_itv ?bnd_simp ?ltW.
       - exact: subset_itv_oo_cc.
+      - by rewrite bound_itvE// ltW.
       - by apply/ltW; move: tab; rewrite in_itv/= => /andP[].
     by move=> x xab; rewrite /L; move <-; exists x.
   move: (L0) => [r'] /[dup] Lr'.
@@ -1183,16 +1183,16 @@ have K1K : F @` K1 = K.
 have : (0 < mu (F @` K1))%E.
   rewrite K1K.
   have := FZ1'Ke'.
-  rewrite measureD//; last exact: compact_measurable.
+  rewrite measureD//; first exact: compact_measurable.
   rewrite setIidr//.
-  rewrite lteBlDl; last first.
+  rewrite lteBlDl.
     rewrite ge0_fin_numE//.
     apply: le_lt_trans FZ1'oo.
     exact: le_outer_measure.
   rewrite -lteBlDr//.
   rewrite completed_lebesgue_measureE.
   apply: le_lt_trans.
-  rewrite sube_ge0// /e EFinM fineK; last by rewrite ge0_fin_numE.
+  rewrite sube_ge0// /e EFinM fineK; first by rewrite ge0_fin_numE.
   rewrite muleC gee_pMl//.
   rewrite lee_fin invf_le1//.
   by rewrite -[leLHS](mulr1n 1) ler_nat.
@@ -1204,7 +1204,7 @@ apply: HZ.
 - exact: subIsetl.
 - rewrite /K1 setIC -(setIid `[a, b]%classic) setICA.
   apply: compact_closedI; first exact: segment_compact.
-  rewrite closed_setIS; last exact: itv_closed.
+  rewrite closed_setIS; first exact: itv_closed.
   apply: ((@continuous_closedP (subspace `[a, b]) _ F).1 cF).
   exact: compact_closed cK.
 - apply/eqP; rewrite -measure_le0/=.
@@ -1215,7 +1215,7 @@ apply: HZ.
     exact: preimage_subset.
   rewrite /FZ1' setDE.
   rewrite [X in X `<=` _](_: _
-    = Z1 `\` (F @^-1` preimages_gt1 `[a, b] [set: R] F)); last first.
+    = Z1 `\` (F @^-1` preimages_gt1 `[a, b] [set: R] F)).
     rewrite eqEsubset; split.
     - move=> x/= [xab [[x' Z1x' Fx'Fx ]]].
       (* lemma? *)
@@ -1366,7 +1366,7 @@ have mpreF0 : mu ([set F x | x in Z1] `&` preimages_gt1 `[a, b] [set: R] F) = 0.
     exact: subIsetr.
   exact: is_countable_preimages_gt1_nondecreasing_fun.
 have e'0 : 0 < e'.
-  rewrite /e' measureD//=; last 2 first.
+  rewrite /e' measureD//=.
   - exact: sub_caratheodory.
   - apply: sub_caratheodory.
     apply: countable_measurable => //.
@@ -1392,16 +1392,16 @@ wlog : K cK KFZ1' FZ1'Ke' / isolated K = set0.
   apply: (wlg K0) => //.
   by apply: subset_trans KFZ1'.
   rewrite (le_lt_trans _ FZ1'Ke')//.
-  rewrite measureD//; last first.
+  rewrite measureD//.
     by apply: compact_measurable.
-  rewrite [in leRHS]measureD//; last first.
+  rewrite [in leRHS]measureD//.
     by apply: compact_measurable.
   rewrite leeD//.
   rewrite leeN2.
   rewrite setIidr//.
   rewrite setIidr//.
-    by rewrite [leRHS]mK0//.
-  by apply: (subset_trans K0K).
+    by apply: (subset_trans K0K).
+  by rewrite [leRHS]mK0//.
 move=> isoK0.
 set K1 := `[a, b] `&` F @^-1` K.
 have K1K : F @` K1 = K.
@@ -1423,11 +1423,11 @@ have K1K : F @` K1 = K.
       move: Kr=> /KFZ1'.
       case=> -[t [/= tab _] <-] _.
       rewrite 2?ndF//.
+      - by rewrite bound_itvE// ltW.
       - exact: subset_itv_oo_cc.
-      - by rewrite boundr_in_itv ?bnd_simp ?ltW.
       - by apply/ltW; move: tab; rewrite in_itv/= => /andP[].
-      - by rewrite boundl_in_itv ?bnd_simp ?ltW.
       - exact: subset_itv_oo_cc.
+      - by rewrite bound_itvE// ltW.
       - by apply/ltW; move: tab; rewrite in_itv/= => /andP[].
     by move=> x xab; rewrite /L; move <-; exists x.
   move: (L0) => [r'] /[dup] Lr'.
@@ -1438,16 +1438,16 @@ have K1K : F @` K1 = K.
 have : (0 < mu (F @` K1))%E.
   rewrite K1K.
   have := FZ1'Ke'.
-  rewrite measureD//; last exact: compact_measurable.
+  rewrite measureD//; first exact: compact_measurable.
   rewrite setIidr//.
-  rewrite lteBlDl; last first.
+  rewrite lteBlDl.
     rewrite ge0_fin_numE//.
     apply: le_lt_trans FZ1'oo.
     exact: le_outer_measure.
   rewrite -lteBlDr//.
   rewrite completed_lebesgue_measureE.
   apply: le_lt_trans.
-  rewrite sube_ge0// /e EFinM fineK; last by rewrite ge0_fin_numE.
+  rewrite sube_ge0// /e EFinM fineK; first by rewrite ge0_fin_numE.
   rewrite muleC gee_pMl//.
   rewrite lee_fin invf_le1//.
   by rewrite -[leLHS](mulr1n 1) ler_nat.
@@ -1459,7 +1459,7 @@ apply: HZ.
 - exact: subIsetl.
 - rewrite /K1 setIC -(setIid `[a, b]%classic) setICA.
   apply: compact_closedI; first exact: segment_compact.
-  rewrite closed_setIS; last exact: itv_closed.
+  rewrite closed_setIS; first exact: itv_closed.
   apply: ((@continuous_closedP (subspace `[a, b]) _ F).1 cF).
   exact: compact_closed cK.
 - by apply: nondecreasing_cont_isolated => //.
@@ -1471,7 +1471,7 @@ apply: HZ.
     exact: preimage_subset.
   rewrite /FZ1' setDE.
   rewrite [X in X `<=` _](_: _
-    = Z1 `\` (F @^-1` preimages_gt1 `[a, b] [set: R] F)); last first.
+    = Z1 `\` (F @^-1` preimages_gt1 `[a, b] [set: R] F)).
     rewrite eqEsubset; split.
     - move=> x/= [xab [[x' Z1x' Fx'Fx ]]].
       (* lemma? *)
@@ -1498,4 +1498,3 @@ Qed.
 End main_lemma.
 
 End lemma3.
-

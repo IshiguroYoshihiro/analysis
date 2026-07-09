@@ -2,6 +2,8 @@ From HB Require Import structures.
 From Stdlib Require Import Bool.
 From mathcomp Require Import all_boot all_order interval_inference ssralg ssrnum.
 From mathcomp Require Import ssrint interval archimedean perm finmap.
+#[warning="-warn-library-file-internal-analysis"]
+From mathcomp Require Import unstable.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import cardinality.
 From mathcomp Require Import reals constructive_ereal topology normedtype.
@@ -189,7 +191,7 @@ Lemma nth_map_iota {T} (x : T) (n : nat) (f : nat -> T) (i : nat) :
   (i < n)%N ->
   nth x [seq f k | k <- iota 0 n] i = f i.
 Proof.
-by move=> iltn; rewrite (nth_map 0%N) ?nth_iota; last by rewrite size_iota.
+by move=> iltn; rewrite (nth_map 0%N) ?nth_iota; first by rewrite size_iota.
 Qed.
 
 Lemma nth_cons_map_iota (x y : R) (n : nat) (f : nat -> R) (i : nat) :
@@ -223,13 +225,13 @@ move=> ab l0.
 have lpw0 := lambda_partition_size0_tmp.
 case: i.
   rewrite /= mulr1 -addrA subrKC.
-  rewrite gtr0_norm; last by rewrite divr_gt0// subr_gt0.
+  rewrite gtr0_norm; first by rewrite divr_gt0// subr_gt0.
   rewrite ltr_pdivrMr// mulrC -ltr_pdivrMr//.
   exact: truncnS_gt.
 move=> n.
 have [|] := leqP n (truncn ((b - a) / l)).
   rewrite leq_eqVlt => /predU1P[-> |].
-    rewrite nth_default; last by rewrite /= size_map size_iota.
+    rewrite nth_default; first by rewrite /= size_map size_iota.
     rewrite [lp a b l]lock /=; unlock; rewrite nth_map_iota//.
     by rewrite -mulrA divff// mulr1 subrKC subrr normr0.
   admit.
@@ -244,10 +246,10 @@ Proof.
 move=> ab l0.
 split; last first.
 - rewrite (last_nth b).
-  rewrite -(@prednK (size _))/=; last exact: lambda_partition_size0.
-  rewrite nth_map_iota//.
-  rewrite size_map size_iota mulfK; first by rewrite subrKC.
-  rewrite lt0r_neq0//.
+  rewrite -(@prednK (size _))/=; first exact: lambda_partition_size0.
+  rewrite nth_map_iota//; last first.
+    rewrite size_map size_iota mulfK; last by rewrite subrKC.
+    rewrite lt0r_neq0//.
 - admit.
 Abort.
 
@@ -331,7 +333,7 @@ exists 0%:R; split.
           by exists 1; exists 0 => //; rewrite invr1.
         by move=> _ [n _ <-]; rewrite invr_ge0.
       rewrite -lee_fin.
-      rewrite -ereal_inf_EFin; last 2 first.
+      rewrite -ereal_inf_EFin.
       - by exists 0 => _ [n _ <-]; rewrite invr_ge0.
       - by exists 1; exists 0 => //; rewrite invr1.
         have : {homo (fun n : nat => (n.+1%:R^-1)%:E : \bar R) :
@@ -470,13 +472,13 @@ Lemma limit_point_interior (A : set R) :
   interior A `<=` limit_point (interior A).
 Proof.
 move=> /= x [e /=e0].
-rewrite open_subsetE; last exact: ball_open.
+rewrite open_subsetE; first exact: ball_open.
  move=> ballxA.
 apply/limit_pointP.
 exists (fun n => x - e / n.+2%:R); split.
 - move=> _/= [n _ <-].
   apply: ballxA; rewrite /ball_/=.
-  rewrite opprB addrCA subrr addr0 ger0_norm; last first.
+  rewrite opprB addrCA subrr addr0 ger0_norm.
     by rewrite divr_ge0// ltW.
   rewrite ltr_pdivrMr//.
   rewrite ltr_pMr//.
@@ -824,7 +826,7 @@ have e2e (e : R) (e0 : 0 < e) : e / 2 < e.
 have e40 (e : R) (e0 : 0 < e) : 0 < e / 2^+2 by rewrite divr_gt0.
 have e42 (e : R) (e0 : 0 < e) : e / 2 ^+ 2 < e / 2.
   rewrite expr2 invfM mulrA.
-  rewrite gtr_pMr//; last exact: e20.
+  rewrite gtr_pMr//; first exact: e20.
   rewrite invf_lt1//.
   by rewrite (_ : 1 = 1%:R)// ltr_nat.
 case: b0; case: b1 => //=; rewrite ?orbF ?orbT.
@@ -908,7 +910,7 @@ have e2e (e : R) (e0 : 0 < e) : e / 2 < e.
 have e40 (e : R) (e0 : 0 < e) : 0 < e / 2^+2 by rewrite divr_gt0.
 have e42 (e : R) (e0 : 0 < e) : e / 2 ^+ 2 < e / 2.
   rewrite expr2 invfM mulrA.
-  rewrite gtr_pMr//; last exact: e20.
+  rewrite gtr_pMr//; first exact: e20.
   rewrite invf_lt1//.
   by rewrite (_ : 1 = 1%:R)// ltr_nat.
 case: b0 => /=.
@@ -945,7 +947,7 @@ have e2e (e : R) (e0 : 0 < e) : e / 2 < e.
 have e40 (e : R) (e0 : 0 < e) : 0 < e / 2^+2 by rewrite divr_gt0.
 have e42 (e : R) (e0 : 0 < e) : e / 2 ^+ 2 < e / 2.
   rewrite expr2 invfM mulrA.
-  rewrite gtr_pMr//; last exact: e20.
+  rewrite gtr_pMr//; first exact: e20.
   rewrite invf_lt1//.
   by rewrite (_ : 1 = 1%:R)// ltr_nat.
   case: b1 => //=.
@@ -1057,9 +1059,9 @@ move=> [[l|l]|[]][[r|r]|[]];
 - by rewrite set_itvE => /set0P/negP.
 - by rewrite set_itvE => /set0P/negP.
 - by rewrite set_itvE => /set0P/negP.
-- move/[swap] => rl; rewrite set_itv_ge; last by rewrite bnd_simp -leNgt.
+- move/[swap] => rl; rewrite set_itv_ge; first by rewrite bnd_simp -leNgt.
   by move/set0P/negP.
-- move/[swap] => rl; rewrite set_itv_ge; last by rewrite bnd_simp -ltNge.
+- move/[swap] => rl; rewrite set_itv_ge; first by rewrite bnd_simp -ltNge.
   by move/set0P/negP.
 - by rewrite set_itvE => /set0P/negP.
 move=> [x/=]; rewrite in_itv/= => /andP[lx] /(lt_trans lx) {x lx} lr.
@@ -1073,7 +1075,7 @@ Proof.
 move=> oi [x ix].
 have [e/= e0 He] := open_itvcc_subset oi ix.
 have e2e : `|0 - e / 2| < e.
-  rewrite sub0r normrN ger0_norm; last by rewrite mulr_ge0// ltW.
+  rewrite sub0r normrN ger0_norm; first by rewrite mulr_ge0// ltW.
   rewrite {2}(splitr e) ltrDl.
   by rewrite mulr_gt0.
 move/(_ (x - e / 2) (x + e / 2)).
@@ -1170,7 +1172,7 @@ move=> xy.
 apply: (@eq_from_nth _ (dx, dy)).
   by rewrite size_map size_iota size_zip xy minnn.
 move=> j; rewrite size_map size_iota => Hj.
-rewrite (nth_map 0%N); last by rewrite size_iota.
+rewrite (nth_map 0%N); first by rewrite size_iota.
 by rewrite nth_iota // add0n nth_zip.
 Qed.
 
@@ -1180,7 +1182,7 @@ Lemma map_unzip_nth {A B C : Type} (da : A) (db : B)
      | i <- iota 0 (size s)]
   = [seq F p.1 p.2 | p <- s].
 Proof.
-rewrite -[in RHS](zip_unzip s) -(zip_nthE da db); last by rewrite !size_map.
+rewrite -[in RHS](zip_unzip s) -(zip_nthE da db); first by rewrite !size_map.
 by rewrite -map_comp size_map.
 Qed.
 
@@ -1302,20 +1304,20 @@ have sorted_b n : sorted <=%R (seq_b n).
   rewrite -/(ab_ _) in H2.
   rewrite H2.
   rewrite [X in sorted _ X](_ : _ =
-      ([seq nth d [seq B_ i | i <- iota 0 n.+1] i | i <- q])); last first.
+      ([seq nth d [seq B_ i | i <- iota 0 n.+1] i | i <- q])).
     rewrite /unzip2.
     rewrite -2!map_comp.
     apply/eq_in_map => i iq.
     rewrite -compA [in LHS]/=.
-    rewrite fst_map; last by (rewrite !size_map size_iota; exact: qin).
-    rewrite snd_map; last by (rewrite !size_map size_iota; exact: qin).
-    rewrite (nth_map (d, d)); last by (rewrite !size_map size_iota; exact: qin).
-    rewrite nth_map_iota; last exact: qin.
-    rewrite (nth_map (d, d, 0)); last first.
+    rewrite fst_map; first by (rewrite !size_map size_iota; exact: qin).
+    rewrite snd_map; first by (rewrite !size_map size_iota; exact: qin).
+    rewrite (nth_map (d, d)); first by (rewrite !size_map size_iota; exact: qin).
+    rewrite nth_map_iota; first exact: qin.
+    rewrite (nth_map (d, d, 0)).
       by rewrite size_map size_iota; exact: qin.
     rewrite nth_map_iota//.
     exact: qin.
-  rewrite [X in sorted _ X](_ : _ = [seq B_ i | i <- q]); last first.
+  rewrite [X in sorted _ X](_ : _ = [seq B_ i | i <- q]).
     apply/eq_in_map => i iq.
     rewrite /B_.
     rewrite nth_map_iota//.
@@ -1331,7 +1333,7 @@ have sorted_b n : sorted <=%R (seq_b n).
   suff: sorted (fun x y : R * R * nat => x.1.1 <= y.1.1) (ab_ n).
     rewrite H2.
     evar (l : seq (R * R * nat)).
-    rewrite (_ : [seq nth (d, d, 0) (AB_ n) i | i <- q] = l); last first.
+    rewrite (_ : [seq nth (d, d, 0) (AB_ n) i | i <- q] = l).
       by apply: eq_map.
     rewrite {}/l.
     have -> : [seq A_ i | i <- q] =
@@ -1346,7 +1348,7 @@ have sorted_b n : sorted <=%R (seq_b n).
     under eq_map => i/=.
     have -> : (nth (d, d, 0) (AB_ n) i).1.1 = nth d (unzip1 (unzip1 (AB_ n))) i.
       have [iltSn|ni] := ltnP i n.+1.
-        rewrite (nth_map (d, d)); last by rewrite !size_map size_iota.
+        rewrite (nth_map (d, d)); first by rewrite !size_map size_iota.
         by rewrite (nth_map (d, d, 0))// !size_map size_iota.
       by rewrite !nth_default// !size_map size_iota.
     over.
@@ -1416,12 +1418,12 @@ have blea : forall n i, b_ n i <= a_ n i.+1.
     by rewrite !size_map size_sort size_map size_iota ltnS.
   rewrite leNgt; apply/negP => aibi.
   have : `]a_ n i, b_ n i[ `&` `]a_ n i.+1, b_ n i.+1[ !=set0.
-    rewrite [X in X !=set0](_ : _ = [set` `]a_ n i.+1, b_ n i[]); last first.
+    rewrite [X in X !=set0](_ : _ = [set` `]a_ n i.+1, b_ n i[]).
       rewrite -set_itvI/=.
       rewrite /Order.meet/=.
       apply/set_itvP => r/=.
       congr (_ \in _).
-      rewrite join_r; last first.
+      rewrite join_r.
         rewrite bnd_simp /a_.
         rewrite sorted_leq_nth ?inE//.
             exact: le_trans.
@@ -1452,7 +1454,7 @@ have blea : forall n i, b_ n i <= a_ n i.+1.
     apply: (@eq_from_nth _ set0); first by rewrite !size_map size_sort size_map.
     move=> j; rewrite size_map size_iota => jn.
     rewrite nth_map_iota// -map_comp.
-    rewrite (nth_map (d, d, 0)); last by rewrite size_sort size_map size_iota.
+    rewrite (nth_map (d, d, 0)); first by rewrite size_sort size_map size_iota.
     rewrite anth bnth.
     by have [-> -> idn] := nth_abE n j jn; rewrite /comp nth_map_iota.
 
@@ -1481,7 +1483,7 @@ have blea : forall n i, b_ n i <= a_ n i.+1.
      `]a_ n k, b_ n k[%classic.
     move=> kn.
     by rewrite nth_map_iota.
-  rewrite !nth_map_iota_itv//; last exact: leq_trans iltn.
+  rewrite !nth_map_iota_itv//; first exact: leq_trans iltn.
   move=> H.
   move/set0P/negP.
   apply/negP.
@@ -1516,16 +1518,16 @@ have cbE n j : c_ n j = if j == 0 then c else b_ n j.-1.
     rewrite /c_ /seq_c bnth !nth_default ?size_seq_cd//.
     by rewrite size_sort size_map size_iota -ltnS.
   rewrite /c_ /seq_c.
-  rewrite /cd_ unzip1_zip/=; last by rewrite size_rcons/= !size_map.
-  rewrite (nth_map (d, d, 0))/=; last first.
+  rewrite /cd_ unzip1_zip/=; first by rewrite size_rcons/= !size_map.
+  rewrite (nth_map (d, d, 0))/=.
     by rewrite size_sort size_map size_iota -ltnS.
   by rewrite bnth.
 have daE n j : d_ n j = a_ n j.
   rewrite /d_ /seq_d /cd_.
-  rewrite unzip2_zip; last by rewrite size_rcons/= !size_map.
+  rewrite unzip2_zip; first by rewrite size_rcons/= !size_map.
   rewrite nth_rcons size_map size_sort size_map size_iota.
   case: ifPn => [jn|].
-    rewrite -(nth_map _ d); last first.
+    rewrite -(nth_map _ d).
       by rewrite size_map size_sort size_map size_iota.
     by rewrite -zip_map -/unzip1 unzip1_zip map_comp// !size_map.
   rewrite if_same /a_ -leqNgt => nj.
@@ -1549,7 +1551,7 @@ have cdS_split n j : exists k, [/\ (k < n.+1)%N,
 
 pose lambda n := diam_max [seq `[c_ n i, d_ n i]%classic | i <- iota 0 n.+2].
 have lambda_fin n : lambda n \is a fin_num.
-  rewrite ge0_fin_numE; last exact: diam_max_ge0.
+  rewrite ge0_fin_numE; first exact: diam_max_ge0.
   rewrite /lambda /diam_max big_seq_cond; apply: bigmax_lt; first by [].
   move=> s; rewrite andbT.
   move/mapP => [i].
@@ -1571,7 +1573,7 @@ have lambda0 : (fine \o lambda) @ \oo --> 0%R.
       exact: leNye.
     move=> /= i _.
     rewrite tnth_map (tnth_nth 0) nth_iota// add0n.
-    rewrite diam_itv; last exact: cled.
+    rewrite diam_itv; first exact: cled.
     rewrite (bigD1 i)//=.
     have -> : mu `[c_ n i, d_ n i] = (d_ n i - c_ n i)%:E.
       rewrite completed_lebesgue_measure_itv lte_fin.
@@ -1590,7 +1592,7 @@ have lambda0 : (fine \o lambda) @ \oo --> 0%R.
     near=> n.
     transitivity (mu (\bigcup_(i < n.+1) `[c_ n i, d_ n i]%classic)).
       congr mu.
-      rewrite bigcupDr; last by exists 0.
+      rewrite bigcupDr; first by exists 0.
       rewrite (hullZ_abcd n).
       rewrite setDUD.
       have -> : \bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic
@@ -1604,7 +1606,7 @@ have lambda0 : (fine \o lambda) @ \oo --> 0%R.
     rewrite bigcupDr//.
     rewrite -bigcup_contiguous_intervals//.
     rewrite setDD.
-    rewrite setIidr; last exact: sub_Rhull.
+    rewrite setIidr; first exact: sub_Rhull.
     exact: Z0.
     apply: bigcap_cvg_mu => /=; last 2 first.
       move=> ?.
@@ -1681,12 +1683,12 @@ have Voo_V : V_ n @[n --> \oo] --> Vcd.
 have [n0 n00 tvV] : exists2 n0, (0 < n0)%N &
       forall n, (n0 <= n)%N -> (Vcd - alpha / 2 < V_ n)%E.
   have alpha20 : 0 < fine (alpha / 2).
-    apply: fine_gt0; rewrite mule_gt0//=; last first.
+    apply: fine_gt0; rewrite mule_gt0//=.
       by rewrite inver ifF; exact/negP/negP.
-    rewrite inver ifF; last exact/negP/negP.
+    rewrite inver ifF; first exact/negP/negP.
     by rewrite lte_mul_pinfty ?measure_ge0 ?ltry.
   move: Voo_V.
-  rewrite -{1}(@fineK _ Vcd); last first.
+  rewrite -{1}(@fineK _ Vcd).
     by apply/bounded_variationP => //; exact: ltW.
   move/fine_cvg.
   move/(_ (ball (fine Vcd) (fine (alpha / 2))) (nbhsx_ballx _ _ alpha20)).
@@ -1696,10 +1698,10 @@ have [n0 n00 tvV] : exists2 n0, (0 < n0)%N &
   rewrite /ball/=.
   rewrite /ereal_ball/=.
   have Vcdoo : (Vcd < +oo)%E.
-    rewrite -ge0_fin_numE; first by apply/bounded_variationP => //; exact: ltW.
+    rewrite -ge0_fin_numE; last by apply/bounded_variationP => //; exact: ltW.
     by apply: total_variation_ge0; exact: ltW.
   have Vn_fin : V_ n \is a fin_num.
-    rewrite ge0_fin_numE; last first.
+    rewrite ge0_fin_numE.
       apply: adde_ge0.
         exact: sume_ge0.
       apply: sume_ge0 => ? _.
@@ -1707,18 +1709,18 @@ have [n0 n00 tvV] : exists2 n0, (0 < n0)%N &
       exact: ltW.
     exact: (le_lt_trans (V_tv n)).
   have al2fin : (alpha / 2)%E \is a fin_num.
-    rewrite inver ifF; last exact/negP/negP.
+    rewrite inver ifF; first exact/negP/negP.
     rewrite ge0_fin_numE.
-      rewrite lte_mul_pinfty ?ltW//.
-      exact: ltry.
-    by rewrite mule_ge0 ?ltW.
-  rewrite ger0_norm; last first.
+      by rewrite mule_ge0 ?ltW.
+    rewrite lte_mul_pinfty ?ltW//.
+    exact: ltry.
+  rewrite ger0_norm.
     rewrite subr_ge0.
-    rewrite fine_le//; last first.
+    rewrite fine_le//.
       apply/bounded_variationP => //.
       exact: ltW.
   rewrite ltrBlDl -ltrBlDr.
-  rewrite -fineB//; last first.
+  rewrite -fineB//.
     by apply/bounded_variationP => //; exact: ltW.
   rewrite -lte_fin !fineK//.
   rewrite fin_numB; apply/andP; split => //.
@@ -1761,7 +1763,7 @@ have cdIcplt_hull (S : set R) : measurable S -> S `<=` `[c, d] ->
     apply: setIidr.
     exact: sub_Rhull.
   rewrite setIUr.
-  rewrite measureU/=; last 3 first.
+  rewrite measureU/=.
   - apply: sub_caratheodory.
     apply: measurableI => //.
     exact: compact_measurable.
