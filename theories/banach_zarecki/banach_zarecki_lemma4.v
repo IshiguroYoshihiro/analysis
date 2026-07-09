@@ -333,6 +333,42 @@ Local Notation mu := (@completed_lebesgue_measure R).
 
 Local Open Scope ereal_scope.
 
+Lemma measure_le_oscillation (f : R -> R) (X : set R) :
+   mu (f @` X) <= oscillation f X.
+Proof.
+rewrite /oscillation; case: ifPn.
+  move/eqP ->.
+  by rewrite image_set0 measure0.
+move/set0P => X0.
+have fX0 : f @` X !=set0.
+  move: X0 => [x Xx].
+  by exists (f x).
+have [|] := pselect (has_ubound (f @` X)); last first.
+  move/hasNub_ereal_sup/(_ fX0); rewrite image_comp => ->.
+  rewrite addye ?leey// -ltNye.
+  have [|] := pselect (has_lbound (f @` X)).
+    move/ereal_inf_EFin/(_ fX0); rewrite image_comp => ->.
+    by rewrite -EFinN ltNyr.
+  by move/hasNlb_ereal_inf/(_ fX0); rewrite image_comp => ->.
+move/[dup] => hasub_fX; move/ereal_sup_EFin/(_ fX0); rewrite image_comp => ->.
+have [|] := pselect (has_lbound (f @` X)); last first.
+  move/hasNlb_ereal_inf/(_ fX0); rewrite image_comp => ->.
+  by rewrite lee_suber_addr// addeNy leNye.
+move/[dup] => haslb_fX; move/ereal_inf_EFin/(_ fX0); rewrite image_comp => ->.
+have <- : mu [set` Rhull (f @` X)] =
+      (sup [set f x | x in X])%:E - (inf [set f x | x in X])%:E.
+  rewrite /Rhull.
+  rewrite !ifT; last 2 first.
+  - exact/asboolP.
+  - exact/asboolP.
+  rewrite completed_lebesgue_measure_itv => /=; case: ifPn => //.
+  rewrite -leNgt => si.
+  rewrite -EFinB (_ : 0 = 0%:E)//; congr EFin.
+  apply/esym/eqP; rewrite subr_eq0 eq_le; apply/andP; split => //.
+  exact: has_bound_inf_sup.
+by rewrite le_outer_measure//; apply: sub_Rhull.
+Qed.
+
 Lemma lemma4_cover (f : R -> R) (P : set R) (xy : nat -> R * R) :
   is_interval (f @` `[a, b]) ->
   (* perfect_set P *) closed P ->
@@ -392,94 +428,7 @@ apply: lee_nneseries => // n _.
 rewrite [leLHS](_ : mu^*%mu (f @` `](xy n).1, (xy n).2[) =
                     mu (f @` `[(xy n).1, (xy n).2]))%E; last first.
   admit.
-have isitv_xy : is_interval (f @` `[(xy n).1, (xy n).2]).
-  admit.
-set P' := [set (xy n).1; (xy n).2].
-have cP' : closed P'.
-  admit.
-have RhullP' : Rhull P' = `[(xy n).1, (xy n).2].
-  admit.
-
-have := lemma4 (xy12 n) isitv_xy cP' RhullP'.
-move/andP => [_].
-have -> : mu^*%mu [set f x | x in P'] = 0.
-  admit.
-rewrite add0e.
-move/le_trans; apply.
-admit.
-(*
-rewrite le_outer_measure.
-rewrite H1.
-apply: (@le_trans _ _ (mu^*%mu [set f x | x in P] +
-         mu^*%mu (\bigcup_i [set f x | x in `](a_ i), (b_ i)[]))).
-  exact: outer_measureU2.
-apply: leeD2l.
-apply: le_trans.
-  exact: outer_measure_sigma_subadditive.
-rewrite /=.
-apply: lee_nneseries; first by move=> i _ _; exact: outer_measure_ge0.
-move=> n _.
-rewrite /oscillation.
-case: ifPn => [/eqP ab0|ab0].
-  have anbn : ((a_ n) > (b_ n))%R.
-    rewrite ltNge; contra: ab0 => anbn.
-    apply/set0P; exists ((a_ n)).
-    by rewrite /= in_itv/= lexx anbn.
-  rewrite set_itv_ge ?bnd_simp -?leNgt//; last exact/ltW.
-  by rewrite image_set0 mu_ext0.
-rewrite [leRHS](_ : _ =
-       mu^*%mu [set` Rhull (f @` `[((a_ n)), ((b_ n))] )]).
-  apply: le_outer_measure.
-  apply: subset_trans (@sub_Rhull _ _).
-  apply: image_subset.
-  exact: subset_itv_oo_cc.
-rewrite measurable_mu_extE/=; last first.
-  apply: sub_caratheodory.
-  exact: measurable_itv.
-rewrite completed_lebesgue_measure_itv.
-have fab0 : [set f x | x in `[(a_ n), (b_ n)]] !=set0.
-  exists (f ((a_ n))) => //.
-  exists ((a_ n)) => //=.
-  rewrite boundl_in_itv//= bnd_simp.
-  exact: intervals1_le_contiguous_intervals2.
-have [hasubf|hasNubf] :=
-  pselect (has_ubound (f @` `[((a_ n)), ((b_ n))])); last first.
-  rewrite -image_comp hasNub_ereal_sup//.
-  rewrite addye; last first.
-    apply/eqP.
-    move/eqe_oppLRP => /=.
-    move/ereal_inf_pinfty.
-    apply/not_forallP; rewrite not_notE.
-    have [y [x/= xab fax]] := fab0.
-    by exists y%:E; rewrite ?not_implyP; split => //; exists y => //; exists x.
-  rewrite ifT; last first.
-    rewrite /=; move/asboolF : (hasNubf) => ->.
-    by case: ifP => // _; exact: ltry.
-  rewrite /=; move/asboolF : (hasNubf) => ->.
-  by case: ifP.
-have [haslbf|hasNlbf] :=
-   pselect (has_lbound (f @` `[(a_ n), (b_ n)])); last first.
-  rewrite -[X in _ - ereal_inf X = _]image_comp hasNlb_ereal_inf//; last first.
-  rewrite ifT; last first.
-    rewrite /=; move/asboolF: (hasNlbf) => ->.
-    move/asboolP: (hasubf) => ->; exact: ltNyr.
-  rewrite /=; move/asboolF: (hasNlbf) => -> /=.
-  have supNy: ereal_sup ((EFin \o f) @` `[((a_ n)), ((b_ n))]) != -oo.
-    apply/eqP; move/ereal_sup_ninfty; apply/not_forallP; rewrite not_notE.
-    have [y [x/= xab fax]] := fab0.
-    by exists y%:E; rewrite ?not_implyP; split => //; exists x=> //; congr EFin.
-  by case: ifP; rewrite addey.
-rewrite /Rhull; move/asboolP: (hasubf) ->; move/asboolP: (haslbf) -> => //.
-case: ifP => /=; last first.
-- move/negP/negP; rewrite -leNgt.
-  rewrite le_eqVlt => /predU1P[|]; last first.
-  + rewrite lte_fin ltNge => /negP Ninfsup.
-    by have := has_bound_inf_sup haslbf hasubf.
-  + rewrite -ereal_sup_EFin -?ereal_inf_EFin// image_comp => ->;
-    rewrite subee//.
-    by rewrite -image_comp ereal_inf_EFin.
-- move=> _; rewrite EFinN -ereal_sup_EFin -?ereal_inf_EFin// 2?image_comp//.
-*)
+exact: measure_le_oscillation.
 Admitted.
 
 End lemma4_cover.
