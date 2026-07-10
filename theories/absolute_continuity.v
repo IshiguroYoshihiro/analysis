@@ -3787,6 +3787,51 @@ rewrite (nth_map 0)//.
 by rewrite (nth_map 0).
 Qed.
 
+Lemma lebesgue_measure_setU_eq0 (A B : set R) : measurable A -> measurable B ->
+  lebesgue_measure (A `|` B) = 0 -> lebesgue_measure A = 0 /\ lebesgue_measure B = 0.
+Proof.
+by move=> mA mB AB0; split; apply: subset_measure0 AB0 => //; exact: measurableU.
+Qed.
+
+Lemma lebesgue_measure_setU2_eq0 (A B C : set R) : measurable A -> measurable B ->
+  measurable C ->
+  lebesgue_measure (A `|` B `|` C) = 0 ->
+  [/\ lebesgue_measure A = 0, lebesgue_measure B = 0 & lebesgue_measure C = 0].
+Proof.
+move=> mA mB mC.
+move/lebesgue_measure_setU_eq0 => /(_ (measurableU _ _ mA mB) mC)[].
+by move/lebesgue_measure_setU_eq0 => /(_ mA mB)[].
+Qed.
+
+Lemma lebesgue_measure_bigsetU_eq0 (I : eqType) (F : I -> set R) s :
+  (forall i, measurable (F i)) ->
+  lebesgue_measure (\big[setU/set0]_(i <- s) F i) = 0 ->
+  forall i, i \in s -> lebesgue_measure (F i) = 0.
+Proof.
+move=> /= mF.
+elim: s => // h t ih.
+rewrite big_cons => /lebesgue_measure_setU_eq0.
+move=> /(_ (mF h)) H i.
+rewrite inE => /predU1P[->|ti].
+  apply H.
+  by apply: bigsetU_measurable.
+apply: ih => //.
+apply H.
+by apply: bigsetU_measurable.
+Qed.
+
+Lemma lebesgue_measure_itvcc_eq0 (a b : R) : a <= b ->
+  lebesgue_measure `[a, b] = 0 -> a = b.
+Proof.
+rewrite le_eqVlt => /predU1P[//|ab].
+by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD => -[] /subr0_eq.
+Qed.
+
+(* PR 2021 *)
+Lemma infS (A B : set R) : has_inf A -> B !=set0 -> B `<=` A -> inf A <= inf B.
+Proof.
+Admitted.
+
 Lemma contiguous_infinite (a b : R) (P : set R) :
   P `<=` `[a, b] ->
   compact P ->
@@ -3826,15 +3871,15 @@ have {}UE : U = \big[setU/set0]_(k <- p)
   rewrite /contiguous_intervals_support/= => /nonemptyPn.
   rewrite /contiguous_intervals1 /contiguous_intervals2/= => ->/=.
   by rewrite inf0 sup0 set_itv_ge// bnd_simp ltxx.
-pose unsorted_bnds := [seq ((contiguous_intervals1 P i),
-                            (contiguous_intervals2 P i)) | i <- p].
+pose unsorted_bnds := [seq (contiguous_intervals1 P i,
+                            contiguous_intervals2 P i) | i <- p].
 pose le1 := fun x y : R * R => x.1 <= y.1.
 have total_le1 : total le1.
   move=> [x1 x2] [y1 y2].
   by rewrite /le1/= le_total.
 pose sorted_bnds := sort le1 unsorted_bnds.
 have [h hsorted_bnds] := perm_iota_sort le1 0 unsorted_bnds.
-rewrite -/sorted_bnds; move=> /= sorted_bndsE.
+rewrite -/sorted_bnds => /= sorted_bndsE.
 have {}UE : U = \big[setU/set0]_(k < size p)
     `](nth 0 sorted_bnds k).1, (nth 0 sorted_bnds k).2[%classic.
   rewrite UE.
@@ -3859,7 +3904,7 @@ have {}UE : U = \big[setU/set0]_(k < size p)
 pose n := size p.
 have PU : P = [set` Rhull P] `\` U.
   by rewrite /U /cplt_hull setDD setIidr//; exact: sub_Rhull.
-have L3 : forall i, (i < (size p).-1)%N ->
+have L3 : forall i, (i < (size p))%N ->
   exists2 j, (j < size p)%N & unsorted_bnds`_j = sorted_bnds`_i.
   move=> i0 i0p.
   have K1 : sorted_bnds`_i0 \in unsorted_bnds.
@@ -4027,7 +4072,7 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
     by rewrite Pp.
     by rewrite -qE1.
   - move=> i pi.
-    have ? : (i < size p)%N by rewrite (leq_trans pi)// leq_pred.
+    have pi' : (i < size p)%N by rewrite (leq_trans pi)// leq_pred.
     have ? : (i.+1 < size p)%N by rewrite -(@prednK (size p)) ?lt0n ?size_eq0.
     have H2 : (sorted_bnds`_i).1 <= (sorted_bnds`_i.+1).1.
       rewrite fst_map; first by rewrite size_sort size_map.
@@ -4039,7 +4084,7 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
       apply: sort_sorted => x y.
       exact: le_total.
     have H3 : (sorted_bnds`_i).2 <= (sorted_bnds`_i.+1).2.
-      have [j Hj HjE] := L3 i pi.
+      have [j Hj HjE] := L3 i pi'.
       have [k Hk HkE] := L4 i pi.
       rewrite -HjE -HkE !(nth_map 0)//=.
       apply: contiguous_intervals_sort' => //.
@@ -4052,7 +4097,7 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
       move: HjE; rewrite (nth_map 0)//=.
       move: HkE; rewrite (nth_map 0)//=.
       by move=> <- <-.
-    have [j Hj HjE] := L3 i pi.
+    have [j Hj HjE] := L3 i pi'.
     have [k Hk HkE] := L4 i pi.
     move: H2 H3.
     rewrite -HkE -HjE.
@@ -4145,7 +4190,50 @@ have {}UE : [set` Rhull P] `\` U = `[inf P, (nth 0 sorted_bnds 0).1]%classic
       by move=> /[apply] /=.
     apply: (subset_trans (@sub_Rhull _ _)) => //.
     by rewrite (compact_Rhull compactP P0)//.
-admit.
+move: UE.
+have : [set` Rhull P] `\` U = P.
+  rewrite /U.
+  rewrite /cplt_hull.
+  rewrite setDD.
+  rewrite setIidr//.
+  exact: sub_Rhull.
+move=> -> UE.
+move: muP.
+rewrite {}UE => muP.
+have L6 : [/\ inf P = (sorted_bnds`_0).1,
+       (forall k, (k < n.-1)%N -> (sorted_bnds`_k).2 = (sorted_bnds`_k.+1).1) &
+       (sorted_bnds`_n.-1).2 = sup P].
+  split.
+  - apply: lebesgue_measure_itvcc_eq0.
+    have [j jp j0] : exists2 j : nat, (j < size p)%N & unsorted_bnds`_j = sorted_bnds`_0.
+      by apply: L3 => //; rewrite lt0n size_eq0.
+    rewrite -j0 (nth_map 0)//=.
+    admit.
+    move/lebesgue_measure_setU2_eq0 : muP => /(_ _ )[]//.
+    apply: bigsetU_measurable => /= i _.
+    exact: measurable_itv.
+  - move=> k kn1.
+    apply: lebesgue_measure_itvcc_eq0.
+    have [j jp j0] : exists2 j : nat, (j < size p)%N & unsorted_bnds`_j = sorted_bnds`_k.
+      apply: L3 => //.
+      rewrite (leq_trans kn1)//.
+      admit.
+    admit.
+    move/lebesgue_measure_setU2_eq0 : muP => /(_ _ )[]//.
+      apply: bigsetU_measurable => /= i _.
+      exact: measurable_itv.
+    move=> _ + _.
+    move/lebesgue_measure_bigsetU_eq0 => /(_ _ (Ordinal kn1)).
+    apply => //=.
+    by rewrite mem_index_enum.
+  - apply: lebesgue_measure_itvcc_eq0.
+    have [j jp j0] : exists2 j : nat, (j < size p)%N & unsorted_bnds`_j = sorted_bnds`_n.-1.
+      by apply: L3 => //; rewrite prednK// lt0n size_eq0.
+    rewrite -j0 (nth_map 0)//=.
+    admit.
+    move/lebesgue_measure_setU2_eq0 : muP => /(_ _ )[]//.
+    by apply: bigsetU_measurable => /= i _; exact: measurable_itv.
+have isoP : isolated P = set0 by move/separation_axioms.perfectP : perfectP => -[].
 Admitted.
 
 Lemma contiguous_intervals_support0 (Z : set R) :
