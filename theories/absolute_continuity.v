@@ -3832,6 +3832,68 @@ Lemma infS (A B : set R) : has_inf A -> B !=set0 -> B `<=` A -> inf A <= inf B.
 Proof.
 Admitted.
 
+Lemma finite_set_isolated (P : set R) : finite_set P ->
+  forall p, P p -> (isolated P) p.
+Proof.
+move=> /finite_seqP_new[/= s us Ps].
+have [s0|s0 p Pp] := eqVneq s [::].
+  by move: Ps; rewrite s0 => ->/= p; rewrite inE.
+rewrite /isolated/=; split; first exact/mem_set.
+have ps : p \in s by move: Pp; rewrite Ps.
+have [sp|sp] := eqVneq s [:: p].
+  exists setT; first exact: filterT.
+  by rewrite setIidr// Ps sp/= set_cons1.
+have [q qs qp] : exists2 q, q \in s & p != q.
+  rewrite {Pp Ps P}.
+  move: s s0 us ps sp => [//| q [_ _|h t ih us]].
+    by rewrite mem_seq1 => /eqP ->; rewrite eqxx.
+  rewrite !inE => /predU1P[->{p} _|/predU1P[->{p} _|pt _]].
+  - exists h; first by rewrite !inE eqxx orbT.
+    by move: us; rewrite -cat1s -(cat1s h) cat_uniq/= inE negb_or eq_sym => /and3P[/andP[]].
+  - exists q; first by rewrite !inE eqxx.
+    by move: us; rewrite -cat1s -(cat1s h) cat_uniq/= inE negb_or eq_sym => /and3P[/andP[]].
+  - exists q; first by rewrite !inE eqxx.
+    move: us; rewrite -cat1s cat_uniq/= inE negb_or eq_sym/= => /and3P[/andP[qh H ht ut]].
+    apply/eqP => pq; move/negP : H; apply; apply/hasP; exists q.
+      by rewrite -pq.
+    by rewrite mem_seq1.
+pose e : R := \big[minr/`|p - q|]_(i <- s | i != p) `|p - i|.
+have e0 : 0 < e.
+  apply: lt_bigmin => //.
+    by rewrite normr_gt0 subr_eq0.
+  move=> i ip.
+  by rewrite normr_gt0 subr_eq0 eq_sym.
+exists (ball p (e / 2)).
+  apply: nbhsx_ballx.
+  by rewrite divr_gt0//.
+apply/seteqP; split=> [x|x /= px]; last first.
+  split.
+    rewrite px.
+    apply: ballxx.
+    by rewrite divr_gt0.
+  by rewrite px.
+move=> [].
+rewrite /ball/= => px Px.
+absurd_not => xp.
+have : e < e / 2.
+  rewrite (le_lt_trans _ px)//.
+  apply: ge_bigmin_seq => //.
+  by move: Px; rewrite Ps/=.
+rewrite ltNge => /negP; apply.
+by rewrite ler_piMr ?invf_le1 ?ler1n// ltW.
+Qed.
+
+Lemma perfect_set_infinite (P : set R) : P !=set0 -> perfect_set P -> infinite_set P.
+Proof.
+move=> P0 psP finP.
+have isoP : isolated P = set0 by move/perfectP : psP => -[].
+case: P0 => p Pp.
+apply/eqP : isoP.
+apply/set0P.
+exists p.
+exact: finite_set_isolated.
+Qed.
+
 Lemma contiguous_infinite (a b : R) (P : set R) :
   P `<=` `[a, b] ->
   compact P ->
@@ -4199,7 +4261,7 @@ have : [set` Rhull P] `\` U = P.
   exact: sub_Rhull.
 move=> -> UE.
 move: muP.
-rewrite {}UE => muP.
+rewrite UE => muP.
 have L6 : [/\ inf P = (sorted_bnds`_0).1,
        (forall k, (k < n.-1)%N -> (sorted_bnds`_k).2 = (sorted_bnds`_k.+1).1) &
        (sorted_bnds`_n.-1).2 = sup P].
@@ -4233,7 +4295,14 @@ have L6 : [/\ inf P = (sorted_bnds`_0).1,
     admit.
     move/lebesgue_measure_setU2_eq0 : muP => /(_ _ )[]//.
     by apply: bigsetU_measurable => /= i _; exact: measurable_itv.
-have isoP : isolated P = set0 by move/separation_axioms.perfectP : perfectP => -[].
+have {}UE : P = inf P |` \big[setU/set0]_(k < n.-1) [set (sorted_bnds`_k).2] `|` [set sup P].
+  admit.
+have : finite_set P.
+  rewrite UE !finite_setU.
+  split => //.
+  split => //.
+  admit.
+exact: perfect_set_infinite.
 Admitted.
 
 Lemma contiguous_intervals_support0 (Z : set R) :
