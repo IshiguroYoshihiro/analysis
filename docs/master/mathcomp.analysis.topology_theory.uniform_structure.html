@@ -280,15 +280,15 @@ complete spaces, which extends uniform in the hierarchy.
 <span class="vernacular">Local</span><span class="vernacular"> Open</span><span class="vernacular"> Scope</span><span class="id"> classical_set_scope</span>.<br/>
 <span class="vernacular">Local</span><span class="vernacular"> Open</span><span class="vernacular"> Scope</span><span class="id"> ring_scope</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="nbhs_" class="id"><div name="nbhs_" class=" tooltip">nbhs_<span class='tooltip-area'><p>discrete_ball : forall {R : numDomainType} {T : Type}, T -> R -> T -> Prop
+<span class="vernacular">Definition</span><span class="id"> </span><span id="nbhs_" class="id"><div name="nbhs_" class=" tooltip">nbhs_<span class='tooltip-area'><p>discrete_topology : Type -> Type
 
-discrete_ball is not universe polymorphic
-Arguments discrete_ball {R} {T}%_type_scope x eps%_ring_scope y
-discrete_ball is transparent
+discrete_topology is not universe polymorphic
+Arguments discrete_topology T%_type_scope
+discrete_topology is transparent
 Expands to: Constant
-            mathcomp.analysis.topology_theory.discrete_topology.discrete_ball
+            mathcomp.analysis.topology_theory.discrete_topology.discrete_topology
 Declared in
-library mathcomp.analysis.topology_theory.discrete_topology, line 51, characters 11-24
+library mathcomp.analysis.topology_theory.discrete_topology, line 182, characters 11-28
 </p></span></div></span><span class="id"> {</span><span id="T:1" class="id"><a name="T:1" class="">T</a></span><span class="id"> </span><span id="T':2" class="id"><a name="T':2" class="">T'</a></span><span class="id">}</span> (<span id="ent:3" class="id"><a name="ent:3" class="">ent</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set_system">set_system</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#T:1">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"> *</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#T':2">T'</a></span>)) (<span id="x:4" class="id"><a name="x:4" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#T:1">T</a></span>)<span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.classical.filter.html#filter_from">filter_from</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#ent:3">ent</a></span> (<span class="gallina-kwd">fun</span><span class="id"> </span><span id="A:5" class="id"><a name="A:5" class="">A</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#xsection">xsection</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#A:5">A</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#x:4">x</a></span>).<br/>
 <br/>
@@ -416,16 +416,7 @@ Qed.</div></details>
 <span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> -</span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#nbhs_entourageE">nbhs_entourageE</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Module</span><span class="vernacular"> Export</span><span class="id"> </span><span id="NbhsEntourage" class="id"><a name="NbhsEntourage" class="">NbhsEntourage</a></span>.<br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="NbhsEntourage.nbhs_simpl" class="id"><div name="NbhsEntourage.nbhs_simpl" class=" tooltip">nbhs_simpl<span class='tooltip-area'><p>discrete_topology : Type -> Type
-
-discrete_topology is not universe polymorphic
-Arguments discrete_topology T%_type_scope
-discrete_topology is transparent
-Expands to: Constant
-            mathcomp.analysis.topology_theory.discrete_topology.discrete_topology
-Declared in
-library mathcomp.analysis.topology_theory.discrete_topology, line 182, characters 11-28
-</p></span></div></span><span class="id"> :=</span><br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="NbhsEntourage.nbhs_simpl" class="id"><div name="NbhsEntourage.nbhs_simpl" class=" tooltip">nbhs_simpl<span class='tooltip-area'></span></div></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.classical.filter.html#nbhs_simpl">nbhs_simpl</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id">@</span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#filter_from_entourageE">filter_from_entourageE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id">@</span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#nbhs_entourageE">nbhs_entourageE</a></span>).<br/>
 <span class="vernacular">End</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#NbhsEntourage">NbhsEntourage</a></span>.<br/>
 <br/>
