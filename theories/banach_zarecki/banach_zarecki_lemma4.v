@@ -5,6 +5,7 @@ From mathcomp Require Import ssrint interval archimedean.
 From mathcomp Require Import mathcomp_extra boolp contra classical_sets functions.
 From mathcomp Require Import reals ereal topology normedtype.
 From mathcomp Require Import sequences measure lebesgue_measure numfun realfun.
+From mathcomp Require Import measurable_realfun.
 From mathcomp Require Import absolute_continuity.
 
 (**md**************************************************************************)
@@ -370,25 +371,34 @@ by rewrite le_outer_measure//; apply: sub_Rhull.
 Qed.
 
 Lemma lemma4_cover (f : R -> R) (P : set R) (xy : nat -> R * R) :
+  {within `[a, b], continuous f} ->
   is_interval (f @` `[a, b]) ->
   (* perfect_set P *) closed P ->
  (*  a = inf P -> b = sup P -> *)
   Rhull P = `[a, b] ->
   (forall n, (xy n).1 <= (xy n).2)%R ->
  `[a, b]%classic `<=` P `|`
-   (\bigcup_i `](xy i).1, (xy i).2[%classic) ->
+   \bigcup_(i in (fun i => `[(xy i).1, (xy i).2]%classic `<=` `[a, b]))
+       `](xy i).1, (xy i).2[%classic ->
   `|f b - f a|%:E <= mu (f @` `[a, b])
      <= (mu^*)%mu (f @` P) +
-        \sum_(0 <= i <oo) oscillation f `[(xy i).1, (xy i).2]%classic.
+        \sum_(0 <= i <oo | `[< `[(xy i).1, (xy i).2]%classic `<=` `[a, b] >])
+          oscillation f `[(xy i).1, (xy i).2]%classic.
 Proof.
-move=> fab closedP + xy12 abSubPxy.
+move=> cf fab closedP + xy12 abSubPxy.
 move/[dup]/eq_Rhull_itvccP => [[haslbP Pinf infa] [hasubP Psup supa]] Pab.
 have compactP : compact P.
   apply: Rbounded_closed_compact => //.
   by rewrite Rbounded_setE.
-have H1 : f @` `[a, b] `<=` (f @` P) `|` \bigcup_i f @` `](xy i).1, (xy i).2[.
+have H1 : f @` `[a, b] `<=` (f @` P) `|`
+     \bigcup_(i in (fun i => `[(xy i).1, (xy i).2] `<=` `[a, b]))
+            f @` `[(xy i).1, (xy i).2].
   rewrite -image_bigcup -image_setU.
-  exact: image_subset.
+  apply: image_subset.
+  apply: (subset_trans abSubPxy).
+  apply: setUS.
+  move=> p [n ? xyp]; exists n => //.
+  exact: subset_itv_oo_cc.
 apply/andP; split.
   (* wlog? *)
   have [fafb|] := pselect (f a < f b)%R.
@@ -423,99 +433,25 @@ rewrite -measurable_mu_extE.
 apply: (le_trans (le_outer_measure mu^*%mu _ _ H1)).
 apply: (le_trans (outer_measureU2 _ _ _)).
 rewrite leeD2l//.
+rewrite bigcup_mkcond.
 apply: (le_trans (outer_measure_sigma_subadditive _ _)).
-apply: lee_nneseries => // n _.
-rewrite [leLHS](_ : mu^*%mu (f @` `](xy n).1, (xy n).2[) =
+rewrite [leLHS](_: _ =  \big[+%E/0%R]_(0 <= i <oo)
+       (if i \in (fun i0 : nat => `[< `[(xy i0).1, (xy i0).2] `<=` `[a, b] >])
+        then mu^*%mu [set f x | x in `[(xy i).1, (xy i).2]]
+        else 0)).
+  apply: eq_eseriesr => n _.
+  by case: ifP.
+rewrite -eseries_mkcond; apply: lee_nneseries => // n.
+rewrite inE => xyab.
+rewrite [leLHS](_ : mu^*%mu (f @` `[(xy n).1, (xy n).2]) =
                     mu (f @` `[(xy n).1, (xy n).2]))%E; last first.
   exact: measure_le_oscillation.
-have isitv_xy : is_interval (f @` `[(xy n).1, (xy n).2]).
-  admit.
-set P' := [set (xy n).1; (xy n).2].
-have cP' : closed P'.
-  admit.
-have RhullP' : Rhull P' = `[(xy n).1, (xy n).2].
-  admit.
-
-have := lemma4 (xy12 n) isitv_xy cP' RhullP'.
-move/andP => [_].
-have -> : mu^*%mu [set f x | x in P'] = 0.
-  admit.
-rewrite add0e.
-(*move/le_trans; apply.*)
-admit.
-(*
-rewrite le_outer_measure.
-rewrite H1.
-apply: (@le_trans _ _ (mu^*%mu [set f x | x in P] +
-         mu^*%mu (\bigcup_i [set f x | x in `](a_ i), (b_ i)[]))).
-  exact: outer_measureU2.
-apply: leeD2l.
-apply: le_trans.
-  exact: outer_measure_sigma_subadditive.
-rewrite /=.
-apply: lee_nneseries; first by move=> i _ _; exact: outer_measure_ge0.
-move=> n _.
-rewrite /oscillation.
-case: ifPn => [/eqP ab0|ab0].
-  have anbn : ((a_ n) > (b_ n))%R.
-    rewrite ltNge; contra: ab0 => anbn.
-    apply/set0P; exists ((a_ n)).
-    by rewrite /= in_itv/= lexx anbn.
-  rewrite set_itv_ge ?bnd_simp -?leNgt//; last exact/ltW.
-  by rewrite image_set0 mu_ext0.
-rewrite [leRHS](_ : _ =
-       mu^*%mu [set` Rhull (f @` `[((a_ n)), ((b_ n))] )]).
-  apply: le_outer_measure.
-  apply: subset_trans (@sub_Rhull _ _).
-  apply: image_subset.
-  exact: subset_itv_oo_cc.
-rewrite measurable_mu_extE/=; last first.
-  apply: sub_caratheodory.
-  exact: measurable_itv.
-rewrite completed_lebesgue_measure_itv.
-have fab0 : [set f x | x in `[(a_ n), (b_ n)]] !=set0.
-  exists (f ((a_ n))) => //.
-  exists ((a_ n)) => //=.
-  rewrite boundl_in_itv//= bnd_simp.
-  exact: intervals1_le_contiguous_intervals2.
-have [hasubf|hasNubf] :=
-  pselect (has_ubound (f @` `[((a_ n)), ((b_ n))])); last first.
-  rewrite -image_comp hasNub_ereal_sup//.
-  rewrite addye; last first.
-    apply/eqP.
-    move/eqe_oppLRP => /=.
-    move/ereal_inf_pinfty.
-    apply/not_forallP; rewrite not_notE.
-    have [y [x/= xab fax]] := fab0.
-    by exists y%:E; rewrite ?not_implyP; split => //; exists y => //; exists x.
-  rewrite ifT; last first.
-    rewrite /=; move/asboolF : (hasNubf) => ->.
-    by case: ifP => // _; exact: ltry.
-  rewrite /=; move/asboolF : (hasNubf) => ->.
-  by case: ifP.
-have [haslbf|hasNlbf] :=
-   pselect (has_lbound (f @` `[(a_ n), (b_ n)])); last first.
-  rewrite -[X in _ - ereal_inf X = _]image_comp hasNlb_ereal_inf//; last first.
-  rewrite ifT; last first.
-    rewrite /=; move/asboolF: (hasNlbf) => ->.
-    move/asboolP: (hasubf) => ->; exact: ltNyr.
-  rewrite /=; move/asboolF: (hasNlbf) => -> /=.
-  have supNy: ereal_sup ((EFin \o f) @` `[((a_ n)), ((b_ n))]) != -oo.
-    apply/eqP; move/ereal_sup_ninfty; apply/not_forallP; rewrite not_notE.
-    have [y [x/= xab fax]] := fab0.
-    by exists y%:E; rewrite ?not_implyP; split => //; exists x=> //; congr EFin.
-  by case: ifP; rewrite addey.
-rewrite /Rhull; move/asboolP: (hasubf) ->; move/asboolP: (haslbf) -> => //.
-case: ifP => /=; last first.
-- move/negP/negP; rewrite -leNgt.
-  rewrite le_eqVlt => /predU1P[|]; last first.
-  + rewrite lte_fin ltNge => /negP Ninfsup.
-    by have := has_bound_inf_sup haslbf hasubf.
-  + rewrite -ereal_sup_EFin -?ereal_inf_EFin// image_comp => ->;
-    rewrite subee//.
-    by rewrite -image_comp ereal_inf_EFin.
-- move=> _; rewrite EFinN -ereal_sup_EFin -?ereal_inf_EFin// 2?image_comp//.
-*)
-Admitted.
+apply: measurable_mu_extE.
+apply: sub_caratheodory.
+apply: compact_measurable.
+apply: continuous_compact.
+  exact: continuous_subspaceW cf.
+exact: segment_compact.
+Qed.
 
 End lemma4_cover.

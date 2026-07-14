@@ -608,9 +608,20 @@ exists (x, y) => //=.
 by split; apply: AB.
 Qed.
 
+Lemma diam_itv (x y: R) (b0 b1 : bool) :
+  x <= y ->
+  diam [set` (Interval (BSide b0 x) (BSide b1 y))] = (y - x)%:E.
+Proof.
+move=> xy.
+rewrite /diam.
+rewrite ifF.
+  apply/negP.
+Admitted.
+
+
 Lemma diam_Rhull (A : set R) : diam [set` Rhull A] = diam A.
 Proof.
-
+rewrite /diam.
 Admitted.
 
 Lemma diam_closure (A : set R) : diam (closure A) = diam A.
@@ -620,11 +631,6 @@ have [->|A0] := eqVneq A set0.
 rewrite -diam_Rhull -(diam_Rhull A).
 Admitted.
 
-Lemma diam_itv (x y: R) (b0 b1 : bool) :
-  x <= y ->
-  diam [set` (Interval (BSide b0 x) (BSide b1 y))] = (y - x)%:E.
-Proof.
-Admitted.
 
 Definition diam_max (s : seq (set R)) := \big[maxe/-oo%E]_(A <- s) (diam A).
 
@@ -1781,6 +1787,12 @@ have cdIcplt_hull (S : set R) : measurable S -> S `<=` `[c, d] ->
 pose ABcd n (i : 'I_ n.+1) := [set k | `]A_ k, B_ k[ `<=` `[c_ n i, d_ n i]].
 (* have UABcdE n : \bigcup_(i < n.+1) (ABcd _ i) = [set k | n < k]. *)
 set Zsub := fun n (i : 'I_ n.+1) => Z `&` `[c_ n i, d_ n i].
+have cf_cd n i : {within `[c_ n i, d_ n i], continuous f}.
+  apply: continuous_subspaceW cf.
+  rewrite cbE daE.
+  case: i => /=.
+    admit.
+  admit.
 have clZsub n i : closed (Zsub n i).
   apply: closedI.
     exact: clZ.
@@ -1800,13 +1812,54 @@ have itvfcd n (i : 'I_ n.+1) : is_interval (f @` `[c_ n i, d_ n i]).
 have cZsub n i : closed (Zsub n i).
   apply: closedI => //.
   exact: itv_closed.
-have hull_Zsub n (i : 'I_ n.+1) : Rhull (Zsub n i) = `[(c_ n i), (d_ n i)].
+have hull_Zsub n (i : 'I_ n.+1) : Rhull (Zsub n i) = `[c_ n i, d_ n i].
   admit.
-have prop65 n : forall i : 'I_ n.+1, (`|f (d_ n i) - f (c_ n i)|%:E <=
-  \sum_(n <= j <oo | `[< `[A_ j, B_ j] `<=` `[c_ n i, d_ n i] >])
+have Zsub_cover n (i : 'I_ n.+1) :
+    `[c_ n i, d_ n i]%classic `<=` Zsub n i `|` \bigcup_(i0 in
+         (fun k : nat => `[A_ (n + k)%N, B_ (n + k)%N] `<=` `[c_ n i, d_ n i]))
+  `](A_ (n + i0)%N, B_ (n + i0)%N).1, (A_ (n + i0)%N, B_ (n + i0)%N).2[%classic.
+  admit.
+(* (7) *)
+have ineq7 n : ((\sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)|)%:E <=
+  \sum_(n <= i <oo) oscillation f `[A_ i, B_ i])%E.
+  have prop65 : forall i : 'I_ n.+1, (`|f (d_ n i) - f (c_ n i)|%:E <=
+    \sum_(n <= j <oo | `[< `[A_ j, B_ j] `<=` `[c_ n i, d_ n i] >])
      oscillation f `[A_ j, B_ j])%E.
-  move => i.
+    move => i.
 (* change to lemma4_cover *)
+    have /andP[le1 le2] := @lemma4_cover _ _ _ (cled n i) f _
+    (fun k : nat => (A_ (n + k)%N, B_ (n + k)%N)) (cf_cd n i)
+    (itvfcd n i) (cZsub n i) (hull_Zsub n i)
+    (fun k => (ltW (AB (n + k)%N))) (Zsub_cover n i).
+    apply: (le_trans le1); apply: (le_trans le2).
+    have -> : mu^*%mu [set f x | x in Zsub n i] = 0.
+      rewrite measurable_mu_extE/=.
+        apply: sub_caratheodory.
+        apply: compact_measurable.
+        apply: continuous_compact.
+          apply: continuous_subspaceW cf.
+          by apply: subIset; left.
+        apply: compact_closedI => //.
+        exact: itv_closed.
+      apply: lusinf.
+      - admit.
+      - admit.
+      apply/eqP; rewrite -measure_le0/=.
+      by rewrite -Z0; apply: le_outer_measure; apply: subIsetl.
+  rewrite add0r/=.
+  rewrite [leLHS](_: _ =
+  \big[+%E/0%R]_(n <= i0 <oo | `[< `[A_ i0, B_ i0] `<=` `[c_ n i, d_ n i] >])
+      oscillation f `[A_ i0, B_ i0]).
+    (* rewrite cvg_shiftn. *)
+    admit.
+  by apply: lee_nneseries => // j _ _; exact: oscillation_ge0.
+  apply: (@le_trans _ _
+    (\sum_(i < n.+1)
+      \big[+%E/0%R]_(n <= i0 <oo | `[< `[A_ i0, B_ i0] `<=` `[c_ n i, d_ n i] >])
+          oscillation f `[A_ i0, B_ i0])%E).
+  by rewrite -sumEFin; apply: lee_sum => /= i _.
+  (* interchenge *)
+
 (*  have /andP[le1 le2] := @lemma4 _ (c_ n i) (d_ n i) (cled n i) f (Zsub n i)
                  (itvfcd n i) (cZsub n i) (hull_Zsub n i).
   apply: (le_trans le1).
