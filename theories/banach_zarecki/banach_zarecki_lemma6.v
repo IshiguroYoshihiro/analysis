@@ -618,7 +618,6 @@ rewrite ifF.
   apply/negP.
 Admitted.
 
-
 Lemma diam_Rhull (A : set R) : diam [set` Rhull A] = diam A.
 Proof.
 rewrite /diam.
@@ -629,8 +628,7 @@ Proof.
 have [->|A0] := eqVneq A set0.
   by rewrite closure0.
 rewrite -diam_Rhull -(diam_Rhull A).
-Admitted.
-
+Abort.
 
 Definition diam_max (s : seq (set R)) := \big[maxe/-oo%E]_(A <- s) (diam A).
 
@@ -1412,7 +1410,7 @@ contiguous_intervals Z :
 [c_1 = b_0, d_1 = a_1]  ]a_1, b_1[
 [c_2 = b_1, d_2 = a_2]  ]a_2, b_2[
 ...
-[c_n.-1 = b_m.-2, d_n.-1 = a_n.-1] ]a_n.-1, b_n.-1[
+[c_n.-1 = b_n.-2, d_n.-1 = a_n.-1] ]a_n.-1, b_n.-1[
 [c_n    = b_n.-1, d_n = a_n]       ]a_n, b_n[
 [c_n.+1 = b_n, d_n.+1 = d]
 *)
@@ -1543,9 +1541,32 @@ have cled n i : c_ n i <= d_ n i.
   case: i => /=[|i]; first exact: clea.
   exact: blea.
 
-have hullZ_abcd n : [set` Rhull Z] = \bigcup_(i < n.+1) `[c_ n i, d_ n i]%classic
-    `|` \bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic.
-  admit.
+have hullZ_abcd n : [set` Rhull Z] =
+     \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic `|`
+     \bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic.
+  under eq_bigcupr do rewrite cbE.
+  under eq_bigcupr do rewrite daE.
+  rewrite -(contiguous_intervals_Rhull clZ).
+  apply/seteqP; split => [r|r].
+  - move=> [|].
+    + move=> [i _ Zir].
+      have [hin|hin] := boolP (i \in map h1 (iota 0 n.+1)).
+        right.
+        exists (h1 i).
+        admit.
+        admit.
+      left.
+      admit.
+    + move=> Zr.
+      left.
+      admit.
+  - move=> [|].
+    + move=> Hr.
+      (* TODO: needs to distinguish whether r is in a cont. itv with idx > n or not *)
+      admit.
+    + move=> Hr.
+      left.
+      admit.
 
 have cdS_split n j : exists k, [/\ (k < n.+1)%N,
   c_ n.+1 k \in `[B_ (idx n k), (A_ (idx n k.+1))],
@@ -1596,7 +1617,7 @@ have lambda0 : (fine \o lambda) @ \oo --> 0%R.
              @[n --> \oo])).
     apply: near_eq_cvg.
     near=> n.
-    transitivity (mu (\bigcup_(i < n.+1) `[c_ n i, d_ n i]%classic)).
+    transitivity (mu (\bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic)).
       congr mu.
       rewrite bigcupDr; first by exists 0.
       rewrite (hullZ_abcd n).
