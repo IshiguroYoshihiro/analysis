@@ -4412,7 +4412,26 @@ Qed.</div></details>
 <div class="proofscript">
 <span class="gallina-kwd"> by</span><span class="id"> []</span>. Qed.</div></details>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="fctE" class="id"><div name="fctE" class=" tooltip">fctE<span class='tooltip-area'></span></div></span><span class="id"> :=</span><br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="fctE" class="id"><div name="fctE" class=" tooltip">fctE<span class='tooltip-area'><p>fctE :
+(forall (T T' : Type) (x : T), cst x = (fun=> x)) *
+(forall (T1 T2 T3 : Type) (f : T1 -> T2) (g : T2 -> T3),
+ g \o f = (fun x : T1 => g (f x))) *
+(forall (T : Type) (K : GRing.Zmodule.Exports.zmodType) (f : T -> K),
+ (- f)%R = (fun x : T => (- f x)%R)) *
+(forall (T : Type) (K : GRing.Nmodule.Exports.nmodType) (f g : T -> K),
+ (f + g)%R = (fun x : T => (f x + g x)%R)) *
+(forall (T : Type) (K : pzRingType) (f g : T -> K),
+ (f * g)%R = (fun x : T => (f x * g x)%R)) *
+(forall (T : Type) (K : pzRingType) (L : lmodType K) (k : K) (f : T -> L),
+ (k *: f)%R = (fun x : T => (k *: f x)%R)) *
+(forall (T : Type) (K : pzRingType) (f : T -> K) (n : nat),
+ (f ^+ n)%R = (fun x : T => (f x ^+ n)%R))
+
+fctE is not universe polymorphic
+fctE is transparent
+Expands to: Constant mathcomp.classical.functions.fctE
+Declared in library mathcomp.classical.functions, line 2759, characters 11-15
+</p></span></div></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;(<span class="id"><a href="mathcomp.classical.functions.html#cstE">cstE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.functions.html#compE">compE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.functions.html#opprfctE">opprfctE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.functions.html#addrfctE">addrfctE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.functions.html#mulrfctE">mulrfctE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.functions.html#scalrfctE">scalrfctE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.classical.functions.html#exprfctE">exprfctE</a></span>).<br/>
 <br/>
 <span class="vernacular">End</span><span class="id"> function_space_lemmas</span>.<br/>
