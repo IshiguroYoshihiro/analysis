@@ -1277,37 +1277,51 @@ pose idxs n := unzip2 (abi_ n).
 pose a_ n := nth d (seq_a n).
 pose b_ n := nth d (seq_b n).
 pose idx n := nth 0 (idxs n) : nat -> nat.
-have idx_bij n : exists idxn_ord_with_inv : {perm 'I_ n.+1} * {perm 'I_ n.+1},
+have idx_bij n :
+  exists idxn_ord_with_inv : ('I_n.+1 -> 'I_n.+1) * ('I_n.+1 -> 'I_n.+1),
   [/\ (forall i : 'I_ n.+1, idx n i = idxn_ord_with_inv.1 i),
   @cancel _ _ idxn_ord_with_inv.1 idxn_ord_with_inv.2 &
   @cancel _ _ idxn_ord_with_inv.2 idxn_ord_with_inv.1].
+  have abE : (abi_ n) =i (ABi_ n).
+    apply: perm_mem.
+    by rewrite perm_sort; exact: perm_refl.
   have idx_lt (i : 'I_ n.+1) : (idx n i < n.+1)%N.
     rewrite /idx /idxs.
-    have abE : (abi_ n) =i (ABi_ n).
-      apply: perm_mem.
-      by rewrite perm_sort; exact: perm_refl.
     have isize : (i < size (abi_ n))%N by rewrite size_sort size_map size_iota.
     rewrite (nth_map (d, d, 0))//.
-    rewrite snd_map//.
-    rewrite (nth_map 0)//.
-    admit.
-(*    have : (nth 0 (unzip2 (abi_ n)) i) \in (ABi_ n).2. by rewrite -(abE p); exact: mem_nth.
-  move/mapP => [m]; rewrite mem_iota add0n => /andP[_ mn] ->.
-    have [_ _] := nth_abE n i (ltn_ord i).
-    by rewrite idxE.
-  *)
+    have : nth (d, d, 0%N) (abi_ n) i  \in (ABi_ n).
+      by rewrite -(abE _); exact: mem_nth.
+    by move/mapP => [m]; rewrite mem_iota add0n => /andP[_ mn] ->.
   pose idx_ord (i : 'I_n.+1) := Ordinal (idx_lt i).
   pose idx_inv (j : nat) := index j (idxs n).
   have idx_inv_lt (j : 'I_n.+1) : (idx_inv j < n.+1)%N.
-  rewrite /idx_inv.
+    rewrite /idx_inv.
   (* rewrite (_: n.+1 = soze (idxs n) is error (why?) *)
-  have : (size (idxs n) <= n.+1)%N.
-    by rewrite size_map size_sort size_map size_iota.
-  move/ltn_leq_trans; apply.
-  rewrite index_mem.
-    admit.
+    have : (size (idxs n) <= n.+1)%N.
+      by rewrite size_map size_sort size_map size_iota.
+    move/ltn_leq_trans; apply.
+    rewrite index_mem.
+    rewrite (@perm_mem _ _ (iota 0 n.+1)).
+      rewrite (_: iota 0 n.+1 = unzip2 (ABi_ n)).
+        rewrite /ABi_ /unzip2 -map_comp.
+        rewrite -[LHS]map_id.
+        exact: eq_map.
+      apply: perm_map.
+      by rewrite perm_sort.
+    by rewrite mem_iota add0n; apply/andP; split.
   pose idx_ord_inv j := Ordinal (idx_inv_lt j).
-  
+  have idxE (i : 'I_n.+1) : idx n i = idx_ord i by [].
+  exists (idx_ord, idx_ord_inv); split => //.
+  - move=> x/=.
+    rewrite -(inord_val (idx_ord x)) -(inord_val (idx_ord_inv _))/=.
+    rewrite -[RHS](inord_val x); congr inord; rewrite /idx_inv inordK//.
+    rewrite nthK//; last by rewrite inE size_map size_sort size_map size_iota.
+    rewrite (@perm_uniq _ _ (iota 0 n.+1)).
+      have : perm_eq (abi_ n) (ABi_ n) by rewrite perm_sort.
+      move/(perm_map snd)/perm_trans; apply.
+      by rewrite -map_comp map_id.
+    exact: iota_uniq.
+  - 
   admit.
 have abidE n i : (a_ n i, b_ n i, idx n i) = nth (d, d, 0) (abi_ n) i.
   rewrite -(zip_unzip (abi_ n)) -(zip_unzip (unzip1 _)).
@@ -1625,7 +1639,7 @@ have cdS_split n j : exists k, [/\ (k < n.+1)%N,
   c_ n.+1 k \in `[B_ (idx n k), (A_ (idx n k.+1))],
   d_ n.+1 k \in `[B_ (idx n k), (A_ (idx n k.+1))] &
   cd_ n.+1 = take k (cd_ n) ++
-   [:: ((B_ n.+1, Some n.+1), (A_ n.+1, Some n.+1))] ++
+   [:: (B_ n.+1, A_ n.+1)] ++
    drop k (cd_ n)].
   admit.
 
@@ -1953,7 +1967,6 @@ have ineq7 n : ((\sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)|)%:E <=
     by move=> i ni _; apply: sume_ge0 => j _; exact: oscillation_ge0.
   move=> j _.
   (* `[A_ j, B_ j] `<=` `[c_ n i, d_ n i] となる i はunique *)
-xxx.
 (*  have /andP[le1 le2] := @lemma4 _ (c_ n i) (d_ n i) (cled n i) f (Zsub n i)
                  (itvfcd n i) (cZsub n i) (hull_Zsub n i).
   apply: (le_trans le1).
