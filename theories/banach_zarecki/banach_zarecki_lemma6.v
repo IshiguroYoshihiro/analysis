@@ -1277,6 +1277,10 @@ pose idxs n := unzip2 (abi_ n).
 pose a_ n := nth d (seq_a n).
 pose b_ n := nth d (seq_b n).
 pose idx n := nth 0 (idxs n) : nat -> nat.
+ have iota_unzip2 n : iota 0 n.+1 = unzip2 (ABi_ n).
+   rewrite /ABi_ /unzip2 -map_comp.
+   rewrite -[LHS]map_id.
+   exact: eq_map.
 have idx_bij n :
   exists idxn_ord_with_inv : ('I_n.+1 -> 'I_n.+1) * ('I_n.+1 -> 'I_n.+1),
   [/\ (forall i : 'I_ n.+1, idx n i = idxn_ord_with_inv.1 i),
@@ -1302,13 +1306,10 @@ have idx_bij n :
     move/ltn_leq_trans; apply.
     rewrite index_mem.
     rewrite (@perm_mem _ _ (iota 0 n.+1)).
-      rewrite (_: iota 0 n.+1 = unzip2 (ABi_ n)).
-        rewrite /ABi_ /unzip2 -map_comp.
-        rewrite -[LHS]map_id.
-        exact: eq_map.
+      rewrite iota_unzip2.
       apply: perm_map.
       by rewrite perm_sort.
-    by rewrite mem_iota add0n; apply/andP; split.
+    by rewrite mem_iota leq0n/=.
   pose idx_ord_inv j := Ordinal (idx_inv_lt j).
   have idxE (i : 'I_n.+1) : idx n i = idx_ord i by [].
   exists (idx_ord, idx_ord_inv); split => //.
@@ -1321,8 +1322,15 @@ have idx_bij n :
       move/(perm_map snd)/perm_trans; apply.
       by rewrite -map_comp map_id.
     exact: iota_uniq.
-  - 
-  admit.
+  - move=> x/=.
+    rewrite -(inord_val (idx_ord_inv x)) -(inord_val (idx_ord _))/=.
+    rewrite -[RHS](inord_val x) ; congr inord; rewrite /idx_inv inordK//.
+      exact: idx_inv_lt.
+    apply: nth_index.
+    suff -> : idxs n =i iota 0 n.+1.
+      rewrite mem_iota leq0n//=.
+    rewrite iota_unzip2.
+    exact: eq_mem_map.
 have abidE n i : (a_ n i, b_ n i, idx n i) = nth (d, d, 0) (abi_ n) i.
   rewrite -(zip_unzip (abi_ n)) -(zip_unzip (unzip1 _)).
   by rewrite !nth_zip ?size_zip ?size_map ?minnn.
@@ -1583,6 +1591,23 @@ have cled n i : c_ n i <= d_ n i.
   case: i => /=[|i]; first exact: clea.
   exact: blea.
 
+have ABsubcd n m : (m < n)%N -> exists i, `]A_ n, B_ n[ `<=` `[c_ m i, d_ m i].
+  move=> mn.
+  have : `]A_ n, B_ n[ `<=` (interior Z) `|` (cplt_hull Z).
+    
+    apply: subset_trans (@cplt_hull_subset_Rhull _ Z).
+    rewrite -contiguous_ooitv//.
+    exact: contiguous_intervalsS.
+  rewrite -(setUIDK [set` Rhull Z] Z) -/(cplt_hull Z) setIidr.
+    exact: sub_Rhull.
+  rewrite open_subsetE//.
+
+  move/(subset_trans (@interiorU _ _)).
+  have sz : separated Z (cplt_hull Z).
+    separated_disjoint.
+  move/connected_subset.
+  rewrite cbE.
+
 have hullZ_abcd n : [set` Rhull Z] =
      \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic `|`
      \bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic.
@@ -1613,16 +1638,18 @@ have hullZ_abcd n : [set` Rhull Z] =
         rewrite can_inv_ord.
         rewrite /=.
         move=> _.
-        move: Zir.
+        move: (Zir).
         rewrite contiguous_ooitv.
         - by [].
         - by [].
         rewrite /A_ /B_.
         rewrite !hh1.
-        - admit.
+        - rewrite inE.
+          by exists r.
         rewrite /=.
         done.
       left.
+      
       admit.
     + move=> Zr.
       left.
