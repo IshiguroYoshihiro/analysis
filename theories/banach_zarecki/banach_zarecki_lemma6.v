@@ -1190,6 +1190,21 @@ rewrite -[in RHS](zip_unzip s) -(zip_nthE da db); first by rewrite !size_map.
 by rewrite -map_comp size_map.
 Qed.
 
+Lemma subspace_setCS (X A B : set R) :
+  A `<=` X -> B `<=` X ->
+    A `<=` B = (X `\` B `<=` X `\` A).
+Proof.
+move=> AX BX.
+apply/propeqP; split => [|H x Ax]; first exact: setDS.
+have [Xx|nBx] := pselect (X x).
+  apply/not_notP => nBx.
+  have /H[_] := conj Xx nBx.
+  exact.
+exfalso.
+apply: nBx.
+exact: AX.
+Qed.
+
 (* https://math.stackexchange.com/questions/520209/removing-isolated-points-to-get-a-perfect-set *)
 Lemma lemma6_direct : lusinN `[a, b] H.
 Proof.
@@ -1233,8 +1248,8 @@ have infsupp := contiguous_infinite Zab cZ Z_nonempty Z0 perfectZ.
 have countsupp : countable supp by exact: subset_card_le.
 have /ppcard_eqP[/= h] := eq_card_nat countsupp infsupp.
 pose h1 : {bij [set: nat] >-> supp} := h^-1%FUN.
-have hh1 : {in supp, cancel h h1} by exact: funK.
-have h1h : cancel h1 h by move=> x; apply: invK; rewrite inE.
+have h1h : {in supp, cancel h h1} by exact: funK.
+have hh1 : cancel h1 h by move=> x; apply: invK; rewrite inE.
 have ne_cgitvs n : contiguous_intervals Z (h1 n) !=set0.
   have : supp (h1 n).
     have := @bij _ _ _ _ h1.
@@ -1590,24 +1605,87 @@ have cled n i : c_ n i <= d_ n i.
   rewrite cbE daE.
   case: i => /=[|i]; first exact: clea.
   exact: blea.
-
-have ABsubcd n m : (m < n)%N -> exists i, `]A_ n, B_ n[ `<=` `[c_ m i, d_ m i].
-  move=> mn.
-  have : `]A_ n, B_ n[ `<=` (interior Z) `|` (cplt_hull Z).
+(* lemma *)
+have Zcd n : Z `<=` \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic.
+  suff : [set` Rhull Z] `\` \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic
+    `<=` cplt_hull Z.
+    rewrite -subspace_setCS//.
+      exact: sub_Rhull.
+    move=> x [i iltn2]/=.
+    rewrite compact_Rhull// !in_itv/= -/c -/d.
+    move=> /andP[cx xd]; apply/andP; split.
+      apply: le_trans cx.
+      rewrite cbE; case: i iltn2 xd => //= i.
+      rewrite ltnS => iltn1 _.
+      exact: (le_trans (clea n i)).
+    apply: (le_trans xd).
+    rewrite daE.
+    exact: le_trans (bled n i).
+  apply: (@subset_trans _ (\bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic)).
     
-    apply: subset_trans (@cplt_hull_subset_Rhull _ Z).
-    rewrite -contiguous_ooitv//.
-    exact: contiguous_intervalsS.
-  rewrite -(setUIDK [set` Rhull Z] Z) -/(cplt_hull Z) setIidr.
-    exact: sub_Rhull.
-  rewrite open_subsetE//.
-
-  move/(subset_trans (@interiorU _ _)).
-  have sz : separated Z (cplt_hull Z).
-    separated_disjoint.
-  move/connected_subset.
-  rewrite cbE.
-
+    move=> x [hZx].
+    rewrite {1}/bigcup/= exists2E; move/forallNP => ncdx.
+     (* x < b_ n jbとなる最小のjb (remark: sorted <=%R (seq_b n)) *)
+   pose m := (find (> x) (seq_b n)).
+    exists m => //=.
+      rewrite (_: n.+1 = (size (seq_b n))); first by rewrite size_seq_ab.
+      admit.
+    have has_b : has (<%R x) (seq_b n).
+      apply/hasP.
+      exists (b_ n n) => //=.
+        by apply: mem_nth; rewrite size_seq_ab.
+      rewrite ltNge; apply/negP => xbnn.
+      apply: (ncdx n.+1); split => //.
+      rewrite in_itv/=.
+      rewrite cbE daE/=.
+      apply/andP; split => //.
+      rewrite /a_ nth_default.
+        by rewrite size_seq_ab.
+      move: hZx.
+      by rewrite compact_Rhull//=; rewrite in_itv/= => /andP[].
+    
+    rewrite in_itv/=; apply/andP; split.
+      have [->|] := eqVneq m 0%N.
+        rewrite ltNge; apply/negP => xan0.
+        apply: (ncdx 0); split => //.
+        rewrite in_itv/=; apply/andP; split.
+          rewrite cbE/=; apply: (le_trans (clea n 0)).
+          admit.
+        admit.
+      admit.
+(*
+      have hp : has p (seq_b n).
+      apply/hasP.
+      exists (b_ n n).
+      - rewrite /b_; apply: mem_nth.
+        by rewrite size_b.
+      - rewrite /p.
+*)
+(*    have : exists jb, x < b_ n jb.
+      rewrite nth_find//.
+      admit.
+    apply/not_notP; rewrite /bigcup/= exists2E => /forallNP nabx.
+    move: hZx.
+    rewrite -(setUIDK [set` _] Z) -/(cplt_hull Z) setIidr.
+      exact: sub_Rhull.
+*)
+    admit.
+  rewrite bigcup_contiguous_intervals//.
+  rewrite bigcup_contiguous_intervals_support.
+  rewrite (_: \bigcup_(k in supp) contiguous_intervals Z k =
+              \bigcup_k contiguous_intervals Z (h1 k)).
+    have [funh1 injh1 surjh1] := @bij _ _ _ _ h1.
+    by rewrite (reindex_bigcup _ _ _ _ funh1 surjh1).
+  move=> x [i /= iltn].
+  rewrite anth bnth.
+  have [-> -> _] := (nth_abE n _ iltn).
+  rewrite -!idxE => xAB.
+  exists (idx n i) => //.
+  by rewrite contiguous_ooitv.
+(* lemma *)
+have citvScd n m : (n \notin [seq h1 i | i <- iota 0 m.+1]) ->
+   exists i, (i < m.+2)%N /\ contiguous_intervals Z n `<=` `[c_ m i, d_ m i].
+  admit.
 have hullZ_abcd n : [set` Rhull Z] =
      \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic `|`
      \bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic.
@@ -1622,7 +1700,7 @@ have hullZ_abcd n : [set` Rhull Z] =
         have [[idx_ord idx_ord_inv] /= [idx_ordE can_ord_inv can_inv_ord]] := idx_bij n.
         have hi_lt : (h i < n.+1)%N.
           move: hin.
-          rewrite -{1}(hh1 i).
+          rewrite -{1}(h1h i).
            by rewrite inE; exists r.
          rewrite mem_map.
            move=> t0 t1.
@@ -1643,14 +1721,19 @@ have hullZ_abcd n : [set` Rhull Z] =
         - by [].
         - by [].
         rewrite /A_ /B_.
-        rewrite !hh1.
+        rewrite !h1h.
         - rewrite inE.
           by exists r.
         rewrite /=.
         done.
       left.
-      
-      admit.
+      have [] := (citvScd i n); first by [].
+      move=> j [xn2 Zj].
+      exists j => //.
+      case: j xn2 Zj.
+        by move=> _; rewrite cbE daE//=; apply.
+      move=> j.
+      by rewrite ltnS => jn1; rewrite cbE daE/=; apply.
     + move=> Zr.
       left.
       admit.
@@ -1662,6 +1745,7 @@ have hullZ_abcd n : [set` Rhull Z] =
       left.
       admit.
 
+(* for non-increasingness of lambda
 have cdS_split n j : exists k, [/\ (k < n.+1)%N,
   c_ n.+1 k \in `[B_ (idx n k), (A_ (idx n k.+1))],
   d_ n.+1 k \in `[B_ (idx n k), (A_ (idx n k.+1))] &
@@ -1669,7 +1753,7 @@ have cdS_split n j : exists k, [/\ (k < n.+1)%N,
    [:: (B_ n.+1, A_ n.+1)] ++
    drop k (cd_ n)].
   admit.
-
+*)
 pose lambda n := diam_max [seq `[c_ n i, d_ n i]%classic | i <- iota 0 n.+2].
 have lambda_fin n : lambda n \is a fin_num.
   rewrite ge0_fin_numE; first exact: diam_max_ge0.
