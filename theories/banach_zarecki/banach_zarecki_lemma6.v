@@ -1689,8 +1689,6 @@ have citvScd n m : (n \notin [seq h1 i | i <- iota 0 m.+1]) ->
 have hullZ_abcd n : [set` Rhull Z] =
      \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic `|`
      \bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic.
-  under eq_bigcupr do rewrite cbE.
-  under eq_bigcupr do rewrite daE.
   rewrite -(contiguous_intervals_Rhull clZ).
   apply/seteqP; split => [r|r].
   - move=> [|].
@@ -1736,6 +1734,43 @@ have hullZ_abcd n : [set` Rhull Z] =
       by rewrite ltnS => jn1; rewrite cbE daE/=; apply.
     + move=> Zr.
       left.
+      suff: ~ (\bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic) r.
+        move=> H1.
+        have [H2|[i ir]] : c <= r <= a_ n 0 \/
+            exists2 i, (0 <= i < n.+1)%N & b_ n i <= r <= a_ n i.+1.
+          have [H2|H2] := leP r (a_ n 0).
+            left.
+            admit.
+          rewrite andbF; right.
+          have [H3|H3] := ltP r (b_ n n); last first.
+            exists n.
+              by rewrite leq0n/=.
+            rewrite /a_ nth_default ?size_seq_ab//.
+            rewrite H3/=.
+            admit.
+          have H4 : r \in `]a_ n 0, b_ n n[.
+            admit.
+          have H5 : (\bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic) `<=` `]a_ n 0, b_ n n[.
+            admit.
+          admit.
+        * exists 0 => //=.
+          rewrite in_itv/=.
+          rewrite cbE/=.
+          by rewrite daE/=.
+        * move=> q.
+          exists i.+1.
+            rewrite /=.
+            move/andP: ir => [_].
+            by rewrite !ltnS.
+          rewrite /= in_itv/=.
+          rewrite cbE/=.
+          by rewrite daE//.
+      suff: (~` (\bigcup_(i < n.+1) `]A_ i, B_ i[%classic)) r.
+        admit.
+      rewrite setC_bigcup => k/= kn1.
+      rewrite in_itv/= /A_ /B_.
+      apply/negP.
+      rewrite negb_and -!leNgt.
       admit.
   - move=> [|].
     + move=> Hr.
