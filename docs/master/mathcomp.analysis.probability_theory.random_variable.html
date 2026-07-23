@@ -301,10 +301,8 @@ of `Lfun P n` hypotheses instead of the `integrable` predicate from
 <span class="vernacular">Local</span><span class="vernacular"> Open</span><span class="vernacular"> Scope</span><span class="id"> ring_scope</span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="random_variable" class="id"><div name="random_variable" class=" tooltip">random_variable<span class='tooltip-area'><p>random_variable :
-forall [d d' : measurable_structure.measure_display]
-  [T : measurable_structure.Measurable.type d],
-measurable_structure.Measurable.type d' ->
-forall [R : realType], probability_measure.Probability.type T R -> Type
+forall [d d' : measure_display] [T : measurableType d],
+measurableType d' -> forall [R : realType], probability T R -> Type
 
 random_variable is not universe polymorphic
 Arguments random_variable [d d']%_measure_display_scope [T] T' [R] P
@@ -335,20 +333,9 @@ library mathcomp.analysis.probability_theory.random_variable, line 73, character
 <span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#preimage_range">preimage_range</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.probability_measure.html#probability_setT">probability_setT</a></span>. Qed.</div></details>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="distribution" class="id"><div name="distribution" class=" tooltip">distribution<span class='tooltip-area'><p>distribution :
-forall [d d' : measurable_structure.measure_display]
-  [T : measurable_structure.Measurable.type d]
-  [T' : measurable_structure.Measurable.type d'] [R : realType],
-probability_measure.Probability.type T R ->
-measurable_function.MeasurableFun.type
-  (measurable_structure.Measurable.Exports.measurable_structure_Measurable__to__measurable_structure_SigmaRing
-     T)
-  (measurable_structure.Measurable.Exports.measurable_structure_Measurable__to__measurable_structure_SigmaRing
-     T') ->
-set
-  (measurable_structure.SigmaRing.sort
-     (measurable_structure.Measurable.Exports.measurable_structure_Measurable__to__measurable_structure_SigmaRing
-        T')) ->
-\bar R
+forall [d d' : measure_display] [T : measurableType d]
+  [T' : measurableType d'] [R : realType],
+probability T R -> {mfun T >-> T'} -> set T' -> \bar R
 
 distribution is not universe polymorphic
 Arguments distribution [d d']%_measure_display_scope 
@@ -434,9 +421,8 @@ Qed.</div></details>
 <span class="vernacular">Context</span><span class="id"> {</span><span id="pmf_definition.d" class="id"><a name="pmf_definition.d" class="">d</a></span><span class="id">}</span><span class="id"> {</span><span id="pmf_definition.T" class="id"><a name="pmf_definition.T" class="">T</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#Measurable.Exports.measurableType">measurableType</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#d:56">d</a></span><span class="id">}</span><span class="id"> {</span><span id="pmf_definition.R" class="id"><a name="pmf_definition.R" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span><span class="id">}</span> (<span id="pmf_definition.P" class="id"><a name="pmf_definition.P" class="">P</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.probability_measure.html#Probability.Exports.probability">probability</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#T:57">T</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#R:58">R</a></span>).<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pmf" class="id"><div name="pmf" class=" tooltip">pmf<span class='tooltip-area'><p>pmf :
-forall {d : measurable_structure.measure_display}
-  {T : measurable_structure.Measurable.type d} {R : realType}
-  [P : probability_measure.Probability.type T R],
+forall {d : measure_display} {T : measurableType d} 
+  {R : realType} [P : probability T R],
 {RV P >-> R} -> R -> R
 
 pmf is not universe polymorphic
@@ -550,9 +536,8 @@ Qed.</div></details>
 <span class="vernacular">End</span><span class="id"> lebesgue_integral_pmf</span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="cdf" class="id"><div name="cdf" class=" tooltip">cdf<span class='tooltip-area'><p>cdf :
-forall [d : measurable_structure.measure_display]
-  [T : measurable_structure.Measurable.type d] [R : realType]
-  [P : probability_measure.Probability.type T R],
+forall [d : measure_display] [T : measurableType d] 
+  [R : realType] [P : probability T R],
 {RV P >-> R} -> R -> \bar R
 
 cdf is not universe polymorphic
@@ -780,9 +765,8 @@ Qed.</div></details>
 <span class="vernacular">End</span><span class="id"> lebesgue_stieltjes_measure_of_cdf</span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="ccdf" class="id"><div name="ccdf" class=" tooltip">ccdf<span class='tooltip-area'><p>ccdf :
-forall [d : measurable_structure.measure_display]
-  [T : measurable_structure.Measurable.type d] [R : realType]
-  [P : probability_measure.Probability.type T R],
+forall [d : measure_display] [T : measurableType d] 
+  [R : realType] [P : probability T R],
 {RV P >-> R} -> R -> \bar R
 
 ccdf is not universe polymorphic
@@ -873,11 +857,9 @@ Qed.</div></details>
 <br/>
 <span id="expectation_unlock_subterm" class="id"><span id="expectation" class="id"><span id="expectation.unlock" class="id"><span id="expectation.body" class="id"><span id="expectation" class="id"><span id="expectation_Locked.unlock" class="id"><span id="expectation_Locked.body" class="id"><span id="expectation_Locked" class="id"><div name="expectation_unlock_subterm" class=" tooltip">HB<span class='tooltip-area'><p>expectation_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X : measurable_structure.Measurable.sort T -> R) =>
-   (\int[probability_measure.Probability.sort P]_w (X w)%:E)%E)
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X : T -> R) =>
+   (\int[P]_w (X w)%:E)%E)
 
 expectation_unlock_subterm is not universe polymorphic
 expectation_unlock_subterm is transparent
@@ -887,11 +869,9 @@ Declared in
 library mathcomp.analysis.probability_theory.random_variable, line 480, characters 0-136
 </p></span></div></span></span></span></span></span></span></span></span>.<span id="expectation_unlock_subterm" class="id"><span id="expectation" class="id"><span id="expectation.unlock" class="id"><span id="expectation.body" class="id"><span id="expectation" class="id"><span id="expectation_Locked.unlock" class="id"><span id="expectation_Locked.body" class="id"><span id="expectation_Locked" class="id"><div name="expectation_unlock_subterm" class=" tooltip">lock<span class='tooltip-area'><p>expectation_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X : measurable_structure.Measurable.sort T -> R) =>
-   (\int[probability_measure.Probability.sort P]_w (X w)%:E)%E)
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X : T -> R) =>
+   (\int[P]_w (X w)%:E)%E)
 
 expectation_unlock_subterm is not universe polymorphic
 expectation_unlock_subterm is transparent
@@ -901,11 +881,9 @@ Declared in
 library mathcomp.analysis.probability_theory.random_variable, line 480, characters 0-136
 </p></span></div></span></span></span></span></span></span></span></span><span id="expectation_unlock_subterm" class="id"><span id="expectation" class="id"><span id="expectation.unlock" class="id"><span id="expectation.body" class="id"><span id="expectation" class="id"><span id="expectation_Locked.unlock" class="id"><span id="expectation_Locked.body" class="id"><span id="expectation_Locked" class="id"><div name="expectation_unlock_subterm" class=" tooltip"> Definition<span class='tooltip-area'><p>expectation_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X : measurable_structure.Measurable.sort T -> R) =>
-   (\int[probability_measure.Probability.sort P]_w (X w)%:E)%E)
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X : T -> R) =>
+   (\int[P]_w (X w)%:E)%E)
 
 expectation_unlock_subterm is not universe polymorphic
 expectation_unlock_subterm is transparent
@@ -915,11 +893,9 @@ Declared in
 library mathcomp.analysis.probability_theory.random_variable, line 480, characters 0-136
 </p></span></div></span></span></span></span></span></span></span></span><span id="expectation_unlock_subterm" class="id"><span id="expectation" class="id"><span id="expectation.unlock" class="id"><span id="expectation.body" class="id"><span id="expectation" class="id"><span id="expectation_Locked.unlock" class="id"><span id="expectation_Locked.body" class="id"><span id="expectation_Locked" class="id"><div name="expectation_unlock_subterm" class=" tooltip"> expectation<span class='tooltip-area'><p>expectation_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X : measurable_structure.Measurable.sort T -> R) =>
-   (\int[probability_measure.Probability.sort P]_w (X w)%:E)%E)
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X : T -> R) =>
+   (\int[P]_w (X w)%:E)%E)
 
 expectation_unlock_subterm is not universe polymorphic
 expectation_unlock_subterm is transparent
@@ -929,11 +905,9 @@ Declared in
 library mathcomp.analysis.probability_theory.random_variable, line 480, characters 0-136
 </p></span></div></span></span></span></span></span></span></span></span><span id="expectation_unlock_subterm" class="id"><span id="expectation" class="id"><span id="expectation.unlock" class="id"><span id="expectation.body" class="id"><span id="expectation" class="id"><span id="expectation_Locked.unlock" class="id"><span id="expectation_Locked.body" class="id"><span id="expectation_Locked" class="id"><div name="expectation_unlock_subterm" class=" tooltip"> {d}<span class='tooltip-area'><p>expectation_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X : measurable_structure.Measurable.sort T -> R) =>
-   (\int[probability_measure.Probability.sort P]_w (X w)%:E)%E)
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X : T -> R) =>
+   (\int[P]_w (X w)%:E)%E)
 
 expectation_unlock_subterm is not universe polymorphic
 expectation_unlock_subterm is transparent
@@ -945,11 +919,9 @@ library mathcomp.analysis.probability_theory.random_variable, line 480, characte
 &nbsp;&nbsp;(<span id="P:190" class="id"><a name="P:190" class="">P</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.probability_measure.html#Probability.Exports.probability">probability</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#T:188">T</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#R:189">R</a></span>) (<span id="X:191" class="id"><a name="X:191" class="">X</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#T:188">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#R:189">R</a></span>)<span class="id"> :=</span> (<span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#3e4826d90e3d691004f544dc3de2d121">\int[</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#P:190">P</a></span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#3e4826d90e3d691004f544dc3de2d121">]_</a></span><span id="w:192" class="id"><a name="w:192" class="">w</a></span> (<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#X:191">X</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#w:192">w</a></span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span>)<span class="id">%E</span>.<br/>
 <span class="vernacular">Canonical</span><span class="id"> </span><span id="expectation_unlockable" class="id"><div name="expectation_unlockable" class=" tooltip">expectation_unlockable<span class='tooltip-area'><p>expectation_unlockable :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X : measurable_structure.Measurable.sort T -> R) =>
-   (\int[probability_measure.Probability.sort P]_w (X w)%:E)%E)
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X : T -> R) =>
+   (\int[P]_w (X w)%:E)%E)
 
 expectation_unlockable is not universe polymorphic
 expectation_unlockable is transparent
@@ -1239,10 +1211,8 @@ Qed.</div></details>
 <br/>
 <span id="covariance_unlock_subterm" class="id"><span id="covariance" class="id"><span id="covariance.unlock" class="id"><span id="covariance.body" class="id"><span id="covariance" class="id"><span id="covariance_Locked.unlock" class="id"><span id="covariance_Locked.body" class="id"><span id="covariance_Locked" class="id"><div name="covariance_unlock_subterm" class=" tooltip">HB<span class='tooltip-area'><p>covariance_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X Y : measurable_structure.Measurable.sort T -> R) =>
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X Y : T -> R) =>
    ('E_P[((X \- cst (fine 'E_P[X])) * (Y \- cst (fine 'E_P[Y])))])%E)
 
 covariance_unlock_subterm is not universe polymorphic
@@ -1253,10 +1223,8 @@ Declared in
 library mathcomp.analysis.probability_theory.random_variable, line 725, characters 0-180
 </p></span></div></span></span></span></span></span></span></span></span>.<span id="covariance_unlock_subterm" class="id"><span id="covariance" class="id"><span id="covariance.unlock" class="id"><span id="covariance.body" class="id"><span id="covariance" class="id"><span id="covariance_Locked.unlock" class="id"><span id="covariance_Locked.body" class="id"><span id="covariance_Locked" class="id"><div name="covariance_unlock_subterm" class=" tooltip">lock<span class='tooltip-area'><p>covariance_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X Y : measurable_structure.Measurable.sort T -> R) =>
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X Y : T -> R) =>
    ('E_P[((X \- cst (fine 'E_P[X])) * (Y \- cst (fine 'E_P[Y])))])%E)
 
 covariance_unlock_subterm is not universe polymorphic
@@ -1267,10 +1235,8 @@ Declared in
 library mathcomp.analysis.probability_theory.random_variable, line 725, characters 0-180
 </p></span></div></span></span></span></span></span></span></span></span><span id="covariance_unlock_subterm" class="id"><span id="covariance" class="id"><span id="covariance.unlock" class="id"><span id="covariance.body" class="id"><span id="covariance" class="id"><span id="covariance_Locked.unlock" class="id"><span id="covariance_Locked.body" class="id"><span id="covariance_Locked" class="id"><div name="covariance_unlock_subterm" class=" tooltip"> Definition<span class='tooltip-area'><p>covariance_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X Y : measurable_structure.Measurable.sort T -> R) =>
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X Y : T -> R) =>
    ('E_P[((X \- cst (fine 'E_P[X])) * (Y \- cst (fine 'E_P[Y])))])%E)
 
 covariance_unlock_subterm is not universe polymorphic
@@ -1281,10 +1247,8 @@ Declared in
 library mathcomp.analysis.probability_theory.random_variable, line 725, characters 0-180
 </p></span></div></span></span></span></span></span></span></span></span><span id="covariance_unlock_subterm" class="id"><span id="covariance" class="id"><span id="covariance.unlock" class="id"><span id="covariance.body" class="id"><span id="covariance" class="id"><span id="covariance_Locked.unlock" class="id"><span id="covariance_Locked.body" class="id"><span id="covariance_Locked" class="id"><div name="covariance_unlock_subterm" class=" tooltip"> covariance<span class='tooltip-area'><p>covariance_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X Y : measurable_structure.Measurable.sort T -> R) =>
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X Y : T -> R) =>
    ('E_P[((X \- cst (fine 'E_P[X])) * (Y \- cst (fine 'E_P[Y])))])%E)
 
 covariance_unlock_subterm is not universe polymorphic
@@ -1295,10 +1259,8 @@ Declared in
 library mathcomp.analysis.probability_theory.random_variable, line 725, characters 0-180
 </p></span></div></span></span></span></span></span></span></span></span><span id="covariance_unlock_subterm" class="id"><span id="covariance" class="id"><span id="covariance.unlock" class="id"><span id="covariance.body" class="id"><span id="covariance" class="id"><span id="covariance_Locked.unlock" class="id"><span id="covariance_Locked.body" class="id"><span id="covariance_Locked" class="id"><div name="covariance_unlock_subterm" class=" tooltip"> {d}<span class='tooltip-area'><p>covariance_unlock_subterm :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X Y : measurable_structure.Measurable.sort T -> R) =>
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X Y : T -> R) =>
    ('E_P[((X \- cst (fine 'E_P[X])) * (Y \- cst (fine 'E_P[Y])))])%E)
 
 covariance_unlock_subterm is not universe polymorphic
@@ -1312,10 +1274,8 @@ library mathcomp.analysis.probability_theory.random_variable, line 725, characte
 &nbsp;&nbsp;<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">'E_</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#P:292">P</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">[</a></span>(<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#X:293">X</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#0bb5d11fe8761db1e6494d75cb45a3cb"> \-</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#0bb5d11fe8761db1e6494d75cb45a3cb"> </a></span><span class="id"><a href="mathcomp.classical.functions.html#cst">cst</a></span> (<span class="id"><a href="mathcomp.reals.constructive_ereal.html#fine">fine</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">'E_</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#P:292">P</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">[</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#X:293">X</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">]</a></span>))<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span> (<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#Y:294">Y</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#0bb5d11fe8761db1e6494d75cb45a3cb"> \-</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.ssralg.html#0bb5d11fe8761db1e6494d75cb45a3cb"> </a></span><span class="id"><a href="mathcomp.classical.functions.html#cst">cst</a></span> (<span class="id"><a href="mathcomp.reals.constructive_ereal.html#fine">fine</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">'E_</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#P:292">P</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">[</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#Y:294">Y</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">]</a></span>))<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#69ec4e730a589c79df0349357bb8311f">]</a></span><span class="id">%E</span>.<br/>
 <span class="vernacular">Canonical</span><span class="id"> </span><span id="covariance_unlockable" class="id"><div name="covariance_unlockable" class=" tooltip">covariance_unlockable<span class='tooltip-area'><p>covariance_unlockable :
 unlockable
-  (fun (d : measurable_structure.measure_display)
-     (T : measurable_structure.Measurable.type d) 
-     (R : realType) (P : probability_measure.Probability.type T R)
-     (X Y : measurable_structure.Measurable.sort T -> R) =>
+  (fun (d : measure_display) (T : measurableType d) 
+     (R : realType) (P : probability T R) (X Y : T -> R) =>
    ('E_P[((X \- cst (fine 'E_P[X])) * (Y \- cst (fine 'E_P[Y])))])%E)
 
 covariance_unlockable is not universe polymorphic
@@ -1504,11 +1464,8 @@ Qed.</div></details>
 <span class="vernacular">Context</span><span class="id"> </span><span id="variance.d" class="id"><a name="variance.d" class="">d</a></span> (<span id="variance.T" class="id"><a name="variance.T" class="">T</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.measurable_structure.html#Measurable.Exports.measurableType">measurableType</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#d:342">d</a></span>) (<span id="variance.R" class="id"><a name="variance.R" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span>) (<span id="variance.P" class="id"><a name="variance.P" class="">P</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.measure_theory.probability_measure.html#Probability.Exports.probability">probability</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#T:343">T</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#R:344">R</a></span>).<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="variance" class="id"><div name="variance" class=" tooltip">variance<span class='tooltip-area'><p>variance :
-forall [d : measurable_structure.measure_display]
-  [T : measurable_structure.Measurable.type d] [R : realType],
-probability_measure.Probability.type T R ->
-(measurable_structure.Measurable.sort T -> R) ->
-GRing.BaseAddMagma.sort \bar R
+forall [d : measure_display] [T : measurableType d] [R : realType],
+probability T R -> (T -> R) -> GRing.BaseAddMagma.sort \bar R
 
 variance is not universe polymorphic
 Arguments variance [d]%_measure_display_scope [T R] P X%_function_scope
@@ -1679,11 +1636,8 @@ Qed.</div></details>
 <span class="vernacular">Notation</span> <span id="9e50536fce9e14b365e2c78395616442" class="id"><a name="9e50536fce9e14b365e2c78395616442" class="">&quot;'V_ P [ X ]&quot;</a></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#variance">variance</a></span><span class="id"> P</span><span class="id"> X</span>).<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="mmt_gen_fun" class="id"><div name="mmt_gen_fun" class=" tooltip">mmt_gen_fun<span class='tooltip-area'><p>mmt_gen_fun :
-forall [d : measurable_structure.measure_display]
-  [T : measurable_structure.Measurable.type d] [R : realType],
-probability_measure.Probability.type T R ->
-(measurable_structure.Measurable.sort T -> R) ->
-R -> GRing.BaseAddMagma.sort \bar R
+forall [d : measure_display] [T : measurableType d] [R : realType],
+probability T R -> (T -> R) -> R -> GRing.BaseAddMagma.sort \bar R
 
 mmt_gen_fun is not universe polymorphic
 Arguments mmt_gen_fun [d]%_measure_display_scope [T R] 
@@ -1845,10 +1799,8 @@ Qed.</div></details>
 &nbsp;&nbsp;(<span class="id">@</span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#type">discreteMeasurableFun</a></span>.<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#type">type</a></span><span class="id"> _</span><span class="id"> _</span><span class="id"> aT</span><span class="id"> T</span>)<span class="id"> :</span><span class="id"> form_scope</span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="discrete_random_variable" class="id"><div name="discrete_random_variable" class=" tooltip">discrete_random_variable<span class='tooltip-area'><p>discrete_random_variable :
-forall [d d' : measurable_structure.measure_display]
-  [T : measurable_structure.Measurable.type d],
-measurable_structure.Measurable.type d' ->
-forall [R : realType], probability_measure.Probability.type T R -> Type
+forall [d d' : measure_display] [T : measurableType d],
+measurableType d' -> forall [R : realType], probability T R -> Type
 
 discrete_random_variable is not universe polymorphic
 Arguments discrete_random_variable [d d']%_measure_display_scope [T] T' [R] P
@@ -1879,10 +1831,8 @@ library mathcomp.analysis.probability_theory.random_variable, line 1155, charact
 Qed.</div></details>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="dRV_dom" class="id"><div name="dRV_dom" class=" tooltip">dRV_dom<span class='tooltip-area'><p>dRV_dom :
-forall {d d' : measurable_structure.measure_display}
-  {T : measurable_structure.Measurable.type d}
-  {T' : measurable_structure.Measurable.type d'} {R : realType}
-  [P : probability_measure.Probability.type T R],
+forall {d d' : measure_display} {T : measurableType d}
+  {T' : measurableType d'} {R : realType} [P : probability T R],
 {dRV P >-> T'} -> set nat
 
 dRV_dom is not universe polymorphic
@@ -1895,10 +1845,9 @@ library mathcomp.analysis.probability_theory.random_variable, line 1174, charact
 </p></span></div></span> (<span id="X:448" class="id"><a name="X:448" class="">X</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#b5a1ea6c8f3277fde90807f8c5935ab3">{dRV</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#b5a1ea6c8f3277fde90807f8c5935ab3"> </a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#dRV_definitions.P">P</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#b5a1ea6c8f3277fde90807f8c5935ab3"> &gt;-&gt;</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#b5a1ea6c8f3277fde90807f8c5935ab3"> </a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#dRV_definitions.T'">T'</a></span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#b5a1ea6c8f3277fde90807f8c5935ab3">}</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#nat">nat</a></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#projT1">projT1</a></span> (<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#dRV_dom_enum">dRV_dom_enum</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#X:448">X</a></span>).<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="dRV_enum" class="id"><div name="dRV_enum" class=" tooltip">dRV_enum<span class='tooltip-area'><p>dRV_enum :
-forall {d d' : measurable_structure.measure_display}
-  {T : measurable_structure.Measurable.type d}
-  {T' : measurable_structure.Measurable.type d'} {R : realType}
-  [P : probability_measure.Probability.type T R] (X : {dRV P >-> T'}),
+forall {d d' : measure_display} {T : measurableType d}
+  {T' : measurableType d'} {R : realType} [P : probability T R]
+  (X : {dRV P >-> T'}),
 {splitbij dRV_dom (P:=P) X >-> range X}
 
 dRV_enum is not universe polymorphic
@@ -1912,12 +1861,10 @@ library mathcomp.analysis.probability_theory.random_variable, line 1176, charact
 &nbsp;&nbsp;<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Specif.html#projT2">projT2</a></span> (<span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#dRV_dom_enum">dRV_dom_enum</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.probability_theory.random_variable.html#X:449">X</a></span>).<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="enum_prob" class="id"><div name="enum_prob" class=" tooltip">enum_prob<span class='tooltip-area'><p>enum_prob :
-forall {d d' : measurable_structure.measure_display}
-  {T : measurable_structure.Measurable.type d}
-  {T' : measurable_structure.Measurable.type d'} {R : realType}
-  [P : probability_measure.Probability.type T R],
+forall {d d' : measure_display} {T : measurableType d}
+  {T' : measurableType d'} {R : realType} [P : probability T R],
 {dRV P >-> T'} ->
-nat -> ereal.constructive_ereal_extended__canonical__classical_sets_Pointed R
+nat -> constructive_ereal_extended__canonical__classical_sets_Pointed R
 
 enum_prob is not universe polymorphic
 Arguments enum_prob {d d'}%_measure_display_scope {T T' R} [P] X u%_nat_scope

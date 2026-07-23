@@ -369,8 +369,7 @@ library mathcomp.analysis.topology_theory.function_spaces, line 129, characters 
 <br/>
 <span class="vernacular">Variable</span><span class="id"> </span><span id="Product_Topology.I" class="id"><a name="Product_Topology.I" class="">I</a></span><span class="id"> :</span><span class="gallina-kwd"> Type</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="product_topology_def" class="id"><div name="product_topology_def" class=" tooltip">product_topology_def<span class='tooltip-area'><p>product_topology_def :
-forall [I : Type], (I -> topology_structure.Topological.type) -> Type
+<span class="vernacular">Definition</span><span class="id"> </span><span id="product_topology_def" class="id"><div name="product_topology_def" class=" tooltip">product_topology_def<span class='tooltip-area'><p>product_topology_def : forall [I : Type], (I -> topologicalType) -> Type
 
 product_topology_def is not universe polymorphic
 Arguments product_topology_def [I]%_type_scope T%_function_scope
@@ -596,12 +595,8 @@ Qed.</div></details>
 <span class="vernacular">Variable</span> (<span id="product_spaces.product_embeddings.f_" class="id"><a name="product_spaces.product_embeddings.f_" class="">f_</a></span><span class="id"> :</span><span class="gallina-kwd"> forall</span><span class="id"> </span><span id="i:121" class="id"><a name="i:121" class="">i</a></span><span class="id">,</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#product_spaces.product_embeddings.T">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#product_spaces.product_embeddings.U_">U_</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#i:121">i</a></span>).<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="separate_points_from_closed" class="id"><div name="separate_points_from_closed" class=" tooltip">separate_points_from_closed<span class='tooltip-area'><p>separate_points_from_closed :
-forall {I : choiceType} {T : topology_structure.Topological.type}
-  {U_ : I -> topology_structure.Topological.type},
-(forall i : I,
- topology_structure.Topological.sort T ->
- topology_structure.Topological.sort (U_ i)) ->
-Prop
+forall {I : choiceType} {T : topologicalType} {U_ : I -> topologicalType},
+(forall i : I, T -> U_ i) -> Prop
 
 separate_points_from_closed is not universe polymorphic
 Arguments separate_points_from_closed {I T} {U_}%_function_scope
@@ -664,14 +659,8 @@ Qed.</div></details>
 Qed.</div></details>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="join_product" class="id"><div name="join_product" class=" tooltip">join_product<span class='tooltip-area'><p>join_product :
-forall {I : choiceType} {T : topology_structure.Topological.type}
-  {U_ : I -> topology_structure.Topological.type},
-(forall i : I,
- topology_structure.Topological.sort T ->
- topology_structure.Topological.sort (U_ i)) ->
-topology_structure.Topological.sort T ->
-topology_structure.Topological.sort
-  (prod_topology (fun x : I => topology_structure.Topological.sort (U_ x)))
+forall {I : choiceType} {T : topologicalType} {U_ : I -> topologicalType},
+(forall i : I, T -> U_ i) -> T -> prod_topology (fun x : I => U_ x)
 
 join_product is not universe polymorphic
 Arguments join_product {I T} {U_}%_function_scope f_%_function_scope x i
@@ -1369,9 +1358,7 @@ Qed.</div></details>
 <span class="vernacular">Section</span><span class="id"> compact_open</span>.<br/>
 <span class="vernacular">Context</span><span class="id"> {</span><span id="compact_open.T" class="id"><a name="compact_open.T" class="">T</a></span><span class="id"> </span><span id="compact_open.U" class="id"><a name="compact_open.U" class="">U</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#Topological.Exports.topologicalType">topologicalType</a></span><span class="id">}</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="compact_open" class="id"><div name="compact_open" class=" tooltip">compact_open<span class='tooltip-area'><p>compact_open :
-topology_structure.Topological.type ->
-topology_structure.Topological.type -> Type
+<span class="vernacular">Definition</span><span class="id"> </span><span id="compact_open" class="id"><div name="compact_open" class=" tooltip">compact_open<span class='tooltip-area'><p>compact_open : topologicalType -> topologicalType -> Type
 
 compact_open is not universe polymorphic
 Arguments compact_open {T U}
@@ -1386,9 +1373,7 @@ library mathcomp.analysis.topology_theory.function_spaces, line 926, characters 
 <span class="vernacular">Context</span><span class="id"> {</span><span id="compact_open.compact_open_setwise.K" class="id"><a name="compact_open.compact_open_setwise.K" class="">K</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.classical_sets.html#set">set</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#compact_open.T">T</a></span><span class="id">}</span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="compact_openK" class="id"><div name="compact_openK" class=" tooltip">compact_openK<span class='tooltip-area'><p>compact_openK :
-forall {T : topology_structure.Topological.type},
-topology_structure.Topological.type ->
-set (topology_structure.Topological.sort T) -> Type
+forall {T : topologicalType}, topologicalType -> set T -> Type
 
 compact_openK is not universe polymorphic
 Arguments compact_openK {T U} {K}%_classical_set_scope
@@ -1400,12 +1385,8 @@ library mathcomp.analysis.topology_theory.function_spaces, line 931, characters 
 </p></span></div></span><span class="id"> :=</span><span class="gallina-kwd"> let</span><span class="id"> _</span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#compact_open.compact_open_setwise.K">K</a></span><span class="gallina-kwd"> in</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#compact_open">compact_open</a></span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="compact_openK_nbhs" class="id"><div name="compact_openK_nbhs" class=" tooltip">compact_openK_nbhs<span class='tooltip-area'><p>compact_openK_nbhs :
-forall {T U : topology_structure.Topological.type}
-  {K : set (topology_structure.Topological.sort T)},
-compact_openK ->
-set_system
-  (topology_structure.Topological.sort T ->
-   topology_structure.Topological.sort U)
+forall {T U : topologicalType} {K : set T},
+compact_openK -> set_system (T -> U)
 
 compact_openK_nbhs is not universe polymorphic
 Arguments compact_openK_nbhs {T U} {K}%_classical_set_scope f _
@@ -1437,9 +1418,7 @@ Qed.</div></details>
 <span id="function_spaces_compact_openK__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_224" class="id"><span id="function_spaces_compact_openK__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_223" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_220" class="id"><a name="function_spaces_compact_openK__canonical__filter_Nbhs" class="">HB</a></span></span></span></span></span></span></span>.<span id="function_spaces_compact_openK__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_224" class="id"><span id="function_spaces_compact_openK__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_223" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_220" class="id"><a name="function_spaces_compact_openK__canonical__filter_Nbhs" class="">instance</a></span></span></span></span></span></span></span><span id="function_spaces_compact_openK__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_224" class="id"><span id="function_spaces_compact_openK__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_223" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_220" class="id"><a name="function_spaces_compact_openK__canonical__filter_Nbhs" class=""> Definition</a></span></span></span></span></span></span></span><span id="function_spaces_compact_openK__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_224" class="id"><span id="function_spaces_compact_openK__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_223" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_220" class="id"><a name="function_spaces_compact_openK__canonical__filter_Nbhs" class=""> _</a></span></span></span></span></span></span></span><span id="function_spaces_compact_openK__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_224" class="id"><span id="function_spaces_compact_openK__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_223" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_220" class="id"><a name="function_spaces_compact_openK__canonical__filter_Nbhs" class=""> :=</a></span></span></span></span></span></span></span><span id="function_spaces_compact_openK__canonical__filter_Nbhs" class="id"><span id="HB_unnamed_mixin_224" class="id"><span id="function_spaces_compact_openK__canonical__filter_Filtered" class="id"><span id="HB_unnamed_mixin_223" class="id"><span id="filter_hasNbhs__to__filter_isFiltered" class="id"><span id="filter_hasNbhs__to__filter_selfFiltered" class="id"><span id="HB_unnamed_factory_220" class="id"><a name="function_spaces_compact_openK__canonical__filter_Nbhs" class=""> hasNbhs</a></span></span></span></span></span></span></span>.<span class="id"><a href="mathcomp.classical.filter.html#hasNbhs.Build">Build</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#compact_openK">compact_openK</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#compact_openK_nbhs">compact_openK_nbhs</a></span>.<br/>
 <br/>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="compact_open_of_nbhs" class="id"><div name="compact_open_of_nbhs" class=" tooltip">compact_open_of_nbhs<span class='tooltip-area'><p>compact_open_of_nbhs :
-forall {T U : topology_structure.Topological.type}
-  {K : set (topology_structure.Topological.sort T)},
-set (set compact_openK)
+forall {T U : topologicalType} {K : set T}, set (set compact_openK)
 
 compact_open_of_nbhs is not universe polymorphic
 Arguments compact_open_of_nbhs {T U} {K}%_classical_set_scope _
@@ -1476,9 +1455,7 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">End</span><span class="id"> compact_open_setwise</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="compact_open_def" class="id"><div name="compact_open_def" class=" tooltip">compact_open_def<span class='tooltip-area'><p>compact_open_def :
-topology_structure.Topological.type ->
-topology_structure.Topological.type -> Type
+<span class="vernacular">Definition</span><span class="id"> </span><span id="compact_open_def" class="id"><div name="compact_open_def" class=" tooltip">compact_open_def<span class='tooltip-area'><p>compact_open_def : topologicalType -> topologicalType -> Type
 
 compact_open_def is not universe polymorphic
 Arguments compact_open_def {T U}
@@ -1598,10 +1575,7 @@ Qed.</div></details>
 &nbsp;&nbsp;&nbsp;&nbsp;(<span class="id"><a href="mathcomp.analysis.topology_theory.initial_topology.html#initial_topology">initial_topology</a></span> (<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrfun.html#id">id</a></span><span class="id"> :</span> (<span class="id"><a href="mathcomp.analysis.topology_theory.topology_structure.html#Continuous.Exports.continuousType">continuousType</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#U:453">U</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#V:454">V</a></span>)<span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span> (<span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#U:453">U</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#V:454">V</a></span>)) ).<br/>
 <span class="vernacular">End</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.function_spaces.html#ArrowAsCompactOpen">ArrowAsCompactOpen</a></span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="compactly_in" class="id"><div name="compactly_in" class=" tooltip">compactly_in<span class='tooltip-area'><p>compactly_in :
-forall {U : topology_structure.Topological.type},
-set (topology_structure.Topological.sort U) ->
-set (set (topology_structure.Topological.sort U))
+<span class="vernacular">Definition</span><span class="id"> </span><span id="compactly_in" class="id"><div name="compactly_in" class=" tooltip">compactly_in<span class='tooltip-area'><p>compactly_in : forall {U : topologicalType}, set U -> set (set U)
 
 compactly_in is not universe polymorphic
 Arguments compactly_in {U} A%_classical_set_scope _
@@ -1723,9 +1697,8 @@ Qed.</div></details>
 <div class="doc">The key condition in Arzela-Ascoli that, like uniform continuity, moves a
     quantifier around so all functions have the same "deltas": </div>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="equicontinuous" class="id"><div name="equicontinuous" class=" tooltip">equicontinuous<span class='tooltip-area'><p>equicontinuous :
-forall {X : topology_structure.Topological.type} {Y : puniformType}
-  {I : Type},
-set I -> (I -> topology_structure.Topological.sort X -> Y) -> Prop
+forall {X : topologicalType} {Y : puniformType} {I : Type},
+set I -> (I -> X -> Y) -> Prop
 
 equicontinuous is not universe polymorphic
 Arguments equicontinuous {X Y} {I}%_type_scope W%_classical_set_scope
@@ -1779,9 +1752,8 @@ Qed.</div></details>
 <div class="doc md"> A convenient notion that is in between compactness in
    `{family compact, X -&gt; y}` and compactness in `{ptws X -&gt; y}`:</div>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="pointwise_precompact" class="id"><div name="pointwise_precompact" class=" tooltip">pointwise_precompact<span class='tooltip-area'><p>pointwise_precompact :
-forall {X : topology_structure.Topological.type} {Y : puniformType}
-  {I : Type},
-set I -> (I -> topology_structure.Topological.sort X -> Y) -> Prop
+forall {X : topologicalType} {Y : puniformType} {I : Type},
+set I -> (I -> X -> Y) -> Prop
 
 pointwise_precompact is not universe polymorphic
 Arguments pointwise_precompact {X Y} {I}%_type_scope 
@@ -1879,8 +1851,7 @@ Qed.</div></details>
 <span class="vernacular">Definition</span><span class="id"> </span><span id="small_ent_sub" class="id"><div name="small_ent_sub" class=" tooltip">small_ent_sub<span class='tooltip-area'><p>small_ent_sub :
 forall {Y : puniformType} [E : set (Y * Y)],
 entourage E ->
-filter.prop_near1 (filter.powerset_filter_from entourage) (P:=subset^~ E)
-  (inPhantom (forall E' : set (Y * Y), (E' `<=` E)%classic))
+\forall E' \near powerset_filter_from entourage, (E' `<=` E)%classic
 
 small_ent_sub is not universe polymorphic
 Arguments small_ent_sub {Y} [E]%_classical_set_scope _
@@ -2244,15 +2215,7 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">End</span><span class="id"> big_continuous</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="eval" class="id"><div name="eval" class=" tooltip">eval<span class='tooltip-area'><p>eval :
-forall {X Y : topology_structure.Topological.type},
-topology_structure.Continuous.type
-  (topology_structure.Topological.Exports.topology_structure_Topological__to__filter_Nbhs
-     X)
-  (topology_structure.Topological.Exports.topology_structure_Topological__to__filter_Nbhs
-     Y) *
-topology_structure.Topological.sort X ->
-topology_structure.Topological.sort Y
+<span class="vernacular">Definition</span><span class="id"> </span><span id="eval" class="id"><div name="eval" class=" tooltip">eval<span class='tooltip-area'><p>eval : forall {X Y : topologicalType}, continuousType X Y * X -> Y
 
 eval is not universe polymorphic
 Arguments eval {X Y} _
