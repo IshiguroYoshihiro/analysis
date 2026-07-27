@@ -353,13 +353,24 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">End</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.Rstruct_topology.html#RexpE">RexpE</a></span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="RexpE" class="id"><div name="RexpE" class=" tooltip">RexpE<span class='tooltip-area'><p>ereal_loc_seq : forall [R : numDomainType], \bar R -> nat -> \bar R
+<span class="vernacular">Definition</span><span class="id"> </span><span id="RexpE" class="id"><div name="RexpE" class=" tooltip">RexpE<span class='tooltip-area'><p>lt_expandRL :
+forall [R : realFieldType],
+{in predT & [pred r | (`|r| <= 1)%R],
+  forall (x : \bar R) (y : R),
+  (x < expand (R:=R) y)%E = (contract (R:=R) x < y)%R}
 
-ereal_loc_seq is not universe polymorphic
-Arguments ereal_loc_seq [R] x%_ereal_scope n%_nat_scope
-ereal_loc_seq is transparent
-Expands to: Constant mathcomp.analysis.ereal.ereal_loc_seq
-Declared in library mathcomp.analysis.ereal, line 1536, characters 11-24
+lt_expandRL is not universe polymorphic
+Expanded type for implicit arguments
+lt_expandRL :
+forall [R : realFieldType] [x : \bar R] [y : R],
+x \in predT ->
+y \in [pred r | (`|r| <= 1)%R] ->
+(x < expand (R:=R) y)%E = (contract (R:=R) x < y)%R
+
+Arguments lt_expandRL [R x y] _ _
+lt_expandRL is transparent
+Expands to: Constant mathcomp.analysis.ereal.lt_expandRL
+Declared in library mathcomp.analysis.ereal, line 1074, characters 11-22
 </p></span></div></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.Rstruct_topology.html#RexpE">RexpE</a></span>.<span class="id"><a href="mathcomp.analysis_stdlib.Rstruct_topology.html#RexpE">RexpE</a></span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="RlnE" class="id"><a name="RlnE" class="">RlnE</a></span> (<span id="x:22" class="id"><a name="x:22" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/doc/V9.1.0/stdlib/Stdlib.Reals.Rdefinitions.html#RbaseSymbolsImpl.R">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/doc/V9.1.0/stdlib/Stdlib.Reals.Rpower.html#ln">Rpower</a></span>.<span class="id"><a href="https://rocq-prover.org/doc/V9.1.0/stdlib/Stdlib.Reals.Rpower.html#ln">ln</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.Rstruct_topology.html#x:22">x</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> =</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"> </a></span><span class="id"><a href="mathcomp.analysis.exp.html#ln">exp</a></span>.<span class="id"><a href="mathcomp.analysis.exp.html#ln">ln</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.Rstruct_topology.html#x:22">x</a></span>.<br/>
@@ -373,7 +384,13 @@ Declared in library mathcomp.analysis.ereal, line 1536, characters 11-24
 <span class="gallina-kwd">by</span><span class="id"> case:</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/doc/V9.1.0/stdlib/Stdlib.Reals.Rpower.html#ln_exists">ln_exists</a></span><span class="id"> =&gt;</span><span class="id"> y</span><span class="id"> -&gt;;</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis_stdlib.Rstruct_topology.html#RexpE">RexpE</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.exp.html#expRK">exp</a></span>.<span class="id"><a href="mathcomp.analysis.exp.html#expRK">expRK</a></span>.<br/>
 Qed.</div></details>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="RealsE" class="id"><div name="RealsE" class=" tooltip">RealsE<span class='tooltip-area'><p><infomsg>[Loading ML file rocq-runtime.plugins.ring ... done]</infomsg>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="RealsE" class="id"><div name="RealsE" class=" tooltip">RealsE<span class='tooltip-area'><p>ereal_loc_seq : forall [R : numDomainType], \bar R -> nat -> \bar R
+
+ereal_loc_seq is not universe polymorphic
+Arguments ereal_loc_seq [R] x%_ereal_scope n%_nat_scope
+ereal_loc_seq is transparent
+Expands to: Constant mathcomp.analysis.ereal.ereal_loc_seq
+Declared in library mathcomp.analysis.ereal, line 1536, characters 11-24
 </p></span></div></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.reals_stdlib.Rstruct.html#RealsE">RealsE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.analysis_stdlib.Rstruct_topology.html#RexpE">RexpE</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"> </a></span><span class="id"><a href="mathcomp.analysis_stdlib.Rstruct_topology.html#RlnE">RlnE</a></span>).<br/>
 
       <div class="footer"><hr/>Generated by <a href="https://github.com/affeldt-aist/rocqnavi/">rocqnavi</a></div>

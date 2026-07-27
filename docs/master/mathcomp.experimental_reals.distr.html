@@ -272,17 +272,17 @@
 &nbsp;&nbsp;_ <span class="id"> :</span> <span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.realsum.html#psum">psum</a></span><span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.distr.html#mu:7">mu</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id">1</span><br/>
 <span class="id">}</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="distr_of" class="id"><div name="distr_of" class=" tooltip">distr_of<span class='tooltip-area'><p>countable_countMixin :
+<span class="vernacular">Definition</span><span class="id"> </span><span id="distr_of" class="id"><div name="distr_of" class=" tooltip">distr_of<span class='tooltip-area'><p>countable_choiceMixin :
 forall [T : eqType] [E : pred T],
-countable (T:=T) E -> Countable.axioms_ [psub E]
+countable (T:=T) E -> Choice.axioms_ [psub E]
 
-countable_countMixin is not universe polymorphic
-Arguments countable_countMixin [T E] c
-countable_countMixin is transparent
+countable_choiceMixin is not universe polymorphic
+Arguments countable_choiceMixin [T E] c
+countable_choiceMixin is transparent
 Expands to: Constant
-            mathcomp.experimental_reals.discrete.countable_countMixin
+            mathcomp.experimental_reals.discrete.countable_choiceMixin
 Declared in
-library mathcomp.experimental_reals.discrete, line 110, characters 11-31
+library mathcomp.experimental_reals.discrete, line 112, characters 11-32
 </p></span></div></span><span class="id"> &amp;</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#phant">phant</a></span><span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.distr.html#Distribution.R">R</a></span><span class="id"> &amp;</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#phant">phant</a></span><span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.distr.html#Distribution.T">T</a></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.distr.html#distr">distr</a></span>.<br/>
 <span class="vernacular">End</span><span class="id"> Distribution</span>.<br/>
 <br/>
@@ -318,18 +318,7 @@ library mathcomp.experimental_reals.discrete, line 110, characters 11-31
 <span class="vernacular">Section</span><span class="id"> Clamp</span>.<br/>
 <span class="vernacular">Context</span><span class="id"> {</span><span id="Clamp.R" class="id"><a name="Clamp.R" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.reals.html#Real.Exports.realType">realType</a></span><span class="id">}</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="clamp" class="id"><div name="clamp" class=" tooltip">clamp<span class='tooltip-area'><p>countable_choiceMixin :
-forall [T : eqType] [E : pred T],
-countable (T:=T) E -> Choice.axioms_ [psub E]
-
-countable_choiceMixin is not universe polymorphic
-Arguments countable_choiceMixin [T E] c
-countable_choiceMixin is transparent
-Expands to: Constant
-            mathcomp.experimental_reals.discrete.countable_choiceMixin
-Declared in
-library mathcomp.experimental_reals.discrete, line 112, characters 11-32
-</p></span></div></span> (<span id="x:14" class="id"><a name="x:14" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.distr.html#Clamp.R">R</a></span>)<span class="id"> :=</span><br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="clamp" class="id"><div name="clamp" class=" tooltip">clamp<span class='tooltip-area'></span></div></span> (<span id="x:14" class="id"><a name="x:14" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.distr.html#Clamp.R">R</a></span>)<span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.max">Num</a></span>.<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.max">max</a></span> (<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.min">Num</a></span>.<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.min">min</a></span><span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.distr.html#x:14">x</a></span><span class="id"> 1</span>)<span class="id"> 0</span>.<br/>
 <br/>
 <span class="vernacular">Lemma</span><span class="id"> </span><span id="ge0_clamp" class="id"><a name="ge0_clamp" class="">ge0_clamp</a></span><span class="id"> </span><span id="x:15" class="id"><a name="x:15" class="">x</a></span><span class="id"> :</span><span class="id"> 0</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id"><a href="mathcomp.experimental_reals.distr.html#clamp">clamp</a></span><span class="id"> </span><span class="id"><a href="mathcomp.experimental_reals.distr.html#x:15">x</a></span>.<br/>
