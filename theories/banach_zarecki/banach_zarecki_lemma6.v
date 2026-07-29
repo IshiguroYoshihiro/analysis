@@ -1625,33 +1625,47 @@ have Zcd n : Z `<=` \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic.
     
     move=> x [hZx].
     rewrite {1}/bigcup/= exists2E; move/forallNP => ncdx.
-     (* x < b_ n jbとなる最小のjb (remark: sorted <=%R (seq_b n)) *)
-   pose m := (find (> x) (seq_b n)).
-    exists m => //=.
+     (* x < b_ n k となる最小のk (remark: sorted <=%R (seq_b n)) *)
+    have has_b : has (> x) (seq_b n).
+      apply/(has_nthP d).
+      exists n => //.
+       by rewrite size_seq_ab.
+     have := ncdx n.
+     rewrite -implypN.
+     rewrite (leqnSn n.+1) => /(_ isT)/negP.
+     rewrite in_itv/= negb_andb -2!ltNge.
+     move/orP => [|].
+       rewrite cbE.
+       case: n ncdx => //=[_|n ncdx].
+         move: hZx.
+         by rewrite ltNge compact_Rhull//= in_itv/= -/c => /andP[+ _] /negP.
+       move/lt_le_trans; apply.
+       move: (sorted_b n.+1).
+       rewrite (_: seq_b n.+1 = rcons (take n.+1 (seq_b n.+1)) (b_ n.+1 n.+1)).
+         rewrite -[LHS](take_size (seq_b n.+1)).
+         by rewrite size_seq_ab (take_nth d)// size_seq_ab.
+       rewrite le_sorted_rconsE => /andP[_ /allP].
+       rewrite nth_rcons size_take size_seq_ab ltnSn ltnn eqxx; apply.
+       rewrite in_take_leq ?size_seq_ab//.
+       by rewrite ltnS index_nth ?size_seq_ab.
+     rewrite daE -/(b_ n).
+     admit.
+    pose k := (find (> x) (seq_b n)).
+    exists k => //=.
       rewrite (_: n.+1 = (size (seq_b n))); first by rewrite size_seq_ab.
-      admit.
-    have has_b : has (<%R x) (seq_b n).
-      apply/hasP.
-      exists (b_ n n) => //=.
-        by apply: mem_nth; rewrite size_seq_ab.
-      rewrite ltNge; apply/negP => xbnn.
-      apply: (ncdx n.+1); split => //.
-      rewrite in_itv/=.
-      rewrite cbE daE/=.
-      apply/andP; split => //.
-      rewrite /a_ nth_default.
-        by rewrite size_seq_ab.
-      move: hZx.
-      by rewrite compact_Rhull//=; rewrite in_itv/= => /andP[].
-    
+      by rewrite -has_find.
     rewrite in_itv/=; apply/andP; split.
-      have [->|] := eqVneq m 0%N.
-        rewrite ltNge; apply/negP => xan0.
+    apply: (le_lt_trans (aleb n k)).
+    have := (nth_find d has_b).
+      have [->|] := eqVneq k 0%N.
+        rewrite ltNge.
+(* ; move/negP => xan0.
         apply: (ncdx 0); split => //.
         rewrite in_itv/=; apply/andP; split.
           rewrite cbE/=; apply: (le_trans (clea n 0)).
-          admit.
+*)
         admit.
+
       admit.
 (*
       have hp : has p (seq_b n).
