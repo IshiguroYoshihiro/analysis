@@ -1605,7 +1605,7 @@ have cled n i : c_ n i <= d_ n i.
   rewrite cbE daE.
   case: i => /=[|i]; first exact: clea.
   exact: blea.
-(* lemma *)
+(* lemma  *)
 have Zcd n : Z `<=` \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic.
   suff : [set` Rhull Z] `\` \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic
     `<=` cplt_hull Z.
@@ -1630,60 +1630,31 @@ have Zcd n : Z `<=` \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic.
       apply/(has_nthP d).
       exists n => //.
        by rewrite size_seq_ab.
-     have := ncdx n.
-     rewrite -implypN.
-     rewrite (leqnSn n.+1) => /(_ isT)/negP.
-     rewrite in_itv/= negb_andb -2!ltNge.
-     move/orP => [|].
-       rewrite cbE.
-       case: n ncdx => //=[_|n ncdx].
-         move: hZx.
-         by rewrite ltNge compact_Rhull//= in_itv/= -/c => /andP[+ _] /negP.
-       move/lt_le_trans; apply.
-       move: (sorted_b n.+1).
-       rewrite (_: seq_b n.+1 = rcons (take n.+1 (seq_b n.+1)) (b_ n.+1 n.+1)).
-         rewrite -[LHS](take_size (seq_b n.+1)).
-         by rewrite size_seq_ab (take_nth d)// size_seq_ab.
-       rewrite le_sorted_rconsE => /andP[_ /allP].
-       rewrite nth_rcons size_take size_seq_ab ltnSn ltnn eqxx; apply.
-       rewrite in_take_leq ?size_seq_ab//.
-       by rewrite ltnS index_nth ?size_seq_ab.
-     rewrite daE -/(b_ n).
-     admit.
+     have := ncdx n.+1.
+       rewrite ltnSn => /andP; rewrite andTb.
+       rewrite in_itv/= negb_andb -!ltNge => /orP[|].
+       by rewrite cbE/=.
+     rewrite daE /a_ nth_default ?size_seq_ab// ltNge => /negP.
+     by have := hZx; rewrite compact_Rhull//= in_itv/= => /andP[].
     pose k := (find (> x) (seq_b n)).
+    have kn1 : (k < n.+1)%N.
+      by move: has_b; rewrite has_find size_seq_ab.
     exists k => //=.
-      rewrite (_: n.+1 = (size (seq_b n))); first by rewrite size_seq_ab.
-      by rewrite -has_find.
-    rewrite in_itv/=; apply/andP; split.
-    apply: (le_lt_trans (aleb n k)).
-    have := (nth_find d has_b).
-      have [->|] := eqVneq k 0%N.
-        rewrite ltNge.
-(* ; move/negP => xan0.
-        apply: (ncdx 0); split => //.
-        rewrite in_itv/=; apply/andP; split.
-          rewrite cbE/=; apply: (le_trans (clea n 0)).
-*)
-        admit.
-
-      admit.
-(*
-      have hp : has p (seq_b n).
-      apply/hasP.
-      exists (b_ n n).
-      - rewrite /b_; apply: mem_nth.
-        by rewrite size_b.
-      - rewrite /p.
-*)
-(*    have : exists jb, x < b_ n jb.
-      rewrite nth_find//.
-      admit.
-    apply/not_notP; rewrite /bigcup/= exists2E => /forallNP nabx.
-    move: hZx.
-    rewrite -(setUIDK [set` _] Z) -/(cplt_hull Z) setIidr.
-      exact: sub_Rhull.
-*)
-    admit.
+    rewrite in_itv/=; apply/andP; split; last by rewrite nth_find.
+    have [k0|] := eqVneq k 0.
+      rewrite k0 ltNge; apply/negP => xan0.
+      apply: (ncdx 0); split => //; rewrite in_itv cbE daE/=.
+      apply/andP; split => //.
+      by move: hZx; rewrite compact_Rhull//= in_itv/= => /andP[].
+    rewrite -leqn0 -ltnNge => k0.
+    rewrite ltNge; apply/negP => xank.
+    apply: (ncdx k); split; first by rewrite ltnS ltnW.
+    rewrite in_itv/= cbE daE ifF.
+      by apply/negP/negP; rewrite -leqn0 -ltnNge.
+    apply/andP; split => //.
+    rewrite leNgt; apply/negP/negP; apply: negbT.
+    apply: before_find; rewrite -/k.
+    by rewrite ltn_predL.
   rewrite bigcup_contiguous_intervals//.
   rewrite bigcup_contiguous_intervals_support.
   rewrite (_: \bigcup_(k in supp) contiguous_intervals Z k =
