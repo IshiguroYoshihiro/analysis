@@ -1668,8 +1668,34 @@ have Zcd n : Z `<=` \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic.
   exists (idx n i) => //.
   by rewrite contiguous_ooitv.
 (* lemma *)
-have citvScd n m : (n \notin [seq h1 i | i <- iota 0 m.+1]) ->
-   exists i, (i < m.+2)%N /\ contiguous_intervals Z n `<=` `[c_ m i, d_ m i].
+have citvScd n m : supp n -> n \notin [seq h1 i | i <- iota 0 m.+1] ->
+   exists i, (i < m.+1)%N /\ contiguous_intervals Z n `<=` `[c_ m i, d_ m i].
+  move=> suppn nh1.
+  have: (exists2 k, (m < k)%N & n = h1 k).
+    exists (h n) => //.
+      rewrite ltnNge; apply/negP => hnm.
+      apply/(negP nh1).
+      rewrite -{1}(h1h n); first by rewrite inE.
+      rewrite mem_map => //.
+      by rewrite mem_iota.
+    by rewrite h1h// inE.
+  move=> [k mk nh1k].
+  have := bigcup_contiguous_intervals closedZ.
+  rewrite (_: \bigcup_k0 contiguous_intervals Z k0 =
+                \bigcup_(k0 in supp) contiguous_intervals Z k0).
+    rewrite -(setUIDK [set: nat] supp).
+    rewrite setIidr//.
+    rewrite bigcup_setU.
+    rewrite [X in _ `|` X]bigcup0.
+      move=> i /=[_].
+      rewrite /supp /contiguous_intervals_support/=.
+      by move/set0P/negP; rewrite negbK => /eqP.
+    by rewrite setU0.
+  rewrite (_: \bigcup_(k0 in supp) contiguous_intervals Z k0 =
+              \bigcup_k0 contiguous_intervals Z (h1 k0)).
+    have [fh1 ih1 sh1] := @bij _ _ _ _ h1.
+    by rewrite (reindex_bigcup h1 [set: nat] supp _ fh1 sh1).
+  
   admit.
 have hullZ_abcd n : [set` Rhull Z] =
      \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic `|`
@@ -1710,13 +1736,13 @@ have hullZ_abcd n : [set` Rhull Z] =
         rewrite /=.
         done.
       left.
-      have [] := (citvScd i n); first by [].
+      have ih1hi : i = h1 (h i) by rewrite h1h// inE; exists r.
+      have [] := (citvScd i n _ hin).
+        by exists r.
       move=> j [xn2 Zj].
       exists j => //.
-      case: j xn2 Zj.
-        by move=> _; rewrite cbE daE//=; apply.
-      move=> j.
-      by rewrite ltnS => jn1; rewrite cbE daE/=; apply.
+        by rewrite /= ltnS ltnW.
+      exact: Zj.
     + move=> Zr.
       left.
       suff: ~ (\bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic) r.
