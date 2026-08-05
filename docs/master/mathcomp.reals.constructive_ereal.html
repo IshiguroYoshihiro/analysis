@@ -371,21 +371,22 @@ Detailed documentation:
 <div class="proofscript">
 <span class="gallina-kwd"> by</span><span class="id"> move=&gt;</span><span class="id"> a</span><span class="id"> b;</span><span class="id"> case</span>. Qed.</div></details>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="dual_extended" class="id"><div name="dual_extended" class=" tooltip">dual_extended<span class='tooltip-area'><p>Internals.nand_false_bool : forall b : bool, Internals.nandBool b
+<span class="vernacular">Definition</span><span class="id"> </span><span id="dual_extended" class="id"><div name="dual_extended" class=" tooltip">dual_extended<span class='tooltip-area'><p>Internals.inhabited_wProp : forall T : Type, Internals.properWitnessProp T
+
+Internals.inhabited_wProp is not universe polymorphic
+Arguments Internals.inhabited_wProp T%_type_scope
+Internals.inhabited_wProp is transparent
+Expands to: Constant mathcomp.classical.contra.Internals.inhabited_wProp
+Declared in library mathcomp.classical.contra, line 712, characters 10-25
+</p></span></div></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#extended">extended</a></span>.<br/>
+<br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="dEFin" class="id"><div name="dEFin" class=" tooltip">dEFin<span class='tooltip-area'><p>Internals.nand_false_bool : forall b : bool, Internals.nandBool b
 
 Internals.nand_false_bool is not universe polymorphic
 Arguments Internals.nand_false_bool b%_bool_scope
 Internals.nand_false_bool is transparent
 Expands to: Constant mathcomp.classical.contra.Internals.nand_false_bool
 Declared in library mathcomp.classical.contra, line 724, characters 10-25
-</p></span></div></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#extended">extended</a></span>.<br/>
-<br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="dEFin" class="id"><div name="dEFin" class=" tooltip">dEFin<span class='tooltip-area'><p>Internals.nand_true_bool : Internals.nandBool false
-
-Internals.nand_true_bool is not universe polymorphic
-Internals.nand_true_bool is transparent
-Expands to: Constant mathcomp.classical.contra.Internals.nand_true_bool
-Declared in library mathcomp.classical.contra, line 725, characters 10-24
 </p></span></div></span><span class="id"> :</span><span class="gallina-kwd"> forall</span><span class="id"> {</span><span id="R:5" class="id"><a name="R:5" class="">R</a></span><span class="id">},</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#R:5">R</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#dual_extended">dual_extended</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#R:5">R</a></span><span class="id"> :=</span><span class="id"> @</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#EFin">EFin</a></span>.<br/>
 <br/>
 <span class="vernacular">Notation</span> <span id="78e564c7ecacb57c4b0a0cf13b41fea4" class="id"><a name="78e564c7ecacb57c4b0a0cf13b41fea4" class="">&quot;+oo&quot;</a></span><span class="id"> :=</span> (<span class="id">@</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#EPInf">EPInf</a></span><span class="id"> _</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#dual_extended">dual_extended</a></span><span class="id"> _</span>)<span class="id"> :</span><span class="id"> ereal_dual_scope</span>.<br/>
@@ -409,19 +410,12 @@ Declared in library mathcomp.classical.contra, line 725, characters 10-24
 <br/>
 <span class="vernacular">Local</span><span class="vernacular"> Open</span><span class="vernacular"> Scope</span><span class="id"> ereal_scope</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="er_map" class="id"><div name="er_map" class=" tooltip">er_map<span class='tooltip-area'><p>Internals.and_wProp :
-forall [s : bool] [S : Type] [P0 : Prop],
-Internals.witnessProp s P0 S ->
-forall [t : Internals.nandBool s] [T : Type] [Q0 : Prop],
-Internals.witnessProp (Internals.nand_bool t) Q0 T ->
-Internals.properWitnessProp (S * T)
+<span class="vernacular">Definition</span><span class="id"> </span><span id="er_map" class="id"><div name="er_map" class=" tooltip">er_map<span class='tooltip-area'><p>Internals.nand_true_bool : Internals.nandBool false
 
-Internals.and_wProp is not universe polymorphic
-Arguments Internals.and_wProp [s]%_bool_scope [S P0]%_type_scope 
-  P [t] [T Q0]%_type_scope Q
-Internals.and_wProp is transparent
-Expands to: Constant mathcomp.classical.contra.Internals.and_wProp
-Declared in library mathcomp.classical.contra, line 730, characters 10-19
+Internals.nand_true_bool is not universe polymorphic
+Internals.nand_true_bool is transparent
+Expands to: Constant mathcomp.classical.contra.Internals.nand_true_bool
+Declared in library mathcomp.classical.contra, line 725, characters 10-24
 </p></span></div></span><span class="id"> </span><span id="T:6" class="id"><a name="T:6" class="">T</a></span><span class="id"> </span><span id="T':7" class="id"><a name="T':7" class="">T'</a></span> (<span id="f:8" class="id"><a name="f:8" class="">f</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#T:6">T</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#T':7">T'</a></span>) (<span id="x:9" class="id"><a name="x:9" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#T:6">T</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#T':7">T'</a></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="gallina-kwd">match</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x:9">x</a></span><span class="gallina-kwd"> with</span><br/>
 &nbsp;&nbsp;<span class="id">|</span><span class="id"> r</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"> =&gt;</span> (<span class="id"><a href="mathcomp.reals.constructive_ereal.html#f:8">f</a></span><span class="id"> r</span>)<span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><br/>
@@ -435,7 +429,25 @@ Declared in library mathcomp.classical.contra, line 730, characters 10-19
 <div class="proofscript">
 <span class="gallina-kwd"> by</span><span class="id"> case:</span><span class="id"> x</span>. Qed.</div></details>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="fine" class="id"><div name="fine" class=" tooltip">fine<span class='tooltip-area'><p>Internals.or_wProp :
+<span class="vernacular">Definition</span><span class="id"> </span><span id="fine" class="id"><div name="fine" class=" tooltip">fine<span class='tooltip-area'><p>Internals.and_wProp :
+forall [s : bool] [S : Type] [P0 : Prop],
+Internals.witnessProp s P0 S ->
+forall [t : Internals.nandBool s] [T : Type] [Q0 : Prop],
+Internals.witnessProp (Internals.nand_bool t) Q0 T ->
+Internals.properWitnessProp (S * T)
+
+Internals.and_wProp is not universe polymorphic
+Arguments Internals.and_wProp [s]%_bool_scope [S P0]%_type_scope 
+  P [t] [T Q0]%_type_scope Q
+Internals.and_wProp is transparent
+Expands to: Constant mathcomp.classical.contra.Internals.and_wProp
+Declared in library mathcomp.classical.contra, line 730, characters 10-19
+</p></span></div></span><span class="id"> {</span><span id="R:13" class="id"><a name="R:13" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.nmodule#Algebra.Zmodule.Exports.zmodType">zmodType</a></span><span class="id">}</span><span class="id"> </span><span id="x:14" class="id"><a name="x:14" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#R:13">R</a></span><span class="id"> :=</span><span class="gallina-kwd"> if</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x:14">x</a></span><span class="id"> is</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#EFin">EFin</a></span><span class="id"> v</span><span class="gallina-kwd"> then</span><span class="id"> v</span><span class="gallina-kwd"> else</span><span class="id"> 0</span>.<br/>
+<br/>
+<span class="vernacular">Section</span><span class="id"> EqEReal</span>.<br/>
+<span class="vernacular">Variable</span> (<span id="EqEReal.R" class="id"><a name="EqEReal.R" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#Equality.Exports.eqType">eqType</a></span>).<br/>
+<br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="eq_ereal" class="id"><div name="eq_ereal" class=" tooltip">eq_ereal<span class='tooltip-area'><p>Internals.or_wProp :
 forall [s : bool] [S : Type] [P0 : Prop],
 Internals.witnessProp s P0 S ->
 forall [t : bool] [T : Type] [Q0 : Prop],
@@ -449,22 +461,6 @@ Arguments Internals.or_wProp [s]%_bool_scope [S P0]%_type_scope
 Internals.or_wProp is transparent
 Expands to: Constant mathcomp.classical.contra.Internals.or_wProp
 Declared in library mathcomp.classical.contra, line 742, characters 10-18
-</p></span></div></span><span class="id"> {</span><span id="R:13" class="id"><a name="R:13" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.nmodule#Algebra.Zmodule.Exports.zmodType">zmodType</a></span><span class="id">}</span><span class="id"> </span><span id="x:14" class="id"><a name="x:14" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#R:13">R</a></span><span class="id"> :=</span><span class="gallina-kwd"> if</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x:14">x</a></span><span class="id"> is</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#EFin">EFin</a></span><span class="id"> v</span><span class="gallina-kwd"> then</span><span class="id"> v</span><span class="gallina-kwd"> else</span><span class="id"> 0</span>.<br/>
-<br/>
-<span class="vernacular">Section</span><span class="id"> EqEReal</span>.<br/>
-<span class="vernacular">Variable</span> (<span id="EqEReal.R" class="id"><a name="EqEReal.R" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#Equality.Exports.eqType">eqType</a></span>).<br/>
-<br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="eq_ereal" class="id"><div name="eq_ereal" class=" tooltip">eq_ereal<span class='tooltip-area'><p>Internals.exists_wProp :
-forall [A : Type] [t : bool] [T : A -> Type] [P0 : A -> Prop],
-(forall x : A, Internals.witnessProp t (P0 x) (T x)) ->
-Internals.properWitnessProp (if t then {x : A | P0 x} else {x : A & T x})
-
-Internals.exists_wProp is not universe polymorphic
-Arguments Internals.exists_wProp [A]%_type_scope [t]%_bool_scope
-  [T P0]%_function_scope P%_function_scope
-Internals.exists_wProp is transparent
-Expands to: Constant mathcomp.classical.contra.Internals.exists_wProp
-Declared in library mathcomp.classical.contra, line 748, characters 10-22
 </p></span></div></span> (<span id="x:18" class="id"><a name="x:18" class="">x</a></span><span class="id"> </span><span id="y:19" class="id"><a name="y:19" class="">y</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#EqEReal.R">R</a></span>)<span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="gallina-kwd">match</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x:18">x</a></span><span class="id">,</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#y:19">y</a></span><span class="gallina-kwd"> with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id">|</span><span class="id"> x</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id">,</span><span class="id"> y</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x:18">x</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#df45e8c2e8370fd4f0f7c4fdaf208180"> ==</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.eqtype#df45e8c2e8370fd4f0f7c4fdaf208180"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#y:19">y</a></span><br/>
@@ -492,7 +488,25 @@ Declared in library mathcomp.classical.contra, line 748, characters 10-22
 <span class="vernacular">Section</span><span class="id"> ERealChoice</span>.<br/>
 <span class="vernacular">Variable</span> (<span id="ERealChoice.R" class="id"><a name="ERealChoice.R" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#Choice.Exports.choiceType">choiceType</a></span>).<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="code" class="id"><div name="code" class=" tooltip">code<span class='tooltip-area'><p>Internals.exists2_wProp :
+<span class="vernacular">Definition</span><span class="id"> </span><span id="code" class="id"><div name="code" class=" tooltip">code<span class='tooltip-area'><p>Internals.exists_wProp :
+forall [A : Type] [t : bool] [T : A -> Type] [P0 : A -> Prop],
+(forall x : A, Internals.witnessProp t (P0 x) (T x)) ->
+Internals.properWitnessProp (if t then {x : A | P0 x} else {x : A & T x})
+
+Internals.exists_wProp is not universe polymorphic
+Arguments Internals.exists_wProp [A]%_type_scope [t]%_bool_scope
+  [T P0]%_function_scope P%_function_scope
+Internals.exists_wProp is transparent
+Expands to: Constant mathcomp.classical.contra.Internals.exists_wProp
+Declared in library mathcomp.classical.contra, line 748, characters 10-22
+</p></span></div></span> (<span id="x:26" class="id"><a name="x:26" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#ERealChoice.R">R</a></span>)<span class="id"> :=</span><br/>
+&nbsp;&nbsp;<span class="gallina-kwd">match</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x:26">x</a></span><span class="gallina-kwd"> with</span><br/>
+&nbsp;&nbsp;<span class="id">|</span><span class="id"> r</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">Node</a></span><span class="id"> 0</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d">[::</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d"> </a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Leaf">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Leaf">Leaf</a></span><span class="id"> r</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d">]</a></span><br/>
+&nbsp;&nbsp;<span class="id">|</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#d5becfdd26043e7de5a21e6270f35a00">+oo</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">Node</a></span><span class="id"> 1</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#0a934e621391740b862762275992e626">[::]</a></span><br/>
+&nbsp;&nbsp;<span class="id">|</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:'-oo'">-oo</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">Node</a></span><span class="id"> 2</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#0a934e621391740b862762275992e626">[::]</a></span><br/>
+&nbsp;&nbsp;<span class="gallina-kwd">end</span>.<br/>
+<br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="decode" class="id"><div name="decode" class=" tooltip">decode<span class='tooltip-area'><p>Internals.exists2_wProp :
 forall [A : Type] [s : bool] [S : A -> Type] [P0 : A -> Prop],
 (forall x : A, Internals.witnessProp s (P0 x) (S x)) ->
 forall [t : bool] [T : A -> Type] [Q0 : A -> Prop],
@@ -509,20 +523,6 @@ Arguments Internals.exists2_wProp [A]%_type_scope
 Internals.exists2_wProp is transparent
 Expands to: Constant mathcomp.classical.contra.Internals.exists2_wProp
 Declared in library mathcomp.classical.contra, line 757, characters 10-23
-</p></span></div></span> (<span id="x:26" class="id"><a name="x:26" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#ERealChoice.R">R</a></span>)<span class="id"> :=</span><br/>
-&nbsp;&nbsp;<span class="gallina-kwd">match</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x:26">x</a></span><span class="gallina-kwd"> with</span><br/>
-&nbsp;&nbsp;<span class="id">|</span><span class="id"> r</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">Node</a></span><span class="id"> 0</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d">[::</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d"> </a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Leaf">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Leaf">Leaf</a></span><span class="id"> r</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d">]</a></span><br/>
-&nbsp;&nbsp;<span class="id">|</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#d5becfdd26043e7de5a21e6270f35a00">+oo</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">Node</a></span><span class="id"> 1</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#0a934e621391740b862762275992e626">[::]</a></span><br/>
-&nbsp;&nbsp;<span class="id">|</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:'-oo'">-oo</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">Node</a></span><span class="id"> 2</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#0a934e621391740b862762275992e626">[::]</a></span><br/>
-&nbsp;&nbsp;<span class="gallina-kwd">end</span>.<br/>
-<br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="decode" class="id"><div name="decode" class=" tooltip">decode<span class='tooltip-area'><p>notP : forall {nP : Prop} {P : negatedProp false nP}, move_view (~ P) nP
-
-notP is not universe polymorphic
-Arguments notP {nP}%_type_scope {P}
-notP is transparent
-Expands to: Constant mathcomp.classical.contra.Internals.notP
-Declared in library mathcomp.classical.contra, line 275, characters 11-15
 </p></span></div></span> (<span id="x:28" class="id"><a name="x:28" class="">x</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.tree">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.tree">tree</a></span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#ERealChoice.R">R</a></span>)<span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#option">option</a></span> (<span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#ERealChoice.R">R</a></span>)<span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="gallina-kwd">match</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x:28">x</a></span><span class="gallina-kwd"> with</span><br/>
 &nbsp;&nbsp;<span class="id">|</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Node">Node</a></span><span class="id"> 0</span><span class="id"> </span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d">[::</a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d"> </a></span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Leaf">GenTree</a></span>.<span class="id"><a href="NOTFOUND the module url for mathcomp.boot.choice#GenTree.Leaf">Leaf</a></span><span class="id"> r</span><span class="id"><a href="NOTFOUND the module url for mathcomp.boot.seq#506674b18256ef8f50efed43fa1dfd7d">]</a></span><span class="id"> =&gt;</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#Some">Some</a></span><span class="id"> r</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><br/>
@@ -552,7 +552,14 @@ Declared in library mathcomp.classical.contra, line 275, characters 11-15
 <span class="vernacular">Context</span><span class="id"> {</span><span id="ERealOrder.R" class="id"><a name="ERealOrder.R" class="">R</a></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.numdomain.html#Num.NumDomain.Exports.numDomainType">numDomainType</a></span><span class="id">}</span>.<br/>
 <span class="vernacular">Implicit</span><span class="id"> Types</span><span class="id"> x</span><span class="id"> y</span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3">\bar</a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#4c9ddfb63ff52527d9adecfde4a667c3"> </a></span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#ERealOrder.R">R</a></span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="le_ereal" class="id"><div name="le_ereal" class=" tooltip">le_ereal<span class='tooltip-area'></span></div></span><span class="id"> </span><span id="x1:33" class="id"><a name="x1:33" class="">x1</a></span><span class="id"> </span><span id="x2:34" class="id"><a name="x2:34" class="">x2</a></span><span class="id"> :=</span><br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="le_ereal" class="id"><div name="le_ereal" class=" tooltip">le_ereal<span class='tooltip-area'><p>notP : forall {nP : Prop} {P : negatedProp false nP}, move_view (~ P) nP
+
+notP is not universe polymorphic
+Arguments notP {nP}%_type_scope {P}
+notP is transparent
+Expands to: Constant mathcomp.classical.contra.Internals.notP
+Declared in library mathcomp.classical.contra, line 275, characters 11-15
+</p></span></div></span><span class="id"> </span><span id="x1:33" class="id"><a name="x1:33" class="">x1</a></span><span class="id"> </span><span id="x2:34" class="id"><a name="x2:34" class="">x2</a></span><span class="id"> :=</span><br/>
 &nbsp;&nbsp;<span class="gallina-kwd">match</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x1:33">x1</a></span><span class="id">,</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#x2:34">x2</a></span><span class="gallina-kwd"> with</span><br/>
 &nbsp;&nbsp;<span class="id">|</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#::ereal_scope:'-oo'">-oo</a></span><span class="id">,</span><span class="id"> r</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"> |</span><span class="id"> r</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id">,</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#d5becfdd26043e7de5a21e6270f35a00">+oo</a></span><span class="id"> =&gt;</span><span class="id"> r</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#c94c2df86ca03f22f8f8b739cd7e1e88"> \is</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#c94c2df86ca03f22f8f8b739cd7e1e88"> </a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.real">Num</a></span>.<span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#Num.real">real</a></span><br/>
 &nbsp;&nbsp;<span class="id">|</span><span class="id"> r1</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id">,</span><span class="id"> r2</span><span class="id"><a href="mathcomp.reals.constructive_ereal.html#bc34d0712444fb7fddc80987d6cdcb61">%:E</a></span><span class="id"> =&gt;</span><span class="id"> r1</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> &lt;=</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_5_0/mathcomp.algebra.num_theory.orderedzmod.html#cb42ec59ad57b25928e1718b4e69e031"> </a></span><span class="id">r2</span><br/>
