@@ -1668,8 +1668,14 @@ have Zcd n : Z `<=` \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic.
   exists (idx n i) => //.
   by rewrite contiguous_ooitv.
 (* lemma *)
-have citvScd n m : supp n -> n \notin [seq h1 i | i <- iota 0 m.+1] ->
-   exists i, (i < m.+1)%N /\ contiguous_intervals Z n `<=` `[c_ m i, d_ m i].
+have citvScd n x : contiguous_intervals Z (h1 n) x ->
+  forall m, (m < n)%N ->
+  exists p, (p < m.+2)%N /\ x \in `[c_ m p, d_ m p].
+  move=> xn m nm.
+  admit.
+
+(*have citvScd n m : supp n -> n \notin [seq h1 i | i <- iota 0 m.+1] ->
+   exists i, (i < m.+2)%N /\ contiguous_intervals Z n `<=` `[c_ m i, d_ m i].
   move=> suppn nh1.
   have: (exists2 k, (m < k)%N & n = h1 k).
     exists (h n) => //.
@@ -1680,6 +1686,17 @@ have citvScd n m : supp n -> n \notin [seq h1 i | i <- iota 0 m.+1] ->
       by rewrite mem_iota.
     by rewrite h1h// inE.
   move=> [k mk nh1k].
+  apply/not_notP => /forallNP => H.
+  rewrite not_notE.
+  have [x Znx] := suppn.
+  have : ~ (Z x).
+    move/Zcd.
+    apply/existsNP; exists m.
+    move=> [t /= tm2].
+    have := H t.
+    rewrite -implypN.
+    move/(_ tm2).
+    move/existsNP.
   have := bigcup_contiguous_intervals closedZ.
   rewrite (_: \bigcup_k0 contiguous_intervals Z k0 =
                 \bigcup_(k0 in supp) contiguous_intervals Z k0).
@@ -1695,8 +1712,28 @@ have citvScd n m : supp n -> n \notin [seq h1 i | i <- iota 0 m.+1] ->
               \bigcup_k0 contiguous_intervals Z (h1 k0)).
     have [fh1 ih1 sh1] := @bij _ _ _ _ h1.
     by rewrite (reindex_bigcup h1 [set: nat] supp _ fh1 sh1).
-  
+  rewrite (_: \bigcup_k0 contiguous_intervals Z (h1 k0) =
+            \bigcup_(k0 < m.+1) contiguous_intervals Z (h1 k0) `|`
+              \bigcup_k0 contiguous_intervals Z (h1 (k0 + m.+1))).
+    rewrite eqEsubset; split => x.
+      move=> [i _ ix].
+      have [im|mi] := ltnP i m.+1.
+        by left; exists i.
+      by right; exists (i - m.+1)%N => //; rewrite natrDE subnK.
+    move=> [[i/= _ ix]|[j _ jm1x]].
+      by exists i.
+    by exists (j + m.+1)%N.
+  move=> chZ_citv.
+  have : [set` Rhull Z]%classic !=set0.
+    exists ((c + d) / 2).
+    rewrite compact_Rhull//= in_itv/=.
+    by rewrite !midf_le// ltW.
+  move=> [x].
+  rewrite -(setUIDK [set` Rhull Z] Z).
+    rewrite setIidr; first exact: sub_Rhull.
+    exists (compact_Rhull.
   admit.
+ *)
 have hullZ_abcd n : [set` Rhull Z] =
      \bigcup_(i < n.+2) `[c_ n i, d_ n i]%classic `|`
      \bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic.
@@ -1737,12 +1774,18 @@ have hullZ_abcd n : [set` Rhull Z] =
         done.
       left.
       have ih1hi : i = h1 (h i) by rewrite h1h// inE; exists r.
-      have [] := (citvScd i n _ hin).
-        by exists r.
-      move=> j [xn2 Zj].
-      exists j => //.
-        by rewrite /= ltnS ltnW.
-      exact: Zj.
+      rewrite ih1hi in Zir.
+      have nhi : (n < h i)%N.
+        move: hin.
+        rewrite {1}ih1hi.
+        rewrite mem_map.
+          move=> p q.
+          have/set_bij_inj := (@bij _ _ _ _ h1).
+          by apply; rewrite !inE.
+        rewrite mem_iota.
+        by rewrite add0n leq0n/= -ltnNge ltnS.
+      have [k [kn2 rcd]] := (citvScd (h i) r Zir n nhi).
+      by exists k.
     + move=> Zr.
       left.
       suff: ~ (\bigcup_(i < n.+1) `]a_ n i, b_ n i[%classic) r.
