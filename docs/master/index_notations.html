@@ -5,9 +5,10 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Notations</title>
-<meta name="description" content="Documentation of Coq module Mathcomp Analysis da05b19" />
+<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.08.12-19:24" />
 <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it-deflist/dist/markdown-it-deflist.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath/texmath.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
@@ -25,7 +26,13 @@
           <ul>
           <li><details id="mathcomp.analysis"><summary>analysis</summary>
           <ul>
-          <li><details id="mathcomp.analysis.homotopy_theory"><summary>homotopy_theory</summary>
+          <li><details id="mathcomp.analysis.functional_analysis"><summary>functional_analysis</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.functional_analysis.hahn_banach_theorem.html">hahn_banach_theorem</a></li>
+          </ul>
+          </details>
+          </li>
+<li><details id="mathcomp.analysis.homotopy_theory"><summary>homotopy_theory</summary>
           <ul>
           <li><a href="mathcomp.analysis.homotopy_theory.continuous_path.html">continuous_path</a></li>
 <li><a href="mathcomp.analysis.homotopy_theory.homotopy.html">homotopy</a></li>
@@ -47,6 +54,7 @@
 <li><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_nonneg.html">lebesgue_integral_nonneg</a></li>
 <li><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_under.html">lebesgue_integral_under</a></li>
 <li><a href="mathcomp.analysis.lebesgue_integral_theory.measurable_fun_approximation.html">measurable_fun_approximation</a></li>
+<li><a href="mathcomp.analysis.lebesgue_integral_theory.radon_nikodym.html">radon_nikodym</a></li>
 <li><a href="mathcomp.analysis.lebesgue_integral_theory.simple_functions.html">simple_functions</a></li>
           </ul>
           </details>
@@ -62,6 +70,7 @@
 <li><a href="mathcomp.analysis.measure_theory.measure_function.html">measure_function</a></li>
 <li><a href="mathcomp.analysis.measure_theory.measure_negligible.html">measure_negligible</a></li>
 <li><a href="mathcomp.analysis.measure_theory.probability_measure.html">probability_measure</a></li>
+<li><a href="mathcomp.analysis.measure_theory.signed_measure.html">signed_measure</a></li>
           </ul>
           </details>
           </li>
@@ -172,7 +181,6 @@
 <li><details id="mathcomp.classical"><summary>classical</summary>
           <ul>
           <li><a href="mathcomp.classical.all_classical.html">all_classical</a></li>
-<li><a href="mathcomp.classical.all_ssreflect_compat.html">all_ssreflect_compat</a></li>
 <li><a href="mathcomp.classical.boolp.html">boolp</a></li>
 <li><a href="mathcomp.classical.cardinality.html">cardinality</a></li>
 <li><a href="mathcomp.classical.classical_orders.html">classical_orders</a></li>
@@ -226,7 +234,7 @@
     <div class="content">
       <p>
         <a href="./index.html">Top</a>
-        
+        <a href="https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e">source</a>
       </p>
       <h1 class="title">Notations</h1>
 <table><tbody>
@@ -237,7 +245,7 @@
 <tr><td>Lemmas</td>
 <td><a href="index_prf_A.html">A</a></td><td><a href="index_prf_B.html">B</a></td><td><a href="index_prf_C.html">C</a></td><td><a href="index_prf_D.html">D</a></td><td><a href="index_prf_E.html">E</a></td><td><a href="index_prf_F.html">F</a></td><td><a href="index_prf_G.html">G</a></td><td><a href="index_prf_H.html">H</a></td><td><a href="index_prf_I.html">I</a></td><td><a href="index_prf_J.html">J</a></td><td><a href="index_prf_K.html">K</a></td><td><a href="index_prf_L.html">L</a></td><td><a href="index_prf_M.html">M</a></td><td><a href="index_prf_N.html">N</a></td><td><a href="index_prf_O.html">O</a></td><td><a href="index_prf_P.html">P</a></td><td><a href="index_prf_Q.html">Q</a></td><td><a href="index_prf_R.html">R</a></td><td><a href="index_prf_S.html">S</a></td><td><a href="index_prf_T.html">T</a></td><td><a href="index_prf_U.html">U</a></td><td><a href="index_prf_V.html">V</a></td><td><a href="index_prf_W.html">W</a></td><td><a href="index_prf_X.html">X</a></td><td><a href="index_prf_Y.html">Y</a></td><td><a href="index_prf_Z.html">Z</a></td><td><a href="index_prf__.html">_</a></td></tr>
 <tr><td>Abbreviations</td>
-<td><a href="index_abbrev_A.html">A</a></td><td><a href="index_abbrev_B.html">B</a></td><td><a href="index_abbrev_C.html">C</a></td><td><a href="index_abbrev_D.html">D</a></td><td><a href="index_abbrev_E.html">E</a></td><td><a href="index_abbrev_F.html">F</a></td><td><a href="index_abbrev_G.html">G</a></td><td><a href="index_abbrev_H.html">H</a></td><td><a href="index_abbrev_I.html">I</a></td><td>J</td><td><a href="index_abbrev_K.html">K</a></td><td><a href="index_abbrev_L.html">L</a></td><td><a href="index_abbrev_M.html">M</a></td><td><a href="index_abbrev_N.html">N</a></td><td><a href="index_abbrev_O.html">O</a></td><td><a href="index_abbrev_P.html">P</a></td><td><a href="index_abbrev_Q.html">Q</a></td><td><a href="index_abbrev_R.html">R</a></td><td><a href="index_abbrev_S.html">S</a></td><td><a href="index_abbrev_T.html">T</a></td><td><a href="index_abbrev_U.html">U</a></td><td><a href="index_abbrev_V.html">V</a></td><td><a href="index_abbrev_W.html">W</a></td><td><a href="index_abbrev_X.html">X</a></td><td>Y</td><td>Z</td><td>_</td></tr>
+<td><a href="index_abbrev_A.html">A</a></td><td><a href="index_abbrev_B.html">B</a></td><td><a href="index_abbrev_C.html">C</a></td><td><a href="index_abbrev_D.html">D</a></td><td><a href="index_abbrev_E.html">E</a></td><td><a href="index_abbrev_F.html">F</a></td><td><a href="index_abbrev_G.html">G</a></td><td><a href="index_abbrev_H.html">H</a></td><td><a href="index_abbrev_I.html">I</a></td><td>J</td><td><a href="index_abbrev_K.html">K</a></td><td><a href="index_abbrev_L.html">L</a></td><td><a href="index_abbrev_M.html">M</a></td><td><a href="index_abbrev_N.html">N</a></td><td><a href="index_abbrev_O.html">O</a></td><td><a href="index_abbrev_P.html">P</a></td><td><a href="index_abbrev_Q.html">Q</a></td><td><a href="index_abbrev_R.html">R</a></td><td><a href="index_abbrev_S.html">S</a></td><td><a href="index_abbrev_T.html">T</a></td><td><a href="index_abbrev_U.html">U</a></td><td><a href="index_abbrev_V.html">V</a></td><td><a href="index_abbrev_W.html">W</a></td><td><a href="index_abbrev_X.html">X</a></td><td>Y</td><td>Z</td><td><a href="index_abbrev__.html">_</a></td></tr>
 <tr><td>Global Index</td>
 <td><a href="index_global_A.html">A</a></td><td><a href="index_global_B.html">B</a></td><td><a href="index_global_C.html">C</a></td><td><a href="index_global_D.html">D</a></td><td><a href="index_global_E.html">E</a></td><td><a href="index_global_F.html">F</a></td><td><a href="index_global_G.html">G</a></td><td><a href="index_global_H.html">H</a></td><td><a href="index_global_I.html">I</a></td><td><a href="index_global_J.html">J</a></td><td><a href="index_global_K.html">K</a></td><td><a href="index_global_L.html">L</a></td><td><a href="index_global_M.html">M</a></td><td><a href="index_global_N.html">N</a></td><td><a href="index_global_O.html">O</a></td><td><a href="index_global_P.html">P</a></td><td><a href="index_global_Q.html">Q</a></td><td><a href="index_global_R.html">R</a></td><td><a href="index_global_S.html">S</a></td><td><a href="index_global_T.html">T</a></td><td><a href="index_global_U.html">U</a></td><td><a href="index_global_V.html">V</a></td><td><a href="index_global_W.html">W</a></td><td><a href="index_global_X.html">X</a></td><td><a href="index_global_Y.html">Y</a></td><td><a href="index_global_Z.html">Z</a></td><td><a href="index_global__.html">_</a></td></tr>
 <tr><td><a href="index_notations.html">Notations</a></td></tr></tbody></table><h2>no scope</h2><a href="mathcomp.analysis.derive.html#:::'''D_'_x_x"><span class="notation-symbol">'D_</span> </a> [not, in mathcomp.analysis.derive] (<span class="warning">no scope</span>)<br>
@@ -274,8 +282,8 @@
 <a href="mathcomp.analysis.landau.html#Domination.:::'''a_o_'_x_x"><span class="notation-symbol">'a_o_</span> </a> [not, in mathcomp.analysis.landau] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.landau.html#f32d27b610dea2cb42a89ce41b348956"><span class="notation-symbol">'a_o_(</span> <span class="notation-symbol">\near</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.analysis.landau] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.landau.html#0fbdf06eb8bb20b10d73015f24f69209"><span class="notation-symbol">'a_o_(</span> <span class="notation-symbol">\near</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.analysis.landau] (<span class="warning">no scope</span>)<br>
-<a href="mathcomp.analysis.charge.html#22b089cdd5b3c8fa2dfac447db6afa98"><span class="notation-symbol">'d</span> <span class="notation-symbol">'/d</span> </a> [not, in mathcomp.analysis.charge] (<span class="warning">no scope</span>)<br>
-<a href="mathcomp.analysis.charge.html#d8f693efa26c87476f3f8242739eb020"><span class="notation-symbol">'d</span> <span class="notation-symbol">'/d</span> </a> [not, in mathcomp.analysis.charge] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.analysis.lebesgue_integral_theory.radon_nikodym.html#22b089cdd5b3c8fa2dfac447db6afa98"><span class="notation-symbol">'d</span> <span class="notation-symbol">'/d</span> </a> [not, in mathcomp.analysis.lebesgue_integral_theory.radon_nikodym] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.analysis.lebesgue_integral_theory.radon_nikodym.html#d8f693efa26c87476f3f8242739eb020"><span class="notation-symbol">'d</span> <span class="notation-symbol">'/d</span> </a> [not, in mathcomp.analysis.lebesgue_integral_theory.radon_nikodym] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.derive.html#:::'''d'_x_x"><span class="notation-symbol">'d</span> </a> [not, in mathcomp.analysis.derive] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.derive.html#Differential_numFieldType.:::'''d'_x_x"><span class="notation-symbol">'d</span> </a> [not, in mathcomp.analysis.derive] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.derive.html#Differential.:::'''d'_x_x"><span class="notation-symbol">'d</span> </a> [not, in mathcomp.analysis.derive] (<span class="warning">no scope</span>)<br>
@@ -364,17 +372,21 @@
 <a href="mathcomp.experimental_reals.distr.html#89c3d9b984044b99f8f3b8f29b3167bf"><span class="notation-symbol">\dlim_</span> <span class="notation-symbol">(</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.experimental_reals.distr] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.experimental_reals.distr.html#d309a09efc04bd13482fd8fc10181919"><span class="notation-symbol">\dlim_</span> <span class="notation-symbol">(</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.experimental_reals.distr] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.esum.html#9f3c539d2c2c2da5cc16262cb9f978f8"><span class="notation-symbol">\esum_</span> <span class="notation-symbol">(</span> <span class="notation-symbol">in</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.analysis.esum] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.analysis.esum.html#e952a181bd11d70ff0bb1755ace196bd"><span class="notation-symbol">\esum_</span> <span class="notation-symbol">(</span> <span class="notation-symbol">in</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.analysis.esum] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.analysis.esum.html#e6647ecfbc9e4b77f2a66b0581ece12b"><span class="notation-symbol">\esum_</span> <span class="notation-symbol">(</span> <span class="notation-symbol">in</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.analysis.esum] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html#290ff52d5eb077d1c33b08b0bbb307f4"><span class="notation-symbol">\int_</span> <span class="notation-symbol">(</span> <span class="notation-symbol">in</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.classical.classical_sets.html#ab8d1100462fb578182d90787a3ffaeb"><span class="notation-symbol">`I_</span> </a> [not, in mathcomp.classical.classical_sets] (<span class="warning">no scope</span>)<br>
-<a href="mathcomp.analysis.numfun.html#:::'decreasing_fun'_x"><span class="notation-symbol">decreasing_fun</span> </a> [not, in mathcomp.analysis.numfun] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.classical.unstable.html#:::'decreasing_fun'_x"><span class="notation-symbol">decreasing_fun</span> </a> [not, in mathcomp.classical.unstable] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.sequences.html#:::'decreasing_seq'_x"><span class="notation-symbol">decreasing_seq</span> </a> [not, in mathcomp.analysis.sequences] (<span class="warning">no scope</span>)<br>
-<a href="mathcomp.analysis.numfun.html#:::'increasing_fun'_x"><span class="notation-symbol">increasing_fun</span> </a> [not, in mathcomp.analysis.numfun] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.classical.unstable.html#:::'increasing_fun'_x"><span class="notation-symbol">increasing_fun</span> </a> [not, in mathcomp.classical.unstable] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.sequences.html#:::'increasing_seq'_x"><span class="notation-symbol">increasing_seq</span> </a> [not, in mathcomp.analysis.sequences] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.derive.html#:::'is_diff'_x"><span class="notation-symbol">is_diff</span> </a> [not, in mathcomp.analysis.derive] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.measure_theory.measure_extension.html#2c6c217c3fd0b87132b39515f1aed273"><span class="notation-symbol">mu^*</span></a> [not, in mathcomp.analysis.measure_theory.measure_extension] (<span class="warning">no scope</span>)<br>
-<a href="mathcomp.analysis.numfun.html#:::'nondecreasing_fun'_x"><span class="notation-symbol">nondecreasing_fun</span> </a> [not, in mathcomp.analysis.numfun] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.classical.unstable.html#:::'nondecreasing_fun'_x"><span class="notation-symbol">nondecreasing_fun</span> </a> [not, in mathcomp.classical.unstable] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.classical.unstable.html#:::'nondecreasing_seq'_x"><span class="notation-symbol">nondecreasing_seq</span> </a> [not, in mathcomp.classical.unstable] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.sequences.html#:::'nondecreasing_seq'_x"><span class="notation-symbol">nondecreasing_seq</span> </a> [not, in mathcomp.analysis.sequences] (<span class="warning">no scope</span>)<br>
-<a href="mathcomp.analysis.numfun.html#:::'nonincreasing_fun'_x"><span class="notation-symbol">nonincreasing_fun</span> </a> [not, in mathcomp.analysis.numfun] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.classical.unstable.html#:::'nonincreasing_fun'_x"><span class="notation-symbol">nonincreasing_fun</span> </a> [not, in mathcomp.classical.unstable] (<span class="warning">no scope</span>)<br>
+<a href="mathcomp.classical.unstable.html#:::'nonincreasing_seq'_x"><span class="notation-symbol">nonincreasing_seq</span> </a> [not, in mathcomp.classical.unstable] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.sequences.html#:::'nonincreasing_seq'_x"><span class="notation-symbol">nonincreasing_seq</span> </a> [not, in mathcomp.analysis.sequences] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.analysis.topology_theory.function_spaces.html#product_spaces.product_embeddings.:::'weak_open'_x"><span class="notation-symbol">weak_open</span> </a> [not, in mathcomp.analysis.topology_theory.function_spaces] (<span class="warning">no scope</span>)<br>
 <a href="mathcomp.classical.filter.html#7fe8df0f318cb18b87a8172750895c0b"><span class="notation-symbol">{</span> <span class="notation-symbol">all1</span> <span class="notation-symbol">}</span></a> [not, in mathcomp.classical.filter] (<span class="warning">no scope</span>)<br>
@@ -475,9 +487,9 @@
 <a href="mathcomp.classical.fsbigop.html#7c3dd4f953ad08c5d8f3fe041bd02ed4"><span class="notation-symbol">\big</span> <span class="notation-symbol">[</span> <span class="notation-symbol">/</span> <span class="notation-symbol">]_</span> <span class="notation-symbol">(</span> <span class="notation-symbol">\in</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.classical.fsbigop] (in big_scope)<h2>bool_scope</h2><a href="mathcomp.classical.boolp.html#cd531d9d29c2247dfa84f185bc7200e2"><span class="notation-symbol">`[<</span> <span class="notation-symbol">>]</span></a> [not, in mathcomp.classical.boolp] (in bool_scope)<h2>card_scope</h2><a href="mathcomp.classical.cardinality.html#5eeed04af3b7cd2f6b01f5f56dbf98a6"> <span class="notation-symbol">#!=</span> </a> [not, in mathcomp.classical.cardinality] (in card_scope)<br>
 <a href="mathcomp.classical.cardinality.html#da4939c51f1de3dacaf064e6d0750439"> <span class="notation-symbol">#<=</span> </a> [not, in mathcomp.classical.cardinality] (in card_scope)<br>
 <a href="mathcomp.classical.cardinality.html#75c3eadbb3fd356da27f1f2e697bb40b"> <span class="notation-symbol">#=</span> </a> [not, in mathcomp.classical.cardinality] (in card_scope)<br>
-<a href="mathcomp.classical.cardinality.html#e13c89a5a137f9afc1a86b9f004713f9"> <span class="notation-symbol">#>=</span> </a> [not, in mathcomp.classical.cardinality] (in card_scope)<h2>charge_scope</h2><a href="mathcomp.analysis.charge.html#79315c1a2bfb58e3103e2043932f4950"><span class="notation-symbol">'d</span> <span class="notation-symbol">'/d</span> </a> [not, in mathcomp.analysis.charge] (in charge_scope)<br>
-<a href="mathcomp.analysis.charge.html#::charge_scope:x_'.-negative_set'"> <span class="notation-symbol">.-negative_set</span></a> [not, in mathcomp.analysis.charge] (in charge_scope)<br>
-<a href="mathcomp.analysis.charge.html#::charge_scope:x_'.-positive_set'"> <span class="notation-symbol">.-positive_set</span></a> [not, in mathcomp.analysis.charge] (in charge_scope)<h2>classical_set_scope</h2><a href="mathcomp.analysis.measure_theory.measurable_structure.html#::classical_set_scope:'''measurable'"><span class="notation-symbol">'measurable</span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in classical_set_scope)<br>
+<a href="mathcomp.classical.cardinality.html#e13c89a5a137f9afc1a86b9f004713f9"> <span class="notation-symbol">#>=</span> </a> [not, in mathcomp.classical.cardinality] (in card_scope)<h2>charge_scope</h2><a href="mathcomp.analysis.lebesgue_integral_theory.radon_nikodym.html#79315c1a2bfb58e3103e2043932f4950"><span class="notation-symbol">'d</span> <span class="notation-symbol">'/d</span> </a> [not, in mathcomp.analysis.lebesgue_integral_theory.radon_nikodym] (in charge_scope)<br>
+<a href="mathcomp.analysis.measure_theory.signed_measure.html#::charge_scope:x_'.-negative_set'"> <span class="notation-symbol">.-negative_set</span></a> [not, in mathcomp.analysis.measure_theory.signed_measure] (in charge_scope)<br>
+<a href="mathcomp.analysis.measure_theory.signed_measure.html#::charge_scope:x_'.-positive_set'"> <span class="notation-symbol">.-positive_set</span></a> [not, in mathcomp.analysis.measure_theory.signed_measure] (in charge_scope)<h2>classical_set_scope</h2><a href="mathcomp.analysis.measure_theory.measurable_structure.html#::classical_set_scope:'''measurable'"><span class="notation-symbol">'measurable</span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in classical_set_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measurable_structure.html#::classical_set_scope:'&lt;&lt;M'_x_'&gt;&gt;'"><span class="notation-symbol"><<M</span> <span class="notation-symbol">>></span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in classical_set_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measurable_structure.html#::classical_set_scope:'&lt;&lt;d'_x_'&gt;&gt;'"><span class="notation-symbol"><<d</span> <span class="notation-symbol">>></span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in classical_set_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measurable_structure.html#dfbc519e59f92081b49943386eab08a7"><span class="notation-symbol"><<l</span> <span class="notation-symbol">,</span> <span class="notation-symbol">>></span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in classical_set_scope)<br>
@@ -531,6 +543,7 @@
 <a href="mathcomp.analysis.measure_theory.measure_extension.html#::classical_set_scope:x_'.-caratheodory'"> <span class="notation-symbol">.-caratheodory</span></a> [not, in mathcomp.analysis.measure_theory.measure_extension] (in classical_set_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measurable_structure.html#::classical_set_scope:x_'.-measurable'"> <span class="notation-symbol">.-measurable</span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in classical_set_scope)<br>
 <a href="mathcomp.analysis.lebesgue_stieltjes_measure.html#::classical_set_scope:x_'.-ocitv.-measurable'"> <span class="notation-symbol">.-ocitv.-measurable</span></a> [not, in mathcomp.analysis.lebesgue_stieltjes_measure] (in classical_set_scope)<br>
+<a href="mathcomp.analysis.lebesgue_stieltjes_measure.html#::classical_set_scope:x_'.-open.-measurable'"> <span class="notation-symbol">.-open.-measurable</span></a> [not, in mathcomp.analysis.lebesgue_stieltjes_measure] (in classical_set_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measurable_structure.html#measurability.::classical_set_scope:x_'.-preimage.-measurable'"> <span class="notation-symbol">.-preimage.-measurable</span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in classical_set_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measurable_structure.html#::classical_set_scope:x_'.-prod.-measurable'"> <span class="notation-symbol">.-prod.-measurable</span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in classical_set_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measure_function.html#::classical_set_scope:x_'.-ring.-measurable'"> <span class="notation-symbol">.-ring.-measurable</span></a> [not, in mathcomp.analysis.measure_theory.measure_function] (in classical_set_scope)<br>
@@ -743,6 +756,8 @@
 <a href="mathcomp.classical.functions.html#::form_scope:'''totalfun_'_x"><span class="notation-symbol">'totalfun_</span> </a> [not, in mathcomp.classical.functions] (in form_scope)<br>
 <a href="mathcomp.classical.functions.html#::form_scope:'''valL_'_x"><span class="notation-symbol">'valL_</span> </a> [not, in mathcomp.classical.functions] (in form_scope)<br>
 <a href="mathcomp.classical.functions.html#::form_scope:'''valLfun_'_x"><span class="notation-symbol">'valLfun_</span> </a> [not, in mathcomp.classical.functions] (in form_scope)<br>
+<a href="mathcomp.analysis.measurable_realfun.html#2a0355d1159e3bec0ac02ad3fba4b577"><span class="notation-symbol">[</span> <span class="notation-symbol">SubChoice_isSubComPzRing</span> <span class="notation-symbol">of</span> <span class="notation-symbol">by</span> <span class="notation-symbol"><:</span> <span class="notation-symbol">]</span></a> [not, in mathcomp.analysis.measurable_realfun] (in form_scope)<br>
+<a href="mathcomp.analysis.numfun.html#375da33af8203cabc047d677af33a531"><span class="notation-symbol">[</span> <span class="notation-symbol">SubPzRing_isSubComPzRing</span> <span class="notation-symbol">of</span> <span class="notation-symbol">by</span> <span class="notation-symbol"><:</span> <span class="notation-symbol">]</span></a> [not, in mathcomp.analysis.numfun] (in form_scope)<br>
 <a href="mathcomp.classical.functions.html#781340b797177012f180563dcc5c9cff"><span class="notation-symbol">[</span> <span class="notation-symbol">bij</span> <span class="notation-symbol">of</span> <span class="notation-symbol">]</span></a> [not, in mathcomp.classical.functions] (in form_scope)<br>
 <a href="mathcomp.classical.cardinality.html#1b09610ab3d7eb7678fb81e5d5dfc8ae"><span class="notation-symbol">[</span> <span class="notation-symbol">fimfun</span> <span class="notation-symbol">of</span> <span class="notation-symbol">]</span></a> [not, in mathcomp.classical.cardinality] (in form_scope)<br>
 <a href="mathcomp.classical.functions.html#739e3f87af495186e77648f03c94dd88"><span class="notation-symbol">[</span> <span class="notation-symbol">fun</span> <span class="notation-symbol">of</span> <span class="notation-symbol">]</span></a> [not, in mathcomp.classical.functions] (in form_scope)<br>
@@ -784,6 +799,7 @@
 <a href="mathcomp.classical.functions.html#f3f2d22838b594a6e5dbfb541ecf90ae"> <span class="notation-symbol">^-1</span></a> [not, in mathcomp.classical.functions] (in function_scope)<br>
 <a href="mathcomp.classical.functions.html#f3f2d22838b594a6e5dbfb541ecf90ae"> <span class="notation-symbol">^-1</span></a> [not, in mathcomp.classical.functions] (in function_scope)<h2>measure_display_scope</h2><a href="mathcomp.analysis.measure_theory.measure_extension.html#::measure_display_scope:x_'.-cara'"> <span class="notation-symbol">.-cara</span></a> [not, in mathcomp.analysis.measure_theory.measure_extension] (in measure_display_scope)<br>
 <a href="mathcomp.analysis.lebesgue_stieltjes_measure.html#::measure_display_scope:x_'.-ocitv'"> <span class="notation-symbol">.-ocitv</span></a> [not, in mathcomp.analysis.lebesgue_stieltjes_measure] (in measure_display_scope)<br>
+<a href="mathcomp.analysis.lebesgue_stieltjes_measure.html#::measure_display_scope:x_'.-open'"> <span class="notation-symbol">.-open</span></a> [not, in mathcomp.analysis.lebesgue_stieltjes_measure] (in measure_display_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measurable_structure.html#measurability.::measure_display_scope:x_'.-preimage'"> <span class="notation-symbol">.-preimage</span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in measure_display_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measurable_structure.html#::measure_display_scope:x_'.-prod'"> <span class="notation-symbol">.-prod</span></a> [not, in mathcomp.analysis.measure_theory.measurable_structure] (in measure_display_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measure_function.html#::measure_display_scope:x_'.-ring'"> <span class="notation-symbol">.-ring</span></a> [not, in mathcomp.analysis.measure_theory.measure_function] (in measure_display_scope)<br>
@@ -802,8 +818,8 @@
 <a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html#2b06fa1f371e8a16533c60b425cce675"><span class="notation-symbol">\int</span> <span class="notation-symbol">[</span> <span class="notation-symbol">]_</span> </a> [not, in mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral] (in ring_scope)<br>
 <a href="mathcomp.classical.fsbigop.html#66bb639f4673920039e1c5f4f74ee386"><span class="notation-symbol">\sum_</span> <span class="notation-symbol">(</span> <span class="notation-symbol">\in</span> <span class="notation-symbol">)</span> </a> [not, in mathcomp.classical.fsbigop] (in ring_scope)<br>
 <a href="mathcomp.classical.unstable.html#ba5b9f829c901964a3abe669e095e940"><span class="notation-symbol">`1-</span> </a> [not, in mathcomp.classical.unstable] (in ring_scope)<br>
-<a href="mathcomp.analysis.charge.html#b3528bee2f61335dfeb54450ebacd9b7"><span class="notation-symbol">{</span> <span class="notation-symbol">additive_charge</span> <span class="notation-symbol">set</span> <span class="notation-symbol">-></span> <span class="notation-symbol">\bar</span> <span class="notation-symbol">}</span></a> [not, in mathcomp.analysis.charge] (in ring_scope)<br>
-<a href="mathcomp.analysis.charge.html#8c991e60ebf5d22d6c1ab60846c30021"><span class="notation-symbol">{</span> <span class="notation-symbol">charge</span> <span class="notation-symbol">set</span> <span class="notation-symbol">-></span> <span class="notation-symbol">\bar</span> <span class="notation-symbol">}</span></a> [not, in mathcomp.analysis.charge] (in ring_scope)<br>
+<a href="mathcomp.analysis.measure_theory.signed_measure.html#b3528bee2f61335dfeb54450ebacd9b7"><span class="notation-symbol">{</span> <span class="notation-symbol">additive_charge</span> <span class="notation-symbol">set</span> <span class="notation-symbol">-></span> <span class="notation-symbol">\bar</span> <span class="notation-symbol">}</span></a> [not, in mathcomp.analysis.measure_theory.signed_measure] (in ring_scope)<br>
+<a href="mathcomp.analysis.measure_theory.signed_measure.html#8c991e60ebf5d22d6c1ab60846c30021"><span class="notation-symbol">{</span> <span class="notation-symbol">charge</span> <span class="notation-symbol">set</span> <span class="notation-symbol">-></span> <span class="notation-symbol">\bar</span> <span class="notation-symbol">}</span></a> [not, in mathcomp.analysis.measure_theory.signed_measure] (in ring_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measure_function.html#e33f85c8be310683dd1e614e93dc2b0f"><span class="notation-symbol">{</span> <span class="notation-symbol">content</span> <span class="notation-symbol">set</span> <span class="notation-symbol">-></span> <span class="notation-symbol">\bar</span> <span class="notation-symbol">}</span></a> [not, in mathcomp.analysis.measure_theory.measure_function] (in ring_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measure_function.html#bf11977399f31556eaaab82c176def03"><span class="notation-symbol">{</span> <span class="notation-symbol">finite_measure</span> <span class="notation-symbol">set</span> <span class="notation-symbol">-></span> <span class="notation-symbol">\bar</span> <span class="notation-symbol">}</span></a> [not, in mathcomp.analysis.measure_theory.measure_function] (in ring_scope)<br>
 <a href="mathcomp.analysis.measure_theory.measure_function.html#cab9a9776ae9e3a4c36de416efb30851"><span class="notation-symbol">{</span> <span class="notation-symbol">measure</span> <span class="notation-symbol">set</span> <span class="notation-symbol">-></span> <span class="notation-symbol">\bar</span> <span class="notation-symbol">}</span></a> [not, in mathcomp.analysis.measure_theory.measure_function] (in ring_scope)<br>
@@ -878,6 +894,7 @@
 <a href="mathcomp.classical.functions.html#bd53ebacc4ad69b041c1e46e1febef78"> <span class="notation-symbol">>>=></span> </a> [not, in mathcomp.classical.functions] (in type_scope)<br>
 <a href="mathcomp.classical.functions.html#2b38a6db380d0eafe31fa1d8adcd3058"> <span class="notation-symbol">>>~></span> </a> [not, in mathcomp.classical.functions] (in type_scope)<br>
 <a href="mathcomp.classical.functions.html#abaf913b6ab9ddcc1e1be04c957cbc32"> <span class="notation-symbol">>~></span> </a> [not, in mathcomp.classical.functions] (in type_scope)<br>
+<a href="mathcomp.classical.classical_sets.html#0bbe80633d78a4f277dbfba268ab7c04"> <span class="notation-symbol">^nat</span></a> [not, in mathcomp.classical.classical_sets] (in type_scope)<br>
 <a href="mathcomp.analysis.sequences.html#0bbe80633d78a4f277dbfba268ab7c04"> <span class="notation-symbol">^nat</span></a> [not, in mathcomp.analysis.sequences] (in type_scope)<br>
 <a href="mathcomp.classical.functions.html#e38dbecb67f400ad1e6dda3d483208d7"> <span class="notation-symbol">~></span> </a> [not, in mathcomp.classical.functions] (in type_scope)<br>
 <a href="mathcomp.classical.functions.html#9524c731b702f4bc6aafa401430923a0"> <span class="notation-symbol">~>></span> </a> [not, in mathcomp.classical.functions] (in type_scope)<br>
