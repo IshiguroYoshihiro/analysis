@@ -1,6 +1,7 @@
 (* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
+From HB Require Import structures.
 From mathcomp Require Import all_ssreflect_compat finmap ssralg ssrnum ssrint.
-From mathcomp Require Import archimedean interval.
+From mathcomp Require Import vector archimedean interval matrix.
 
 (**md**************************************************************************)
 (* # MathComp extra                                                           *)
@@ -15,6 +16,12 @@ From mathcomp Require Import archimedean interval.
 (* ```                                                                        *)
 (*                 swap x := (x.2, x.1)                                       *)
 (*           map_pair f x := (f x.1, f x.2)                                   *)
+(*    nondecreasing_fun f == the function f is non-decreasing                 *)
+(*    nonincreasing_fun f == the function f is non-increasing                 *)
+(*       increasing_fun f == the function f is (strictly) increasing          *)
+(*       decreasing_fun f == the function f is (strictly) decreasing          *)
+(*    nondecreasing_seq u == the sequence u is non-decreasing                 *)
+(*    nonincreasing_seq u == the sequence u is non-increasing                 *)
 (*          monotonic A f := {in A &, {homo f : x y / x <= y}} \/             *)
 (*                           {in A &, {homo f : x y /~ x <= y}}               *)
 (*   strict_monotonic A f := {in A &, {homo f : x y / x < y}} \/              *)
@@ -23,6 +30,14 @@ From mathcomp Require Import archimedean interval.
 (*                           the dependent sum                                *)
 (*                prodA x := sends (X * Y) * Z to X * (Y * Z)                 *)
 (*               prodAr x := sends X * (Y * Z) to (X * Y) * Z                 *)
+(*           isSemiNorm f == f : K -> L is a seminorm                         *)
+(*                           K is a numDomainType.                            *)
+(*                           L is a lmodType K.                               *)
+(*                           The HB class is SemiNorm.                        *)
+(*               isNorm f == f : K -> L is a norm                             *)
+(*                           K is a numDomainType.                            *)
+(*                           L is a lmodType K.                               *)
+(*                           The HB class is Norm.                            *)
 (* ```                                                                        *)
 (*                                                                            *)
 (******************************************************************************)
@@ -30,13 +45,18 @@ From mathcomp Require Import archimedean interval.
 Attributes warn(note="The unstable.v file should only be used inside analysis.",
   cats="internal-analysis").
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Order.TTheory GRing.Theory Num.Theory.
 Local Open Scope ring_scope.
+
+Lemma sub_row_mx {V : zmodType} m n1 n2 (A1 : 'M[V]_(m, n1)) (A2 : 'M[V]_(m, n2))
+    (B1 : 'M[V]_(m, n1)) (B2 : 'M[V]_(m, n2)) :
+  row_mx A1 A2 - row_mx B1 B2 = row_mx (A1 - B1) (A2 - B2).
+Proof. by rewrite opp_row_mx add_row_mx. Qed.
 
 Section IntervalNumDomain.
 Variable R : numDomainType.
@@ -83,7 +103,7 @@ rewrite big_cons; case: ifP => [Pa|nPa]; last first.
     by rewrite in_cons => /predU1P[->|]; [rewrite nPa|exact: Fidvdn].
   by apply: Fidvdn; rewrite in_cons il orbT.
 rewrite map_cons pairwise_cons => /andP[allcoprimea pairwisecoprime].
-rewrite Gauss_dvd; last exact: coprime_prodr.
+rewrite Gauss_dvd; first exact: coprime_prodr.
 apply: (equivP (andPP idP (HI pairwisecoprime))).
 split=> [[Fadvdn Fidvdn] i|Fidvdn].
   by rewrite in_cons => /predU1P[->//|]; exact: Fidvdn.
@@ -109,7 +129,7 @@ rewrite mulnC leq_mul//.
   by apply: leq_prod; move=> i _; rewrite leq_addr.
 rewrite subnKC//.
 rewrite -[in leqLHS](add0n m) big_addn.
-rewrite [in leqRHS](_ : y - m = ((y - m + x) - x))%N; last first.
+rewrite [in leqRHS](_ : y - m = ((y - m + x) - x))%N.
   by rewrite -addnBA// subnn addn0.
 rewrite -[X in iota X _](add0n x) big_addn -addnBA// subnn addn0.
 by apply: leq_prod => i _; rewrite leq_add2r leq_addr.
@@ -122,7 +142,7 @@ move=> nx my.
 rewrite (fact_split nx) -!mulnA leq_mul2l; apply/orP; right.
 rewrite (fact_split my) mulnCA -!mulnA leq_mul2l; apply/orP; right.
 rewrite [leqRHS](_ : _ =
-    (n + m).+1`! * \prod_((n + m).+2 <= i < (x + y).+2) i)%N; last first.
+    (n + m).+1`! * \prod_((n + m).+2 <= i < (x + y).+2) i)%N.
   by rewrite -fact_split// ltnS leq_add.
 rewrite mulnA mulnC leq_mul2l; apply/orP; right.
 do 2 rewrite -addSn -addnS.
@@ -187,6 +207,19 @@ exists n.+1; rewrite nm2/= -addn1.
 rewrite -[X in (_ <= X)%N]prednK ?expn_gt0// -[X in (_ <= X)%N]addn1 leq_add2r.
 by rewrite (leq_trans h2)// -subn1 leq_subRL ?expn_gt0// add1n ltn_exp2l.
 Qed.
+
+Notation "'nondecreasing_fun' f" := ({homo f : n m / (n <= m)%O >-> (n <= m)%O})
+  (at level 10).
+Notation "'nonincreasing_fun' f" := ({homo f : n m / (n <= m)%O >-> (n >= m)%O})
+  (at level 10).
+Notation "'increasing_fun' f" := ({mono f : n m / (n <= m)%O >-> (n <= m)%O})
+  (at level 10).
+Notation "'decreasing_fun' f" := ({mono f : n m / (n <= m)%O >-> (n >= m)%O})
+  (at level 10).
+Notation "'nondecreasing_seq' f" := ({homo f : n m / (n <= m)%nat >-> (n <= m)%O})
+  (at level 10).
+Notation "'nonincreasing_seq' f" := ({homo f : n m / (n <= m)%nat >-> (n >= m)%O})
+  (at level 10).
 
 Definition monotonic d (T : porderType d) d' (T' : porderType d')
     (pT : predType T) (A : pT) (f : T -> T') :=
@@ -360,6 +393,13 @@ Qed.
 Lemma onemV (F : numFieldType) (x : F) : x != 0 -> x^-1.~ = (x - 1) / x.
 Proof. by move=> ?; rewrite mulrDl divff// mulN1r. Qed.
 
+Lemma divD_onem (R : realFieldType) (s t : R) (s0 : 0 < s) (t0 : 0 < t) :
+  (s / (s + t)).~ = t / (s + t).
+Proof.
+rewrite /onem.
+by rewrite -(@divff _ (s + t)) ?gt_eqF ?addr_gt0// -mulrBl (addrC s) addrK.
+Qed.
+
 Lemma lez_abs2 (a b : int) : 0 <= a -> a <= b -> (`|a| <= `|b|)%N.
 Proof. by case: a => //= n _; case: b. Qed.
 
@@ -491,11 +531,11 @@ have trivP : trivIfset P.
 have -> : (\bigcup_(i <- K) F i)%fset = fcover P.
   apply/esym; rewrite /P fcover_imfset big_mkcond /=; apply eq_bigr => i _.
   by case: ifPn => // /negPn/eqP.
-rewrite big_trivIfset // /rhs big_imfset => [|i j iK /andP[jK notFj0] eqFij] /=.
-  rewrite big_filter big_mkcond; apply eq_bigr => i _.
-  by case: ifPn => // /negPn /eqP ->;  rewrite big_seq_fset0.
-move: iK; rewrite !inE/= => /andP[iK Fi0].
-by apply: contraNeq (disjF _ _ iK jK) _; rewrite -fsetI_eq0 eqFij fsetIid.
+rewrite big_trivIfset // /rhs big_imfset => [i j iK /andP[jK notFj0] eqFij|] /=.
+  move: iK; rewrite !inE/= => /andP[iK Fi0].
+  by apply: contraNeq (disjF _ _ iK jK) _; rewrite -fsetI_eq0 eqFij fsetIid.
+rewrite big_filter big_mkcond; apply eq_bigr => i _.
+by case: ifPn => // /negPn /eqP ->;  rewrite big_seq_fset0.
 Qed.
 
 End FsetPartitions.
@@ -592,3 +632,48 @@ Proof. exact: real_ltr_bound. Qed.
 
 Lemma ltrNbound {R : archiRealDomainType} (x : R) : - x < (Num.bound x)%:R.
 Proof. exact: real_ltrNbound. Qed.
+
+(* normedZmodType provide norms but the subject is not the norm. We define here
+   a structure of norm where the subject is the function from the left-module to
+   its scalar field. *)
+Module Norm.
+
+HB.mixin Record isSemiNorm (K : numDomainType) (L : lmodType K) (norm : L -> K) := {
+  norm0 : norm 0 = 0 ;
+  norm_ge0 : forall x, 0 <= norm x ;
+  ler_normD : forall x y, norm (x + y) <= norm x + norm y ;
+  normZ : forall r x, norm (r *: x) = `|r| * norm x
+}.
+
+#[export]
+HB.structure Definition SemiNorm K L := { norm of @isSemiNorm K L norm }.
+
+HB.mixin Record SemiNorm_isNorm (K : numDomainType) (L : lmodType K)
+  (norm : L -> K) := { norm0_eq0 : forall x, norm x = 0 -> x = 0 }.
+
+#[export]
+HB.structure Definition Norm K L :=
+  { norm of @SemiNorm_isNorm K L norm & @SemiNorm K L norm }.
+
+Module Import Theory.
+Section Theory.
+Variables (K : numDomainType) (L : lmodType K) (norm : SemiNorm.type L).
+
+Lemma normMn x n : norm (x *+ n) = norm x *+ n.
+Proof. by rewrite -scaler_nat normZ normr_nat mulr_natl. Qed.
+
+Lemma normN x : norm (- x) = norm x.
+Proof. by rewrite -scaleN1r normZ normrN1 mul1r. Qed.
+
+Lemma ler_norm_sum (I : Type) (r : seq I) (F : I -> L) :
+  norm (\sum_(i <- r) F i) <= \sum_(i <- r) norm (F i).
+Proof.
+by elim/big_ind2 : _ => *; rewrite ?norm0// (le_trans (ler_normD _ _))// lerD.
+Qed.
+
+End Theory.
+End Theory.
+
+Module Import Exports. HB.reexport. End Exports.
+End Norm.
+Export Norm.Exports.

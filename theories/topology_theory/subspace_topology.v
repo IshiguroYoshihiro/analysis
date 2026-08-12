@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra all_classical.
+From mathcomp Require Import all_ssreflect_compat algebra all_classical.
 From mathcomp Require Import topology_structure uniform_structure compact.
 From mathcomp Require Import pseudometric_structure connected initial_topology.
 From mathcomp Require Import product_topology.
@@ -33,7 +33,7 @@ From mathcomp Require Import product_topology.
 Reserved Notation "{ 'within' A , 'continuous' f }"
   (format "{ 'within'  A ,  'continuous'  f }").
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -155,8 +155,8 @@ Qed.
 Lemma open_subspace_out (U : set (subspace A)) : U `<=` ~` A -> open U.
 Proof.
 move=> Usub; rewrite (_ : U = \bigcup_(i in U) [set i]).
-  by apply: bigcup_open => ? ?; apply: open_subspace1out; exact: Usub.
-by rewrite eqEsubset; split => x; [move=> ?; exists x|case=> i ? ->].
+  by rewrite eqEsubset; split => x; [move=> ?; exists x|case=> i ? ->].
+by apply: bigcup_open => ? ?; apply: open_subspace1out; exact: Usub.
 Qed.
 
 Lemma open_subspaceT : open (A : set (subspace A)).
@@ -167,8 +167,8 @@ Proof.
 apply/propext; split; last first.
   by move=> oU; apply: openI => //; apply: open_subspaceT.
 move=> oUA; rewrite (_ : U = (U `&` A) `|` (U `&` ~`A)).
-  by apply: openU => //; apply: open_subspace_out => ? [].
-by rewrite -setIUr setUCr setIT.
+  by rewrite -setIUr setUCr setIT.
+by apply: openU => //; apply: open_subspace_out => ? [].
 Qed.
 
 Lemma open_subspaceTI (U : set (subspace A)) :
@@ -261,10 +261,12 @@ have /closed_subspaceP := @closed_closure _ (U : set (subspace A)).
 move=> [V clV VAclUA] /[dup] /(@closureS (subspace _)).
 have /closure_id <- := closed_subspaceT => /setIidr <-; rewrite setIC.
 move=> UsubA; rewrite eqEsubset; split.
-  apply: setSI; rewrite closureE; apply: smallest_sub (@subset_closure _ U).
+  apply: setSI; rewrite closureE.
+  apply: smallest_sub (@subset_closure _ U).
   by apply: closed_subspaceW; exact: closed_closure.
-rewrite -VAclUA; apply: setSI; rewrite closureE //=; apply: smallest_sub => //.
-apply: subset_trans (@subIsetl _ V A); rewrite VAclUA subsetI; split => //.
+rewrite -VAclUA; apply: setSI; rewrite closureE //=.
+apply: smallest_sub => //; apply: subset_trans (@subIsetl _ V A).
+rewrite VAclUA subsetI; split => //.
 exact: (@subset_closure _ (U : set (subspace A))).
 Qed.
 
@@ -601,18 +603,17 @@ Lemma connected_continuous_connected (T U : topologicalType)
   connected A -> {within A, continuous f} -> connected (f @` A).
 Proof.
 move=> cA cf; apply: contrapT => /connectedPn[E [E0 fAE sE]].
-set AfE := fun b =>(A `&` f @^-1` E b) : set (subspace A).
+set AfE := fun b => (A `&` f @^-1` E b) : set (subspace A).
 suff sAfE : separated (AfE false) (AfE true).
   move: cA; apply/connectedPn; exists AfE; split; last (rewrite /AfE; split).
   - move=> b; case: (E0 b) => /= u Ebu.
     have [t Et ftu] : (f @` A) u by rewrite fAE; case: b Ebu; [right|left].
     by exists t; split => //=; rewrite /preimage ftu.
   - by rewrite -setIUr -preimage_setU -fAE; exact/esym/setIidPl/preimage_image.
-  + rewrite -{2}(setIid A) ?setIA -(@closure_subspaceW _ A); last by move=> ?[].
+  + rewrite -{2}(setIid A) ?setIA -(@closure_subspaceW _ A); first by move=> ?[].
     by rewrite -/(AfE false) -setIA -/(AfE true); case: sAfE.
-  + rewrite -{1}(setIid A) setIC ?setIA -(@closure_subspaceW _ A).
-      by rewrite -/(AfE true) -setIA -/(AfE false) setIC; case: sAfE.
-    by move=> ?[].
+  + rewrite -{1}(setIid A) setIC ?setIA -(@closure_subspaceW _ A) => [? []//|].
+    by rewrite -/(AfE true) -setIA -/(AfE false) setIC; case: sAfE.
 suff cI0 b : closure (AfE b) `&` AfE (~~ b) = set0.
   by rewrite /separated cI0 setIC cI0.
 have [fAfE cEIE] :
@@ -700,13 +701,36 @@ Section continuous_fun_comp.
 Context {X Y Z : topologicalType} (A : set X) (B : set Y) (C : set Z).
 Context {f : continuousSubspaceType A B} {g : continuousSubspaceType B C}.
 
-Local Lemma continuous_comp_subproof : continuous (g \o f : subspace A -> Z).
+#[local] Lemma continuous_comp_subproof : continuous (g \o f : subspace A -> Z).
 Proof.
-move=> x; apply: continuous_comp; last exact: cts_fun.
-exact/subspaceT_continuous/cts_fun.
+move=> x; apply: continuous_comp; last exact: continuous_fun.
+exact/subspaceT_continuous/continuous_fun.
 Qed.
 
-HB.instance Definition _ :=
-  @isContinuous.Build (subspace A) Z (g \o f) continuous_comp_subproof.
+(*HB.instance Definition _ :=
+  @isContinuous.Build (subspace A) Z (g \o f) continuous_comp_subproof.*)
+(* generates Warning: HB: no new instance is generated [HB.no-new-instance,HB,elpi,default] *)
 
 End continuous_fun_comp.
+
+Section continuous_patch.
+Context {U V : topologicalType}.
+Variables (A B : set U) (f g : U -> V).
+Hypothesis contf : {within A, continuous f}.
+Hypothesis contg : {within B, continuous g}.
+Hypothesis closedA : closed A.
+Hypothesis closedB : closed B.
+Hypothesis AB_fg : forall x, x \in A `&` B -> f x = g x.
+
+Lemma withinU_continuous_patch : {within A `|` B, continuous (patch g A f)}.
+Proof.
+pose gAf := patch g A f.
+apply: withinU_continuous => //.
+- suff : {in A, f =1 gAf} by move/subspace_eq_continuous; exact.
+  by rewrite /gAf /patch => r ->.
+- suff : {in B, g =1 gAf} by move/subspace_eq_continuous; exact.
+  move=> r rB; rewrite /gAf /patch; case: ifPn => // rA.
+  by apply/esym/AB_fg; rewrite in_setI rA.
+Qed.
+
+End continuous_patch.

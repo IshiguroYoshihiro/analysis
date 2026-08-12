@@ -1,6 +1,6 @@
 From HB Require Import structures.
 From Stdlib Require Import Bool.
-From mathcomp Require Import all_boot all_order interval_inference ssralg ssrnum.
+From mathcomp Require Import boot order interval_inference ssralg ssrnum.
 From mathcomp Require Import ssrint interval archimedean.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import reals ereal topology normedtype.
@@ -30,7 +30,7 @@ Proof.
 move=> mU mU0.
 have [aU|aU] := boolP (a \in U).
   by rewrite setUidl// => x ->; exact/set_mem.
-rewrite measureU//=.
+rewrite measureU//=; last first.
   by rewrite mU0 lebesgue_measure_set1 adde0.
 rewrite -subset0 => x [/=] /[swap] ->.
 by move=> /mem_set; apply/negP.
@@ -291,15 +291,15 @@ have H20 : 1 - 2^-1 != 0 :> R by rewrite lt0r_neq0// subr_gt0; apply: ltr_normlW
 have H1 : (@GRing.inv R 2) / (1 - 2^-1) = 1.
   by rewrite [X in X - _](splitr 1) div1r addrK divff.
 have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
-  rewrite measure_semi_additive_ord //=; last 3 first.
+  rewrite measure_semi_additive_ord //=.
     move=> k.
     by apply: sub_caratheodory => //=.
     have := tab_ n.
     rewrite trivIset_mkcond/= => /trivIsetP/= tab_n.
     apply/trivIsetP => /= i j _ _ ij.
     have := tab_n i j Logic.I Logic.I ij.
-    rewrite ifT; last by rewrite inE/=.
-    rewrite ifT; last by rewrite inE/=.
+    rewrite ifT; first by rewrite inE/=.
+    rewrite ifT; first by rewrite inE/=.
     by [].
     exact: mE.
   apply/ltW.
@@ -353,14 +353,14 @@ have mA0 : mu A = 0.
       near=> k => /=.
       rewrite measure_ge0 /=.
       apply: (@le_trans _ _ (\big[+%E/0%E]_(k <= j <oo) (mu (E_ j))%E)).
-      - rewrite (_: G_ k = \bigcup_n G_ (n + k)%N); last first.
+      - rewrite (_: G_ k = \bigcup_n G_ (n + k)%N).
           apply/seteqP; split.
           + by exists 0%N.
           + apply: bigcup_sub => n _.
             apply: bigcup_sub => j /= nkj.
             apply: bigcup_sup => /=.
             by rewrite (leq_trans _ nkj)// leq_addl.
-          rewrite -nneseries_addn; last by move=> i; by [].
+          rewrite -nneseries_addn; first by move=> i; by [].
           apply: measure_sigma_subadditive.
               by move=> n; exact: mE.
             by apply: bigcup_measurable => n _; exact: mG.
@@ -369,15 +369,15 @@ have mA0 : mu A = 0.
           exists (j - k)%N => //.
           by rewrite subnK// (leq_trans _ ikj)// leq_addl.
 (*      rewrite d_geo0; last by near: k; exists 1%N.*)
-      - rewrite [leRHS](_:_ = (\sum_(k <= j <oo) (delta_0 j)%:E)%E); last first.
+      - rewrite [leRHS](_:_ = (\sum_(k <= j <oo) (delta_0 j)%:E)%E).
           apply: esym.
           apply: cvg_lim => //.
-          rewrite d_geo0; last by near: k; exists 1%N.
+          rewrite d_geo0; first by near: k; exists 1%N.
           rewrite /geometric /=.
           rewrite -[X in _ --> (X * _)%:E]H1 mulrAC -exprS.
           rewrite -(cvg_shiftn k) /=.
           rewrite [X in X @ _ --> _](_:_=
-         (fun n => (@series R (geometric (2^-1 ^+ k.+1) 2^-1) n)%:E)); last first.
+         (fun n => (@series R (geometric (2^-1 ^+ k.+1) 2^-1) n)%:E)).
             apply/funext => n.
             rewrite /series /= sumEFin.
             rewrite -{1}(add0n k) big_addn addnK.
@@ -387,8 +387,8 @@ have mA0 : mu A = 0.
             by rewrite /delta_0 -exprVn.
           apply: cvg_EFin; first by apply: nearW.
           by apply: cvg_geometric_series.
-        rewrite -nneseries_addn; last by move=> i; apply: measure_ge0.
-        rewrite -[leRHS]nneseries_addn; last first.
+        rewrite -nneseries_addn; first by move=> i; apply: measure_ge0.
+        rewrite -[leRHS]nneseries_addn.
           move=> i.
           rewrite lee_fin.
           rewrite /delta_0.
@@ -412,7 +412,7 @@ have mA0 : mu A = 0.
     apply: cvg_trans.
       apply: near_eq_cvg.
       near=> k.
-      rewrite d_geo0; last by near: k; exists 1%N.
+      rewrite d_geo0; first by near: k; exists 1%N.
       reflexivity.
     apply: cvg_EFin; first by near=> k.
     by apply: cvg_geometric.
@@ -424,7 +424,7 @@ have mA0 : mu A = 0.
       rewrite /G_.
       by apply: bigcup_sub => i _; exact: bigcup_sup.
     apply: (@le_lt_trans _ _ 1%E); last exact: ltry.
-    rewrite (_ : 1%E = (\big[+%R/0%R]_(0 <= i <oo) (delta_0 i)%:E)).
+    rewrite (_ : 1%E = (\big[+%R/0%R]_(0 <= i <oo) (delta_0 i)%:E)); last first.
       exact: lee_nneseries.
     apply/esym.
     rewrite -H1.
@@ -469,10 +469,10 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
     transitivity (\sum_(k < n_ n) mu (f @` `](ab_ n k).1, (ab_ n k).2[%classic)).
     (* /not in paper *)
       rewrite [X in mu [set f x | x in X]] (_ : _ =
-          \bigcup_(k < n_ n) `](ab_ n k).1, (ab_ n k).2[%classic); last first.
+          \bigcup_(k < n_ n) `](ab_ n k).1, (ab_ n k).2[%classic).
         by rewrite bigcup_mkord.
       rewrite image_bigcup [X in mu X](_ : _ =
-        \big[setU/set0]_(i < n_ n) [set f x | x in `](ab_ n i).1, (ab_ n i).2[]); last first.
+        \big[setU/set0]_(i < n_ n) [set f x | x in `](ab_ n i).1, (ab_ n i).2[]).
         by rewrite bigcup_mkord.
       have : forall i : 'I_(n_ n), exists b01,
         f @` `](ab_ n i).1, (ab_ n i).2[ = set01 b01.1 (f (ab_ n i).1) `|`
@@ -530,10 +530,10 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
             `|`
            (\big[setU/set0]_i set01 (endpoints i).2 (f (ab_ n i).2))
              `|`
-           (\big[setU/set0]_(i < n_ n) `](f (ab_ n i).1), (f (ab_ n i).2)[%classic))); last first.
+           (\big[setU/set0]_(i < n_ n) `](f (ab_ n i).1), (f (ab_ n i).2)[%classic))).
           rewrite !big_split/=.
           by rewrite setUAC.
-        rewrite measureU//=; last 3 first.
+        rewrite measureU//=.
           apply: measurableU.
             apply: bigsetU_measurable => i _.
             rewrite /set01; case: ifPn => // _.
@@ -595,17 +595,17 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
               move=> ->.
             by rewrite andbF.
             by rewrite ij ltxx andbF.
-          rewrite measureU0//=; last 3 first.
+          rewrite measureU0//=.
             apply: bigsetU_measurable => i _.
             by rewrite /set01; case: ifPn => // _; exact: sub_caratheodory.
             apply: bigsetU_measurable => i _.
             by rewrite /set01; case: ifPn => // _; exact: sub_caratheodory.
             by apply: measure_bigsetU_set01.
-          rewrite [X in (X + _)%E](_ : _ = 0); last first.
+          rewrite [X in (X + _)%E](_ : _ = 0).
             by apply: measure_bigsetU_set01.
           rewrite add0e.
           done.
-        rewrite measure_semi_additive_ord//=; last 3 first.
+        rewrite measure_semi_additive_ord//=.
           by move=> k; apply: sub_caratheodory.
           apply/trivIsetP => /= i j _ _.
             rewrite neq_lt => /orP[ij|ij].
@@ -686,8 +686,8 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     apply: bigcup_sub => j /= jni.
     move : (absub i j jni).
     rewrite open_subsetE.
-      by rewrite interior_itv.
-    exact: interval_open.
+      exact: interval_open.
+    by rewrite interior_itv.
   have := @measure_image_nondecreasing_fun R a b F ab nndf G_ cf Gab Gopen.
   by rewrite /= -/A -completed_lebesgue_measureE mfA0.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
@@ -704,10 +704,10 @@ apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
 - apply: (@le_lt_trans _ _ (mu `[F a, F b])); last first.
     rewrite completed_lebesgue_measureE lebesgue_measure_itv//= lte_fin.
     rewrite (lt_neqAle (f a)) nndf ?andbT.
-    by case: ifPn => //; rewrite -EFinB ltry.
-    by rewrite in_itv/= lexx/= ltW.
-    by rewrite in_itv/= lexx/= ltW.
+    by rewrite bound_itvE ltW.
+    by rewrite bound_itvE ltW.
     exact: ltW.
+    by case: ifPn => //; rewrite -EFinB ltry.
   rewrite le_measure//= ?inE.
     apply: sub_caratheodory; rewrite image_G.
     by apply: bigcup_measurable => p _; exact: mfE.

@@ -13,7 +13,7 @@ From mathcomp Require internal_Eqdep_dec.
 (* # Classical Logic                                                          *)
 (*                                                                            *)
 (* This file provides the axioms of classical logic and tools to perform      *)
-(* classical reasoning in the Mathematical Compnent framework. The three      *)
+(* classical reasoning in the Mathematical Component framework. The three     *)
 (* axioms are taken from the standard library of Coq, more details can be     *)
 (* found in Section 5 of                                                      *)
 (* - R. Affeldt, C. Cohen, D. Rouhling. Formalization Techniques for          *)
@@ -73,6 +73,7 @@ From mathcomp Require internal_Eqdep_dec.
 (*                                                                            *)
 (******************************************************************************)
 
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set   Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

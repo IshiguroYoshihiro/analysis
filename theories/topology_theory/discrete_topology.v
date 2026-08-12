@@ -1,5 +1,6 @@
+(* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra all_classical all_reals.
+From mathcomp Require Import all_ssreflect_compat algebra all_classical all_reals.
 From mathcomp Require Import topology_structure uniform_structure.
 From mathcomp Require Import order_topology pseudometric_structure compact.
 
@@ -25,7 +26,7 @@ From mathcomp Require Import order_topology pseudometric_structure compact.
 (* ```                                                                        *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 
 Import Order.TTheory GRing.Theory Num.Def Num.Theory.
 
@@ -39,7 +40,7 @@ HB.mixin Record Discrete_ofNbhs T & Nbhs T := {
 #[short(type="discreteNbhsType")]
 HB.structure Definition DiscreteNbhs := {T of Nbhs T & Discrete_ofNbhs T}.
 
-Definition discrete_ent {T} : set (set (T * T)) :=
+Definition discrete_ent {T} : set_system (T * T) :=
   globally (range (fun x => (x, x))).
 
 (** Note: having the discrete topology does not guarantee the discrete
@@ -189,6 +190,7 @@ HB.instance Definition _ (T : choiceType) :=
   hasNbhs.Build (discrete_topology T) principal_filter.
 HB.instance Definition _ (T : choiceType) :=
   Discrete_ofNbhs.Build (discrete_topology T) erefl.
+HB.saturate discrete_topology.
 HB.instance Definition _ (T : choiceType) :=
   DiscreteUniform_ofNbhs.Build (discrete_topology T).
 HB.instance Definition _ {R : numDomainType} (T : choiceType) :=

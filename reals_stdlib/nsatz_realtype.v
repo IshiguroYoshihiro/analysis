@@ -16,6 +16,8 @@ From mathcomp Require Import boolp reals constructive_ereal.
 
 Import GRing.Theory Num.Theory.
 
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
+
 Local Open Scope ring_scope.
 
 Section Nsatz_realType.

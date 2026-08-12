@@ -1,6 +1,6 @@
-(* mathcomp analysis (c) 2025 Inria and AIST. License: CeCILL-C.              *)
+(* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra.
+From mathcomp Require Import all_ssreflect_compat algebra.
 From mathcomp Require Import boolp classical_sets functions cardinality reals.
 From mathcomp Require Import interval_inference ereal topology normedtype.
 From mathcomp Require Import measurable_structure measure_function dirac_measure.
@@ -38,7 +38,7 @@ From mathcomp Require Import measurable_structure measure_function dirac_measure
 (* ```                                                                        *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -108,8 +108,8 @@ Proof. by move=> mA; rewrite -(probability_setT P) ?le_measure ?in_setE. Qed.
 Lemma probability_setC (A : set T) : measurable A -> P (~` A) = 1 - P A.
 Proof.
 move=> mA; rewrite -(probability_setT P) -(setvU A) measureU ?addeK ?setICl//.
-- by rewrite fin_num_measure.
-- exact: measurableC.
+  exact: measurableC.
+by rewrite fin_num_measure.
 Qed.
 
 End probability_lemmas.
@@ -161,7 +161,7 @@ Proof.
 move=> F mF tF mUF; rewrite /mnormalize/=.
 case: ifPn => [_|_]; first exact: measure_semi_sigma_additive.
 rewrite [X in X @ _ --> _](_ : _ = (fun n => \sum_(0 <= i < n) mu (F i)) \*
-                               cst (fine (mu setT))^-1%:E); last first.
+                               cst (fine (mu setT))^-1%:E).
   by apply/funext => n; rewrite -ge0_sume_distrl.
 by apply: cvgeZr => //; exact: measure_semi_sigma_additive.
 Qed.
@@ -189,7 +189,7 @@ apply/funext => x; rewrite /mnormalize/= probability_setT.
 by rewrite onee_eq0/= invr1 mule1.
 Qed.
 
-HB.instance Definition _ d (T : measurableType d) (R : realType) :=
+HB.instance Definition _ d (T : pmeasurableType d) (R : realType) :=
   isPointed.Build (probability T R) (dirac point).
 
 Section dist_sigma_algebra_instance.
@@ -211,7 +211,7 @@ move=> mU r1; apply/seteqP; split => // x/= _.
 by rewrite /mset/= (le_lt_trans (probability_le1 _ _)).
 Qed.
 
-Definition pset : set (set (probability T R)) :=
+Definition pset : set_system (probability T R) :=
   [set mset U r | r in `[0%R,1%R] & U in measurable].
 
 Definition pprobability : measurableType pset.-sigma :=

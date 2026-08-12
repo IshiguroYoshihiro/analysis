@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra all_classical.
+From mathcomp Require Import all_ssreflect_compat algebra all_classical.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable.
 From mathcomp Require Import interval_inference topology_structure.
@@ -17,7 +17,7 @@ From mathcomp Require Import uniform_structure pseudometric_structure compact.
 
 Import Order.TTheory GRing.Theory Num.Theory.
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -45,7 +45,8 @@ move=> [QR [/nbhs_interior p1_Q /nbhs_interior p2_R] sQRA].
 by exists (QR.1°, QR.2°) => // ??; exists QR.
 Qed.
 
-HB.instance Definition _ := hasNbhs.Build (T * U)%type prod_nbhs.
+(*HB.instance Definition _ := hasNbhs.Build (T * U)%type prod_nbhs.*)
+(* generates: Warning: HB: no new instance is generated [HB.no-new-instance,HB,elpi,default] *)
 
 HB.instance Definition _ := Nbhs_isNbhsTopological.Build (T * U)%type
   prod_nbhs_filter prod_nbhs_singleton prod_nbhs_nbhs.

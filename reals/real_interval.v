@@ -11,7 +11,7 @@ From mathcomp Require Import reals interval_inference constructive_ereal.
 (* # Sets and intervals on $\overline{\mathbb{R}}$                            *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -70,7 +70,7 @@ Lemma sup_itv a b x : (a < BSide b x)%O ->
   sup [set` Interval a (BSide b x)] = x.
 Proof.
 move=> xy; have /itv_bndbnd_setU : (-oo <= a)%O by rewrite bnd_simp.
-have /[swap]-> := sup_itv_infty_bnd x b; last exact/ltW.
+have /[swap]-> := sup_itv_infty_bnd x b; first exact/ltW.
 rewrite sup_setU// => ? ? /= /[!itv_boundlr]/= +/andP[] => /le_trans/[apply].
 by rewrite !bnd_simp => /ltW.
 Qed.

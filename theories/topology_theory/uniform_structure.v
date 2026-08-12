@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra all_classical.
+From mathcomp Require Import all_ssreflect_compat algebra all_classical.
 From mathcomp Require Import topology_structure.
 
 (**md**************************************************************************)
@@ -42,7 +42,7 @@ From mathcomp Require Import topology_structure.
 (* ```                                                                        *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -166,7 +166,7 @@ End NbhsEntourage.
 Lemma nbhsP {M : uniformType} (x : M) P : nbhs x P <-> nbhs_ entourage x P.
 Proof. by rewrite nbhs_simpl. Qed.
 
-Lemma filter_inv {T : Type} (F : set (set (T * T))) :
+Lemma filter_inv {T : Type} (F : set_system (T * T)) :
   Filter F -> Filter [set V^-1 | V in F]%relation.
 Proof.
 move=> FF; split => /=.
@@ -225,8 +225,8 @@ Lemma cvg_entourageP F (FF : Filter F) (p : M) :
   F --> p <-> forall A, entourage A -> \forall q \near F, A (p, q).
 Proof.
 rewrite -filter_fromP [X in filter_from _ X](_ : _ = @xsection M M ^~ p)//.
-  by rewrite filter_from_entourageE.
-by apply/funext => E; apply/seteqP; split => [|] ? /xsectionP.
+  by apply/funext => E; apply/seteqP; split => [|] ? /xsectionP.
+by rewrite filter_from_entourageE.
 Qed.
 
 Lemma cvg_entourage {F} {FF : Filter F} (x : M) :

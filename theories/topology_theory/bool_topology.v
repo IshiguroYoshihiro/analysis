@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra all_classical.
+From mathcomp Require Import all_ssreflect_compat algebra all_classical.
 From mathcomp Require Import reals topology_structure uniform_structure.
 From mathcomp Require Import pseudometric_structure order_topology compact.
 From mathcomp Require Import discrete_topology.
@@ -10,7 +10,7 @@ From mathcomp Require Import discrete_topology.
 (* This file equips bool with the discrete pseudometric.                      *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 
 Import Order.TTheory GRing.Theory Num.Theory.
 

@@ -44,7 +44,7 @@
 (******************************************************************************)
 
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra.
+From mathcomp Require Import all_ssreflect_compat algebra.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable.
 From mathcomp Require Import mathcomp_extra boolp classical_sets set_interval.
@@ -52,7 +52,7 @@ From mathcomp Require Import mathcomp_extra boolp classical_sets set_interval.
 Declare Scope real_scope.
 
 (* -------------------------------------------------------------------- *)
-Set   SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set   Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -349,7 +349,7 @@ Lemma inf_sumE (A B : set R) :
 Proof.
 move/has_inf_supN => ? /has_inf_supN ?; rewrite /inf.
 rewrite [X in - sup X = _](_ : _ =
-    [set x + y | x in [set - x | x in A ] & y in [set - x | x in B]]).
+    [set x + y | x in [set - x | x in A ] & y in [set - x | x in B]]); last first.
   by rewrite sup_sumE // -opprD.
 rewrite eqEsubset; split => /= t [] /= x []a Aa.
   case => b Bb <- <-; exists (- a); first by exists a.
@@ -470,7 +470,7 @@ Lemma RfloorE x : Rfloor x = (Num.floor x)%:~R.
 Proof. by []. Qed.
 
 Lemma mem_rg1_floor x : (range1 (Num.floor x)%:~R) x.
-Proof. by rewrite /range1 /mkset -intrD1 floor_le_tmp floorD1_gt. Qed.
+Proof. by rewrite /range1 /mkset -intrD1 floor_le floorD1_gt. Qed.
 
 Lemma mem_rg1_Rfloor x : (range1 (Rfloor x)) x.
 Proof. exact: mem_rg1_floor. Qed.
@@ -510,7 +510,7 @@ Lemma le_Rfloor : {homo (@Rfloor R) : x y / x <= y}.
 Proof. by move=> x y /Num.Theory.le_floor; rewrite ler_int. Qed.
 
 Lemma Rfloor_ge_int x (i : int) : (i%:~R <= x)= (i%:~R <= Rfloor x).
-Proof. by rewrite ler_int floor_ge_int_tmp. Qed.
+Proof. by rewrite ler_int floor_ge_int. Qed.
 
 Lemma Rfloor_lt_int x (i : int) : (x < i%:~R) = (Rfloor x < i%:~R).
 Proof. by rewrite ltr_int -floor_lt_int. Qed.
@@ -544,10 +544,10 @@ Lemma Rceil_ge x : x <= Rceil x.
 Proof. by rewrite Num.Theory.ceil_ge ?num_real. Qed.
 
 Lemma le_Rceil : {homo (@Rceil R) : x y / x <= y}.
-Proof. by move=> x y ?; rewrite /Rceil ler_int le_ceil_tmp. Qed.
+Proof. by move=> x y ?; rewrite /Rceil ler_int le_ceil. Qed.
 
 Lemma Rceil_ge0 x : 0 <= x -> 0 <= Rceil x.
-Proof. by move=> x0; rewrite /Rceil ler0z -(ceil0 R) le_ceil_tmp. Qed.
+Proof. by move=> x0; rewrite /Rceil ler0z -(ceil0 R) le_ceil. Qed.
 
 Lemma RceilE x : Rceil x = (Num.ceil x)%:~R.
 Proof. by []. Qed.
@@ -607,9 +607,9 @@ have [supA|supNA] := pselect (has_sup A); last first.
   by rewrite !sup_out // => /has_sup_down.
 have supDA : has_sup (down A) by apply/has_sup_down.
 apply/eqP; rewrite eq_le !sup_le //.
+- by case: supA => -[x xA] _; exists x; apply/le_down.
 - by rewrite downK; exact: le_down.
 - by case: supA.
-- by case: supA => -[x xA] _; exists x; apply/le_down.
 Qed.
 
 Lemma lt_sup_imfset {T : Type} (F : T -> R) l :
@@ -632,7 +632,64 @@ move=> /inf_adherent/(_ hs)[_ [x ->]]; rewrite addrC subrK => ltFxl.
 by exists x => //; rewrite (ge_inf hs.2)//; exists x.
 Qed.
 
+(** This is a specialization of the lemma `ub_le_sup` exploiting the fact
+    that `sup` is 0 when there is no supremum. *)
+Lemma sup_ge0 A : (forall x, A x -> 0 <= x) -> 0 <= sup A.
+Proof.
+move=> A0; have [->|/set0P[a Aa]] := eqVneq A set0; first by rewrite sup0.
+have [[_ Aub]|supA] := pselect (has_sup A); last by rewrite sup_out.
+by rewrite (le_trans (A0 _ Aa))// ub_le_sup.
+Qed.
+
+Lemma has_sup_wpZl A (a : R) : 0 <= a -> has_sup A ->
+  has_sup [set a * x | x in A ].
+Proof.
+move=> a0 [[x Ax] [b ub]]; split; first by exists (a * x), x.
+by exists (a * b) => _ [y Ay <-]; rewrite ler_wpM2l// ub.
+Qed.
+
+Lemma gt0_has_supZl A (a : R) : 0 < a -> has_sup [set a * x | x in A ] ->
+  has_sup A.
+Proof.
+move=> a0 [[_ [x Ax _]] [b ub]]; split; first by exists x.
+by exists (b / a) => y Ay; rewrite ler_pdivlMr// mulrC ub//; exists y.
+Qed.
+
+Lemma ge0_supZl A (a : R) : 0 <= a -> sup [set a * x  | x in A ] = a * sup A.
+Proof.
+rewrite le_eqVlt => /predU1P[<-|an0].
+  have [->|A0] := eqVneq A set0; first by rewrite image_set0 sup0 mulr0.
+  suff -> : [set 0 * x | x in A] = [set 0] by rewrite sup1 mul0r.
+  under eq_fun do rewrite mul0r.
+  by rewrite set_cst (negbTE A0).
+have [->|A0] := eqVneq A set0; first by rewrite image_set0 sup0 mulr0.
+have [[[x Ax] ubA]|not_ex_sup] := pselect (has_sup A); last first.
+  rewrite !sup_out ?mulr0//.
+  by apply: contra_not not_ex_sup; exact: gt0_has_supZl.
+apply/eqP; rewrite eq_le; apply/andP; split.
+  apply: ge_sup; first by exists (a * x), x.
+  by move=> _ [x0 Axo <-]; rewrite ler_pM2l// ub_le_sup.
+rewrite -ler_pdivlMl// ge_sup//; first exact/set0P.
+move=> x0 Ax0; rewrite ler_pdivlMl// ub_le_sup//; last by exists x0.
+have [x1 ubx1] := ubA.
+by exists (a * x1) => _ [x2 Ax2 <-]; rewrite ler_pM2l// ubx1.
+Qed.
+
+Lemma has_sup_Mn A n : has_sup A -> has_sup [set x *+n | x in A].
+Proof.
+move=> [[x Ax] [y Ay]]; split; first by exists (x *+ n), x.
+by exists (y *+ n) => _ [y0 Ay0 <-]; rewrite lerMn2r Ay// orbT.
+Qed.
+
+Lemma sup_Mn A n : sup [set x *+n | x in A ] = sup A *+ n.
+Proof.
+rewrite -mulr_natl (_ : [set _ | _ in _] = [set n%:R * x | x in A]).
+  by under eq_fun do rewrite -mulr_natl.
+exact: ge0_supZl.
+Qed.
+
 End Sup.
+
 #[deprecated(since="mathcomp-analysis 1.14.0", note="Renamed `inf_le`.")]
 Notation le_inf := inf_le (only parsing).
 #[deprecated(since="mathcomp-analysis 1.14.0", note="Renamed `sup_le`.")]

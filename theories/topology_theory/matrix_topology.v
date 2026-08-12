@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra finmap all_classical.
+From mathcomp Require Import all_ssreflect_compat algebra finmap all_classical.
 From mathcomp Require Import interval_inference topology_structure.
 From mathcomp Require Import uniform_structure pseudometric_structure.
 
@@ -20,7 +20,7 @@ From mathcomp Require Import uniform_structure pseudometric_structure.
 (*                                                                            *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 
 Import Order.TTheory GRing.Theory Num.Theory.
 
@@ -145,16 +145,21 @@ by apply: filter_bigI => ??; apply: entP.
 Unshelve. all: by end_near. Qed.
 
 Section matrix_PointedTopology.
-Variables (m n : nat) .
+Variables (m n : nat).
 HB.instance Definition _ (T : ptopologicalType) := Filtered.on 'M[T]_(m, n).
-HB.instance Definition _ (T : ptopologicalType) := Pointed.on 'M[T]_(m, n).
-HB.instance Definition _ (T : ptopologicalType) :=
-  PointedFiltered.on 'M[T]_(m, n).
-HB.instance Definition _ (T : ptopologicalType) :=
-  PointedTopological.on 'M[T]_(m, n).
-HB.instance Definition _ (T : uniformType) := Uniform.on 'M[T]_(m, n).
+(*HB.instance Definition _ (T : ptopologicalType) := Pointed.on 'M[T]_(m, n).*)
+(* generates Warning: HB: no new instance is generated [HB.no-new-instance,HB,elpi,default] *)
+(*HB.instance Definition _ (T : ptopologicalType) :=
+  PointedFiltered.on 'M[T]_(m, n).*)
+(* generates Warning: HB: no new instance is generated [HB.no-new-instance,HB,elpi,default] *)
+(*HB.instance Definition _ (T : ptopologicalType) :=
+  PointedTopological.on 'M[T]_(m, n).*)
+(* generates Warning: HB: no new instance is generated [HB.no-new-instance,HB,elpi,default] *)
+(*HB.instance Definition _ (T : uniformType) := Uniform.on 'M[T]_(m, n).*)
+(* generates Warning: HB: no new instance is generated [HB.no-new-instance,HB,elpi,default] *)
 HB.instance Definition _ (T : puniformType) := Pointed.on 'M[T]_(m, n).
-HB.instance Definition _ (T : puniformType) := PointedUniform.on 'M[T]_(m, n).
+(*HB.instance Definition _ (T : puniformType) := PointedUniform.on 'M[T]_(m, n).*)
+(* generates Warning: HB: no new instance is generated [HB.no-new-instance,HB,elpi,default] *)
 End matrix_PointedTopology.
 
 Section matrix_Complete.

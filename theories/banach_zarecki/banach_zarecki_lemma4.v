@@ -1,10 +1,11 @@
 From HB Require Import structures.
 From Stdlib Require Import Bool.
-From mathcomp Require Import all_boot all_order interval_inference ssralg ssrnum.
+From mathcomp Require Import boot order interval_inference ssralg ssrnum.
 From mathcomp Require Import ssrint interval archimedean.
 From mathcomp Require Import mathcomp_extra boolp contra classical_sets functions.
 From mathcomp Require Import reals ereal topology normedtype.
 From mathcomp Require Import sequences measure lebesgue_measure numfun realfun.
+From mathcomp Require Import measurable_realfun.
 From mathcomp Require Import absolute_continuity.
 
 (**md**************************************************************************)
@@ -109,7 +110,7 @@ Proof.
 move=> hasNlbA A0.
 rewrite ereal_infEN.
 rewrite [X in - ereal_sup X = _](_ : _ =
-  (EFin @` (-%R @` A))); last first.
+  (EFin @` (-%R @` A))).
   rewrite eqEsubset; split.
   - move=> _ [_ [r Ar <-] <-].
     by exists (- r)%R.
@@ -173,7 +174,7 @@ have compactP : compact P.
 set a_ := contiguous_intervals1 P.
 set b_ := contiguous_intervals2 P.
 have H1 : f @` `[a, b] = (f @` P) `|` \bigcup_i f @` `](a_ i), (b_ i)[.
-  rewrite -image_bigcup_disjoint; last first.
+  rewrite -image_bigcup_disjoint.
     exact: trivIset_contiguous_intervals.
   rewrite -image_setU.
   congr (f @` _).
@@ -184,8 +185,8 @@ have H1 : f @` `[a, b] = (f @` P) `|` \bigcup_i f @` `](a_ i), (b_ i)[.
     have -> : `]((a_ i)), ((b_ i))[%classic =
                    [set` Rhull (contiguous_intervals P i)].
       rewrite /Rhull.
-      rewrite ifT; last exact/asboolP/has_lbound_contiguous_intervals.
-      rewrite ifT; last exact/asboolP/has_ubound_contiguous_intervals.
+      rewrite ifT; first exact/asboolP/has_lbound_contiguous_intervals.
+      rewrite ifT; first exact/asboolP/has_ubound_contiguous_intervals.
       congr ([set` Interval (BSide _ _) (BSide _ _)]); apply: eq_fun => _.
       - apply/esym/asboolF.
         apply: open_haslb_memNinf.
@@ -195,14 +196,14 @@ have H1 : f @` `[a, b] = (f @` P) `|` \bigcup_i f @` `](a_ i), (b_ i)[.
         apply: open_hasub_memNsup.
         + exact: has_ubound_contiguous_intervals.
         + exact: open_contiguous_intervals.
-    rewrite RhullK; last first.
+    rewrite RhullK.
       rewrite inE.
       exact: is_interval_contiguous_intervals.
     apply: (subset_trans (@contiguous_intervalsS _ P i)).
     exact: cplt_hull_subset_Rhull.
   rewrite /a_.
   rewrite -bigcup_contiguous_intervals_fine//.
-  rewrite setDUK; last exact: sub_Rhull.
+  rewrite setDUK; first exact: sub_Rhull.
   by rewrite Pab.
 apply/andP; split.
   (* wlog? *)
@@ -231,7 +232,7 @@ apply/andP; split.
   - by exists b => //=; rewrite bound_itvE.
   - by exists a => //=; rewrite bound_itvE.
   - by rewrite in_itv/= in xfba.
-rewrite -measurable_mu_extE; last first.
+rewrite -measurable_mu_extE.
   apply: sub_caratheodory.
   rewrite -(@RhullK _ (f @` `[a, b]))//.
   by rewrite inE.
@@ -251,15 +252,15 @@ case: ifPn => [/eqP ab0|ab0].
     rewrite ltNge; contra: ab0 => anbn.
     apply/set0P; exists ((a_ n)).
     by rewrite /= in_itv/= lexx anbn.
-  rewrite set_itv_ge ?bnd_simp -?leNgt//; last exact/ltW.
+  rewrite set_itv_ge ?bnd_simp -?leNgt//; first exact/ltW.
   by rewrite image_set0 mu_ext0.
 rewrite [leRHS](_ : _ =
-       mu^*%mu [set` Rhull (f @` `[((a_ n)), ((b_ n))] )]).
+       mu^*%mu [set` Rhull (f @` `[((a_ n)), ((b_ n))] )]); last first.
   apply: le_outer_measure.
   apply: subset_trans (@sub_Rhull _ _).
   apply: image_subset.
   exact: subset_itv_oo_cc.
-rewrite measurable_mu_extE/=; last first.
+rewrite measurable_mu_extE/=.
   apply: sub_caratheodory.
   exact: measurable_itv.
 rewrite completed_lebesgue_measure_itv.
@@ -271,14 +272,14 @@ have fab0 : [set f x | x in `[(a_ n), (b_ n)]] !=set0.
 have [hasubf|hasNubf] :=
   pselect (has_ubound (f @` `[((a_ n)), ((b_ n))])); last first.
   rewrite -image_comp hasNub_ereal_sup//.
-  rewrite addye; last first.
+  rewrite addye.
     apply/eqP.
     move/eqe_oppLRP => /=.
     move/ereal_inf_pinfty.
     apply/not_forallP; rewrite not_notE.
     have [y [x/= xab fax]] := fab0.
     by exists y%:E; rewrite ?not_implyP; split => //; exists y => //; exists x.
-  rewrite ifT; last first.
+  rewrite ifT.
     rewrite /=; move/asboolF : (hasNubf) => ->.
     by case: ifP => // _; exact: ltry.
   rewrite /=; move/asboolF : (hasNubf) => ->.
@@ -286,7 +287,7 @@ have [hasubf|hasNubf] :=
 have [haslbf|hasNlbf] :=
    pselect (has_lbound (f @` `[(a_ n), (b_ n)])); last first.
   rewrite -[X in _ - ereal_inf X = _]image_comp hasNlb_ereal_inf//; last first.
-  rewrite ifT; last first.
+  rewrite ifT.
     rewrite /=; move/asboolF: (hasNlbf) => ->.
     move/asboolP: (hasubf) => ->; exact: ltNyr.
   rewrite /=; move/asboolF: (hasNlbf) => -> /=.
@@ -358,7 +359,7 @@ move/[dup] => haslb_fX; move/ereal_inf_EFin/(_ fX0); rewrite image_comp => ->.
 have <- : mu [set` Rhull (f @` X)] =
       (sup [set f x | x in X])%:E - (inf [set f x | x in X])%:E.
   rewrite /Rhull.
-  rewrite !ifT; last 2 first.
+  rewrite !ifT.
   - exact/asboolP.
   - exact/asboolP.
   rewrite completed_lebesgue_measure_itv => /=; case: ifPn => //.
@@ -370,25 +371,34 @@ by rewrite le_outer_measure//; apply: sub_Rhull.
 Qed.
 
 Lemma lemma4_cover (f : R -> R) (P : set R) (xy : nat -> R * R) :
+  {within `[a, b], continuous f} ->
   is_interval (f @` `[a, b]) ->
   (* perfect_set P *) closed P ->
  (*  a = inf P -> b = sup P -> *)
   Rhull P = `[a, b] ->
   (forall n, (xy n).1 <= (xy n).2)%R ->
  `[a, b]%classic `<=` P `|`
-   (\bigcup_i `](xy i).1, (xy i).2[%classic) ->
+   \bigcup_(i in (fun i => `[(xy i).1, (xy i).2]%classic `<=` `[a, b]))
+       `](xy i).1, (xy i).2[%classic ->
   `|f b - f a|%:E <= mu (f @` `[a, b])
      <= (mu^*)%mu (f @` P) +
-        \sum_(0 <= i <oo) oscillation f `[(xy i).1, (xy i).2]%classic.
+        \sum_(0 <= i <oo | `[< `[(xy i).1, (xy i).2]%classic `<=` `[a, b] >])
+          oscillation f `[(xy i).1, (xy i).2]%classic.
 Proof.
-move=> fab closedP + xy12 abSubPxy.
+move=> cf fab closedP + xy12 abSubPxy.
 move/[dup]/eq_Rhull_itvccP => [[haslbP Pinf infa] [hasubP Psup supa]] Pab.
 have compactP : compact P.
   apply: Rbounded_closed_compact => //.
   by rewrite Rbounded_setE.
-have H1 : f @` `[a, b] `<=` (f @` P) `|` \bigcup_i f @` `](xy i).1, (xy i).2[.
+have H1 : f @` `[a, b] `<=` (f @` P) `|`
+     \bigcup_(i in (fun i => `[(xy i).1, (xy i).2] `<=` `[a, b]))
+            f @` `[(xy i).1, (xy i).2].
   rewrite -image_bigcup -image_setU.
-  exact: image_subset.
+  apply: image_subset.
+  apply: (subset_trans abSubPxy).
+  apply: setUS.
+  move=> p [n ? xyp]; exists n => //.
+  exact: subset_itv_oo_cc.
 apply/andP; split.
   (* wlog? *)
   have [fafb|] := pselect (f a < f b)%R.
@@ -416,19 +426,32 @@ apply/andP; split.
   - by exists b => //=; rewrite bound_itvE.
   - by exists a => //=; rewrite bound_itvE.
   - by rewrite in_itv/= in xfba.
-rewrite -measurable_mu_extE; last first.
+rewrite -measurable_mu_extE.
   apply: sub_caratheodory.
   rewrite -(@RhullK _ (f @` `[a, b]))//.
   by rewrite inE.
 apply: (le_trans (le_outer_measure mu^*%mu _ _ H1)).
 apply: (le_trans (outer_measureU2 _ _ _)).
 rewrite leeD2l//.
+rewrite bigcup_mkcond.
 apply: (le_trans (outer_measure_sigma_subadditive _ _)).
-apply: lee_nneseries => // n _.
-rewrite [leLHS](_ : mu^*%mu (f @` `](xy n).1, (xy n).2[) =
+rewrite [leLHS](_: _ =  \big[+%E/0%R]_(0 <= i <oo)
+       (if i \in (fun i0 : nat => `[< `[(xy i0).1, (xy i0).2] `<=` `[a, b] >])
+        then mu^*%mu [set f x | x in `[(xy i).1, (xy i).2]]
+        else 0)).
+  apply: eq_eseriesr => n _.
+  by case: ifP.
+rewrite -eseries_mkcond; apply: lee_nneseries => // n.
+rewrite inE => xyab.
+rewrite [leLHS](_ : mu^*%mu (f @` `[(xy n).1, (xy n).2]) =
                     mu (f @` `[(xy n).1, (xy n).2]))%E; last first.
-  admit.
-exact: measure_le_oscillation.
-Admitted.
+  exact: measure_le_oscillation.
+apply: measurable_mu_extE.
+apply: sub_caratheodory.
+apply: compact_measurable.
+apply: continuous_compact.
+  exact: continuous_subspaceW cf.
+exact: segment_compact.
+Qed.
 
 End lemma4_cover.

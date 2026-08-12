@@ -63,7 +63,7 @@ From mathcomp Require Import prodnormedzmodule num_normedtype.
 Reserved Notation "[ 'bounded' E | x 'in' A ]"
   (at level 0, x name, format "[ 'bounded'  E  |  x  'in'  A ]").
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -96,6 +96,16 @@ Proof. by rewrite oppr0 shift0. Qed.
 End Shift.
 Arguments shift {R} x / y.
 Notation center c := (shift (- c)).
+
+Lemma itv_center_shift {R : numFieldType} x y (a b : R) : (a < b) ->
+  let c := (a + b) / 2 in let r := (b - a) / 2 in
+  Interval (BSide x a) (BSide y b) =
+  Interval (BSide x (center r c (*c - r*) )) (BSide y (shift r c (*c + r*))).
+Proof.
+move=> ab c r; rewrite /shift /c /r -mulrBl addrKA opprK -mulrDl.
+rewrite [in X in _ = Interval _ X]addrC subrKA -!mulr2n.
+by rewrite -(mulr_natr a) -(mulr_natr b) !mulfK.
+Qed.
 
 Section at_left_right_topologicalType.
 Variables (R : numFieldType) (V : topologicalType) (f : R -> V) (x : R).
@@ -591,14 +601,14 @@ Qed.
 Lemma at_rightN (a : R) : (- a)^'+ = -%R @ a^'-.
 Proof.
 rewrite /at_right withinN [X in within X _](_ : _ = [set u | u < a])//.
-rewrite (@fun_predC _ -%R)/=; last exact: opprK.
+rewrite (@fun_predC _ -%R)/=; first exact: opprK.
 by rewrite image_id; under eq_fun do rewrite ltrNl opprK.
 Qed.
 
 Lemma at_leftN (a : R) : (- a)^'- = -%R @ a^'+.
 Proof.
 rewrite /at_left withinN [X in within X _](_ : _ = [set u | a < u])//.
-rewrite (@fun_predC _ -%R)/=; last exact: opprK.
+rewrite (@fun_predC _ -%R)/=; first exact: opprK.
 by rewrite image_id; under eq_fun do rewrite ltrNl opprK.
 Qed.
 
@@ -895,49 +905,6 @@ Arguments cvgr_norm_ley {R V I F FF}.
 Arguments cvgr_norm_gtNy {R V I F FF}.
 Arguments cvgr_norm_geNy {R V I F FF}.
 
-Section at_left_rightR.
-Variable (R : numFieldType).
-
-Lemma real_cvgr_lt {T} {F : set_system T} {FF : Filter F} (f : T -> R) (y : R) :
-    y \is Num.real -> f @ F --> y ->
-  forall z, z > y -> \forall t \near F, f t \is Num.real -> f t < z.
-Proof.
-move=> yr Fy z zy; near=> x => fxr.
-rewrite -(ltrD2r (- y)) real_ltr_normlW// ?rpredB//.
-by near: x; apply: (@cvgr_distC_lt R R^o) => //; rewrite subr_gt0.
-Unshelve. all: by end_near. Qed.
-
-Lemma real_cvgr_le {T} {F : set_system T} {FF : Filter F} (f : T -> R) (y : R) :
-    y \is Num.real ->  f @ F --> y ->
-  forall z, z > y -> \forall t \near F, f t \is Num.real -> f t <= z.
-Proof.
-move=> /real_cvgr_lt/[apply] + ? z0 => /(_ _ z0).
-by apply: filterS => ? /[apply]/ltW.
-Qed.
-
-Lemma real_cvgr_gt {T} {F : set_system T} {FF : Filter F} (f : T -> R) (y : R) :
-    y \is Num.real -> f @ F --> y ->
-  forall z, y > z -> \forall t \near F, f t \is Num.real -> f t > z.
-Proof.
-move=> yr Fy z zy; near=> x => fxr.
-rewrite -ltrN2 -(ltrD2l y) real_ltr_normlW// ?rpredB//.
-by near: x; apply: (@cvgr_dist_lt _ R^o) => //; rewrite subr_gt0.
-Unshelve. all: by end_near. Qed.
-
-Lemma real_cvgr_ge {T} {F : set_system T} {FF : Filter F} (f : T -> R) (y : R) :
-    y \is Num.real -> f @ F --> y ->
-  forall z, z < y -> \forall t \near F, f t \is Num.real -> f t >= z.
-Proof.
-move=> /real_cvgr_gt/[apply] + ? z0 => /(_ _ z0).
-by apply: filterS => ? /[apply]/ltW.
-Qed.
-
-End at_left_rightR.
-Arguments real_cvgr_le {R T F FF f}.
-Arguments real_cvgr_lt {R T F FF f}.
-Arguments real_cvgr_ge {R T F FF f}.
-Arguments real_cvgr_gt {R T F FF f}.
-
 Section realFieldType.
 Context (R : realFieldType).
 
@@ -948,37 +915,7 @@ rewrite (@nbhsr0P _ R^o) -propeqE; apply: eq_near => y /=.
 by rewrite -propeqE; apply: eq_forall => z; rewrite ler_distlC.
 Qed.
 
-Lemma cvgr_lt {T} {F : set_system T} {FF : Filter F} (f : T -> R) (y : R) :
-  f @ F --> y -> forall z, z > y -> \forall t \near F, f t < z.
-Proof.
-move=> Fy z zy; near=> x; rewrite -(ltrD2r (- y)) ltr_normlW//.
-by near: x; apply: (@cvgr_distC_lt _ R^o) => //; rewrite subr_gt0.
-Unshelve. all: by end_near. Qed.
-
-Lemma cvgr_le {T} {F : set_system T} {FF : Filter F} (f : T -> R) (y : R) :
-  f @ F --> y -> forall z, z > y -> \forall t \near F, f t <= z.
-Proof.
-by move=> /cvgr_lt + ? z0 => /(_ _ z0); apply: filterS => ?; apply/ltW.
-Qed.
-
-Lemma cvgr_gt {T} {F : set_system T} {FF : Filter F} (f : T -> R) (y : R) :
-  f @ F --> y -> forall z, y > z -> \forall t \near F, f t > z.
-Proof.
-move=> Fy z zy; near=> x; rewrite -ltrN2 -(ltrD2l y) ltr_normlW//.
-by near: x; apply: (@cvgr_dist_lt _ R^o) => //; rewrite subr_gt0.
-Unshelve. all: by end_near. Qed.
-
-Lemma cvgr_ge {T} {F : set_system T} {FF : Filter F} (f : T -> R) (y : R) :
-  f @ F --> y -> forall z, z < y -> \forall t \near F, f t >= z.
-Proof.
-by move=> /cvgr_gt + ? z0 => /(_ _ z0); apply: filterS => ?; apply/ltW.
-Qed.
-
 End realFieldType.
-Arguments cvgr_le {R T F FF f}.
-Arguments cvgr_lt {R T F FF f}.
-Arguments cvgr_ge {R T F FF f}.
-Arguments cvgr_gt {R T F FF f}.
 
 Module Export NbhsNorm.
 Definition nbhs_simpl := (nbhs_simpl,@nbhs_nbhs_norm,@filter_from_norm_nbhs).
@@ -996,7 +933,7 @@ Proof.
 move=> ab eps_gt0 cf.
 move/continuous_withinNx/cvgrPdist_lt/(_ _ eps_gt0) : (cf b).
 rewrite /dnbhs/= near_withinE !near_simpl /prop_near1 /nbhs/=.
-rewrite -nbhs_subspace_in//; last first.
+rewrite -nbhs_subspace_in//.
   rewrite /= in_itv/= lexx andbT.
   by move: a ab {cf} => [[a|a]/=|[|]//]; rewrite bnd_simp// => /ltW.
 rewrite /within/= near_simpl; apply: filter_app.
@@ -1015,7 +952,7 @@ Proof.
 move=> ab eps_gt0 cf.
 move/continuous_withinNx/cvgrPdist_lt/(_ _ eps_gt0) : (cf a).
 rewrite /dnbhs/= near_withinE !near_simpl// /prop_near1 /nbhs/=.
-rewrite -nbhs_subspace_in//; last first.
+rewrite -nbhs_subspace_in//.
   rewrite /= in_itv/= lexx//=.
   by move: b ab {cf} => [[b|b]/=|[|]//]; rewrite bnd_simp// => /ltW.
 rewrite /within/= near_simpl; apply: filter_app.
@@ -1033,7 +970,7 @@ Lemma continuous_within_itvP a b f : a < b ->
 Proof.
 move=> ab; split=> [abf|].
   split; [apply/in_continuous_mksetP|apply/cvgrPdist_lt => eps eps_gt0 /=..].
-  - rewrite -continuous_open_subspace; last exact: interval_open.
+  - rewrite -continuous_open_subspace; first exact: interval_open.
     by move: abf; exact/continuous_subspaceW/subset_itvW.
   - by apply: near_at_right => //; rewrite bnd_simp.
   - by apply: near_at_left => //; rewrite bnd_simp.
@@ -1051,9 +988,9 @@ rewrite !bnd_simp/= !le_eqVlt => /predU1P[<-{x}|ax] /predU1P[|].
   have : c <= b by move: ac => /andP[].
   by rewrite le_eqVlt => /predU1P[->|/[swap] /[apply]//]; rewrite subrr normr0.
 - move=> xb; have aboox : x \in `]a, b[ by rewrite !in_itv/= ax.
-  rewrite within_interior; first exact: ctsoo.
+  rewrite within_interior; last exact: ctsoo.
   suff : `]a, b[ `<=` interior `[a, b] by exact.
-  by rewrite -open_subsetE; [exact: subset_itvW| exact: interval_open].
+  by rewrite -open_subsetE; [exact: interval_open | exact: subset_itvW].
 Qed.
 
 Lemma continuous_within_itvcyP a f :
@@ -1062,7 +999,7 @@ Lemma continuous_within_itvcyP a f :
 Proof.
 split=> [cf|].
   split; [apply/in_continuous_mksetP|apply/cvgrPdist_lt => eps eps_gt0 /=].
-  - rewrite -continuous_open_subspace; last exact: interval_open.
+  - rewrite -continuous_open_subspace; first exact: interval_open.
     by apply: continuous_subspaceW cf => ?; rewrite /= !in_itv !andbT/= => /ltW.
   - by apply: near_at_right => //; rewrite bnd_simp.
 move=> [cf fa]; apply/subspace_continuousP => x /andP[].
@@ -1072,9 +1009,9 @@ rewrite bnd_simp/= le_eqVlt => /predU1P[<-{x}|ax] _.
   exists 1%R => //= c c1a /[swap]; rewrite in_itv/= andbT le_eqVlt.
   by move=> /predU1P[->|/[swap]/[apply]//]; rewrite subrr normr0.
 - have xaoo : x \in `]a, +oo[ by rewrite in_itv/= andbT.
-  rewrite within_interior; first exact: cf.
+  rewrite within_interior; last exact: cf.
   suff : `]a, +oo[ `<=` interior `[a, +oo[ by exact.
-  rewrite -open_subsetE; last exact: interval_open.
+  rewrite -open_subsetE; first exact: interval_open.
   by move=> ?/=; rewrite !in_itv/= !andbT; exact: ltW.
 Qed.
 
@@ -1084,7 +1021,7 @@ Lemma continuous_within_itvNycP b f :
 Proof.
 split=> [cf|].
   split; [apply/in_continuous_mksetP|apply/cvgrPdist_lt => eps eps_gt0 /=].
-  - rewrite -continuous_open_subspace; last exact: interval_open.
+  - rewrite -continuous_open_subspace; first exact: interval_open.
     by apply: continuous_subspaceW cf => ?/=; rewrite !in_itv/=; exact: ltW.
   - by apply: near_at_left => //; rewrite bnd_simp.
 move=> [cf fb]; apply/subspace_continuousP => x /andP[_].
@@ -1094,9 +1031,9 @@ rewrite bnd_simp/= le_eqVlt=> /predU1P[->{x}|xb].
   exists 1%R => //= c c1b /[swap]; rewrite in_itv/= le_eqVlt.
   by move=> /predU1P[->|/[swap]/[apply]//]; rewrite subrr normr0.
 - have xb_i : x \in `]-oo, b[ by rewrite in_itv/=.
-  rewrite within_interior; first exact: cf.
+  rewrite within_interior; last exact: cf.
   suff : `]-oo, b[ `<=` interior `]-oo, b] by exact.
-  rewrite -open_subsetE; last exact: interval_open.
+  rewrite -open_subsetE; first exact: interval_open.
   by move=> ?/=; rewrite !in_itv/=; exact: ltW.
 Qed.
 

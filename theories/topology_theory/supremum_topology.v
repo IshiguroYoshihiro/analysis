@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra finmap all_classical.
+From mathcomp Require Import all_ssreflect_compat algebra finmap all_classical.
 From mathcomp Require Import topology_structure uniform_structure.
 
 (**md**************************************************************************)
@@ -14,7 +14,7 @@ From mathcomp Require Import topology_structure uniform_structure.
 (* `sup_topology` is equipped with the `Uniform` structure                    *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -179,7 +179,7 @@ Lemma countable_sup_ent :
   countable_uniformity Tt.
 Proof.
 move=> Icnt countable_ent; pose f n := cid (countable_ent n).
-pose g (n : Ii) : set (set (T * T)) := projT1 (f n).
+pose g (n : Ii) : set_system (T * T) := projT1 (f n).
 have [I0 | /set0P [i0 _]] := eqVneq [set: I] set0.
   exists [set setT]; split; [exact: countable1|move=> A ->; exact: entourageT|].
   move=> P [w [A _]] <- subP; exists setT => //.

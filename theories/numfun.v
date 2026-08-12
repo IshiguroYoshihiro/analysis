@@ -11,14 +11,11 @@ From mathcomp Require Import topology normedtype sequences.
 (**md**************************************************************************)
 (* # Numerical functions                                                      *)
 (*                                                                            *)
-(* This file provides definitions and lemmas about numerical functions and    *)
-(* theorems such as Tietze's extension theorem.                               *)
+(* This file provides definitions and lemmas about numerical functions (e.g., *)
+(* the fact that numerical functions with a finite image from a (potentially  *)
+(* zero) ring) and theorems such as Tietze's extension theorem.               *)
 (*                                                                            *)
 (* ```                                                                        *)
-(*     nondecreasing_fun f == the function f is non-decreasing                *)
-(*     nonincreasing_fun f == the function f is non-increasing                *)
-(*        increasing_fun f == the function f is (strictly) increasing         *)
-(*        decreasing_fun f == the function f is (strictly) decreasing         *)
 (*     itv_partition a b s == s is a partition of the interval `[a, b]        *)
 (*      itv_partitionL s c == the left side of splitting a partition at c     *)
 (*      itv_partitionR s c == the right side of splitting a partition at c    *)
@@ -46,7 +43,7 @@ Reserved Notation "{ 'nnfun' aT >-> T }"
 Reserved Notation "[ 'nnfun' 'of' f ]"
   (at level 0, format "[ 'nnfun'  'of'  f ]").
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -55,15 +52,6 @@ Import numFieldTopology.Exports.
 
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
-
-Notation "'nondecreasing_fun' f" := ({homo f : n m / (n <= m)%O >-> (n <= m)%O})
-  (at level 10).
-Notation "'nonincreasing_fun' f" := ({homo f : n m / (n <= m)%O >-> (n >= m)%O})
-  (at level 10).
-Notation "'increasing_fun' f" := ({mono f : n m / (n <= m)%O >-> (n <= m)%O})
-  (at level 10).
-Notation "'decreasing_fun' f" := ({mono f : n m / (n <= m)%O >-> (n >= m)%O})
-  (at level 10).
 
 Lemma nondecreasing_funN {R : numDomainType} a b (f : R -> R) :
   {in `[a, b] &, nondecreasing_fun f} <->
@@ -224,7 +212,7 @@ Lemma notin_itv_partition c s : sorted <%O s -> c \notin s ->
 Proof.
 elim: s c => // h t ih c /= ht.
 rewrite inE negb_or => /andP[]; rewrite neq_lt => /orP[ch|ch] ct.
-  rewrite ch ltNge (ltW ch)/= path_lt_filter0/= /itv_partitionR; last first.
+  rewrite ch ltNge (ltW ch)/= path_lt_filter0/= /itv_partitionR.
     exact: path_lt_head ht.
   by rewrite path_lt_filterT//; exact: path_lt_head ht.
 by rewrite ch/= ltNge (ltW ch)/= -ih//; exact: path_sorted ht.
@@ -249,7 +237,7 @@ Lemma itv_partition_rev a b s : itv_partition a b s ->
   itv_partition (- b) (- a) (rev (belast (- a) (map -%R s))).
 Proof.
 move=> [sa /eqP alb]; split.
-  rewrite (_ : - b = last (- a) (map -%R s)); last by rewrite last_map alb.
+  rewrite (_ : - b = last (- a) (map -%R s)); first by rewrite last_map alb.
   rewrite rev_path// path_map.
   by apply: sub_path sa => x y xy/=; rewrite ltrNr opprK.
 case: s sa alb => [_ <-//|h t] /= /andP[ah ht] <-{b}.
@@ -283,12 +271,12 @@ Proof.
 move=> [] sa /eqP asb; rewrite /variation [in LHS]/= (big_nth b) !big_nat.
 apply: eq_bigr => i /andP[_ si]; congr (`| _ - f _ |).
 rewrite -lock.
-rewrite prev_nth inE gt_eqF; last first.
+rewrite prev_nth inE gt_eqF.
   rewrite -[a]/(nth b (a :: s) 0) -[ltRHS]/(nth b (a :: s) i.+1).
   exact: lt_sorted_ltn_nth.
 rewrite orFb mem_nth// index_uniq//.
-  by apply: set_nth_default => /=; rewrite ltnS ltnW.
-by apply: (sorted_uniq lt_trans) => //; apply: path_sorted sa.
+  by apply: (sorted_uniq lt_trans) => //; apply: path_sorted sa.
+by apply: set_nth_default => /=; rewrite ltnS ltnW.
 Qed.
 
 Lemma variation_next a b f s : itv_partition a b s ->
@@ -302,8 +290,7 @@ congr (`| f _ - f _ |); last first.
 rewrite -lock next_nth.
 rewrite {1}lastI mem_rcons inE mem_nth ?size_belast// orbT.
 rewrite lastI -cats1 index_cat mem_nth ?size_belast//.
-rewrite index_uniq ?size_belast//.
-  exact: set_nth_default.
+rewrite index_uniq ?size_belast//; last exact: set_nth_default.
 have /lt_sorted_uniq : sorted <%R (a :: s) by [].
 by rewrite lastI rcons_uniq => /andP[].
 Qed.
@@ -386,15 +373,15 @@ move=> abl; rewrite belast_map /variation /= [LHS]big_nat_rev/= add0n.
 rewrite size_rev size_map size_belast 2!big_nat.
 apply: eq_bigr => k; rewrite leq0n /= => ks.
 rewrite nth_rev ?size_map ?size_belast// [in RHS]distrC.
-rewrite (nth_map a); last first.
+rewrite (nth_map a).
   by rewrite size_belast ltn_subLR// addSn ltnS leq_addl.
 rewrite opprK -rev_rcons nth_rev ?size_rcons ?size_map ?size_belast 1?ltnW//.
-rewrite subSn// -map_rcons (nth_map b) ?size_rcons ?size_belast; last first.
+rewrite subSn// -map_rcons (nth_map b) ?size_rcons ?size_belast.
   by rewrite ltnS ltn_subLR// addSn ltnS leq_addl.
 rewrite opprK nth_rcons size_belast -subSn// subSS.
 rewrite (ltn_subLR _ (ltnW ks)) if_same.
 case: k => [|k] in ks *.
-  rewrite add0n ltnn subn1 (_ : nth b s _ = b); last first.
+  rewrite add0n ltnn subn1 (_ : nth b s _ = b).
     case: abl ks => _.
     elim/last_ind : s => // h t _; rewrite last_rcons => /eqP -> _.
     by rewrite nth_rcons size_rcons ltnn eqxx.
@@ -437,14 +424,14 @@ Lemma variation_itv_partitionLR a b c f s : a < c -> c < b ->
 Proof.
 move=> ac bc abs; have [cl|cl] := boolP (c \in s).
   by rewrite -in_itv_partition//; case: abs => /path_sorted.
-rewrite /itv_partitionL [in leLHS](notin_itv_partition _ cl)//; last first.
+rewrite /itv_partitionL [in leLHS](notin_itv_partition _ cl)//.
   by apply: path_sorted; case: abs => + _; exact.
-rewrite -notin_itv_partition//; last first.
+rewrite -notin_itv_partition//.
   by apply: path_sorted; case: abs => /= + _; exact.
-rewrite !variation_zip//; last first.
+rewrite !variation_zip//.
   by apply: itv_partition_cat;
     [exact: (itv_partitionLP _ bc)|exact: (itv_partitionRP ac)].
-rewrite [in leLHS](notin_itv_partition _ cl); last first.
+rewrite [in leLHS](notin_itv_partition _ cl).
   by apply: path_sorted; case: abs => + _; exact.
 set L := [seq x <- s | x < c].
 rewrite -cats1 -catA.
@@ -456,17 +443,17 @@ elim/last_ind : L => [|L0 L1 _].
     by rewrite big_nil big_cons/= big_nil addr0.
   by rewrite !big_cons/= addrA lerD// -(subrKA (f c)) [leRHS]addrC ler_normD.
 rewrite -cats1.
-rewrite (_ : a :: _ ++ B = (a :: L0) ++ [:: L1] ++ B)//; last first.
+rewrite (_ : a :: _ ++ B = (a :: L0) ++ [:: L1] ++ B)//.
   by rewrite -!catA -cat_cons.
-rewrite zip_cat; last by rewrite cats1 size_rcons.
-rewrite (_ : a :: _ ++ _ ++ B = (a :: L0) ++ [:: L1] ++ [:: c] ++ B); last first.
+rewrite zip_cat; first by rewrite cats1 size_rcons.
+rewrite (_ : a :: _ ++ _ ++ B = (a :: L0) ++ [:: L1] ++ [:: c] ++ B).
   by rewrite -!catA -cat_cons.
-rewrite zip_cat; last by rewrite cats1 size_rcons.
+rewrite zip_cat; first by rewrite cats1 size_rcons.
 rewrite !big_cat lerD//.
 case: B => [|B0 B1].
   by rewrite /= big_nil big_cons big_nil addr0.
 rewrite -cat1s zip_cat// catA.
-rewrite (_ : [:: L1] ++ _ ++ B1 = ([:: L1] ++ [:: c]) ++ [:: B0] ++ B1); last first.
+rewrite (_ : [:: L1] ++ _ ++ B1 = ([:: L1] ++ [:: c]) ++ [:: B0] ++ B1).
   by rewrite catA.
 rewrite zip_cat// !big_cat lerD//= !big_cons !big_nil !addr0/= [leRHS]addrC.
 by rewrite (le_trans _ (ler_normD _ _))// subrKA.
@@ -487,9 +474,9 @@ have waW : w <= a := ltW wa.
 case: ifPn => [|] nXA.
   move/eqP : nXA itvxt itvxb => -> itvat itvt /= ta.
   rewrite -[_ :: t]cat1s -[_ :: s]cat1s.
-  rewrite ?(@variation_cat _ a)//; [|exact: itv_partition1..].
+  rewrite ?(@variation_cat _ a)//; [exact: itv_partition1..|].
   by rewrite lerD// IH.
-move=> xts; rewrite -[_ :: s]cat1s (@variation_cat _ a) => //; last first.
+move=> xts; rewrite -[_ :: s]cat1s (@variation_cat _ a) => //.
   exact: itv_partition1.
 have [y [s' s'E]] : exists y s', s = y :: s'.
   by case: {itvas itvws IH} s xts => // y s' ?; exists y, s'.
@@ -497,7 +484,7 @@ apply: (@le_trans _ _ (variation w b f s)).
   rewrite IH//.
   case: itvws => /= /andP[_]; rewrite s'E /= => /andP[ay ys' lyb].
   by split => //; rewrite (path_lt_head wa)//= ys' andbT.
-by rewrite -variation_cat//; [exact: le_variation | exact: itv_partition1].
+by rewrite -variation_cat//; [exact: itv_partition1 | exact: le_variation].
 Qed.
 
 End variation_realDomainType.
@@ -806,6 +793,45 @@ move=> fg x Dx; rewrite /funrneg /Num.max; case: ifPn => gx; case: ifPn => fx//.
 - by rewrite lerN2; exact: fg.
 Qed.
 
+Lemma eq_funrpos f g : f =1 g -> f^\+ =1 g^\+.
+Proof. by move=> eq_fg x; rewrite /funrpos eq_fg. Qed.
+
+Lemma eq_funrneg f g : f =1 g -> f^\- =1 g^\-.
+Proof. by move=> eq_fg x; rewrite /funrneg eq_fg. Qed.
+
+Lemma funrpos_cst0 x : (fun _ : T => 0)^\+ x = 0 :> R.
+Proof. by rewrite /funrpos maxxx. Qed.
+
+Lemma funrneg_cst0 x : (fun _ : T => 0)^\- x = 0 :> R.
+Proof. by rewrite /funrneg oppr0 maxxx. Qed.
+
+Lemma funrposZ f c : 0 <= c -> (c \*o f)^\+ =1 c \*o f^\+.
+Proof. by move=> ge0_c x; rewrite /= ge0_funrposM. Qed.
+
+Lemma funrnegZ f c : 0 <= c -> (c \*o f)^\- =1 c \*o f^\-.
+Proof.
+move=> ge0_c x; rewrite /= -!funrposN; have /= <- := funrposZ (- f) ge0_c x.
+by apply/eq_funrpos=> y /=; rewrite mulrN.
+Qed.
+
+Lemma funrpos_natrM f (n : T -> nat) x :
+  (fun x => (n x)%:R * f x)^\+ x = (n x)%:R * f^\+ x.
+Proof.
+by rewrite /funrpos -[in RHS]normr_nat maxr_pMr// mulr0 ger0_norm.
+Qed.
+
+Lemma funrneg_natrM f (n : T -> nat) x :
+  (fun x => (n x)%:R * f x)^\- x = (n x)%:R * f^\- x.
+Proof.
+rewrite -[in RHS]funrposN -funrpos_natrM -funrposN.
+by apply/eq_funrpos=> y; rewrite mulrN.
+Qed.
+
+Lemma le_funrpos_norm f x : f^\+ x <= `|f x|.
+Proof.
+by rewrite -/((Num.Def.normr \o f) x) -funrposDneg lerDl funrneg_ge0.
+Qed.
+
 End funrposneg_lemmas.
 #[global]
 Hint Extern 0 (is_true (0%R <= _ ^\+ _)%R) => solve [apply: funrpos_ge0] : core.
@@ -907,9 +933,9 @@ move=> r0; rewrite -[in LHS](opprK r); under eq_fun do rewrite EFinN mulNe.
 by rewrite funenegN ge0_funeposM ?oppr_ge0.
 Qed.
 
-Lemma fune_abse f : abse \o f = f^\+ \+ f^\-.
+Lemma funeposDneg f : f^\+ \+ f^\- = abse \o f.
 Proof.
-rewrite funeqE => x /=; have [fx0|/ltW fx0] := leP (f x) 0.
+rewrite funeqE => x /=; have /orP[fx0|fx0] := le_total (f x) 0.
 - rewrite lee0_abs// funeposE funenegE.
   move/max_idPr : (fx0) => ->; rewrite add0e.
   by move: fx0; rewrite -{1}oppe0 leeNr => /max_idPl ->.
@@ -917,7 +943,7 @@ rewrite funeqE => x /=; have [fx0|/ltW fx0] := leP (f x) 0.
   by move: fx0; rewrite -{1}oppe0 leeNl => /max_idPr ->; rewrite adde0.
 Qed.
 
-Lemma funeposneg f : f = (fun x => f^\+ x - f^\- x).
+Lemma funeposBneg f : f^\+ \- f^\- = f.
 Proof.
 rewrite funeqE => x; rewrite funeposE funenegE; have [|/ltW] := leP (f x) 0.
   by rewrite -{1}oppe0 -leeNr => /max_idPl ->; rewrite oppeK add0e.
@@ -930,27 +956,14 @@ by rewrite funenegE funeposE; case: (f x) => [r| |];
   [rewrite -fine_max/=|rewrite /maxe /= ltNyr|rewrite /maxe /= ltNyr].
 Qed.
 
-Lemma funeD_Dpos f g : f \+ g = (f \+ g)^\+ \- (f \+ g)^\-.
-Proof.
-apply/funext => x; rewrite funeposE funenegE; have [|/ltW] := leP 0 (f x + g x).
-- by rewrite -{1}oppe0 -leeNl => /max_idPr ->; rewrite sube0.
-- by rewrite -{1}oppe0 -leeNr => /max_idPl ->; rewrite oppeK add0e.
-Qed.
+#[deprecated(since="mathcomp-analysis 1.15.0", note="use `funeposBneg` instead")]
+Lemma funeD_Dpos f g : (f \+ g)^\+ \- (f \+ g)^\- = f \+ g.
+Proof. by rewrite funeposBneg. Qed.
 
-Lemma funeD_posD f g : f \+ g = (f^\+ \+ g^\+) \- (f^\- \+ g^\-).
+Lemma funeDB f g : (f^\+ \+ g^\+) \- (f^\- \+ g^\-) = f \+ g.
 Proof.
-apply/funext => x; rewrite !funeposE !funenegE.
-have [|fx0] := leP 0 (f x); last rewrite add0e.
-- rewrite -{1}oppe0 leeNl => /max_idPr ->; have [|/ltW] := leP 0 (g x).
-    by rewrite -{1}oppe0 leeNl => /max_idPr ->; rewrite adde0 sube0.
-  by rewrite -{1}oppe0 -leeNr => /max_idPl ->; rewrite adde0 sub0e oppeK.
-- move/ltW : (fx0); rewrite -{1}oppe0 leeNr => /max_idPl ->.
-  have [|] := leP 0 (g x); last rewrite add0e.
-    by rewrite -{1}oppe0 leeNl => /max_idPr ->; rewrite adde0 oppeK addeC.
-  move gg' : (g x) => g'; move: g' gg' => [g' gg' g'0|//|goo _].
-  + move/ltW : (g'0); rewrite -{1}oppe0 -leeNr => /max_idPl => ->.
-    by rewrite fin_num_oppeD// 2!oppeK.
-  + by rewrite /maxe /=; case: (f x) fx0.
+rewrite ge0_addBefctE//; [by move=> x; rewrite funeneg_ge0..|].
+by rewrite -[in RHS](funeposBneg f) -[in RHS](funeposBneg g).
 Qed.
 
 Lemma funepos_le f g :
@@ -971,7 +984,16 @@ move=> fg x Dx; rewrite !funenegE /maxe; case: ifPn => gx; case: ifPn => fx //.
 - by rewrite leeN2; exact: fg.
 Qed.
 
+Lemma funepos_cst0 t : (@cst T _ 0)^\+ t = 0 :> \bar R.
+Proof. by rewrite funeposE maxxx. Qed.
+
+Lemma funeneg_cst0 t : (@cst T _ 0)^\- t = 0 :> \bar R.
+Proof. by rewrite funenegE oppe0 maxxx. Qed.
+
 End funposneg_lemmas.
+#[deprecated(since="mathcomp-analysis 1.15.0", note="use `-funeDB` instead")]
+Notation funeD_posD := funeDB (only parsing).
+
 #[global]
 Hint Extern 0 (is_true (0%R <= _ ^\+ _)%E) => solve [apply: funepos_ge0] : core.
 #[global]
@@ -989,6 +1011,7 @@ Proof. by apply/funext => x; rewrite funenegE /funrneg/= EFin_max. Qed.
 End funrpos_funepos_lemmas.
 
 Definition indic {T} {R : pzRingType} (A : set T) (x : T) : R := (x \in A)%:R.
+
 Reserved Notation "'\1_' A" (at level 8, A at level 2, format "'\1_' A") .
 Notation "'\1_' A" := (indic A) : ring_scope.
 
@@ -1127,7 +1150,7 @@ Proof.
 by exists 1; split => // r r1 t At/=; rewrite indicE mem_set//= normr1 ltW.
 Qed.
 
-Lemma indic_restrict {T : pointedType} {R : numFieldType} (A : set T) :
+Lemma indic_restrict {T : Type} {R : numFieldType} (A : set T) :
   \1_A = (1 : T -> R) \_ A.
 Proof. by apply/funext => x; rewrite indicE /patch; case: ifP. Qed.
 
@@ -1144,7 +1167,7 @@ Lemma cvg_indic {R : realFieldType} (x : R^o) k :
   \1_(ball 0 k : set R^o) y @[y --> x] --> (\1_(ball 0 k) x : R).
 Proof.
 move=> xB; apply/(@cvgrPdist_le _ R^o) => /= e e0; near=> t.
-rewrite !indicE xB/= mem_set//=; first by rewrite subrr normr0// ltW.
+rewrite !indicE xB/= mem_set//=; last by rewrite subrr normr0// ltW.
 near: t.
 rewrite inE /ball /= sub0r normrN in xB.
 exists ((k - `|x|)/2) => /=; first by rewrite divr_gt0// subr_gt0.
@@ -1154,9 +1177,14 @@ rewrite -ltrBrDr distrC (lt_le_trans h)//.
 by rewrite ler_pdivrMr//= ler_pMr// ?subr_gt0// ler1n.
 Unshelve. all: by end_near. Qed.
 
+(* NB: should appear in MathComp 2.6.0 (PR #1586) *)
+(*Notation "[ 'SubZmodule_isSubPzRing' 'of' U 'by' <: ]" :=
+  (GRing.SubNmodule_isSubPzSemiRing.Build _ _ U (subringClosedP _))
+  (format "[ 'SubZmodule_isSubPzRing'  'of'  U  'by'  <: ]")
+  : form_scope.*)
+
 Section ring.
-(* TODO: generalize to the potentially-zero case? *)
-Context (aT : pointedType) (rT : nzRingType).
+Context (aT : Type) (rT : pzRingType).
 
 Lemma fimfun_mulr_closed : mulr_closed (@fimfun aT rT).
 Proof.
@@ -1166,7 +1194,7 @@ Qed.
 
 HB.instance Definition _ :=
    @GRing.isMulClosed.Build _ (@fimfun aT rT) fimfun_mulr_closed.
-HB.instance Definition _ := [SubZmodule_isSubNzRing of {fimfun aT >-> rT} by <:].
+HB.instance Definition _ := [SubNmodule_isSubPzSemiRing of {fimfun aT >-> rT} by <:].
 
 Implicit Types f g : {fimfun aT >-> rT}.
 
@@ -1200,16 +1228,23 @@ Definition scale_fimfun k f : {fimfun aT >-> rT} := k \o* f.
 End ring.
 Arguments indic_fimfun {aT rT} _.
 
+(* NB: this notation will be taken by MathComp 2.6.0,
+   will become [SubSemiRing_isSubComSemiRing of U by <: ] but might require more  *)
+Notation "[ 'SubPzRing_isSubComPzRing' 'of' U 'by' <: ]" :=
+  (GRing.SubPzRing_isSubComPzRing.Build _ _ U)
+  (format "[ 'SubPzRing_isSubComPzRing'  'of'  U  'by'  <: ]")
+  : form_scope.
+
 Section comring.
-Context (aT : pointedType) (rT : comNzRingType).
+Context (aT : Type) (rT : comPzRingType).
 HB.instance Definition _ :=
-  [SubNzRing_isSubComNzRing of {fimfun aT >-> rT} by <:].
+  [SubPzRing_isSubComPzRing of {fimfun aT >-> rT} by <:].
 
 Implicit Types (f g : {fimfun aT >-> rT}).
 HB.instance Definition _ f g := FImFun.copy (f \* g) (f * g).
 End comring.
 
-HB.factory Record FiniteDecomp (T : pointedType) (R : nzRingType) (f : T -> R) :=
+HB.factory Record FiniteDecomp (T : Type) (R : pzRingType) (f : T -> R) :=
   { fimfunE : exists (r : seq R) (A_ : R -> set T),
       forall x, f x = \sum_(y <- r) (y * \1_(A_ y) x) }.
 HB.builders Context T R f & @FiniteDecomp T R f.
@@ -1342,7 +1377,7 @@ have cvgh' : cvg (h_ @ \oo).
   pose L := (1/3) * M%:num * ((2/3) ^+ m / (1 - (2/3))).
   apply: (@le_lt_trans _ _ L); first by rewrite ler_pM2l // geometric_le_lim.
   rewrite /L onem_twothirds.
-  rewrite [_ ^+ _ * _ ^-1]mulrC mulrA -[x in x < _]ger0_norm; last by [].
+  rewrite [_ ^+ _ * _ ^-1]mulrC mulrA -[x in x < _]ger0_norm; first by [].
   near: m; near_simpl; move: eps epos.
   by apply: (cvgr0_norm_lt (fun _ => _ : R^o)); exact: cvg_geometric.
 have cvgh : {uniform, h_ @ \oo --> lim (h_ @ \oo)}.
@@ -1376,7 +1411,7 @@ exists (lim (h_ @ \oo)); split.
     by move=> n; rewrite mulr_ge0.
   rewrite (le_trans (lim_series_norm _))//; apply: le_trans.
     exact/(lim_series_le cvg_gt _ (g_bd ^~ t))/is_cvg_geometric_series.
-  rewrite (cvg_lim _ (cvg_geometric_series _))//; last exact: Rhausdorff.
+  rewrite (cvg_lim _ (cvg_geometric_series _))//; first exact: Rhausdorff.
   by rewrite onem_twothirds mulrAC divff mul1r.
 Unshelve. all: by end_near. Qed.
 

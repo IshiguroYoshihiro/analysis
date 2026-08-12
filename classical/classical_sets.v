@@ -1,7 +1,9 @@
-(* mathcomp analysis (c) 2025 Inria and AIST. License: CeCILL-C.              *)
+(* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect_compat ssralg matrix finmap ssrnum.
 From mathcomp Require Import ssrint rat interval.
+#[warning="-warn-library-file-internal-analysis"]
+From mathcomp Require Import unstable.
 From mathcomp Require Import mathcomp_extra boolp wochoice.
 
 (**md**************************************************************************)
@@ -28,7 +30,7 @@ From mathcomp Require Import mathcomp_extra boolp wochoice.
 (* - indexed sets are rather named F                                          *)
 (*                                                                            *)
 (* Examples of notations:                                                     *)
-(* | Coq notations                |   | Meaning                             | *)
+(* | Rocq notatons                |   | Meaning                             | *)
 (* |-----------------------------:|---|:------------------------------------  *)
 (* |                         set0 |==| $\emptyset$                            *)
 (* |                     [set: A] |==| the full set of elements of type A     *)
@@ -45,8 +47,8 @@ From mathcomp Require Import mathcomp_extra boolp wochoice.
 (* |            [set E \| x in P] |==| the set of E with x ranging in P       *)
 (* |                      range f |==| image by f of the full set             *)
 (* | \big[setU/set0]_(i <- s \| P i) f i |==| finite union                    *)
-(* |         \bigcup_(k in P) F k |==| countable union                        *)
-(* |         \bigcap_(k in P) F k |==| countable intersection                 *)
+(* |         \bigcup_(k in P) F k |==| arbitrary union                        *)
+(* |         \bigcap_(k in P) F k |==| arbitrary intersection                 *)
 (* |                 trivIset D F |==| F is a sequence of pairwise disjoint   *)
 (* |                              |  | sets indexed over the domain D         *)
 (*                                                                            *)
@@ -100,13 +102,27 @@ From mathcomp Require Import mathcomp_extra boolp wochoice.
 (*                                                                            *)
 (* ### About sets of sets                                                     *)
 (* ```                                                                        *)
-(*       set_system T := set (set T)                                          *)
-(*      setI_closed G == the set of sets G is closed under finite             *)
-(*                       intersection                                         *)
-(*      setU_closed G == the set of sets G is closed under finite union       *)
+(*                set_system T := set (set T)                                 *)
+(*               setI_closed G == the set of sets G is closed under finite    *)
+(*                                intersection                                *)
+(*               setU_closed G == the set of sets G is closed under finite    *)
+(*                                union                                       *)
+(*               rectangle X Y := [set U `*` V | U in X & V in Y]             *)
+(*   preimage_set_system D f G == set system of the preimages by f of sets    *)
+(*                                in G                                        *)
+(*      image_set_system D f G == set system of the sets with a preimage      *)
+(*                                by f in G                                   *)
+(*               cross f g X Y := preimage_set_system setT f X                *)
+(*                                `|` preimage_set_system setT g Y            *)
+(*                     X `x` Y := cross fst snd X Y                           *)
 (* ```                                                                        *)
 (*                                                                            *)
 (* ```                                                                        *)
+(*                                                                            *)
+(*                      R ^nat == notation for the type of sequences, i.e.,   *)
+(*                                functions of type nat -> R                  *)
+(*                 bigcup2 A B == the sequence A, B, 0, 0, ...                *)
+(*                 bigcup2 A B == the sequence A, B, T, T, ...                *)
 (*                smallest C G := \bigcap_(A in [set M | C M /\ G `<=` M]) A  *)
 (*                   A `<=` B <-> A is included in B                          *)
 (*                     A `<` B := A `<=` B /\ ~ (B `<=` A)                    *)
@@ -137,6 +153,8 @@ From mathcomp Require Import mathcomp_extra boolp wochoice.
 (*                                if there is one, to f0 x otherwise          *)
 (*                    F `#` G <-> intersections beween elements of F an G are *)
 (*                                all non empty                               *)
+(*                     seqDU F := sequence F_0, F_1\F_0, F_2\(F_0 U F_1),...  *)
+(*                      seqD F == the sequence F_0, F_1 \ F_0, F_2 \ F_1,...  *)
 (* ```                                                                        *)
 (*                                                                            *)
 (* ## Pointed types                                                           *)
@@ -217,13 +235,14 @@ From mathcomp Require Import mathcomp_extra boolp wochoice.
 (*                                                                            *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Declare Scope classical_set_scope.
 
+Reserved Notation "R ^nat".
 Reserved Notation "[ 'set' x : T | P ]" (only parsing).
 Reserved Notation "[ 'set' x | P ]" (format "[ 'set'  x  |  P ]").
 Reserved Notation "[ 'set' E | x 'in' A ]"
@@ -258,6 +277,7 @@ Reserved Notation "[ 'disjoint' A & B ]"
 Reserved Notation "F `#` G"
   (at level 48, left associativity, format "F  `#`  G").
 Reserved Notation "'`I_' n" (at level 8, n at level 2, format "'`I_' n").
+Reserved Notation "A `x` B"  (at level 46, left associativity).
 
 Definition set T := T -> Prop.
 (* we use fun x => instead of pred to prevent inE from working *)
@@ -1643,15 +1663,98 @@ Definition setU_closed := forall A B, G A -> G B -> G (A `|` B).
 
 End set_systems.
 
-Lemma subKimage {T T'} {P : set (set T')} (f : T -> T') (g : T' -> T) :
+Lemma setI_closed_setT T (F : set_system T) :
+  setI_closed F -> setI_closed (F `|` [set setT]).
+Proof.
+move=> IF=> C D [FC|/= ->{C}].
+- by move=> [FD|/= ->{D}]; [left; exact: IF|rewrite setIT; left].
+- by move=> [FD|->{D}]; [rewrite setTI; left|rewrite !setTI; right].
+Qed.
+
+Lemma setI_closed_set0 T (F : set_system T) :
+  setI_closed F -> setI_closed (F `|` [set set0]).
+Proof.
+move=> IF=> C D [FC|/= ->{C}].
+- by move=> [FD|/= ->{D}]; [left; exact: IF|rewrite setI0; right].
+- by move=> [FD|->{D}]; [rewrite set0I; right|rewrite !set0I; right].
+Qed.
+
+Section rectangle.
+Context {T1 T2 : Type}.
+Implicit Types (X : set_system T1) (Y : set_system T2).
+
+Definition rectangle X Y : set_system (T1 * T2) :=
+  [set U `*` V | U in X & V in Y].
+
+Lemma rectangle_setX X Y A B : X A -> Y B -> rectangle X Y (A `*` B).
+Proof. by move=> XA YB; exists A => //; exists B. Qed.
+
+Lemma setI_closed_rectangle X Y : setI_closed X -> setI_closed Y ->
+  setI_closed (rectangle X Y).
+Proof.
+move=> IG IH _ _ [A mA [B mB] <-] [A' mA' [B' mB'] <-].
+by rewrite -setXI; apply: rectangle_setX; [exact: IG|exact: IH].
+Qed.
+
+End rectangle.
+
+Definition preimage_set_system {aT rT : Type} (D : set aT) (f : aT -> rT)
+    (G : set_system rT) : set_system aT :=
+  [set D `&` f @^-1` B | B in G].
+
+Lemma preimage_set_system0 {aT rT : Type} (D : set aT) (f : aT -> rT) :
+  preimage_set_system D f set0 = set0.
+Proof. exact: image_set0. Qed.
+
+Lemma preimage_set_systemU {aT rT : Type} (D : set aT) (f : aT -> rT) :
+  {morph preimage_set_system D f : x y / x `|` y >-> x `|` y}.
+Proof. exact: image_setU. Qed.
+
+Lemma preimage_set_system_comp {aT bT rT : Type} (D : set aT)
+    (f : aT -> bT) (g : bT -> rT) (F : set_system rT) :
+  preimage_set_system D (g \o f) F
+    = preimage_set_system D f (preimage_set_system setT g F).
+Proof.
+apply/seteqP; split=> [_ [B FB] <-|_ [_ [C FC <-] <-]].
+  by exists (g @^-1` B) => //; exists B => //; rewrite setTI.
+by exists C => //; rewrite setTI comp_preimage.
+Qed.
+
+Lemma preimage_set_system_id {aT : Type} (D : set aT) (F : set_system aT) :
+  preimage_set_system D idfun F = setI D @` F.
+Proof. by []. Qed.
+
+Lemma preimage_set_systemS {T1 T2} (A B : set_system T2) (f : T1 -> T2) :
+  A `<=` B ->
+  preimage_set_system [set: _] f A `<=` preimage_set_system [set: _] f B.
+Proof. by move=> AB _ [C ? <-]; exists C => //; exact: AB. Qed.
+
+Definition image_set_system (aT rT : Type) (D : set aT) (f : aT -> rT)
+    (G : set_system aT) : set_system rT :=
+  [set B : set rT | G (D `&` f @^-1` B)].
+
+Section cross.
+Context {T T1 T2 : Type}.
+Implicit Types (X : set_system T1) (Y : set_system T2).
+
+Definition cross (f : T -> T1) (g : T -> T2) X Y :=
+  preimage_set_system [set: T] f X
+  `|` preimage_set_system [set: T] g Y.
+
+End cross.
+
+Definition cross12 {T1 T2 : Type} := @cross (T1 * T2)%type T1 T2 fst snd.
+Notation "A `x` B" := (cross12 A B) : classical_set_scope.
+
+Lemma subKimage {T T'} {P : set_system T'} (f : T -> T') (g : T' -> T) :
   cancel f g -> [set A | P (f @` A)] `<=` [set g @` A | A in P].
 Proof. by move=> ? A; exists (f @` A); rewrite ?image_comp ?eq_image_id/=. Qed.
 
-Lemma subimageK T T' (P : set (set T')) (f : T -> T') (g : T' -> T) :
+Lemma subimageK T T' (P : set_system T') (f : T -> T') (g : T' -> T) :
   cancel g f -> [set g @` A | A in P] `<=` [set A | P (f @` A)].
 Proof. by move=> gK _ [B /= ? <-]; rewrite image_comp eq_image_id/=. Qed.
 
-Lemma eq_imageK {T T'} {P : set (set T')} (f : T -> T') (g : T' -> T) :
+Lemma eq_imageK {T T'} {P : set_system T'} (f : T -> T') (g : T' -> T) :
     cancel f g -> cancel g f ->
   [set g @` A | A in P] = [set A | P (f @` A)].
 Proof.
@@ -2012,9 +2115,18 @@ Lemma setC_bigsetI U (s : seq T) (f : T -> set U) (P : pred T) :
   \big[setU/set0]_(t <- s | P t) ~` f t.
 Proof. by elim/big_rec2: _ => [|i X Y Pi <-]; rewrite ?setCT ?setCI. Qed.
 
+#[deprecated(since="mathcomp-analysis 1.17.0", note="use `setD_bigcupr` instead")]
 Lemma bigcupDr (F : I -> set T) (P : set I) (A : set T) : P !=set0 ->
   \bigcap_(i in P) (A `\` F i) = A `\` \bigcup_(i in P) F i.
 Proof. by move=> PN0; rewrite setDE setC_bigcup -bigcapIr. Qed.
+
+Lemma setD_bigcupr (F : I -> set T) (P : set I) (A : set T) : P !=set0 ->
+  A `\` \bigcup_(i in P) F i = \bigcap_(i in P) (A `\` F i).
+Proof. by move=> PN0; rewrite setDE setC_bigcup -bigcapIr. Qed.
+
+Lemma setD_bigcapr (F : I -> set T) [P : set I] (A : set T) :
+  A `\` \bigcap_(i in P)  F i = \bigcup_(i in P)  (A `\` F i).
+Proof. by rewrite setDE setC_bigcap setI_bigcupr. Qed.
 
 Lemma setD_bigcupl (F : I -> set T) (P : set I) (A : set T) :
   \bigcup_(i in P) F i `\` A = \bigcup_(i in P) (F i `\` A).
@@ -2088,7 +2200,11 @@ move=> Pj; apply/seteqP; split => [t [Fjt UFt] i Pi|t UFt].
 by split=> [|[k [Pk kj]] [Fjt]]; [|apply]; exact: UFt.
 Qed.
 
-Definition bigcup2 T (A B : set T) : nat -> set T :=
+Definition sequence R := nat -> R.
+
+Notation "R ^nat" := (sequence R) : type_scope.
+
+Definition bigcup2 T (A B : set T) : (set T)^nat :=
   fun i => if i == 0 then A else if i == 1 then B else set0.
 Arguments bigcup2 T A B n /.
 
@@ -2104,7 +2220,7 @@ rewrite predeqE => t; split=> [|[At|Bt]]; [|by exists 0|by exists 1].
 by case=> -[_ At|[_ Bt|//]]; [left|right].
 Qed.
 
-Definition bigcap2 T (A B : set T) : nat -> set T :=
+Definition bigcap2 T (A B : set T) : (set T)^nat :=
   fun i => if i == 0 then A else if i == 1 then B else setT.
 Arguments bigcap2 T A B n /.
 
@@ -2120,7 +2236,7 @@ apply: setC_inj; rewrite setC_bigcap setCI -bigcup2inE /bigcap2 /bigcup2.
 by apply: eq_bigcupr => // -[|[|[]]].
 Qed.
 
-Lemma bigcup_recl T (F : nat -> set T) :
+Lemma bigcup_recl T (F : (set T)^nat) :
   \bigcup_n F n = F 0%N `|` \bigcup_(n in ~` `I_1) F n.
 Proof.
 by apply/seteqP; split => [t [[_ F0t|n _ Fnt]]|t [F0t|[n /= n0 Fnt]]];
@@ -2217,54 +2333,33 @@ Proof. by apply: setC_inj; rewrite setC_bigcap setC_bigsetI bigcup_seq. Qed.
 
 End bigcup_seq.
 
-Lemma bigcup_pred [T : finType] [U : Type] (P : {pred T}) (f : T -> set U) :
-  \bigcup_(t in [set` P]) f t = \big[setU/set0]_(t in P) f t.
-Proof.
-apply/predeqP => u; split=> [[x Px fxu]|]; first by rewrite (bigD1 x)//; left.
-move=> /mem_set; rewrite (@big_morph _ _ (fun X => u \in X) false orb).
-- by rewrite big_has_cond => /hasP[x _ /andP[xP]]; rewrite inE => ufx; exists x.
-- by move=> /= x y; apply/idP/orP; rewrite !inE.
-- by rewrite in_set0.
-Qed.
-
-Section smallest.
-Context {T} (C : set T -> Prop) (G : set T).
-
-Definition smallest := \bigcap_(A in [set M | C M /\ G `<=` M]) A.
-
-Lemma sub_smallest X : X `<=` G -> X `<=` smallest.
-Proof. by move=> XG A /XG GA Y /= [PY]; apply. Qed.
-
-Lemma sub_gen_smallest : G `<=` smallest. Proof. exact: sub_smallest. Qed.
-
-Lemma smallest_sub X : C X -> G `<=` X -> smallest `<=` X.
-Proof. by move=> XC GX A; apply. Qed.
-
-Lemma smallest_id : C G -> smallest = G.
-Proof.
-by move=> Cs; apply/seteqP; split; [apply: smallest_sub|apply: sub_smallest].
-Qed.
-
-End smallest.
-#[global] Hint Resolve sub_gen_smallest : core.
-
-Lemma sub_smallest2r {T} (C : set T-> Prop) G1 G2 :
-   C (smallest C G2) -> G1 `<=` G2 -> smallest C G1 `<=` smallest C G2.
-Proof. by move=> *; apply: smallest_sub=> //; apply: sub_smallest. Qed.
-
-Lemma sub_smallest2l {T} (C1 C2 : set T -> Prop) :
-   (forall G, C2 G -> C1 G) ->
-   forall G, smallest C1 G `<=` smallest C2 G.
-Proof. by move=> C12 G X sX M [/C12 C1M GM]; apply: sX. Qed.
-
 Section bigop_nat_lemmas.
 Context {T : Type}.
-Implicit Types (A : set T) (F : nat -> set T).
+Implicit Types (A : set T) (F : (set T)^nat).
 
 Lemma bigcup_mkord n F : \bigcup_(i < n) F i = \big[setU/set0]_(i < n) F i.
 Proof.
 rewrite -(big_mkord xpredT F) -bigcup_seq.
 by apply: eq_bigcupl; split=> i; rewrite /= mem_index_iota leq0n.
+Qed.
+
+Lemma bigcup_bigsetU F :
+  \bigcup_k \big[setU/set0]_(i < k.+1) F i =
+  \bigcup_k \big[setU/set0]_(i < k) F i.
+Proof.
+transitivity (\bigcup_(k in S @` setT) \big[setU/set0]_(i < k) F i).
+  by rewrite bigcup_image.
+rewrite [RHS](bigcup_setD1 0%N)// big_ord0 set0U; apply: eq_bigcupl.
+split=> [x [? _ <-//]|x [_ x0]]/=; exists x.-1 => //; rewrite prednK// lt0n.
+exact/eqP.
+Qed.
+
+Lemma bigcup_bigsetU_bigcup F :
+  \bigcup_k \big[setU/set0]_(i < k.+1) F i = \bigcup_k F k.
+Proof.
+apply/seteqP; split=> [x [i _]|x [i _ Fix]].
+  by rewrite -bigcup_mkord => -[j _ Fjx]; exists j.
+by exists i => //; rewrite big_ord_recr/=; right.
 Qed.
 
 Lemma bigcup_mkord_ord n (G : 'I_n.+1 -> set T) :
@@ -2351,6 +2446,68 @@ rewrite eqEsubset; split=> [x /= Fnx m nm|x /= nFx m _].
 Qed.
 
 End bigop_nat_lemmas.
+
+Lemma bigcup_pred [T : finType] [U : Type] (P : {pred T}) (f : T -> set U) :
+  \bigcup_(t in [set` P]) f t = \big[setU/set0]_(t in P) f t.
+Proof.
+apply/predeqP => u; split=> [[x Px fxu]|]; first by rewrite (bigD1 x)//; left.
+move=> /mem_set; rewrite (@big_morph _ _ (fun X => u \in X) false orb).
+- by move=> /= x y; apply/idP/orP; rewrite !inE.
+- by rewrite in_set0.
+- by rewrite big_has_cond => /hasP[x _ /andP[xP]]; rewrite inE => ufx; exists x.
+Qed.
+
+Section smallest.
+Context {T} (C : set T -> Prop).
+
+Definition smallest (G : set T) := \bigcap_(A in [set M | C M /\ G `<=` M]) A.
+
+Lemma smallest_sub G X : C X -> G `<=` X -> smallest G `<=` X.
+Proof. by move=> XC GX A; apply. Qed.
+
+Lemma smallest_sub_sub G X : smallest G `<=` X -> G `<=` X.
+Proof. by apply: subset_trans => t Gt B [CB]; exact. Qed.
+
+Lemma sub_smallest G X : X `<=` G -> X `<=` smallest G.
+Proof. by move=> XG A /XG GA Y /= [PY]; exact. Qed.
+
+Lemma sub_gen_smallest G : G `<=` smallest G. Proof. exact: sub_smallest. Qed.
+
+Lemma smallest_id G : C G -> smallest G = G.
+Proof.
+by move=> Cs; apply/seteqP; split; [exact: smallest_sub|exact: sub_smallest].
+Qed.
+
+End smallest.
+#[global] Hint Resolve sub_gen_smallest : core.
+
+Lemma smallest_sub_iff {T} (C : set T -> Prop) (X Y : set T) :
+  C Y -> smallest C X `<=` Y <-> X `<=` Y.
+Proof.
+by move=> CY; split; [exact: smallest_sub_sub|exact: smallest_sub].
+Qed.
+
+Definition bigcap_closed {T} (C : set T -> Prop) :=
+  forall (MM : set_system T), MM `<=` C -> C (\bigcap_(A in MM) A).
+
+Section bigcap_closed_smallest.
+Context {T} (C : set T -> Prop).
+
+Lemma bigcap_closed_smallest (G : set T) : bigcap_closed C -> C (smallest C G).
+Proof. by apply; exact: subIsetl. Qed.
+
+End bigcap_closed_smallest.
+
+Lemma sub_smallest2r {T} (C : set T -> Prop) G1 G2 :
+   C (smallest C G2) -> G1 `<=` G2 -> smallest C G1 `<=` smallest C G2.
+Proof.
+by move=> CCG2 G12; apply: smallest_sub => //; exact: sub_smallest.
+Qed.
+
+Lemma sub_smallest2l {T} (C1 C2 : set T -> Prop) :
+   (forall G, C2 G -> C1 G) ->
+   forall G, smallest C1 G `<=` smallest C2 G.
+Proof. by move=> C12 G X sX M [/C12 C1M GM]; exact: sX. Qed.
 
 Definition is_subset1 {T} (A : set T) := forall x y, A x -> A y -> x = y.
 Definition is_fun {T1 T2} (f : T1 -> T2 -> Prop) := Logic.all (is_subset1 \o f).
@@ -2810,7 +2967,6 @@ rewrite (nth_map O)// ts1 ?(nth_uniq,(perm_uniq ss1),iota_uniq)//; apply/s1D.
 Qed.
 
 End partitions.
-
 #[deprecated(note="Use trivIset_setIl instead")]
 Notation trivIset_setI := trivIset_setIl (only parsing).
 
@@ -2864,10 +3020,10 @@ Qed.
 End Zorn.
 
 Section Zorn_subset.
-Variables (T : Type) (P : set (set T)).
+Variables (T : Type) (P : set_system T).
 
 Lemma Zorn_bigcup :
-    (forall F : set (set T), F `<=` P -> total_on F subset ->
+    (forall F : set_system T, F `<=` P -> total_on F subset ->
       P (\bigcup_(X in F) X)) ->
   exists A, P A /\ forall B, A `<` B -> ~ P B.
 Proof.
@@ -2904,7 +3060,7 @@ Variables (B : I -> set T) (D : set I).
 
 Let P := fun X => X `<=` D /\ trivIset X B.
 
-Let maxP (A : set (set I)) :
+Let maxP (A : set_system I) :
   A `<=` P -> total_on A (fun x y => x `<=` y) -> P (\bigcup_(x in A) x).
 Proof.
 move=> AP h; split; first by apply: bigcup_sub => E /AP [].
@@ -3024,7 +3180,7 @@ Proof. by rewrite /supremum eqxx. Qed.
 
 Lemma supremum1 x0 x : supremum x0 [set x] = x.
 Proof.
-rewrite /supremum ifF; last first.
+rewrite /supremum ifF.
   by apply/eqP; rewrite predeqE => /(_ x)[+ _]; apply.
 by rewrite supremums1; case: xgetP => // /(_ x) /(_ erefl).
 Qed.
@@ -3078,30 +3234,28 @@ rewrite -Order.TotalTheory.ltNge => kn.
 by rewrite (Order.POrderTheory.le_trans _ (Am _ Ak)).
 Qed.
 
-Definition meets T (F G : set (set T)) :=
+Definition meets T (F G : set_system T) :=
   forall A B, F A -> G B -> A `&` B !=set0.
 
 Notation "F `#` G" := (meets F G) : classical_set_scope.
 
 Section meets.
 
-Lemma meetsC T (F G : set (set T)) : F `#` G = G `#` F.
+Lemma meetsC T (F G : set_system T) : F `#` G = G `#` F.
 Proof.
 gen have sFG : F G / F `#` G -> G `#` F.
   by move=> FG B A => /FG; rewrite setIC; apply.
 by rewrite propeqE; split; apply: sFG.
 Qed.
 
-Lemma sub_meets T (F F' G G' : set (set T)) :
+Lemma sub_meets T (F F' G G' : set_system T) :
   F `<=` F' -> G `<=` G' -> F' `#` G' -> F `#` G.
 Proof. by move=> sF sG FG A B /sF FA /sG GB; apply: (FG A B). Qed.
 
-Lemma meetsSr T (F G G' : set (set T)) :
-  G `<=` G' -> F `#` G' -> F `#` G.
+Lemma meetsSr T (F G G' : set_system T) : G `<=` G' -> F `#` G' -> F `#` G.
 Proof. exact: sub_meets. Qed.
 
-Lemma meetsSl T (G F F' : set (set T)) :
-  F `<=` F' -> F' `#` G -> F `#` G.
+Lemma meetsSl T (G F F' : set_system T) : F `<=` F' -> F' `#` G -> F `#` G.
 Proof. by move=> /sub_meets; apply. Qed.
 
 End meets.
@@ -3206,6 +3360,61 @@ End exports.
 End Exports.
 End SetOrder.
 Export SetOrder.Exports.
+
+Section seqD.
+Variable T : Type.
+Implicit Types F : (set T)^nat.
+
+Definition seqDU F n := F n `\` \big[setU/set0]_(k < n) F k.
+
+Lemma trivIset_seqDU F : trivIset setT (seqDU F).
+Proof.
+move=> i j _ _; wlog ij : i j / (i < j)%N => [/(_ _ _ _) tB|].
+  by have [ij /tB->|ij|] := ltngtP i j; rewrite //setIC => /tB ->.
+move=> /set0P; apply: contraNeq => _; apply/eqP.
+rewrite /seqDU 2!setDE !setIA setIC (bigD1 (Ordinal ij)) //=.
+by rewrite setCU setIAC !setIA setICl !set0I.
+Qed.
+
+Definition seqD F := fun n => if n isn't n'.+1 then F O else F n `\` F n'.
+
+Lemma seqDU_seqD F : nondecreasing_seq F -> seqDU F = seqD F.
+Proof.
+move=> ndF; rewrite funeqE => -[|n] /=; first by rewrite /seqDU big_ord0 setD0.
+rewrite /seqDU big_ord_recr /= setUC; congr (_ `\` _); apply/setUidPl.
+by rewrite -bigcup_mkord => + [k /= kn]; exact/subsetPset/ndF/ltnW.
+Qed.
+
+Lemma trivIset_seqD F : nondecreasing_seq F -> trivIset setT (seqD F).
+Proof. by move=> ndF; rewrite -seqDU_seqD //; exact: trivIset_seqDU. Qed.
+
+Lemma eq_bigcup_seqD F : \bigcup_n seqD F n = \bigcup_n F n.
+Proof.
+apply/seteqP; split => [x []|x []].
+  by elim=> [_ /= F0x|n ih _ /= [Fn1x Fnx]]; [exists O | exists n.+1].
+elim=> [_ F0x|n ih _ Fn1x]; first by exists O.
+have [|Fnx] := pselect (F n x); last by exists n.+1.
+by move=> /(ih I)[m _ Fmx]; exists m.
+Qed.
+
+Lemma seqDU_bigcup_eq F : \bigcup_k F k = \bigcup_k seqDU F k.
+Proof.
+rewrite /seqDU predeqE => t; split=> [[n _ Fnt]|[n _]]; last first.
+  by rewrite setDE => -[? _]; exists n.
+have [UFnt|UFnt] := pselect ((\big[setU/set0]_(k < n) F k) t); last by exists n.
+suff [m [Fmt FNmt]] : exists m, F m t /\ forall k, (k < m)%N -> ~ F k t.
+  by exists m => //; split => //; rewrite -bigcup_mkord => -[k kj]; exact: FNmt.
+move: UFnt; rewrite -bigcup_mkord => -[/= k _ Fkt] {Fnt n}.
+have [n kn] := ubnP k; elim: n => // n ih in t k Fkt kn *.
+case: k => [|k] in Fkt kn *; first by exists O.
+have [?|] := pselect (forall m, (m <= k)%N -> ~ F m t); first by exists k.+1.
+move=> /existsNP[i] /not_implyP[ik] /contrapT Fit; apply: (ih t i) => //.
+by rewrite (leq_ltn_trans ik).
+Qed.
+
+End seqD.
+Arguments trivIset_seqDU {T} F.
+#[global] Hint Resolve trivIset_seqDU : core.
 
 Section product.
 Variables (T1 T2 : Type).

@@ -1,6 +1,6 @@
 From HB Require Import structures.
 From Stdlib Require Import Bool.
-From mathcomp Require Import all_boot all_order interval_inference ssralg ssrnum.
+From mathcomp Require Import boot order interval_inference ssralg ssrnum.
 From mathcomp Require Import ssrint interval archimedean.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import reals constructive_ereal topology normedtype.
@@ -42,13 +42,13 @@ have Bi2b : (B i).2 <= b.
   have [_] := B12Bab _ jn.
   exact.
 rewrite (le_trans (ler_norm (f (B i).2 - f (B i).1)))//=.
-rewrite (total_variationD f aBi1 (ltW B12)) fineD; last 2 first.
+rewrite (total_variationD f aBi1 (ltW B12)) fineD.
   apply/(bounded_variationP f aBi1)/(@bounded_variationl _ _ _ b) => //.
   by rewrite (le_trans _ Bi2b)// ltW.
   apply/(bounded_variationP f (ltW B12)).
   apply/(bounded_variationl (ltW B12) Bi2b).
   by apply: (bounded_variationr aBi1) => //; rewrite (le_trans _ Bi2b)// ltW.
-rewrite addrAC subrr add0r -subr_ge0 -lee_fin EFinB fineK; last first.
+rewrite addrAC subrr add0r -subr_ge0 -lee_fin EFinB fineK.
   apply/(bounded_variationP f (ltW B12)).
   apply/(bounded_variationl (ltW B12) Bi2b).
   by apply/(bounded_variationr aBi1 _ BVf); rewrite (le_trans _ Bi2b)// ltW.

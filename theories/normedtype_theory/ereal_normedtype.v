@@ -1,4 +1,4 @@
-(* mathcomp analysis (c) 2025 Inria and AIST. License: CeCILL-C.              *)
+(* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect_compat ssralg ssrnum interval.
 From mathcomp Require Import interval_inference.
@@ -16,7 +16,7 @@ From mathcomp Require Import real_interval num_normedtype.
 (* ```                                                                        *)
 (*   limf_esup f F, limf_einf f F == limit sup/inferior of f at "filter" F    *)
 (*                                   f has type X -> \bar R.                  *)
-(*                                   F has type set (set X).                  *)
+(*                                   F has type set_system X.                 *)
 (* ```                                                                        *)
 (*                                                                            *)
 (* ## Lower semicontinuous                                                    *)
@@ -29,7 +29,7 @@ From mathcomp Require Import real_interval num_normedtype.
 (*                                                                            *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -42,7 +42,7 @@ Local Open Scope ring_scope.
 
 Section limf_esup_einf.
 Variables (T : choiceType) (X : filteredType T) (R : realFieldType).
-Implicit Types (f : X -> \bar R) (F : set (set X)).
+Implicit Types (f : X -> \bar R) (F : set_system X).
 Local Open Scope ereal_scope.
 
 Definition limf_esup f F := ereal_inf [set ereal_sup (f @` V) | V in F].
@@ -71,7 +71,7 @@ End limf_esup_einf.
 
 Section limf_esup_einf_realType.
 Variables (T : choiceType) (X : filteredType T) (R : realType).
-Implicit Types (f : X -> \bar R) (F : set (set X)).
+Implicit Types (f : X -> \bar R) (F : set_system X).
 Local Open Scope ereal_scope.
 
 Lemma limf_esup_ge0 f F : ~ F set0 ->
@@ -280,18 +280,18 @@ Implicit Types r : R.
 Lemma open_ereal_lt y : open [set r : R | r%:E < y].
 Proof.
 case: y => [y||] /=; first exact: open_lt.
-- rewrite (_ : [set _ | _] = setT); first exact: openT.
+- rewrite (_ : [set _ | _] = setT); last exact: openT.
   by rewrite funeqE => ? /=; rewrite ltry trueE.
-- rewrite (_ : [set _ | _] = set0); first exact: open0.
+- rewrite (_ : [set _ | _] = set0); last exact: open0.
   by rewrite funeqE => ? /=; rewrite falseE.
 Qed.
 
 Lemma open_ereal_gt y : open [set r : R | y < r%:E].
 Proof.
 case: y => [y||] /=; first exact: open_gt.
-- rewrite (_ : [set _ | _] = set0); first exact: open0.
+- rewrite (_ : [set _ | _] = set0); last exact: open0.
   by rewrite funeqE => ? /=; rewrite falseE.
-- rewrite (_ : [set _ | _] = setT); first exact: openT.
+- rewrite (_ : [set _ | _] = setT); last exact: openT.
   by rewrite funeqE => ? /=; rewrite ltNyr trueE.
 Qed.
 
@@ -346,14 +346,14 @@ Qed.
 
 Lemma closed_ereal_le_ereal y : closed [set x | y <= x].
 Proof.
-rewrite (_ : [set x | y <= x] = ~` [set x | y > x]); last first.
+rewrite (_ : [set x | y <= x] = ~` [set x | y > x]).
   by rewrite predeqE=> x; split=> [rx|/negP]; [apply/negP|]; rewrite -leNgt.
 exact/open_closedC/open_ereal_lt_ereal.
 Qed.
 
 Lemma closed_ereal_ge_ereal y : closed [set x | y >= x].
 Proof.
-rewrite (_ : [set x | y >= x] = ~` [set x | y < x]); last first.
+rewrite (_ : [set x | y >= x] = ~` [set x | y < x]).
   by rewrite predeqE=> x; split=> [rx|/negP]; [apply/negP|]; rewrite -leNgt.
 exact/open_closedC/open_ereal_gt_ereal.
 Qed.

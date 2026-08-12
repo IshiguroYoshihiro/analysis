@@ -6,6 +6,8 @@
 -arg -w -arg -ambiguous-paths
 -arg -w -arg -redundant-canonical-projection
 -arg -w -arg -projection-no-head-constant
+# introduced in Rocq 9.3
+-arg -w -arg -rewrite-rw
 
 ereal.v
 landau.v
@@ -53,6 +55,8 @@ normedtype_theory/urysohn.v
 normedtype_theory/vitali_lemma.v
 normedtype_theory/normedtype.v
 
+functional_analysis/hahn_banach_theorem.v
+
 realfun.v
 sequences.v
 exp.v
@@ -69,6 +73,7 @@ measure_theory/probability_measure.v
 measure_theory/measure_negligible.v
 measure_theory/measure_extension.v
 measure_theory/measurable_function.v
+measure_theory/signed_measure.v
 measure_theory/measure.v
 
 measurable_realfun.v
@@ -87,6 +92,7 @@ lebesgue_integral_theory/lebesgue_integral_under.v
 lebesgue_integral_theory/lebesgue_Rintegral.v
 lebesgue_integral_theory/lebesgue_integral_fubini.v
 lebesgue_integral_theory/lebesgue_integral_differentiation.v
+lebesgue_integral_theory/radon_nikodym.v
 lebesgue_integral_theory/lebesgue_integral.v
 lebesgue_integral_theory/giry.v
 
@@ -102,6 +108,8 @@ probability_theory/exponential_distribution.v
 probability_theory/poisson_distribution.v
 probability_theory/beta_distribution.v
 probability_theory/probability.v
+
+independence.v
 
 convex.v
 charge.v

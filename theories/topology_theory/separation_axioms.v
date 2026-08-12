@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra finmap.
+From mathcomp Require Import all_ssreflect_compat algebra finmap.
 From mathcomp Require Import boolp classical_sets functions wochoice.
 From mathcomp Require Import cardinality fsbigop.
 From mathcomp Require Import set_interval filter reals interval_inference.
@@ -53,7 +53,7 @@ From mathcomp Require Import connected supremum_topology sigT_topology.
 (* ```                                                                        *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -871,7 +871,7 @@ Proof. by move=> e1e2 ? [n P]; exists n; exact: (n_step_ball_le e1e2). Qed.
 
 Local Lemma distN_half (n : nat) : n.+1%:R^-1 / (2:R) <= n.+2%:R^-1.
 Proof.
-rewrite -invrM //; [|exact: unitf_gt0 |exact: unitf_gt0].
+rewrite -invrM //; [exact: unitf_gt0 |exact: unitf_gt0|].
 rewrite lef_pV2 ?posrE // -?natrM ?ler_nat -addn1 -addn1 -addnA mulnDr.
 by rewrite muln1 leq_add2r leq_pmull.
 Qed.
@@ -1105,8 +1105,8 @@ Proof.
 split=> [[cA limA]|[cA isoA]]; have := closure_isolated_limit_point A.
 - move=> /(congr1 (fun x => x `\` limit_point A)).
   rewrite setUDK.
-    by rewrite limA -(closure_id A).1// setDv.
-  by apply/disj_setPS; rewrite disj_set_sym disjoint_isolated_limit_point.
+    by apply/disj_setPS; rewrite disj_set_sym disjoint_isolated_limit_point.
+  by rewrite limA -(closure_id A).1// setDv.
 - by rewrite isoA set0U -(closure_id A).1.
 Qed.
 

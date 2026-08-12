@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2025 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra all_classical.
+From mathcomp Require Import all_ssreflect_compat algebra all_classical.
 From mathcomp Require Import topology_structure.
 
 (**md**************************************************************************)
@@ -15,7 +15,7 @@ From mathcomp Require Import topology_structure.
 (* ```                                                                        *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -114,7 +114,7 @@ Lemma bigcup_connected I (A : I -> set T) (P : I -> Prop) :
 Proof.
 move=> [c AIc] cA; have [[i Pi]|] := pselect (exists i, P i); last first.
   move/forallNP => P0.
-  rewrite (_ : P = set0) ?bigcup_set0; first exact: connected0.
+  rewrite (_ : P = set0) ?bigcup_set0; last exact: connected0.
   by rewrite predeqE => x; split => //; exact: P0.
 apply/connectedP => [E [E0 EU sE]].
 wlog E0c : E E0 EU sE / E false c.

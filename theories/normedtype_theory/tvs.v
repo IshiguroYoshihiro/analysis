@@ -1,4 +1,4 @@
-(* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
+(* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect_compat ssralg ssrnum vector.
 From mathcomp Require Import interval_inference.
@@ -41,20 +41,51 @@ From mathcomp Require Import pseudometric_normed_Zmodule.
 (*         UniformLmodule K == HB class, join of UniformNmodule and Lmodule   *)
 (*                             with a uniformly continuous scaling operation  *)
 (*                             K is a numFieldType.                           *)
-(*               tvsType R  == interface type for a locally convex            *)
+(*         convexTvsType R  == interface type for a locally convex            *)
 (*                             tvs on a numDomain R                           *)
-(*                             A tvs is constructed over a uniform space.     *)
-(*                             The HB class is Tvs.                           *)
-(* PreTopologicalLmod_isTvs == factory allowing the construction of a tvs     *)
-(*                             from an Lmodule which is also a topological    *)
-(*                             space                                          *)
-(*  ```                                                                       *)
+(*                             A convex tvs is constructed over a uniform     *)
+(*                             space.                                         *)
+(*                             The HB class is ConvexTvs.                     *)
+(*   subConvexTvsType R V S == join of subTopologicalType, convexTvsType,     *)
+(*                             and subLmoduleType                             *)
+(*                             The HB class is SubConvexTvs.                  *)
+(*                             Instance: in particular, it is shown that a    *)
+(*                             sub-Lmodule is a sub-convex TVS.               *)
+(* PreTopologicalLmod_isConvexTvs == factory allowing the construction of a   *)
+(*                             convex tvs from an Lmodule which is also a     *)
+(*                             topological space                              *)
+(* {linear_continuous E -> F} == the type of all linear and continuous        *)
+(*                             functions between E and F, where E is a        *)
+(*                             NbhsLmodule.type and F a NbhsZmodule.type over *)
+(*                             a numDomainType R                              *)
+(*                             The HB class is called LinearContinuous.       *)
+(*                             The notation {linear_continuous E -> F | s}    *)
+(*                             also exists.                                   *)
+(*              lcfun E F s == membership predicate for linear continuous     *)
+(*                             functions of type E -> F with scalar operator  *)
+(*                             s : K -> F -> F                                *)
+(*                             E and F have type convexTvsType K.             *)
+(*                             This is used in particular to attach a type of *)
+(*                             lmodType to {linear_continuous E -> F | s}.    *)
+(*             lcfun_spec f == specification for membership of the linear     *)
+(*                             continuous function f                          *)
+(* ```                                                                        *)
 (* HB instances:                                                              *)
-(* - The type R^o (R : numFieldType) is endowed with the structure of Tvs.    *)
-(* - The product of two Tvs is endowed with the structure of Tvs.             *)
+(* - The type R^o (R : numFieldType) is endowed with the structure of         *)
+(*   ConvexTvs.                                                               *)
+(* - The product of two Tvs is endowed with the structure of ConvexTvs.       *)
+(* - {linear_continuous E-> F} is endowed with a lmodType structure when E    *)
+(*   and F are convexTvs.                                                     *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Reserved Notation "'{' 'linear_continuous' U '->' V '|' s '}'"
+  (at level 0, U at level 98, V at level 99,
+   format "{ 'linear_continuous'  U  ->  V  |  s }").
+Reserved Notation "'{' 'linear_continuous' U '->' V '}'"
+  (at level 0, U at level 98, V at level 99,
+    format "{ 'linear_continuous'  U  ->  V }").
+
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -85,6 +116,36 @@ HB.mixin Record PreTopologicalNmodule_isTopologicalNmodule M
 HB.structure Definition TopologicalNmodule :=
   {M of PreTopologicalNmodule M & PreTopologicalNmodule_isTopologicalNmodule M}.
 
+Section TopologicalNmodule_theory.
+Variable (E : topologicalType) (F : TopologicalNmodule.type) (U : set_system E).
+
+(** TODO:
+  We have observed one thing:
+  `pseudometric_normedZmodType` is morally a `topologicalNmodule`
+  but `topologicalNmodule` is defined later in `tvs.v` (which imports `pseudometric_normed_zmodule.v`).
+  We think that it should be defined at the beginning of `pseudometric_normed_zmodule.v` and that
+  `pseudometric_normedZmodType` should be defined using `topologicalNmodule`.
+  We have realized this because of the lemmas such as `cvgD/fun_cvgD` that we needed to duplicate. *)
+Lemma fun_cvgD {FF : Filter U} (f g : E -> F) a b :
+  f @ U --> a -> g @ U --> b -> (f \+ g) @ U --> a + b.
+Proof.
+move=> fa ga.
+by apply: continuous2_cvg; [exact: (add_continuous (a, b))|by []..].
+Qed.
+
+Lemma cvg_sum (I : Type) (r : seq I) (P : pred I)
+    (Ff : I -> E -> F) (Fa : I -> F) :
+  Filter U -> (forall i, P i -> Ff i x @[x --> U] --> Fa i) ->
+  \sum_(i <- r | P i) Ff i x @[x --> U] --> \sum_(i <- r| P i) Fa i.
+Proof. by move=> FF Ffa; apply: cvg_big => //; apply: add_continuous. Qed.
+
+Lemma sum_continuous (I : Type) (r : seq I) (P : pred I) (f : I -> E -> F) :
+  (forall i : I, P i -> continuous (f i)) ->
+  continuous (fun x1 : E => \sum_(i <- r | P i) f i x1).
+Proof. by move=> FC0; apply: continuous_big => //; apply: add_continuous. Qed.
+
+End TopologicalNmodule_theory.
+
 HB.mixin Record TopologicalNmodule_isTopologicalZmodule M
     & Topological M & GRing.Zmodule M := {
   opp_continuous : continuous (-%R : M -> M) ;
@@ -95,6 +156,24 @@ HB.structure Definition TopologicalZmodule :=
   {M of TopologicalNmodule M & GRing.Zmodule M
         & TopologicalNmodule_isTopologicalZmodule M}.
 
+Section TopologicalZmoduleTheory.
+Variables (M : topologicalZmodType).
+
+Lemma sub_continuous : continuous (fun x : M * M => x.1 - x.2).
+Proof.
+move=> x; apply: (@continuous_comp _ _ _ (fun x => (x.1, - x.2))
+  (fun x : M * M => x.1 + x.2)); last exact: add_continuous.
+apply: cvg_pair; first exact: cvg_fst.
+by apply: continuous_comp; [exact: cvg_snd|exact: opp_continuous].
+Qed.
+
+Lemma fun_cvgN (F : topologicalZmodType) (U : set_system M) {FF : Filter U}
+    (f : M -> F) a :
+  f @ U --> a -> \- f @ U --> - a.
+Proof. by move=> ?; apply: continuous_cvg => //; exact: opp_continuous. Qed.
+
+End TopologicalZmoduleTheory.
+
 HB.factory Record PreTopologicalNmodule_isTopologicalZmodule M
     & Topological M & GRing.Zmodule M := {
   sub_continuous : continuous (fun x : M * M => x.1 - x.2) ;
@@ -102,20 +181,20 @@ HB.factory Record PreTopologicalNmodule_isTopologicalZmodule M
 
 HB.builders Context M & PreTopologicalNmodule_isTopologicalZmodule M.
 
-Lemma opp_continuous : continuous (-%R : M -> M).
+Let opp_continuous : continuous (-%R : M -> M).
 Proof.
 move=> x; rewrite /continuous_at.
-rewrite -(@eq_cvg _ _ _ (fun x => 0 - x)); last by move=> y; exact: add0r.
+rewrite -(@eq_cvg _ _ _ (fun x => 0 - x)); first by move=> y; exact: add0r.
 rewrite -[- x]add0r.
 apply: (@continuous_comp _ _ _ (fun x => (0, x)) (fun x : M * M => x.1 - x.2)).
   by apply: cvg_pair => /=; [exact: cvg_cst|exact: cvg_id].
 exact: sub_continuous.
 Qed.
 
-Lemma add_continuous : continuous (fun x : M * M => x.1 + x.2).
+Let add_continuous : continuous (fun x : M * M => x.1 + x.2).
 Proof.
 move=> x; rewrite /continuous_at.
-rewrite -(@eq_cvg _ _ _ (fun x => x.1 - (- x.2))); last first.
+rewrite -(@eq_cvg _ _ _ (fun x => x.1 - (- x.2))).
   by move=> y; rewrite opprK.
 rewrite -[in x.1 + _](opprK x.2).
 apply: (@continuous_comp _ _ _ (fun x => (x.1, - x.2)) (fun x => x.1 - x.2)).
@@ -132,19 +211,6 @@ HB.instance Definition _ :=
 
 HB.end.
 
-Section TopologicalZmoduleTheory.
-Variables (M : topologicalZmodType).
-
-Lemma sub_continuous : continuous (fun x : M * M => x.1 - x.2).
-Proof.
-move=> x; apply: (@continuous_comp _ _ _ (fun x => (x.1, - x.2))
-  (fun x : M * M => x.1 + x.2)); last exact: add_continuous.
-apply: cvg_pair; first exact: cvg_fst.
-by apply: continuous_comp; [exact: cvg_snd|exact: opp_continuous].
-Qed.
-
-End TopologicalZmoduleTheory.
-
 #[short(type="preTopologicalLmodType")]
 HB.structure Definition PreTopologicalLmodule (K : numDomainType) :=
   {M of Topological M & GRing.Lmodule K M}.
@@ -159,6 +225,23 @@ HB.structure Definition TopologicalLmodule (K : numDomainType) :=
   {M of TopologicalZmodule M & GRing.Lmodule K M
         & TopologicalZmodule_isTopologicalLmodule K M}.
 
+Section TopologicalLmodule_theory.
+Variables (R : numFieldType) (E : topologicalType) (F : topologicalLmodType R).
+
+Lemma fun_cvgZ (U : set_system E) {FF : Filter U} (l : E -> R) (f : E -> F)
+    (r : R) a :
+  l @ U --> r -> f @ U --> a ->
+  l x *: f x @[x --> U] --> r *: a.
+Proof.
+by move=> *; apply: continuous2_cvg => //; exact: (scale_continuous (_, _)).
+Qed.
+
+Lemma fun_cvgZr (U : set_system E) {FF : Filter U} k (f : E -> F) a :
+  f @ U --> a -> k \*: f @ U --> k *: a.
+Proof. by apply: fun_cvgZ => //; exact: cvg_cst. Qed.
+
+End TopologicalLmodule_theory.
+
 HB.factory Record TopologicalNmodule_isTopologicalLmodule (R : numDomainType) M
     & Topological M & GRing.Lmodule R M := {
   scale_continuous : continuous (fun z : R^o * M => z.1 *: z.2) ;
@@ -166,10 +249,10 @@ HB.factory Record TopologicalNmodule_isTopologicalLmodule (R : numDomainType) M
 
 HB.builders Context R M & TopologicalNmodule_isTopologicalLmodule R M.
 
-Lemma opp_continuous : continuous (-%R : M -> M).
+Let opp_continuous : continuous (-%R : M -> M).
 Proof.
 move=> x; rewrite /continuous_at.
-rewrite -(@eq_cvg _ _ _ (fun x => -1 *: x)); last by move=> y; rewrite scaleN1r.
+rewrite -(@eq_cvg _ _ _ (fun x => -1 *: x)); first by move=> y; rewrite scaleN1r.
 rewrite -[- x]scaleN1r.
 apply: (@continuous_comp M (R^o * M)%type M (fun x => (-1, x))
   (fun x => x.1 *: x.2)); last exact: scale_continuous.
@@ -306,15 +389,108 @@ HB.instance Definition _ :=
 
 HB.end.
 
-HB.mixin Record Uniform_isTvs (R : numDomainType) E
+HB.mixin Record Uniform_isConvexTvs (R : numDomainType) E
     & Uniform E & GRing.Lmodule R E := {
   locally_convex : exists2 B : set_system E,
     (forall b, b \in B -> convex_set b) & basis B
 }.
 
-#[short(type="tvsType")]
-HB.structure Definition Tvs (R : numDomainType) :=
-  {E of Uniform_isTvs R E & Uniform E & TopologicalLmodule R E}.
+#[short(type="convexTvsType")]
+HB.structure Definition ConvexTvs (R : numDomainType) :=
+  {E of Uniform_isConvexTvs R E & Uniform E & TopologicalLmodule R E}.
+
+#[short(type="subConvexTvsType")]
+HB.structure Definition SubConvexTvs (R : numDomainType) (V : convexTvsType R)
+    (S : pred V) :=
+  { U of SubTopological V S U & ConvexTvs R U & @GRing.SubLmodule R V S U }.
+
+Section SubLmodule_isSubConvexTvs.
+Context (R : numFieldType) (V : convexTvsType R) (S : pred V) (U : subLmodType S).
+
+Local Notation sub_init_topo := (sub_initial_topology U).
+HB.instance Definition _ := Uniform.on sub_init_topo.
+HB.instance Definition _ := GRing.Lmodule.on sub_init_topo.
+
+Let add_sub: continuous (fun x : sub_init_topo * sub_init_topo => x.1 + x.2).
+Proof.
+apply: continuous_comp_initial => -[/= x y].
+pose h := fun xy : U * U => (\val xy.1, \val xy.2).
+pose g := fun xy : V * V => xy.1 + xy.2.
+rewrite (_ : _ \o _ = g \o h).
+  by apply/funext => i /=; rewrite GRing.valD.
+apply: continuous_comp; last exact: add_continuous.
+apply: cvg_pair => //=.
+- apply: (cvg_comp _ _ cvg_fst).
+  exact: (continuous_valE (x : sub_init_topo)).
+- apply: (cvg_comp _ _ cvg_snd).
+  exact: (continuous_valE (y : sub_init_topo)).
+Qed.
+
+HB.instance Definition _ :=
+  @PreTopologicalNmodule_isTopologicalNmodule.Build sub_init_topo add_sub.
+
+Let opp_sub : continuous (-%R : sub_init_topo -> sub_init_topo).
+Proof.
+apply: continuous_comp_initial => x.
+rewrite (_ : _ \o _ = -%R \o \val).
+  by apply/funext=> i /=; rewrite GRing.valN.
+apply: continuous_comp; first exact: continuous_valE.
+exact: opp_continuous.
+Qed.
+
+HB.instance Definition _ :=
+  TopologicalNmodule_isTopologicalZmodule.Build sub_init_topo opp_sub.
+
+Let scale_sub : continuous (fun z : R^o * sub_init_topo => z.1 *: z.2).
+Proof.
+apply: continuous_comp_initial => - [] /= x /= y.
+pose h := fun xy : R * U => (xy.1, \val xy.2).
+pose g := fun xy : R * V => xy.1 *: xy.2.
+rewrite (_ : _ \o _ = g \o h); first by apply/funext=> i /=; rewrite GRing.valZ.
+apply: continuous_comp; last exact: scale_continuous.
+move=> /= A [/= [/= B C]] [[r/= r0 xrB]].
+move/(continuous_valE (y : sub_init_topo)) => [/= C' [woC' C'y C'C] BCA].
+apply: filterS; first exact: BCA.
+exists (ball x r, C') => /=.
+  by split; [exact: nbhsx_ballx|exists C'; split].
+by move=> su/= [xru C'u]; split; [exact: xrB|exact: C'C].
+Qed.
+
+HB.instance Definition _ :=
+  TopologicalZmodule_isTopologicalLmodule.Build R sub_init_topo scale_sub.
+
+Local Open Scope convex_scope.
+
+Let locally_convex_sub : exists2 B : set_system sub_init_topo,
+  (forall b, b \in B -> convex_set b) & basis B.
+Proof.
+have [B convexB [openB/= genB]] := @locally_convex R V.
+exists [set a | exists2 b, B b & \val @^-1` b = a].
+  move=> a /[!inE]/= -[b Bb ba] r s l ra sa.
+  suff : \val (r <|l|> s) \in b by rewrite !inE /= -ba.
+  rewrite !GRing.valD !GRing.valZ convexB//; first exact: mem_set.
+  - by move: ra; rewrite -ba !inE.
+  - by move: sa; rewrite -ba !inE.
+split => /=.
+  move=> a/= [b Bb <-]; rewrite /open/= /initial_open/=; exists b => //.
+  exact: openB.
+move=> x a [/= b [[/=c openc] cb bx ba]].
+rewrite /nbhs/= /filter_from/=.
+have : nbhs (val x) c.
+ rewrite nbhsE /=; exists c => //; split => //.
+ by move: bx; rewrite -cb.
+move/genB => [d [Bd dx dc]].
+exists (\val @^-1` d); first by split => //; exists d.
+by move=> y dy; apply: ba; rewrite -cb; exact: dc.
+Qed.
+
+Local Close Scope convex_scope.
+
+HB.instance Definition _ :=
+  @Uniform_isConvexTvs.Build R sub_init_topo locally_convex_sub.
+HB.instance Definition _ := GRing.SubLmodule.on sub_init_topo.
+
+End SubLmodule_isSubConvexTvs.
 
 Section properties_of_topologicalLmodule.
 Context (R : numDomainType) (E : preTopologicalLmodType R) (U : set E).
@@ -352,7 +528,7 @@ Unshelve. all: by end_near. Qed.
 
 End properties_of_topologicalLmodule.
 
-HB.factory Record PreTopologicalLmod_isTvs (R : numDomainType) E
+HB.factory Record PreTopologicalLmod_isConvexTvs (R : numDomainType) E
     & Topological E & GRing.Lmodule R E := {
   add_continuous : continuous (fun x : E * E => x.1 + x.2) ;
   scale_continuous : continuous (fun z : R^o * E => z.1 *: z.2) ;
@@ -360,7 +536,7 @@ HB.factory Record PreTopologicalLmod_isTvs (R : numDomainType) E
     (forall b, b \in B -> convex_set b) & basis B
   }.
 
-HB.builders Context R E & PreTopologicalLmod_isTvs R E.
+HB.builders Context R E & PreTopologicalLmod_isConvexTvs R E.
 
 Definition entourage : set_system (E * E) :=
   fun P => exists (U : set E), nbhs (0 : E) U  /\
@@ -415,7 +591,7 @@ exists [set w | (W1 `&` W2) (w.1 - w.2)].
   exists (U1 `&` U2); first exact: open_nbhsI.
   by move=> t [U1t U2t]; split; [exact: UW1|exact: UW2].
 move => xy /= [z [H1 _] [_ H2]]; apply/set_mem/(Uxy xy)/mem_set.
-rewrite [_ - _](_ : _ = (xy.1 - z) + (z - xy.2)); last by rewrite addrA subrK.
+rewrite [_ - _](_ : _ = (xy.1 - z) + (z - xy.2)); first by rewrite addrA subrK.
 exact: (Wadd (xy.1 - z,z - xy.2)).
 Qed.
 
@@ -447,10 +623,18 @@ HB.instance Definition _ := Nbhs_isUniform_mixin.Build E
     entourage_filter entourage_refl
     entourage_inv entourage_split_ex
     nbhsE.
+
+
+HB.instance Definition _ := PreTopologicalNmodule_isTopologicalNmodule.Build E add_continuous.
+
+HB.instance Definition _ := TopologicalNmodule_isTopologicalLmodule.Build R E scale_continuous.
+
+HB.instance Definition _ := Uniform_isConvexTvs.Build R E locally_convex.
+
 HB.end.
 
-Section Tvs_numDomain.
-Context (R : numDomainType) (E : tvsType R) (U : set E).
+Section ConvexTvs_numDomain.
+Context (R : numDomainType) (E : convexTvsType R) (U : set E).
 
 Lemma nbhs0N : nbhs 0 U -> nbhs 0 (-%R @` U).
 Proof. exact/nbhs0N_subproof/scale_continuous. Qed.
@@ -461,11 +645,11 @@ Proof. exact/nbhsT_subproof/add_continuous. Qed.
 Lemma nbhsB (z x : E) : nbhs z U -> nbhs (x + z) (+%R x @` U).
 Proof. exact/nbhsB_subproof/add_continuous. Qed.
 
-End Tvs_numDomain.
+End ConvexTvs_numDomain.
 
-Section Tvs_numField.
+Section ConvexTvs_numField.
 
-Lemma nbhs0Z (R : numFieldType) (E : tvsType R) (U : set E) (r : R) :
+Lemma nbhs0Z (R : numFieldType) (E : convexTvsType R) (U : set E) (r : R) :
   r != 0 -> nbhs 0 U -> nbhs 0 ( *:%R r @` U ).
 Proof.
 move=> r0 U0; have /= := scale_continuous (r^-1, 0) U.
@@ -474,7 +658,7 @@ near=> x => //=; exists (r^-1 *: x); last by rewrite scalerA divff// scale1r.
 by apply: (BU (r^-1, x)); split => //=;[exact: nbhs_singleton|near: x].
 Unshelve. all: by end_near. Qed.
 
-Lemma nbhsZ  (R : numFieldType) (E : tvsType R) (U : set E) (r : R) (x :E) :
+Lemma nbhsZ  (R : numFieldType) (E : convexTvsType R) (U : set E) (r : R) (x :E) :
   r != 0 -> nbhs x U -> nbhs (r *:x) ( *:%R r @` U ).
 Proof.
 move=> r0 U0; have /= := scale_continuous ((r^-1, r *: x)) U.
@@ -483,7 +667,7 @@ near=> z; exists (r^-1 *: z); last by rewrite scalerA divff// scale1r.
 by apply: (BU (r^-1,z)); split; [exact: nbhs_singleton|near: z].
 Unshelve. all: by end_near. Qed.
 
-End Tvs_numField.
+End ConvexTvs_numField.
 
 Section standard_topology.
 Variable R : numFieldType.
@@ -514,7 +698,7 @@ Proof.
 apply/convex_setW => z y; rewrite !inE -!ball_normE /= => zx yx l l0 l1.
 rewrite inE/=.
 rewrite [X in `|X|](_ : _ = (x - z : convex_lmodType _) <| l |>
-                            (x - y : convex_lmodType _)); last first.
+                            (x - y : convex_lmodType _)).
   by rewrite opprD -[in LHS](convmm l x) addrACA -scalerBr -scalerBr.
 rewrite (le_lt_trans (ler_normD _ _))// !normrM.
 rewrite (@ger0_norm _ l%:num)// (@ger0_norm _ l%:num.~) ?onem_ge0//.
@@ -537,12 +721,12 @@ HB.instance Definition _ :=
 HB.instance Definition _ :=
   TopologicalNmodule_isTopologicalLmodule.Build R R^o standard_scale_continuous.
 HB.instance Definition _ :=
-  Uniform_isTvs.Build R R^o standard_locally_convex_set.
+  Uniform_isConvexTvs.Build R R^o standard_locally_convex_set.
 
 End standard_topology.
 
-Section prod_Tvs.
-Context (K : numFieldType) (E F : tvsType K).
+Section prod_ConvexTvs.
+Context (K : numFieldType) (E F : convexTvsType K).
 
 Local Lemma prod_add_continuous :
   continuous (fun x : (E * F) * (E * F) => x.1 + x.2).
@@ -598,6 +782,173 @@ HB.instance Definition _ := PreTopologicalNmodule_isTopologicalNmodule.Build
 HB.instance Definition _ := TopologicalNmodule_isTopologicalLmodule.Build
   K (E * F)%type prod_scale_continuous.
 HB.instance Definition _ :=
-  Uniform_isTvs.Build K (E * F)%type prod_locally_convex.
+  Uniform_isConvexTvs.Build K (E * F)%type prod_locally_convex.
 
-End prod_Tvs.
+End prod_ConvexTvs.
+
+HB.structure Definition LinearContinuous (K : numDomainType) (E : NbhsLmodule.type K)
+  (F : NbhsZmodule.type) (s : K -> F -> F) :=
+  {f of @GRing.Linear K E F s f &  @Continuous E F f }.
+
+(* https://github.com/math-comp/math-comp/issues/1536
+   we use GRing.Scale.law even though it is claimed to be internal *)
+HB.factory Structure isLinearContinuous (K : numDomainType) (E : NbhsLmodule.type K)
+  (F : NbhsZmodule.type) (s : GRing.Scale.law K F) (f : E -> F) := {
+    linearP : linear_for s f ;
+    continuousP : continuous f
+  }.
+
+HB.builders Context K E F s f & @isLinearContinuous K E F s f.
+
+HB.instance Definition _ := GRing.isLinear.Build K E F s f linearP.
+HB.instance Definition _ := isContinuous.Build E F f continuousP.
+
+HB.end.
+
+Section lcfun_pred.
+Context  {K : numDomainType} {E : NbhsLmodule.type K}  {F : NbhsZmodule.type}
+  {s : K -> F -> F}.
+
+Definition lcfun : {pred E -> F} :=
+  mem [set f | linear_for s f /\ continuous f ].
+
+Definition lcfun_key : pred_key lcfun. Proof. exact. Qed.
+
+Canonical lcfun_keyed := KeyedPred lcfun_key.
+
+End lcfun_pred.
+
+Notation "{ 'linear_continuous' U -> V | s }" :=
+  (@LinearContinuous.type _ U%type V%type s) : type_scope.
+Notation "{ 'linear_continuous' U -> V }" :=
+  {linear_continuous U%type -> V%type | *:%R} : type_scope.
+
+Section lcfun.
+Context {R : numDomainType} {E : NbhsLmodule.type R}
+  {F : NbhsZmodule.type} {s : GRing.Scale.law R F}.
+
+Notation T := {linear_continuous E -> F | s}.
+
+Notation lcfun := (@lcfun _ E F s).
+
+Section Sub.
+Context (f : E -> F) (fP : f \in lcfun).
+
+#[local] Definition lcfun_Sub_subproof :=
+  @isLinearContinuous.Build _ E F s f (proj1 (set_mem fP)) (proj2 (set_mem fP)).
+
+#[local] HB.instance Definition _ := lcfun_Sub_subproof.
+
+Definition lcfun_Sub : {linear_continuous _  -> _ | _ } := f.
+
+End Sub.
+
+Let lcfun_rect (K : T -> Type) :
+  (forall f (Pf : f \in lcfun), K (lcfun_Sub Pf)) -> forall u : T, K u.
+Proof.
+move=> Ksub [f [[Pf1] [Pf2] [Pf3]]].
+set G := (G in K G).
+have Pf : f \in lcfun.
+  by rewrite inE /=; split => // x u v; rewrite Pf1 Pf2.
+suff -> : G = lcfun_Sub Pf by apply: Ksub.
+rewrite {}/G.
+congr (LinearContinuous.Pack (LinearContinuous.Class _ _ _)).
+- by congr GRing.isNmodMorphism.Axioms_; exact: Prop_irrelevance.
+- by congr GRing.isScalable.Axioms_; exact: Prop_irrelevance.
+- by congr isContinuous.Axioms_; exact: Prop_irrelevance.
+Qed.
+
+Let lcfun_valP f (Pf : f \in lcfun) : lcfun_Sub Pf = f :> (_ -> _).
+Proof. by []. Qed.
+
+HB.instance Definition _ := isSub.Build _ _ T lcfun_rect lcfun_valP.
+
+Lemma lcfun_eqP (f g : {linear_continuous E -> F | s}) : f = g <-> f =1 g.
+Proof. by split=> [->//|fg]; exact/val_inj/funext. Qed.
+
+HB.instance Definition _ := [Choice of {linear_continuous E -> F | s} by <:].
+
+Variant lcfun_spec (f : E -> F) : (E -> F) -> bool -> Type :=
+| Islcfun (l : {linear_continuous E -> F | s}) : lcfun_spec f l true.
+
+Lemma lcfunP (f : E -> F) : f \in lcfun -> lcfun_spec f f (f \in lcfun).
+Proof.
+move=> /[dup] f_lc ->.
+have {2}-> : f = lcfun_Sub f_lc by rewrite lcfun_valP.
+by constructor.
+Qed.
+
+End lcfun.
+
+Section lcfun_comp.
+Context {R : numDomainType} {E F : NbhsLmodule.type R}
+  {S : NbhsZmodule.type} {s : GRing.Scale.law R S}
+  (f : {linear_continuous E -> F}) (g : {linear_continuous F -> S | s}).
+
+#[local] Lemma lcfun_comp_subproof1 : linear_for s (g \o f).
+Proof. by move=> *; move=> *; rewrite !linearP. Qed.
+
+#[local] Lemma lcfun_comp_subproof2 : continuous (g \o f).
+Proof. by move=> x; apply: continuous_comp; exact/continuous_fun. Qed.
+
+HB.instance Definition _ := @isLinearContinuous.Build R E S s (g \o f)
+  lcfun_comp_subproof1 lcfun_comp_subproof2.
+
+End lcfun_comp.
+
+Section lcfun_lmodtype.
+Import GRing.Theory.
+Context {R : numFieldType} {E F : convexTvsType R}.
+Implicit Types (r : R) (f g : {linear_continuous E -> F}).
+
+Lemma null_fun_continuous : continuous (\0 : E -> F).
+Proof. by apply: cst_continuous. Qed.
+
+HB.instance Definition _ := isContinuous.Build E F \0 null_fun_continuous.
+
+#[local] Lemma lcfun_continuousD f g : continuous (f \+ g).
+Proof. by move=> /= x; apply: fun_cvgD; exact: continuous_fun. Qed.
+
+HB.instance Definition _ f g :=
+  isContinuous.Build E F (f \+ g) (@lcfun_continuousD f g).
+
+#[local] Lemma lcfun_continuousN f : continuous (\- f).
+Proof. by move=> /= x; apply: fun_cvgN; exact: continuous_fun. Qed.
+
+HB.instance Definition _ f :=
+  isContinuous.Build E F (\- f) (@lcfun_continuousN f).
+
+#[local] Lemma lcfun_continuousM r g : continuous (r \*: g).
+Proof. by move=> /= x; apply: fun_cvgZr; exact: continuous_fun. Qed.
+
+HB.instance Definition _ r g :=
+  isContinuous.Build E F (r \*: g) (@lcfun_continuousM r g).
+
+#[local] Lemma lcfun_submod_closed : submod_closed (@lcfun R E F *:%R).
+Proof.
+split; first by rewrite inE; split; first apply/linearP; exact: cst_continuous.
+move=> r /= _ _  /lcfunP[f] /lcfunP[g].
+by rewrite inE /=; split; [exact: linearP | exact: lcfun_continuousD].
+Qed.
+
+HB.instance Definition _ :=
+  @GRing.isSubmodClosed.Build _  _ lcfun lcfun_submod_closed.
+
+HB.instance Definition _ :=
+  [SubChoice_isSubLmodule of {linear_continuous E -> F } by <:].
+
+End lcfun_lmodtype.
+
+Section lcfunproperties.
+Context {R : numDomainType} {E F : NbhsLmodule.type R}
+  (f : {linear_continuous E -> F}).
+
+#[warn(note="Consider using `continuous_fun` instead.",cats="discoverability")]
+Lemma lcfun_continuous : continuous f.
+Proof. exact: continuous_fun. Qed.
+
+#[warn(note="Consider using `linearP` instead.",cats="discoverability")]
+Lemma lcfun_linear : linear f.
+Proof. move => *; exact: linearP. Qed.
+
+End lcfunproperties.

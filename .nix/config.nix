@@ -8,6 +8,8 @@ let
     mathcomp-analysis-stdlib.job = true;
     ssprove.override.version = "main";
     mathcomp-infotheo.override.version = "master";
+    interval.override.version = "master";
+    coquelicot.override.version = "master";
   };
 in {
   ## DO NOT CHANGE THIS
@@ -23,10 +25,6 @@ in {
   ## If you want to select a different attribute (to build from the local sources as well)
   ## when calling `nix-shell` and `nix-build` without the `--argstr job` argument
   shell-attribute = "mathcomp-analysis-single";
-
-  ## Set this when the package has no rocqPackages version yet
-  ## (either in nixpkgs or in .nix/rocq-overlays)
-  no-rocq-yet = true;
 
   ## Maybe the shortname of the library is different from
   ## the name of the nixpkgs attribute, if so, set it here:
@@ -46,38 +44,54 @@ in {
 
   ## select an entry to build in the following `bundles` set
   ## defaults to "default"
-  default-bundle = "9.1";
+  default-bundle = "9.1-master";
 
   ## write one `bundles.name` attribute set per
   ## alternative configuration
   ## When generating GitHub Action CI, one workflow file
   ## will be created per bundle
 
-  bundles."9.0-2.4.0" = {
+  bundles."9.0-master" = {
     rocqPackages = {
       rocq-core.override.version = "9.0";
+      mathcomp.override.version = "master";
+      mathcomp-bigenough.override.version = "master";
+      mathcomp-finmap.override.version = "master";
+      micromega-plugin.override.version = "master";
     };
     coqPackages = common-bundle // {
       coq.override.version = "9.0";
-      mathcomp.override.version = "2.4.0";
+      mathcomp.override.version = "master";
+      mathcomp-bigenough.override.version = "master";
+      mathcomp-finmap.override.version = "master";
+      ssprove.job = false;  # not yet available for 9.1
     };
   };
 
-  bundles."9.0" = {
-    rocqPackages = {
-      rocq-core.override.version = "9.0";
-    };
-    coqPackages = common-bundle // {
-      coq.override.version = "9.0";
-    };
-  };
+  # bundles."9.1-2.5.0" = {
+  #   rocqPackages = {
+  #     rocq-core.override.version = "9.1";
+  #     mathcomp.override.version = "2.5.0";
+  #   };
+  #   coqPackages = common-bundle // {
+  #     coq.override.version = "9.1";
+  #     ssprove.job = false;  # not yet available for 9.1
+  #   };
+  # };
 
-  bundles."9.1" = {
+  bundles."9.1-master" = {
     rocqPackages = {
       rocq-core.override.version = "9.1";
+      mathcomp.override.version = "master";
+      mathcomp-bigenough.override.version = "master";
+      mathcomp-finmap.override.version = "master";
+      micromega-plugin.override.version = "master";
     };
     coqPackages = common-bundle // {
       coq.override.version = "9.1";
+      mathcomp.override.version = "master";
+      mathcomp-bigenough.override.version = "master";
+      mathcomp-finmap.override.version = "master";
       ssprove.job = false;  # not yet available for 9.1
     };
   };
@@ -87,14 +101,17 @@ in {
       rocq-core.override.version = "master";
       stdlib.override.version = "master";
       rocq-elpi.override.version = "master";
-      rocq-elpi.override.elpi-version = "3.6.1";
       hierarchy-builder.override.version = "master";
+      micromega-plugin.job = false;
+      mathcomp.override.version = "master";
+      mathcomp-bigenough.override.version = "master";
+      mathcomp-finmap.override.version = "master";
+      micromega-plugin.override.version = "master";
     };
     coqPackages = common-bundle // {
       coq.override.version = "master";
       stdlib.override.version = "master";
       coq-elpi.override.version = "master";
-      coq-elpi.override.elpi-version = "3.6.1";
       hierarchy-builder.override.version = "master";
       mathcomp.override.version = "master";
       mathcomp-bigenough.override.version = "master";

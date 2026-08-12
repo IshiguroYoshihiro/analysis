@@ -5,7 +5,7 @@
 (* Copyright (c) - 2016--2018 - Polytechnique                           *)
 (* -------------------------------------------------------------------- *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra finmap.
+From mathcomp Require Import all_ssreflect_compat algebra finmap.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
@@ -50,7 +50,7 @@ From mathcomp Require Export interval_inference topology constructive_ereal.
 (*                                                                            *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -61,6 +61,13 @@ Import numFieldTopology.Exports.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 Local Open Scope classical_set_scope.
+
+Lemma ge0_addBefctE (T : Type) (R : realDomainType) (a b c d : T -> \bar R) :
+  (forall x, 0 <= c x) -> (forall x, 0 <= d x) ->
+  a \+ b \- (c \+ d) = a \- c \+ (b \- d).
+Proof.
+by move=> ? ?; apply/funext=> x; rewrite addeACA oppeD ?ge0_adde_def ?inE.
+Qed.
 
 Lemma EFin_bigcup T (F : nat -> set T) :
   EFin @` (\bigcup_i F i) = \bigcup_i (EFin @` F i).
@@ -219,11 +226,14 @@ by move=> i; rewrite in_fset_set// inE; exact: ab.
 Qed.
 
 Lemma ge0_mule_fsumr (T : choiceType) x (F : T -> \bar R) (P : set T) :
-  (forall i : T, 0 <= F i) -> x * (\sum_(i \in P) F i) = \sum_(i \in P) x * F i.
+  (forall i, P i -> 0 <= F i) ->
+  x * (\sum_(i \in P) F i) = \sum_(i \in P) x * F i.
 Proof.
 move=> F0; have [->{x}|x0] := eqVneq x 0%E.
   by rewrite mul0e big1// => ? _; rewrite mul0e.
-rewrite ge0_sume_distrr//; apply: eq_fbigl => y.
+rewrite big_seq ge0_sume_distrr.
+  by move=> t; case: finite_supportP => // X XP _ _ /XP/F0.
+rewrite -big_seq; apply: eq_fbigl => y.
 rewrite !unlock; congr (_ \in fset_set _).
 apply/seteqP; rewrite /preimage; split=> [|] z/= [Pz Fz0];
   split=> //; apply: contra_not Fz0.
@@ -232,7 +242,8 @@ by move=> ->; rewrite mule0.
 Qed.
 
 Lemma ge0_mule_fsuml (T : choiceType) x (F : T -> \bar R) (P : set T) :
-  (forall i : T, 0 <= F i) -> (\sum_(i \in P) F i) * x = \sum_(i \in P) F i * x.
+  (forall i, P i -> 0 <= F i) ->
+  (\sum_(i \in P) F i) * x = \sum_(i \in P) F i * x.
 Proof.
 move=> F0; rewrite muleC ge0_mule_fsumr//.
 by apply: eq_fsbigr => i; rewrite muleC.
@@ -323,7 +334,7 @@ Lemma le0_mule_dfsumr (T : choiceType) x (F : T -> \bar^d R) (P : set T) :
   (forall i : T, F i <= 0) -> x * (\sum_(i \in P) F i) = \sum_(i \in P) x * F i.
 Proof.
 move=> Fge0.
-rewrite !dual_fsumeE muleN ge0_mule_fsumr; last by move=> ?; rewrite oppe_ge0.
+rewrite !dual_fsumeE muleN ge0_mule_fsumr; first by move=> ?; rewrite oppe_ge0.
 rewrite (eq_bigr _ (fun _ _ => muleN _ _)).
 by rewrite (eq_finite_support _ (fun i _ => muleN _ _)).
 Qed.
@@ -346,7 +357,7 @@ End DualAddTheory.
 
 HB.instance Definition _ (R : numDomainType) := isPointed.Build (\bar R) 0%E.
 
-Lemma funID {aT : pointedType} (D : set aT) {R : numDomainType}
+Lemma funID {aT : Type} (D : set aT) {R : numDomainType}
   (f : aT -> \bar R) : f = (f \_ (~` D)) \+ (f \_ D).
 Proof.
 by apply/funext => x; rewrite !patchE in_setC; case: ifPn => [xD|/negPn ->];
@@ -392,7 +403,7 @@ Qed.
 
 Lemma supremum_pinfty S x0 : S +oo -> supremum x0 S = +oo.
 Proof.
-move=> Spoo; rewrite /supremum ifF; last by apply/eqP => S0; rewrite S0 in Spoo.
+move=> Spoo; rewrite /supremum ifF; first by apply/eqP => S0; rewrite S0 in Spoo.
 have sSoo : supremums S +oo.
   split; first exact: ereal_ub_pinfty.
   by move=> /= y /(_ _ Spoo); rewrite leye_eq => /eqP ->.
@@ -530,7 +541,7 @@ Qed.
 
 Lemma ereal_sup_ubound S : ubound S (ereal_sup S).
 Proof.
-move=> y Sy; rewrite /ereal_sup /supremum ifF; last first.
+move=> y Sy; rewrite /ereal_sup /supremum ifF.
   by apply/eqP; rewrite predeqE => /(_ y)[+ _]; exact.
 case: xgetP => /=; first by move=> _ -> -[] /ubP geS _; apply: geS.
 by case: (ereal_supremums_neq0 S) => /= x0 Sx0 /(_ x0).
@@ -605,7 +616,7 @@ Lemma ereal_inf_EFin (A : set R) : has_lbound A -> A !=set0 ->
   ereal_inf (EFin @` A) = (inf A)%:E.
 Proof.
 move=> has_lbA A0; rewrite /ereal_inf /inf EFinN; congr (- _)%E.
-rewrite -ereal_sup_EFin; [|exact/has_lb_ubN|exact/nonemptyN].
+rewrite -ereal_sup_EFin; [exact/has_lb_ubN|exact/nonemptyN|].
 by rewrite !image_comp.
 Qed.
 
@@ -624,6 +635,22 @@ Proof.
 rewrite leeNr; apply/(equivP (ereal_supP _ _)); setoid_rewrite leeNr.
 split=> [ge_x y Sy|ge_x _ [y Sy <-]]; rewrite ?oppeK// ?ge_x//.
 by rewrite -[y]oppeK ge_x//; exists y.
+Qed.
+
+Lemma exchange_ereal_sup {X Y : Type} (f : X -> Y -> \bar R)
+    (A : set X) (B : set Y) :
+  ereal_sup [set ereal_sup [set f x y | y in B] | x in A] =
+  ereal_sup [set ereal_sup [set f x y | x in A] | y in B].
+Proof.
+suff suf : forall (U V : Type) (g : U -> V -> \bar R) (C : set U) (D : set V),
+    ereal_sup [set ereal_sup [set g x y | y in D] | x in C] <=
+    ereal_sup [set ereal_sup [set g x y | x in C] | y in D].
+  by apply/le_anti/andP; split; exact: suf.
+move=> U V g C D.
+apply/ereal_supP => _ [x Cx <-]; apply/ereal_supP => _ [y Dy <-].
+apply: le_ereal_sup_tmp; exists (ereal_sup [set g x y | x in C]).
+- by exists y.
+- by apply: le_ereal_sup_tmp; exists (g x y) => //; exists x.
 Qed.
 
 Lemma ereal_sup_gtP S x :
@@ -667,10 +694,10 @@ Qed.
 Lemma ereal_inf_real : @ereal_inf R (range EFin) = -oo.
 Proof.
 rewrite /ereal_inf [X in ereal_sup X](_ : _ = range EFin); last first.
-  apply/seteqP; split => x/=[y].
-    by move=> [z] _ <- <-; exists (-z)%R.
-  by move=> _ <-; exists (-y%:E); first (by exists (-y)%R); rewrite oppeK.
-by rewrite ereal_sup_real.
+  by rewrite ereal_sup_real.
+apply/seteqP; split => x/=[y].
+  by move=> [z] _ <- <-; exists (-z)%R.
+by move=> _ <-; exists (-y%:E); first (by exists (-y)%R); rewrite oppeK.
 Qed.
 
 End ereal_supremum_realType.
@@ -740,6 +767,52 @@ Proof.
 move=> XN0 r_gt0; rewrite !ereal_supEN muleN image_comp/=; congr (- _).
 by under eq_imagel do rewrite /= -muleN; rewrite -image_comp ereal_inf_pZl.
 Qed.
+
+Lemma ge0_ereal_supZl (c : \bar R) X : 0 <= c -> X != set0 ->
+  (forall x, X x -> 0 <= x) ->
+  ereal_sup [set c * x | x in X] = c * ereal_sup X.
+Proof.
+move=> c0 /[dup] Xneq0 /set0P[x Xx] X_ge0.
+case: c c0 => [r|_|//].
+- rewrite lee_fin le_eqVlt => /predU1P[<-|r0].
+  + rewrite mul0e.
+    under eq_imagel do rewrite mul0e.
+    by rewrite ereal_sup_cst.
+  + exact/(ereal_supZl Xneq0)/ltW.
+- have [Xall0|] := pselect (forall a, X a -> a = 0).
+  + rewrite [X in ereal_sup X = _](_ : _ = [set 0]%classic).
+      apply/seteqP; split.
+      * by move=> _ [z Xz <-]; rewrite (Xall0 _ Xz) mule0.
+      * by move=> y /= ->; exists x => //; rewrite (Xall0 _ Xx) mule0.
+    have -> : X = [set 0]%classic.
+      apply/seteqP; split.
+      * by move=> y /Xall0 ->.
+      * by move=> y /= ->; rewrite -(Xall0 _ Xx).
+    by rewrite ereal_sup1 mule0.
+  + rewrite -existsNE => -[y /not_implyP[Xy /eqP]].
+    rewrite neq_lt ltNge X_ge0//= => y0.
+    rewrite gt0_mulye//; first  by rewrite (lt_le_trans y0)// ereal_sup_ubound.
+    by rewrite ereal_supy//=; exists y => //; exact: gt0_mulye.
+Qed.
+
+Section ge0_ereal_supZl_range.
+Context {T : choiceType} (f : T -> nat -> \bar R).
+Hypothesis f_ge0 : forall t n, 0 <= f t n.
+
+Lemma ge0_ereal_supZl_range (c : \bar R) (x : T) : 0 <= c ->
+  c * ereal_sup (range (f x)) = ereal_sup (range (fun n => c * f x n)).
+Proof.
+move=> c0.
+rewrite [X in _ = ereal_sup X](_ : _ = [set c * y | y in range (f x)]%classic).
+  apply/seteqP; split.
+  - by move=> _ [n _ <-]; exists (f x n) => //; exists n.
+  - by move=> _ [_ [n _ <-] <-]; exists n.
+rewrite ge0_ereal_supZl//.
+- by apply/set0P; exists (f x 0%N), 0%N.
+- by move=> _ [n _ <-]; exact: f_ge0.
+Qed.
+
+End ge0_ereal_supZl_range.
 
 End ereal_supZ.
 
@@ -971,7 +1044,7 @@ move: p => -[p| [M [Mreal MA]] | [M [Mreal MA]]] //=.
   rewrite (le_trans _ (ltW x1y)) // distrC real_ler_norm // realB //.
     by rewrite num_real. (* where we really use realFieldType *)
   rewrite addrC -ltrBrDr in M'x.
-  rewrite -comparabler0 (@comparabler_trans _ (M - 1)%R) => [//||].
+  rewrite -comparabler0 (@comparabler_trans _ (M - 1)%R) => [||//].
     by rewrite /Order.comparable (ltW M'x). (* TODO: remove this line and the one below when requiring MathComp >= 2.5.0 and add a by at beginning of previous line *)
   by rewrite comparabler0 realB.
 Qed.
@@ -1128,7 +1201,7 @@ Lemma contract_inf S : S !=set0 -> contract (ereal_inf S) = inf (contract @` S).
 Proof.
 move=> -[x Sx]; rewrite /ereal_inf /contract (contractN (ereal_sup (-%E @` S))).
 by rewrite -/contract contract_sup /inf;
-  [rewrite contract_imageN|exists (- x), x].
+  [exists (- x), x|rewrite contract_imageN].
 Qed.
 
 End contract_expand_realType.
@@ -1143,7 +1216,7 @@ Proof. by move=> e e' ee' y; rewrite /ereal_ball => /lt_le_trans; exact. Qed.
 Lemma expand_ereal_ball_pinfty {e : {posnum R}} r : (e%:num <= 1)%R ->
   expand (1 - e%:num)%R < r%:E -> ereal_ball +oo e%:num r%:E.
 Proof.
-move=> e1 er; rewrite /ereal_ball gtr0_norm ?subr_gt0; last first.
+move=> e1 er; rewrite /ereal_ball gtr0_norm ?subr_gt0.
   by case/ltr_normlP : (contract_lt1 r).
 rewrite ltrBlDl addrC -ltrBlDl -[ltLHS]expandK ?lt_contract//.
 by rewrite inE ger0_norm ?lerBlDl ?lerDr // subr_ge0.
@@ -1153,7 +1226,7 @@ Lemma contract_ereal_ball_fin_le r r' (e : {posnum R}) : (r <= r')%R ->
   (1 <= contract r%:E + e%:num)%R -> ereal_ball r%:E e%:num r'%:E.
 Proof.
 rewrite le_eqVlt => /predU1P[<-{r'} _|rr' re1]; first exact: ereal_ball_center.
-rewrite /ereal_ball ltr0_norm; last by rewrite subr_lt0 lt_contract lte_fin.
+rewrite /ereal_ball ltr0_norm; first by rewrite subr_lt0 lt_contract lte_fin.
 rewrite opprB ltrBlDl (lt_le_trans _ re1) //.
 by case/ltr_normlP : (contract_lt1 r').
 Qed.
@@ -1210,7 +1283,7 @@ Proof.
 move=> e1 ooeA.
 exists (fine (expand (1 - e%:num)%R)); rewrite num_real; split => //.
 case => [r | | //].
-- rewrite fine_expand; last first.
+- rewrite fine_expand.
     by rewrite ger0_norm ?ltrBlDl ?ltrDr // subr_ge0.
   by move=> ?; exact/ooeA/expand_ereal_ball_pinfty.
 - by move=> _; exact/ooeA/ereal_ball_center.
@@ -1397,7 +1470,7 @@ move: re1; rewrite le_eqVlt => /orP[re1|re1].
       rewrite re1 addrAC ltrBlDl ltrD // (lt_trans _ e1) // ltrNl.
       by move: (contract_lt1 r'); rewrite ltr_norml => /andP[].
     rewrite /ereal_ball.
-    rewrite [contract -oo]/= opprK gtr0_norm ?subr_gt0; last first.
+    rewrite [contract -oo]/= opprK gtr0_norm ?subr_gt0.
       rewrite -ltrBlDl add0r ltrNl.
       by move: (contract_lt1 r); rewrite ltr_norml => /andP[].
     by rewrite re1 addrAC ltrBlDl ltrD.
@@ -1446,18 +1519,18 @@ rewrite predeq2E => x A; split.
     * move=> /xsectionP/=; rewrite /ereal_ball [contract +oo]/=.
       rewrite lt_min => /andP[re'1 re'2].
       have [cr0|cr0] := lerP 0 (contract r%:E).
-        move: re'2; rewrite ler0_norm; last first.
+        move: re'2; rewrite ler0_norm.
           by rewrite subr_le0; case/ler_normlP : (contract_le1 r%:E).
         rewrite opprB ltrBrDl addrC subrK ltNge; apply: contraNP => _.
         by rewrite (le_trans (ler_norm _))// contract_le1.
-      move: re'2; rewrite ler0_norm; last first.
+      move: re'2; rewrite ler0_norm.
         by rewrite subr_le0; case/ler_normlP : (contract_le1 r%:E).
       rewrite opprB ltrBrDl addrC subrK ltNge; apply: contraNP => _.
       by rewrite (le_trans (ler_norm _))// contract_le1.
     * move=> /xsectionP/=; rewrite /ereal_ball [contract -oo]/= opprK.
       rewrite lt_min => /andP[re'1 _].
       move: re'1.
-      rewrite ger0_norm; last first.
+      rewrite ger0_norm.
         rewrite addrC -lerBlDl add0r.
         by move: (contract_le1 r%:E); rewrite ler_norml => /andP[].
       rewrite ltrD2l ltNge; apply: contraNP => _.
@@ -1466,7 +1539,7 @@ rewrite predeq2E => x A; split.
       exists (1 - contract M%:E)%R => //=.
       by rewrite subr_gt0 (le_lt_trans _ (contract_lt1 M)) // ler_norm.
     case=> [r| |]/= /xsectionP/=.
-    * rewrite /ereal_ball [_ +oo]/= ger0_norm; last first.
+    * rewrite /ereal_ball [_ +oo]/= ger0_norm.
         by rewrite subr_ge0 // (le_trans _ (contract_le1 r%:E)) // ler_norm.
       by rewrite ltrD2l ltrN2 => rM1; apply/MA; rewrite -lt_contract.
     * by rewrite /ereal_ball /= subrr normr0 => h; exact: MA.
@@ -1479,7 +1552,7 @@ rewrite predeq2E => x A; split.
     case=> [r| |] /xsectionP/=.
     * rewrite /ereal_ball => /= rM1.
       apply: MA; rewrite lte_fin.
-      rewrite ler0_norm in rM1; last first.
+      rewrite ler0_norm in rM1.
         by rewrite subr_le0 -/(contract r%:E) lerNnormlW// contract_le1.
       move: rM1; rewrite opprB opprK -ltrBlDl addrK.
       by rewrite -!/(contract _%:E) lt_contract lte_fin.
@@ -1534,7 +1607,7 @@ Definition ereal_loc_seq (R : numDomainType) (x : \bar R) (n : nat) :=
   end.
 
 Lemma cvg_ereal_loc_seq (R : realType) (x : \bar R) :
-  ereal_loc_seq x  @ \oo--> ereal_dnbhs x.
+  ereal_loc_seq x  @ \oo --> ereal_dnbhs x.
 Proof.
 move=> P; rewrite /ereal_loc_seq.
 case: x => /= [x [_/posnumP[d] dP] |[d [dreal dP]] |[d [dreal dP]]]; last 2 first.

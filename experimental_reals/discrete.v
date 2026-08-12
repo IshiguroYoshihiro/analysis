@@ -6,12 +6,12 @@
 (* -------------------------------------------------------------------- *)
 From Corelib Require Setoid.
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra.
+From mathcomp Require Import all_ssreflect_compat algebra.
 From mathcomp.classical Require Import boolp.
 From mathcomp Require Import xfinmap reals.
 
 (* -------------------------------------------------------------------- *)
-Set   SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set   Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

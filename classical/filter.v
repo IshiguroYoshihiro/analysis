@@ -1,6 +1,6 @@
-(* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
+(* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra finmap.
+From mathcomp Require Import all_ssreflect_compat algebra finmap.
 From mathcomp Require Import boolp classical_sets functions wochoice.
 From mathcomp Require Import cardinality mathcomp_extra fsbigop set_interval.
 
@@ -15,21 +15,31 @@ From mathcomp Require Import cardinality mathcomp_extra fsbigop set_interval.
 (*                                                                            *)
 (* ## Structure of filter                                                     *)
 (* ```                                                                        *)
-(*                   filteredType U == interface type for types whose         *)
-(*                                     elements represent sets of sets on U   *)
-(*                                     These sets are intended to be filters  *)
-(*                                     on U but this is not enforced yet.     *)
-(*                                     The HB class is called Filtered.       *)
-(*                                     It extends Pointed.                    *)
-(*                           nbhs p == set of sets associated to p (in a      *)
-(*                                     filtered type)                         *)
-(*                  pfilteredType U == a pointed and filtered type            *)
-(*                          hasNbhs == factory for filteredType               *)
+(*              filteredType U == interface type for types whose elements     *)
+(*                                represent sets of sets on U                 *)
+(*                                These sets are intended to be filters on U  *)
+(*                                but this is not enforced yet.               *)
+(*                                The HB class is called Filtered.            *)
+(*                                It extends Pointed.                         *)
+(*                      nbhs p == set of sets associated to p (in a filtered  *)
+(*                                type)                                       *)
+(*             pfilteredType U == a pointed and filtered type                 *)
+(*                     hasNbhs == factory for filteredType                    *)
+(*                    nbhsType == type of a structure that has a set system   *)
+(*                                of neighborhoods associated to each point   *)
+(*                   pnbhsType == same has nbhsType for pointed types         *)
 (*                     continuous f == f is continuous w.r.t the topology     *)
-(*                 filterI_iter F n == nth stage of recursively building the  *)
-(*                                     filter of finite intersections of F    *)
-(*                    finI_from D f == set of \bigcap_(i in E) f i where E is *)
-(*                                     a finite subset of D                   *)
+(*             isSubNbhs V S U == interface that states the continuity of val *)
+(*                                for U which has a subChoiceType and a       *)
+(*                                nbhsType                                    *)
+(*             subNbhsType V S == structure that extends a                    *)
+(*                                subChoiceType/nbhsType with the isSubNbhs   *)
+(*                                interface                                   *)
+(*                                The HB class is SubNbhs.                    *)
+(*            filterI_iter F n == nth stage of recursively building the       *)
+(*                                filter of finite intersections of F         *)
+(*               finI_from D f == set of \bigcap_(i in E) f i where E is a    *)
+(*                                a finite subset of D                        *)
 (* ```                                                                        *)
 (*                                                                            *)
 (* We endow several standard types with the structure of filter, e.g.:        *)
@@ -169,7 +179,7 @@ From mathcomp Require Import cardinality mathcomp_extra fsbigop set_interval.
 (*   variable                                                                 *)
 (******************************************************************************)
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -946,6 +956,20 @@ Definition continuous_at (T U : nbhsType) (x : T) (f : T -> U) :=
   (f%function @ x --> f%function x).
 Notation continuous f := (forall x, continuous_at x f).
 
+Lemma continuous_comp (R S T : nbhsType) (f : R -> S) (g : S -> T) x :
+  {for x, continuous f} -> {for (f x), continuous g} ->
+  {for x, continuous (g \o f)}.
+Proof. exact: cvg_comp. Qed.
+
+HB.mixin Record isSubNbhs
+  (V : nbhsType) (S : pred V) U & SubChoice V S U & Nbhs U := {
+  continuous_valE : continuous (val : U -> V)
+}.
+
+#[short(type="subNbhsType")]
+HB.structure Definition SubNbhs (V : nbhsType) (S : pred V) :=
+  { U of SubChoice V S U & Nbhs U & isSubNbhs V S U}.
+
 Lemma near_fun (T T' : nbhsType) (f : T -> T') (x : T) (P : T' -> Prop) :
     {for x, continuous f} ->
   (\forall y \near f x, P y) -> (\near x, P (f x)).
@@ -1187,7 +1211,7 @@ Canonical within_filter_on T D (F : filter_on T) :=
   FilterType (within D F) (within_filter _ _).
 
 Lemma filter_bigI_within T (I : choiceType) (D : {fset I}) (f : I -> set T)
-  (F : set (set T)) (P : set T) :
+  (F : set_system T) (P : set T) :
   Filter F -> (forall i, i \in D -> F [set j | P j -> f i j]) ->
   F ([set j | P j -> (\bigcap_(i in [set` D]) f i) j]).
 Proof. move=> FF FfD; exact: (@filter_bigI T I D f _ (within_filter P FF)). Qed.
@@ -1419,7 +1443,7 @@ Lemma in_ultra_setVsetC T (F : set_system T) (A : set T) :
 Proof.
 move=> FU; case: (pselect (F (~` A))) => [|nFnA]; first by right.
 left; suff : ProperFilter (filter_from (F `|` [set A `&` B | B in F]) id).
-  move=> /max_filter <-; last by move=> B FB; exists B => //; left.
+  move=> /max_filter <-; first by move=> B FB; exists B => //; left.
   by exists A => //; right; exists setT; [exact: filterT|rewrite setIT].
 apply: filter_from_proper; last first.
   move=> B [|[C FC <-]]; first exact: filter_ex.
@@ -1455,7 +1479,7 @@ End UltraFilters.
 
 Section filter_supremums.
 
-Global Instance smallest_filter_filter {T : Type} (F : set (set T)) :
+Global Instance smallest_filter_filter {T : Type} (F : set_system T) :
   Filter (smallest Filter F).
 Proof.
 split.
@@ -1464,13 +1488,13 @@ split.
 - by move=> ? ? /filterS + sFP ? [? ?]; apply; exact: sFP.
 Qed.
 
-Fixpoint filterI_iter {T : Type} (F : set (set T)) (n : nat) :=
+Fixpoint filterI_iter {T : Type} (F : set_system T) (n : nat) :=
   if n is m.+1
   then [set P `&` Q |
     P in filterI_iter F m & Q in filterI_iter F m]
   else setT |` F.
 
-Lemma filterI_iter_sub {T : Type} (F : set (set T)) :
+Lemma filterI_iter_sub {T : Type} (F : set_system T) :
   {homo filterI_iter F : i j / (i <= j)%N >-> i `<=` j}.
 Proof.
 move=> + j; elim: j; first by move=> i; rewrite leqn0 => /eqP ->.
@@ -1478,11 +1502,11 @@ move=> j IH i; rewrite leq_eqVlt => /predU1P[->//|].
 by move=> /IH/subset_trans; apply=> A ?; do 2 exists A => //; rewrite setIid.
 Qed.
 
-Lemma filterI_iterE {T : Type} (F : set (set T)) :
+Lemma filterI_iterE {T : Type} (F : set_system T) :
   smallest Filter F = filter_from (\bigcup_n (filterI_iter F n)) id.
 Proof.
 rewrite eqEsubset; split.
-  apply: smallest_sub => //; first last.
+  apply: smallest_sub; first last.
     by move=> A FA; exists A => //; exists O => //; right.
   apply: filter_from_filter; first by exists setT; exists O => //; left.
   move=> P Q [i _ sFP] [j _ sFQ]; exists (P `&` Q) => //.

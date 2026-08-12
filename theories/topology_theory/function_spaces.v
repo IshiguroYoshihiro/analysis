@@ -1,6 +1,6 @@
 (* mathcomp analysis (c) 2026 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect_compat all_algebra finmap.
+From mathcomp Require Import all_ssreflect_compat algebra finmap.
 From mathcomp Require Import generic_quotient.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable.
@@ -112,7 +112,7 @@ Reserved Notation "{ 'compact-open' , U -> V }"
 Reserved Notation "{ 'compact-open' , F --> f }"
   (at level 0, F at level 69, format "{ 'compact-open' ,  F  -->  f }").
 
-Set SsrOldRewriteGoalsOrder.  (* change Set to Unset when porting the file, then remove the line when requiring MathComp >= 2.6 *)
+Unset SsrOldRewriteGoalsOrder.  (* remove the line when requiring MathComp >= 2.6 *)
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -266,8 +266,8 @@ Lemma perfect_prod {I : Type} (i : I) (K : I -> topologicalType) :
 Proof.
 move=> /perfectTP KPo; apply/perfectTP => f oF; apply: (KPo (f i)).
 rewrite (_ : [set f i] = proj i @` [set f]).
-  by apply: (@proj_open {classic I} _ i); exact: oF.
-by rewrite eqEsubset; split => ? //; [move=> -> /=; exists f | case=> g ->].
+  by rewrite eqEsubset; split => ? //; [move=> -> /=; exists f | case=> g ->].
+by apply: (@proj_open {classic I} _ i); exact: oF.
 Qed.
 
 Lemma perfect_diagonal (K : nat -> topologicalType) :
@@ -437,8 +437,8 @@ Proof. exact: nbhs_pfilter. Qed.
 
 End product_spaces.
 
-HB.instance Definition _ (U : Type) (T : U -> ptopologicalType) :=
-  Pointed.copy (forall x : U, T x) (prod_topology T).
+(*HB.instance Definition _ (U : Type) (T : U -> ptopologicalType) :=
+  Pointed.copy (forall x : U, T x) (prod_topology T).*)
 
 (**md the uniform topologies type *)
 Section fct_Uniform.
@@ -567,10 +567,11 @@ HB.instance Definition _ (U : topologicalType) (T : uniformType) :=
     (continuousType U T)
     (initial_topology (id : continuousType U T -> (U -> T))).
 
-HB.instance Definition _ (U : topologicalType) (R : realType)
+(*HB.instance Definition _ (U : topologicalType) (R : realType)
      (T : pseudoMetricType R) :=
   PseudoMetric.on
-    (initial_topology (id : continuousType U T -> (U -> T))).
+    (initial_topology (id : continuousType U T -> (U -> T))).*)
+(* generates Warning: HB: no new instance is generated [HB.no-new-instance,HB,elpi,default] *)
 
 End ArrowAsUniformType.
 
@@ -743,7 +744,7 @@ Lemma pointwise_uniform_cvg  (f : U -> V) (F : set_system (U -> V)) :
 Proof.
 move=> FF; rewrite cvg_sup => + i; have isubT : [set i] `<=` setT by move=> ?.
 move=> /(uniform_subset_cvg _ isubT); rewrite uniform_set1.
-rewrite cvg_image; last by rewrite eqEsubset; split=> v // _; exists (cst v).
+rewrite cvg_image; first by rewrite eqEsubset; split=> v // _; exists (cst v).
 apply: cvg_trans => W /=; rewrite nbhs_simpl; exists (@^~ i @^-1` W) => //.
 by rewrite image_preimage // eqEsubset; split=> // j _; exists (fun _ => j).
 Qed.
@@ -808,12 +809,12 @@ apply: (filterS EsubQ).
 rewrite (_:  [set h | (forall y : U, (A `|` B) y -> E (f y, h y))] =
     [set h | forall y, A y -> E (f y, h y)] `&`
     [set h | forall y, B y -> E (f y, h y)]).
-- apply: filterI; [apply: AFf| apply: BFf].
-  + by apply/uniform_nbhs; exists E; split.
-  + by apply/uniform_nbhs; exists E; split.
 - rewrite eqEsubset; split=> h.
   + by move=> R; split=> t ?; apply: R;[left| right].
   + by move=> [R1 R2] y [? | ?]; [apply: R1| apply: R2].
+- apply: filterI; [apply: AFf| apply: BFf].
+  + by apply/uniform_nbhs; exists E; split.
+  + by apply/uniform_nbhs; exists E; split.
 Qed.
 
 Lemma cvg_uniform_set0 (F : set_system (U -> V)) (f : U -> V) : Filter F ->
@@ -1135,12 +1136,12 @@ move=> FF; apply/propext.
 rewrite (@fam_cvgP _ _ singletons). (* BUG: slowdown if no arguments *)
 rewrite cvg_sup; split.
   move=> + A [x _ <-] => /(_ x); rewrite uniform_set1.
-  rewrite cvg_image; last by rewrite eqEsubset; split=> v // _; exists (cst v).
+  rewrite cvg_image; first by rewrite eqEsubset; split=> v // _; exists (cst v).
   apply: cvg_trans => W /=; rewrite ?nbhs_simpl /fmap /= => [[W' + <-]].
   by apply: filterS => g W'g /=; exists g.
 move=> + i; have /[swap] /[apply] : singletons [set i] by exists i.
 rewrite uniform_set1.
-rewrite cvg_image; last by rewrite eqEsubset; split=> v // _; exists (cst v).
+rewrite cvg_image; first by rewrite eqEsubset; split=> v // _; exists (cst v).
 move=> + W //=; rewrite ?nbhs_simpl => Q => /Q Q'; exists (@^~ i @^-1` W) => //.
 by rewrite eqEsubset; split => [j [? + <-//]|j Wj]; exists (fun _ => j).
 Qed.
@@ -1227,8 +1228,8 @@ have C : compact R.
 apply: (subclosed_compact _ C); first exact: closed_closure.
 have WsubR : (fW @` W) `<=` R.
   by move=> f [i Wi <-] x; rewrite /K; apply: subset_closure; exists i.
-rewrite closureE; apply: smallest_sub (compact_closed _ C) WsubR.
-exact: hausdorff_product.
+rewrite closureE; apply: smallest_sub => //.
+by apply: compact_closed => //=; exact: hausdorff_product.
 Qed.
 
 Lemma uniform_pointwise_compact (W : set (X -> Y)) :
@@ -1613,7 +1614,7 @@ Lemma eval_continuous {X Y : topologicalType} :
 Proof.
 move=> lcX rsX; apply: continuous_uncurry_regular => //.
   exact: initial_continuous.
-by move=> ?; exact: cts_fun.
+by move=> ?; exact: continuous_fun.
 Qed.
 
 Lemma compose_continuous {X Y Z : topologicalType} :
