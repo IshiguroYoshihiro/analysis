@@ -5,7 +5,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Module mathcomp.classical.boolp</title>
-<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.08.19-18:59" />
+<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.08.20-19:02" />
 <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it-deflist/dist/markdown-it-deflist.min.js"></script>
@@ -689,7 +689,13 @@ Qed.</div></details>
 <div class="proofscript">
 <span class="gallina-kwd"> by</span><span class="id"> rewrite</span><span class="id"> </span><span class="id"><a href="mathcomp.classical.boolp.html#propeqE">propeqE</a></span><span class="id">;</span><span class="id"> exact:</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssrbool.html#rwP">rwP</a></span>. Qed.</div></details>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="asbool" class="id"><div name="asbool" class=" tooltip">asbool<span class='tooltip-area'><p>Internals.true_pos : Internals.positedBool True
+<span class="vernacular">Definition</span><span class="id"> </span><span id="asbool" class="id"><div name="asbool" class=" tooltip">asbool<span class='tooltip-area'><p>Internals.true_neg : Internals.negatedBool False
+
+Internals.true_neg is not universe polymorphic
+Internals.true_neg is transparent
+Expands to: Constant mathcomp.classical.contra.Internals.true_neg
+Declared in library mathcomp.classical.contra, line 454, characters 10-18
+Internals.true_pos : Internals.positedBool True
 
 Internals.true_pos is not universe polymorphic
 Internals.true_pos is transparent
