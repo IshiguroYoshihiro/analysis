@@ -5,7 +5,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Module mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule</title>
-<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.09.02-20:55" />
+<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.09.03-20:57" />
 <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it-deflist/dist/markdown-it-deflist.min.js"></script>
@@ -1506,7 +1506,17 @@ Qed.</div></details>
 <span class="vernacular">End</span><span class="id"> realFieldType</span>.<br/>
 <br/>
 <span class="vernacular">Module</span><span class="vernacular"> Export</span><span class="id"> </span><span id="NbhsNorm" class="id"><div name="NbhsNorm" class=" tooltip">NbhsNorm<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/normedtype_theory/pseudometric_normed_Zmodule.v#L983' target='_blank'>Source code</a></span></div></span>.<br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="NbhsNorm.nbhs_simpl" class="id"><div name="NbhsNorm.nbhs_simpl" class=" tooltip">nbhs_simpl<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/normedtype_theory/pseudometric_normed_Zmodule.v#L984' target='_blank'>Source code</a></span></div></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#NbhsEntourage.nbhs_simpl">nbhs_simpl</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id">@</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_nbhs_norm">nbhs_nbhs_norm</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id">@</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#filter_from_norm_nbhs">filter_from_norm_nbhs</a></span>).<br/>
+<span class="vernacular">Definition</span><span class="id"> </span><span id="NbhsNorm.nbhs_simpl" class="id"><div name="NbhsNorm.nbhs_simpl" class=" tooltip">nbhs_simpl<span class='tooltip-area'><p>shift : forall {R : GRing.Zmodule.Exports.zmodType}, R -> R -> R
+
+shift is not universe polymorphic
+Arguments shift {R} x%_ring_scope / y%_ring_scope
+The reduction tactics unfold shift when applied to 2 arguments
+shift is transparent
+Expands to: Constant
+            mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.shift
+Declared in
+library mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule, line 81, characters 11-16
+</p><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/normedtype_theory/pseudometric_normed_Zmodule.v#L984' target='_blank'>Source code</a></span></div></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.analysis.topology_theory.uniform_structure.html#NbhsEntourage.nbhs_simpl">nbhs_simpl</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id">@</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#nbhs_nbhs_norm">nbhs_nbhs_norm</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079">,</a></span><span class="id">@</span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#filter_from_norm_nbhs">filter_from_norm_nbhs</a></span>).<br/>
 <span class="vernacular">End</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.html#NbhsNorm">NbhsNorm</a></span>.<br/>
 <br/>
 <span class="vernacular">Section</span><span class="id"> continuous_within_itvP</span>.<br/>
@@ -1647,17 +1657,7 @@ Qed.</div></details>
 Qed.</div></details>
 <br/>
 <span class="vernacular">Module</span><span class="vernacular"> Export</span><span class="id"> </span><span id="NearNorm" class="id"><div name="NearNorm" class=" tooltip">NearNorm<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/normedtype_theory/pseudometric_normed_Zmodule.v#L1112' target='_blank'>Source code</a></span></div></span>.<br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="NearNorm.near_simpl" class="id"><div name="NearNorm.near_simpl" class=" tooltip">near_simpl<span class='tooltip-area'><p>shift : forall {R : GRing.Zmodule.Exports.zmodType}, R -> R -> R
-
-shift is not universe polymorphic
-Arguments shift {R} x%_ring_scope / y%_ring_scope
-The reduction tactics unfold shift when applied to 2 arguments
-shift is transparent
-Expands to: Constant
-            mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule.shift
-Declared in
-library mathcomp.analysis.normedtype_theory.pseudometric_normed_Zmodule, line 81, characters 11-16
-NbhsNorm.nbhs_simpl :
+<span class="vernacular">Definition</span><span class="id"> </span><span id="NearNorm.near_simpl" class="id"><div name="NearNorm.near_simpl" class=" tooltip">near_simpl<span class='tooltip-area'><p>NbhsNorm.nbhs_simpl :
 (forall (T : Type) (F : set_system T), nbhs F = F) *
 (forall (T : Type) (F : filter_on T), nbhs F = nbhs F) *
 (forall (M : uniformType) (x : M),
