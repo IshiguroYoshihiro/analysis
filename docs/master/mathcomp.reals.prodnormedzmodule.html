@@ -5,7 +5,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Module mathcomp.reals.prodnormedzmodule</title>
-<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.09.04-20:36" />
+<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.09.05-20:21" />
 <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it-deflist/dist/markdown-it-deflist.min.js"></script>
@@ -312,15 +312,13 @@ Qed.</div></details>
 <br/>
 <span class="vernacular">Module</span><span class="id"> </span><span id="ProdNormedZmodule.Exports" class="id"><div name="ProdNormedZmodule.Exports" class=" tooltip">Exports<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/reals/prodnormedzmodule.v#L69' target='_blank'>Source code</a></span></div></span>.<br/>
 <span class="id">HB</span>.<span class="id">reexport</span>.<br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="ProdNormedZmodule.Exports.prod_normE" class="id"><div name="ProdNormedZmodule.Exports.prod_normE" class=" tooltip">prod_normE<span class='tooltip-area'><p>ProdNormedZmodule.norm :
-forall {R : numDomainType} {U V : normedZmodType R}, U * V -> R
+<span class="vernacular">Definition</span><span class="id"> </span><span id="ProdNormedZmodule.Exports.prod_normE" class="id"><div name="ProdNormedZmodule.Exports.prod_normE" class=" tooltip">prod_normE<span class='tooltip-area'><p>sup : forall {R : realType}, set R -> R
 
-ProdNormedZmodule.norm is not universe polymorphic
-Arguments ProdNormedZmodule.norm {R U V} x
-ProdNormedZmodule.norm is transparent
-Expands to: Constant mathcomp.reals.prodnormedzmodule.ProdNormedZmodule.norm
-Declared in
-library mathcomp.reals.prodnormedzmodule, line 40, characters 11-15
+sup is not universe polymorphic
+Arguments sup {R} A%_classical_set_scope
+sup is transparent
+Expands to: Constant mathcomp.reals.reals.sup
+Declared in library mathcomp.reals.reals, line 137, characters 11-14
 </p><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/reals/prodnormedzmodule.v#L71' target='_blank'>Source code</a></span></div></span><span class="id"> :=</span><span class="id"> @</span><span class="id"><a href="mathcomp.reals.prodnormedzmodule.html#ProdNormedZmodule.prod_normE">prod_normE</a></span>.<br/>
 <span class="vernacular">End</span><span class="id"> </span><span class="id"><a href="mathcomp.reals.prodnormedzmodule.html#ProdNormedZmodule.Exports">Exports</a></span>.<br/>
 <br/>

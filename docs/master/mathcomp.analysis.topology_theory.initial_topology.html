@@ -5,7 +5,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Module mathcomp.analysis.topology_theory.initial_topology</title>
-<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.09.04-20:36" />
+<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.09.05-20:21" />
 <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it-deflist/dist/markdown-it-deflist.min.js"></script>
@@ -286,15 +286,17 @@ vector space by its dual.
 <span class="vernacular">Local</span><span class="vernacular"> Open</span><span class="vernacular"> Scope</span><span class="id"> classical_set_scope</span>.<br/>
 <span class="vernacular">Local</span><span class="vernacular"> Open</span><span class="vernacular"> Scope</span><span class="id"> ring_scope</span>.<br/>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="initial_topology" class="id"><div name="initial_topology" class=" tooltip">initial_topology<span class='tooltip-area'><p>order_topology : Type -> Type
+<span class="vernacular">Definition</span><span class="id"> </span><span id="initial_topology" class="id"><div name="initial_topology" class=" tooltip">initial_topology<span class='tooltip-area'><p>subspace_ball :
+forall {R : numDomainType} {X : pseudoMetricType R} [A : set X],
+subspace A -> R -> set X
 
-order_topology is not universe polymorphic
-Arguments order_topology T%_type_scope
-order_topology is transparent
+subspace_ball is not universe polymorphic
+Arguments subspace_ball {R X} [A]%_classical_set_scope x r%_ring_scope _
+subspace_ball is transparent
 Expands to: Constant
-            mathcomp.analysis.topology_theory.order_topology.order_topology
+            mathcomp.analysis.topology_theory.subspace_topology.subspace_ball
 Declared in
-library mathcomp.analysis.topology_theory.order_topology, line 198, characters 11-25
+library mathcomp.analysis.topology_theory.subspace_topology, line 519, characters 11-24
 </p><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/topology_theory/initial_topology.v#L51' target='_blank'>Source code</a></span></div></span><span class="id"> {</span><span id="S:1" class="id"><div name="S:1" class=" tooltip">S<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/topology_theory/initial_topology.v#L51' target='_blank'>Source code</a></span></div></span><span class="id"> :</span><span class="id"> Type}</span><span class="id"> {</span><span id="T:2" class="id"><div name="T:2" class=" tooltip">T<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/topology_theory/initial_topology.v#L51' target='_blank'>Source code</a></span></div></span><span class="id"> :</span><span class="id"> Type}</span><br/>
 &nbsp;&nbsp;(<span id="f:3" class="id"><div name="f:3" class=" tooltip">f<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/topology_theory/initial_topology.v#L52' target='_blank'>Source code</a></span></div></span><span class="id"> :</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.initial_topology.html#S:1">S</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> -&gt;</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"> </a></span><span class="id"><a href="mathcomp.analysis.topology_theory.initial_topology.html#T:2">T</a></span>)<span class="id"> :</span><span class="gallina-kwd"> Type</span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.topology_theory.initial_topology.html#S:1">S</a></span>.<br/>
 <br/>
