@@ -3135,7 +3135,7 @@ case => //.
 move=> s' ss IH a/=.
 move=> /andP[s0 /andP[s'0 ss0]].
 rewrite all_cat => /andP[abs abss].
-have last_s : last a s = last 0 s.
+have last_s t : last t s = last 0 s.
   by apply: set_last_default; case: s s0 abs.
 have : flatten (s' :: ss) != [::] by exact: cons_flatten_neq_nil.
 move/(sorted_catP b s0) => [_ Hsorted2].
@@ -3143,14 +3143,44 @@ move/Hsorted2 => [sorted_s sorted_s'ss ls_hs'].
 rewrite big_ord_recl/=.
   under eq_bigr do rewrite add0n.
 rewrite -IH//.
-- admit.
-- admit.
+- by rewrite /= s'0 ss0.
+- move: abss => /=; rewrite !all_cat => /andP[abs' abss].
+  apply/andP; split.
+    apply/all_andbP; move/all_andbP/andP : abs' => [_ ->]; rewrite andbT.
+    apply/(all_nthP b) => x xs'.
+    apply: (le_trans ls_hs').
+    rewrite head_flatten// -nth0.
+    move: sorted_s'ss.
+    move/cat_sorted2 => [+ _].
+    move/le_sorted_leq_nth; apply => //.
+    by rewrite inE; apply: leq_ltn_trans xs'.
+- apply/all_andbP.
+  move/all_andbP : abss => /andP[_ ->]//; rewrite andbT.
+  apply/(all_nthP b) => x xs'.
+  apply: (le_trans ls_hs').
+  rewrite head_flatten// -nth0.
+  have := sorted_s'ss => /=.
+  have : flatten ss != [::].
+    case: ss IH ss0 Hsorted2 sorted_s'ss ls_hs' xs' => //.
+    move=> // hss ss _ /andP[ss0 _] _ _ _ _.
+    exact: cons_flatten_neq_nil.
+  move/(sorted_catP b s'0)=> -[_ H]; move/H => [sorted_s' sorted_ss ls'_hss].
+  apply: (@le_trans _ _ (nth b s' (size s').-1)).
+    move/le_sorted_leq_nth : sorted_s'; apply => //; rewrite inE.
+      by move: s'0; case s'.
+    by move: s'0; case s'.
+  rewrite nth_last.
+  apply: (le_trans ls'_hss).
+  rewrite -nth0.
+  move: sorted_ss.
+  move/le_sorted_leq_nth; apply => //.
+    by rewrite inE; apply: leq_ltn_trans xs'.
 rewrite mesh_cat; congr maxr.
   exact: mesh_default.
 congr mesh.
 apply: set_last_default.
 by case: s s0 abs last_s Hsorted2 sorted_s ls_hs'.
-Admitted.
+Qed.
 
 Lemma mesh_eq_merge_subseq a b s t :
   path <=%R a s -> path <=%R a t ->
@@ -4952,9 +4982,12 @@ have allcd_xs n : all (fun x : R => c <= x <= d) (xs n).
   admit.
 (*have cdxs n : (forall (i : 'I_ n.+1), c_ n i \in c :: (xs n) /\
                forall (i : 'I_ n.+1), d_ n i \in (xs n)).
-  admit.*)
+  admit.
+*)
+(*
 have size_xs n : (n.+1.*2 <= size (xs n))%N.
   admit.
+*)
 have mesh_xs n : mesh c d (xs n) <= fine (lambda n).
   rewrite /xs mesh_cons.
   rewrite (_ : c = c_ n 0).
@@ -5015,11 +5048,13 @@ have mesh_xs n : mesh c d (xs n) <= fine (lambda n).
   rewrite ltW// lambda_partition_mesh//.
   apply: (dltc lbZ ubZ) => //.
   by rewrite -ltn_double odd_uphalfK.
-(*have cd_xs n :
+(*
+have cd_xs n :
     (forall (i j : 'I_ n.+1), nth d (xs n) j \notin `]c_ n i, d_ n i[).
-  admit.*)
-(*have sub_xcd n : subseq (CD_ n) (xs n).
-  admit.*)
+  admit.
+have sub_xcd n : subseq (CD_ n) (xs n).
+  admit.
+*)
 pose S_ n : R := variation c d f (xs n).
 (* (2) *)
 pose V_ n : \bar R := \sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)|%:E +
@@ -5581,9 +5616,9 @@ have Zsub_cover n (i : 'I_ n.+1) : `[c_ n i, d_ n i]%classic `<=`
         by rewrite (leq_ltn_trans _ ij).
         done.
       have xzk : `[x, z]%classic `<=` contiguous_intervals Z (h1 k).
-        move=> t/= uxz.
+        move=> t/= txz.
         have := @is_interval_contiguous_intervals _ Z (h^-1%FUN k) _ _ kx kz t.
-        by rewrite !(itvP uxz) => /(_ isT).
+        by rewrite !(itvP txz) => /(_ isT).
       have : `]a_ n l, b_ n l[ `<` contiguous_intervals Z (h1 k).
         apply: (proper_subset_trans _ xzk).
         apply/proper_itvoo_cc.
@@ -5664,9 +5699,9 @@ have Zsub_cover n (i : 'I_ n.+1) : `[c_ n i, d_ n i]%classic `<=`
       by rewrite (leq_ltn_trans _ ij).
       done.
     have xzk : `[z, x]%classic `<=` contiguous_intervals Z (h1 k).
-      move=> t/= uxz.
+      move=> t/= txz.
       have := @is_interval_contiguous_intervals _ Z (h^-1%FUN k) _ _ kz kx t.
-      by rewrite !(itvP uxz) => /(_ isT).
+      by rewrite !(itvP txz) => /(_ isT).
     have : `]a_ n l, b_ n l[ `<` contiguous_intervals Z (h1 k).
       apply: (proper_subset_trans _ xzk).
       apply/proper_itvoo_cc.
