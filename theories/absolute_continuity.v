@@ -2571,6 +2571,8 @@ Section lusinN.
 Context {R : realType}.
 Let mu := @completed_lebesgue_measure R.
 
+Import MeasurableR.
+
 Definition lusinN (A : set R) (f : R -> R) :=
   forall E, E `<=` A -> mu.-cara.-measurable E -> mu E = 0 -> mu (f @` E) = 0.
 
