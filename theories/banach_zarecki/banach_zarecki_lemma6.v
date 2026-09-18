@@ -583,6 +583,40 @@ apply/not_notP => /negP; rewrite -leqNgt leqn0 => /eqP/size0nil/eqP.
 by apply/negP.
 Qed.
 
+Lemma last_flatten_intlv d (ss tt : (seq (seq R))) :
+  all (fun s => s != [::]) ss ->
+  all (fun s => s != [::]) tt -> (* generalize? *)
+  (size tt <= size ss)%N ->
+  last d (flatten (intlv ss tt)) = last d (last [::] tt).
+Proof.
+elim: tt ss d.
+  move=> ss d _ _ _.
+  by rewrite intlvs0.
+move=> t tt IH.
+case => // s ss d ss0 tt0 ttss.
+rewrite intlv_cons/=.
+rewrite !last_cat.
+rewrite IH//.
+- by move/andP: ss0; case.
+- by move/andP: tt0; case.
+have [->/=|] := eqVneq tt [::].
+  apply: set_last_default.
+  rewrite ltnNge leqn0.
+  apply/negP; move/eqP/size0nil/eqP; apply/negP.
+  by move/andP: tt0; case.
+move=> tt_neq_nil.
+rewrite (@set_last_default _ tt [::]).
+  rewrite ltnNge leqn0.
+  by apply/negP; move/eqP/size0nil/eqP; apply/negP.
+apply: set_last_default.
+rewrite ltnNge leqn0.
+apply/negP; move/eqP/size0nil/eqP; apply/negP.
+move/andP: tt0 => [_ /allP]; apply.
+rewrite -nth_last mem_nth// ltn_predL.
+rewrite ltnNge leqn0.
+by apply/negP; move/eqP/size0nil/eqP; apply/negP.
+Qed.
+
 End checking_flatten_lemmas.
 
 Section lemmas.
@@ -5388,7 +5422,7 @@ have pcdxs n : itv_partition c d (xs n).
     - rewrite (eq_all_r (mem_intlv _))// all_cat; apply/andP; split.
         apply/allP => _ /mapP[i + ->].
         rewrite mem_iota => /andP[]; rewrite add0n => _ iltn1.
-        admit.
+        by rewrite -size_eq0 gt_eqF.
       rewrite reshape_nseq1.
       by apply/allP => _ /mapP[i + ->].
     - rewrite (eq_all_r (mem_intlv _))// all_cat; apply/andP; split.
@@ -5403,13 +5437,14 @@ have pcdxs n : itv_partition c d (xs n).
     rewrite i1xs' (ltnW i1xs').
     move: i1xs'.
     rewrite size_intlv size_eq_xs' minnn.
-    rewrite reshape_nseq1 size_map size_behead size_seq_cd.
-    rewrite succnK doubleS ltnS => in21.
+    rewrite reshape_nseq1 size_map size_behead size_seq_d.
+    rewrite succnK doubleS ltnS.
+    move=> in21.
     case: ifP => [oddi|eveni].
       rewrite ifF.
         by rewrite oddS oddi.
       rewrite (nth_map d)//.
-        rewrite size_behead size_seq_cd/=.
+        rewrite size_behead size_seq_d/=.
         apply: ltn_div2; rewrite doubleS.
         exact: (ltn_trans in21).
       rewrite nth_behead.
@@ -5420,104 +5455,74 @@ have pcdxs n : itv_partition c d (xs n).
       rewrite (_ : i.+1./2 = i./2.+1).
         by rewrite -uphalfE uphalf_half oddi add1n.
       rewrite [ltLHS]/=.
-      have H : (i <= n.*2.-1)%N.
-        set ii := i./2.
-        have : ii = i./2 by [].
-        case: ii.
-          admit.
-        case: i in21 oddi => //.
-        move=> ni2.
-        admit.
-      apply: (lb_lambda (dltc _ _ _ _ _) (lambda_gt0 n.+1)) => //.
-      admit.
-    admit.
-  
-xxx
-(*
-        rewrite [X in X < _]/=.
-        rewrite nth_flatten_intlvE.
-          exact: size_eq_xs'.
-        set r := (shape
-      (intlv [seq lambda_partition (d_ n i) (c_ n i.+1) (fine (lambda n)) | i <- iota 0 n]
-               (reshape (nseq (size (behead (seq_d n))) 1%N) (behead (seq_d n))))).
-        rewrite ifT.
-          rewrite reshape_nseq1.
-          .
-        rewrite [X in _ < X]/=.
-        rewrite nth_flatten_intlvE.
-          admit.
-        rewrite /reshape_index.
-        rewrite [X in odd X]/=.
-      move=> i.
-      rewrite [X in _ -> X < _]/=.
-      case: i
-    case: i.
-    rewrite lt_path_sortedE; apply/andP; split.
-      rewrite /xs.
-      apply/andP; split.
-        rewrite (_ : c = c_ n 0).
-          by rewrite /c_ cbE.
-        exact: cltd.
-      rewrite -/(all _ _).
-      apply/(all_nthP d) => i ixs'.
-      rewrite nth_flatten_intlvE.
-        by rewrite reshape_nseq1 !size_map size_iota size_behead size_seq_cd.
-      rewrite nth_intlvE.
-      rewrite /shape.
-    apply/(pathP d) => i.
-      rewrite nth_flatten_intlvE.
-        by rewrite /= size_map size_iota size_reshape size_nseq size_seq_cd.
-      rewrite size_seq_cd /reshape_index/= => _.
-      apply: (@le_lt_trans _ _ (d_ n 0)).
-        rewrite /d_ daE (clea_new (ltW cd))//.
-          move=> i.
-          admit.
-        admit.
-      admit.
-    move=> i i1xs.
-    rewrite [ltLHS]/=.
-    move: i i1xs.
-    apply/sortedP.
-    apply: (@lt_sorted_flatten _ d).
-    - apply/all_nthP => i iltn.
-      rewrite nth_intlvE; rewrite iltn.
-      case: ifP => _.
-        rewrite reshape_nseq1.
-        admit.
-      rewrite nth_map_iota.
-        move: iltn.
-        rewrite size_intlv size_zip size_map size_iota size_reshape size_nseq.
-        by rewrite size_seq_cd minnn mul2n ltn_half_double.
-      admit.
-    - apply/all_nthP => i.
-      rewrite nth_intlvE; case: ifP => //iltn.
-        case: ifP => _.
-          rewrite reshape_nseq1.
-          rewrite (nth_map d).
-          admit.
-        by [].
-      rewrite nth_map_iota.
-        admit.
-      have Hi0 : (i./2.+1.-1 < n)%N.
-        admit.
-      have Hi1 : (i./2 < i./2.+1)%N.
-        admit.
-      have := (@lt_path_lambda _ (d_ n i./2) (c_ n i./2.+1) _
-                 (dltc lbZ ubZ _ Hi0 Hi1) lambda_gt0).
-      by rewrite lt_path_sortedE => /andP[].
-    apply/(sortedP [::]) => i iltn.
-    rewrite !nth_intlvE iltn.
+
+      case: n in21.
+        rewrite double0 ltnS leqn0 => /eqP i0.
+        by move: oddi; rewrite i0.
+      move=> n in23.
+      have[n2i|] := leqP n.+1.*2.-1 i.
+        have : i = n.+1.*2.-1.
+          apply/eqP; rewrite eqn_leq n2i andbT.
+          move: in23.
+          rewrite -odd_uphalfK//.
+          rewrite uphalfE halfK/= oddi subn0 ltnS.
+          rewrite doubleS.
+          rewrite leq_eqVlt => /predU1P[in22|//].
+          move: oddi; rewrite in22.
+          by rewrite !oddS negbK odd_double.
+        move=> ->.
+        rewrite /= uphalf_double.
+        by rewrite ltrDl divr_gt0// mulr1 subr_gt0 dltc.
+      move=> i2n.
+      
+      apply: (@lb_lambda _ _ (c_ n.+2 i./2.+2) (fine (lambda n.+2))).
+      - apply: dltc => //.
+        rewrite succnK.
+        rewrite ltnS.
+        rewrite ltn_half_double.
+        exact: (ltn_trans i2n).
+      - by rewrite lambda_gt0.
+      rewrite -nth0.
+      exact: mem_nth.
     rewrite ifT.
-      admit.
-    case: ifP => [oddi|eveni].
-      rewrite ifF.
-        admit.
-      admit.
-    rewrite ifT.
-      admit.
-    admit.
-*)
-  admit.
+      by rewrite /= eveni.
+    rewrite nth_map_iota.
+      rewrite -ltn_double even_halfK ?eveni//.
+      rewrite doubleS.
+      exact: (ltn_trans in21).
+    rewrite (nth_map d).
+      rewrite size_behead size_seq_d.
+      rewrite -ltn_double odd_halfK ?oddS ?eveni//.
+      by rewrite !succnK doubleS (ltn_trans in21).
+    rewrite nth_behead.
+    rewrite last_lambda.
+      apply: dltc => //.
+        rewrite succnK.
+        by rewrite -ltn_double even_halfK ?eveni// doubleS (ltn_trans in21).
+      exact: lambda_gt0.
+    rewrite /=.
+    rewrite uphalf_half eveni add0n.
+    rewrite cltd//.
+    by rewrite ltnS -ltn_double even_halfK ?eveni// doubleS (ltn_trans in21).
+  rewrite /xs last_cons.
+  rewrite last_flatten_intlv//.
+  - apply/allP => _ /mapP[i + ->].
+    rewrite mem_iota => /andP[]; rewrite add0n => _ iltn1.
+    by rewrite -size_eq0 gt_eqF.
+  - rewrite reshape_nseq1.
+    by apply/allP => _ /mapP[i _ ->].
+  - by rewrite size_eq_xs'.
+  rewrite reshape_nseq1.
+  rewrite (@set_last_default _ [seq _ | _ <- _] [:: d]).
+    by rewrite size_map size_behead size_seq_d.
+  rewrite last_map/=.
+  rewrite -nth_last nth_behead prednK.
+    by rewrite size_behead size_seq_d.
+  rewrite size_behead.
+  rewrite size_seq_d/=.
+  rewrite (_ : nth d (seq_d n.+1) n.+1 = d_ n.+1 n.+1)//.
+  rewrite /d_ daE.
+  by rewrite a_default.
 have eq_size_lp_nseq n : size [seq lambda_partition (d_ n i) (c_ n i.+1)
              (fine (lambda n)) | i <- iota 0 n] =
        size (reshape (nseq (size (behead (seq_d n))) 1%N) (behead (seq_d n))).
