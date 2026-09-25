@@ -37,6 +37,41 @@ Import numFieldNormedType.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
+Section seq_lemmas.
+(* TODO: move *)
+Lemma nth_map_iota {T} (x : T) (n : nat) (f : nat -> T) (i : nat) :
+  (i < n)%N ->
+  nth x [seq f k | k <- iota 0 n] i = f i.
+Proof.
+by move=> iltn; rewrite (nth_map 0%N) ?nth_iota; first by rewrite size_iota.
+Qed.
+
+ (* TODO: generalize *)
+Lemma sorted_catP {R : realType} (d : R) (s t : seq R) :
+  s != [::] -> t != [::] ->
+  [/\ sorted <=%R s, sorted <=%R t & last d s <= head d t] <->
+  sorted <=%R (s ++ t).
+Proof.
+case: s => // s0 s1 _; case: t => // t0 t1 _ /=.
+split.
+  move=> [s01 t01 s1t0].
+  by rewrite cat_path; apply/andP; split => //=; apply/andP; split.
+by rewrite cat_path/= => /and3P[s01 s1t0 t01]; split.
+Qed.
+
+End seq_lemmas.
+
+Lemma mem_interval_le (R : realDomainType) (x y a b : R) :
+  x \in `[a, b] -> y \in `[a, b] -> `|x - y| <= `|a - b|.
+Proof.
+rewrite !in_itv/= => /andP[ax xb] /andP[ay yb].
+rewrite (@ler0_norm _ (a - b)); first by rewrite subr_le0 (le_trans ax).
+rewrite opprB.
+have [xy|yx] := leP x y.
+  by rewrite ler0_norm ?subr_le0// opprB lerB.
+by rewrite gtr0_norm ?subr_gt0// lerB.
+Qed.
+
 Section merge_lemmas.
 Context {T : Type} {r : rel T}.
 Implicit Type (s t : seq T).
@@ -1987,6 +2022,41 @@ Qed.
 
 End abs_contP.
 
+Section absolute_continuity_lemmas.
+Context {R : realType}.
+Import MeasurableR.
+
+Lemma abs_cont_derive1_cst a b (f : R^o -> R^o) : a < b ->
+  abs_cont a b f -> {ae @lebesgue_measure R, {in `[a, b], f^`() =1 cst 0}} ->
+  {in `[a, b], forall c, f c = f a}.
+Proof.
+move=> ab abf Df0 c cab.
+pose E := [set x | f^`() x = 0] `&` `[a, c].
+suff: forall e : R, 0 < e -> `|f c - f a| <= e * (c - a + 1).
+  move=> suf; move: cab; rewrite in_itv/= => /andP[ac _].
+  apply/eqP; rewrite -subr_eq0 -normr_eq0 eq_le normr_ge0 andbT.
+  apply/ler_addgt0Pl => /= e e0; rewrite addr0.
+  rewrite -(mulr1 e) -(@mulVf _ ((c - a + 1))).
+    by rewrite gt_eqF// ltr_pwDr// subr_ge0.
+  by rewrite mulrA suf// divr_gt0// ltr_pwDr// subr_ge0.
+move=> _/posnumP[e]; have [d de] := abf e.
+
+Abort.
+
+Lemma abs_cont_bounded_variation (a b : R) (f : R -> R) :
+  a <= b ->
+  abs_cont a b f -> bounded_variation a b f.
+Proof.
+move=> ab acf.
+apply/(bounded_variationP _ ab).
+
+have [d] := acf (PosNum ltr01).
+
+Abort.
+
+
+End absolute_continuity_lemmas.
+
 Section tmp.
 Context {R : realType}.
 
@@ -2238,28 +2308,52 @@ Unshelve. all: by end_near. *) Abort.
 
 End tmp.
 
-Section absolute_continuity_lemmas.
-Context {R : realType}.
-Import MeasurableR.
-
-Lemma abs_cont_der0 a b (f : R^o -> R^o) : a < b ->
-  abs_cont a b f -> {ae @lebesgue_measure R, {in `[a, b], f^`() =1 cst 0}} ->
-  {in `[a, b], forall c, f c = f a}.
+Lemma all_andbP {T} (a b : pred T) (s : seq T) :
+  all (fun x : T => a x && b x) s <->
+(all (fun x : T => a x) s) && (all (fun x : T => b x) s).
 Proof.
-move=> ab abf Df0 c cab.
-pose E := [set x | f^`() x = 0] `&` `[a, c].
-suff: forall e : R, 0 < e -> `|f c - f a| <= e * (c - a + 1).
-  move=> suf; move: cab; rewrite in_itv/= => /andP[ac _].
-  apply/eqP; rewrite -subr_eq0 -normr_eq0 eq_le normr_ge0 andbT.
-  apply/ler_addgt0Pl => /= e e0; rewrite addr0.
-  rewrite -(mulr1 e) -(@mulVf _ ((c - a + 1))).
-    by rewrite gt_eqF// ltr_pwDr// subr_ge0.
-  by rewrite mulrA suf// divr_gt0// ltr_pwDr// subr_ge0.
-move=> _/posnumP[e]; have [d de] := abf e.
+elim: s => // s0 s1 IH.
+split => /=.
+  move/andP => [/andP[? ?]].
+  move/IH => /andP[? ?].
+  by apply/andP; split; apply/andP.
+move/andP => [/andP[? ?] /andP[? ?]].
+apply/andP; split.
+  by apply/andP; split.
+by apply/IH/andP; split.
+Qed.
 
-Abort.
+Lemma cons_flatten_neq_nil {T : eqType} (s : seq T) (ss : seq (seq T)) :
+  s != [::] -> flatten (s :: ss) != [::].
+Proof. by case: s. Qed.
 
-End absolute_continuity_lemmas.
+Lemma head_cat {T : eqType} d (s t : seq T) :
+  s != [::] ->
+  head d (s ++ t) = head d s.
+Proof. by elim: s. Qed.
+
+Lemma head_flatten {T : eqType} d (s : seq T) (ss : seq (seq T)) :
+  s != [::] ->
+  head d (flatten (s :: ss)) = head d s.
+Proof.
+by move=> s0; rewrite head_cat. Qed.
+
+(*
+Lemma lambda_ub (a b l : R) :
+  a < b -> 0 < l ->
+  forall x : R, x \in (lp a b l) ->
+  x <= b.
+Proof.
+move=> ab l0 x /[dup].
+rewrite -{1}index_mem => index_size.
+move/(nth_index b) <-.
+rewrite -[leRHS](last_lambda b ab l0) -nth_last.
+apply: le_sorted_leq_nth => //.
+  have/path_ltW := lt_path_lambda ab l0.
+  admit.
+Admitted.
+*)
+
 
 (*
 Section total_variation_lim.
@@ -2282,11 +2376,6 @@ Context {R : realType}.
 Lemma itv_partition_undup_merge (a b : R) (s t : seq R) :
   itv_partition a b s -> itv_partition a b t ->
   itv_partition a b (undup (merge <%R s t)).
-Proof.
-Abort.
-
-Lemma abs_cont_bounded_variation (a b : R) (f : R -> R) :
-  abs_cont a b f -> bounded_variation a b f.
 Proof.
 Abort.
 

@@ -49,4 +49,17 @@ apply: Banach_Zarecki_nondecreasing => //. (* lemma 7 *)
 - by apply: lemma6_direct_new.lemma6_direct => //.
 Qed.
 
+Theorem Banach_Zarecki_converse (f : R -> R) :
+  abs_cont a b f ->
+  [/\ {within `[a, b], continuous f},
+  bounded_variation a b f &
+  lusinN `[a, b] f].
+Proof.
+move=> acf; split.
+- admit.
+- admit.
+- (* lemma6_converse? *)
+  admit.
+Admitted.
+
 End banach_zarecki.

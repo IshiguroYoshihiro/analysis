@@ -122,6 +122,7 @@ pi_irrational.v
 gauss_integral.v
 
 absolute_continuity.v
+banach_zarecki/mesh.v
 banach_zarecki/banach_zarecki_lemma1.v
 banach_zarecki/banach_zarecki_lemma2.v
 banach_zarecki/banach_zarecki_lemma3.v

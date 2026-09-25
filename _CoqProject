@@ -155,6 +155,7 @@ theories/pi_irrational.v
 theories/gauss_integral.v
 
 theories/absolute_continuity.v
+theories/banach_zarecki/mesh.v
 theories/banach_zarecki/banach_zarecki_lemma1.v
 theories/banach_zarecki/banach_zarecki_lemma2.v
 theories/banach_zarecki/banach_zarecki_lemma3.v
