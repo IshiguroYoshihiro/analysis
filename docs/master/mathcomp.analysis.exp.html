@@ -5,7 +5,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Module mathcomp.analysis.exp</title>
-<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.09.26-21:00" />
+<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.09.27-21:16" />
 <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it-deflist/dist/markdown-it-deflist.min.js"></script>
@@ -1298,6 +1298,20 @@ Arguments expR_inum [R i] x
 expR_inum is transparent
 Expands to: Constant mathcomp.analysis.exp.expR_inum
 Declared in library mathcomp.analysis.exp, line 604, characters 10-19
+expeR : forall {R : realType}, \bar R -> \bar R
+
+expeR is not universe polymorphic
+Arguments expeR {R} x%_ereal_scope
+expeR is transparent
+Expands to: Constant mathcomp.analysis.exp.expeR
+Declared in library mathcomp.analysis.exp, line 615, characters 11-16
+ln : forall [R : realType], R -> R
+
+ln is not universe polymorphic
+Arguments ln [R] x%_ring_scope
+ln is transparent
+Expands to: Constant mathcomp.analysis.exp.ln
+Declared in library mathcomp.analysis.exp, line 692, characters 11-13
 </p><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/exp.v#L828' target='_blank'>Source code</a></span></div></span><span class="id"> </span><span id="a:272" class="id"><div name="a:272" class=" tooltip">a<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/exp.v#L828' target='_blank'>Source code</a></span></div></span><span class="id"> </span><span id="x:273" class="id"><div name="x:273" class=" tooltip">x<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/exp.v#L828' target='_blank'>Source code</a></span></div></span><span class="id"> :=</span><span class="id"> </span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#::boolean_if_scope:'if'_x_'then'_x_'else'_x">if</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#::boolean_if_scope:'if'_x_'then'_x_'else'_x"> </a></span><span class="id"><a href="mathcomp.analysis.exp.html#a:272">a</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.boot.eqtype.html#df45e8c2e8370fd4f0f7c4fdaf208180"> ==</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.boot.eqtype.html#df45e8c2e8370fd4f0f7c4fdaf208180"> </a></span><span class="id">0</span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#::boolean_if_scope:'if'_x_'then'_x_'else'_x"> then</a></span> (<span class="id"><a href="mathcomp.analysis.exp.html#x:273">x</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.boot.eqtype.html#df45e8c2e8370fd4f0f7c4fdaf208180"> ==</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.boot.eqtype.html#df45e8c2e8370fd4f0f7c4fdaf208180"> </a></span><span class="id">0</span>)<span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.algebraic_hierarchy.rings_modules_and_algebras.html#6411ed08724033ae48d2865f0380d533">%:R</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#::boolean_if_scope:'if'_x_'then'_x_'else'_x"> else</a></span><span class="id"><a href="https://rocq-prover.org/corelib/Corelib.ssr.ssreflect.html#::boolean_if_scope:'if'_x_'then'_x_'else'_x"> </a></span><span class="id"><a href="mathcomp.analysis.sequences.html#expR">expR</a></span> (<span class="id"><a href="mathcomp.analysis.exp.html#x:273">x</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.algebraic_hierarchy.rings_modules_and_algebras.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.algebraic_hierarchy.rings_modules_and_algebras.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id"><a href="mathcomp.analysis.exp.html#ln">ln</a></span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.exp.html#a:272">a</a></span>).<br/>
 <br/>
 <span class="vernacular">Local</span><span class="vernacular"> Notation</span> <span id="b5ece597013eae69a3b336b8aded14c8" class="id"><div name="b5ece597013eae69a3b336b8aded14c8" class=" tooltip">&quot;a `^ x&quot;<span class='tooltip-area'><hr/><a href='https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/theories/exp.v#L830' target='_blank'>Source code</a></span></div></span><span class="id"> :=</span> (<span class="id"><a href="mathcomp.analysis.exp.html#powR">powR</a></span><span class="id"> a</span><span class="id"> x</span>).<br/>
@@ -1616,21 +1630,7 @@ Qed.</div></details>
 <span class="gallina-kwd">by</span><span class="id"> rewrite</span><span class="id"> 2![_</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.algebraic_hierarchy.divalg.html#4e5a4c91ec0aa12de06dfe1cc07ea126">^-1</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.algebraic_hierarchy.rings_modules_and_algebras.html#2d0cfb150261028f4ebd2ba355623dcc"> *</a></span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.algebraic_hierarchy.rings_modules_and_algebras.html#2d0cfb150261028f4ebd2ba355623dcc"> </a></span><span class="id">_]</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.algebraic_hierarchy.rings_modules_and_algebras.html#GRing.Theory.mulrC">mulrC</a></span><span class="id"> 3?</span><span class="id"><a href="mathcomp.analysis.exp.html#lnK">lnK</a></span><span class="id"> ?</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.numeric_hierarchy.orderedzmod.html#Num.Theory.posrE">posrE</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.numeric_hierarchy.numdomain.html#Num.Theory.addr_gt0">addr_gt0</a></span><span class="id">//</span><span class="id"> </span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.numeric_hierarchy.numdomain.html#Num.Theory.mulr_gt0">mulr_gt0</a></span><span class="id">//</span><span class="id"> ?</span><span class="id"><a href="https://math-comp.github.io/htmldoc_2_6_0/mathcomp.algebra.numeric_hierarchy.numdomain.html#Num.Theory.invr_gt0">invr_gt0</a></span>.<br/>
 Qed.</div></details>
 <br/>
-<span class="vernacular">Definition</span><span class="id"> </span><span id="powR_itv" class="id"><div name="powR_itv" class=" tooltip">powR_itv<span class='tooltip-area'><p>expeR : forall {R : realType}, \bar R -> \bar R
-
-expeR is not universe polymorphic
-Arguments expeR {R} x%_ereal_scope
-expeR is transparent
-Expands to: Constant mathcomp.analysis.exp.expeR
-Declared in library mathcomp.analysis.exp, line 615, characters 11-16
-ln : forall [R : realType], R -> R
-
-ln is not universe polymorphic
-Arguments ln [R] x%_ring_scope
-ln is transparent
-Expands to: Constant mathcomp.analysis.exp.ln
-Declared in library mathcomp.analysis.exp, line 692, characters 11-13
-powR : forall [R : realType], R -> R -> R
+<span class="vernacular">Definition</span><span class="id"> </span><span id="powR_itv" class="id"><div name="powR_itv" class=" tooltip">powR_itv<span class='tooltip-area'><p>powR : forall [R : realType], R -> R -> R
 
 powR is not universe polymorphic
 Arguments powR [R] (a x)%_ring_scope
