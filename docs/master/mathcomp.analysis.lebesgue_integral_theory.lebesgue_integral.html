@@ -5,16 +5,21 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Module mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral</title>
-<meta name="description" content="Documentation of Coq module Mathcomp Analysis d35a7ab 2026.10.06-00:07" />
+<meta name="description" content="Documentation of Coq module Mathcomp Analysis 9c9f64f 2026.10.06-22:38" />
 <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it-deflist/dist/markdown-it-deflist.min.js"></script>
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/coq.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath/texmath.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
 <link href="rocqnavi.css" rel="stylesheet" type="text/css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script type="text/javascript" src="rocqnavi.js"> </script>
+<script type="text/javascript" src="rocqnavi.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
 </head>
 
 <body onload="init()">
@@ -26,7 +31,15 @@
           <ul>
           <li><details id="mathcomp.analysis"><summary>analysis</summary>
           <ul>
-          <li><details id="mathcomp.analysis.functional_analysis"><summary>functional_analysis</summary>
+          <li><details id="mathcomp.analysis.elementary_functions"><summary>elementary_functions</summary>
+          <ul>
+          <li><a href="mathcomp.analysis.elementary_functions.trigo.html">trigo</a></li>
+<li><a href="mathcomp.analysis.elementary_functions.trigonometry_functions.html">trigonometry_functions</a></li>
+<li><a href="mathcomp.analysis.elementary_functions.trigonometry_integral.html">trigonometry_integral</a></li>
+          </ul>
+          </details>
+          </li>
+<li><details id="mathcomp.analysis.functional_analysis"><summary>functional_analysis</summary>
           <ul>
           <li><a href="mathcomp.analysis.functional_analysis.hahn_banach_theorem.html">hahn_banach_theorem</a></li>
           </ul>
@@ -162,7 +175,6 @@
 <li><a href="mathcomp.analysis.pi_irrational.html">pi_irrational</a></li>
 <li><a href="mathcomp.analysis.realfun.html">realfun</a></li>
 <li><a href="mathcomp.analysis.sequences.html">sequences</a></li>
-<li><a href="mathcomp.analysis.trigo.html">trigo</a></li>
           </ul>
           </details>
           </li>
@@ -190,6 +202,7 @@
 <li><a href="mathcomp.classical.fsbigop.html">fsbigop</a></li>
 <li><a href="mathcomp.classical.functions.html">functions</a></li>
 <li><a href="mathcomp.classical.internal_Eqdep_dec.html">internal_Eqdep_dec</a></li>
+<li><a href="mathcomp.classical.mathcomp_compat.html">mathcomp_compat</a></li>
 <li><a href="mathcomp.classical.mathcomp_extra.html">mathcomp_extra</a></li>
 <li><a href="mathcomp.classical.set_interval.html">set_interval</a></li>
 <li><a href="mathcomp.classical.unstable.html">unstable</a></li>
@@ -234,21 +247,21 @@
     <div class="content">
       <p>
         <a href="./index.html">Top</a>
-        <a href="https://github.com/math-comp/analysis/tree/d35a7ab6724c472f9d8788a0c9e7c68e1360673e/./theories/lebesgue_integral_theory/lebesgue_integral.v">source</a>
+        <a href="https://github.com/math-comp/analysis/tree/9c9f64f7eeee4ead8415e740a1699de87061b846/./theories/lebesgue_integral_theory/lebesgue_integral.v">source</a>
       </p>
       <h1 class="title">Module mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral</h1>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.simple_functions.html">simple_functions</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.measurable_fun_approximation.html">measurable_fun_approximation</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html">lebesgue_integral_definition</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_monotone_convergence.html">lebesgue_integral_monotone_convergence</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_nonneg.html">lebesgue_integral_nonneg</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integrable.html">lebesgue_integrable</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html">lebesgue_Rintegral</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_dominated_convergence.html">lebesgue_integral_dominated_convergence</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_under.html">lebesgue_integral_under</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_fubini.html">lebesgue_integral_fubini</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html">lebesgue_integral_differentiation</a></span>.<br/>
-<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id"><a href="mathcomp.analysis.lebesgue_integral_theory.radon_nikodym.html">radon_nikodym</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.simple_functions.html">simple_functions</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.measurable_fun_approximation.html">measurable_fun_approximation</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_definition.html">lebesgue_integral_definition</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_monotone_convergence.html">lebesgue_integral_monotone_convergence</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_nonneg.html">lebesgue_integral_nonneg</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integrable.html">lebesgue_integrable</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_Rintegral.html">lebesgue_Rintegral</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_dominated_convergence.html">lebesgue_integral_dominated_convergence</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_under.html">lebesgue_integral_under</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_fubini.html">lebesgue_integral_fubini</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.lebesgue_integral_differentiation.html">lebesgue_integral_differentiation</a></span>.<br/>
+<span class="vernacular">From</span><span class="id"> mathcomp</span><span class="vernacular"> Require</span><span class="vernacular"> Export</span><span class="id"> </span><span class="id link"><a href="mathcomp.analysis.lebesgue_integral_theory.radon_nikodym.html">radon_nikodym</a></span>.<br/>
 
       <div class="footer"><hr/>Generated by <a href="https://github.com/affeldt-aist/rocqnavi/">rocqnavi</a></div>
     </div>
