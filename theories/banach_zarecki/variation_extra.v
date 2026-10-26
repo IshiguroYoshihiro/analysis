@@ -847,7 +847,6 @@ Qed.
 
 End variation_lemmas.
 
-From mathcomp Require Import interleave.
 Section variation_flatten_sum.
 
 Lemma variation_cat_last {R : realDomainType} a b f (s t : seq R) :
