@@ -100,7 +100,7 @@ have H6 i :
     mu (H @` G_ i))%E.
   admit.
 apply/eqP; rewrite eq_le measure_ge0 andbT.
-Abort.
+Admitted.
 
 End lemma6_converse.
 
@@ -116,11 +116,25 @@ Theorem Banach_Zarecki_converse (f : R -> R) :
   bounded_variation a b f &
   lusinN `[a, b] f].
 Proof.
-move=> acf; split.
-- admit.
-- admit.
-- (* lemma6_converse? *)
+move=> acf.
+have cf : {within `[a, b], continuous f}.
   admit.
+have bvf : bounded_variation a b f.
+  admit.
+split => //.
+(* lemma6_converse *)
+apply: total_variation_Lusin => //.
+move=> N abN cmN.
+(* lusinN is not necessary for completed lebesgue measure *)
+rewrite completed_lebesgue_measureE.
+rewrite /lebesgue_measure/lebesgue_stieltjes_measure/measure_extension.
+move=> N0.
+have [] := @lebesgue_measure_Gdelta_approx _ N.
+  by rewrite N0.
+move=> A [NA oA decA mAE].
+apply/eqP; rewrite eq_le; apply/andP; split; last exact: outer_measure_ge0.
+
+admit.
 Admitted.
 
 End BZ_converse.
