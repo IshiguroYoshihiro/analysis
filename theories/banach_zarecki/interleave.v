@@ -282,12 +282,12 @@ Qed.
 End interleave_lemmas.
 
 Section flatten_lemmas.
-Context {R : realType}.
+Context d {T : porderType d}.
 
-Lemma nth0_flatten_interleave d (ss tt : (seq (seq R))) :
+Lemma nth0_flatten_interleave def (ss tt : (seq (seq T))) :
   head [::] ss != [::] ->
   (size ss <= size tt)%N ->
-  nth d (flatten (interleave ss tt)) 0 = nth d (nth [::] ss 0) 0.
+  nth def (flatten (interleave ss tt)) 0 = nth def (nth [::] ss 0) 0.
 Proof.
 elim: ss tt => //=.
 move=> s ss IH.
@@ -297,17 +297,17 @@ apply/not_notP => /negP; rewrite -leqNgt leqn0 => /eqP/size0nil/eqP.
 by apply/negP.
 Qed.
 
-Lemma last_flatten_interleave d (ss tt : (seq (seq R))) :
+Lemma last_flatten_interleave def (ss tt : (seq (seq T))) :
   all (fun s => s != [::]) ss ->
   all (fun s => s != [::]) tt -> (* generalize? *)
   (size tt <= size ss)%N ->
-  last d (flatten (interleave ss tt)) = last d (last [::] tt).
+  last def (flatten (interleave ss tt)) = last def (last [::] tt).
 Proof.
-elim: tt ss d.
-  move=> ss d _ _ _.
+elim: tt ss def.
+  move=> ss def _ _ _.
   by rewrite interleaves0.
 move=> t tt IH.
-case => // s ss d ss0 tt0 ttss.
+case => // s ss def ss0 tt0 ttss.
 rewrite interleave_cons/=.
 rewrite !last_cat.
 rewrite IH//.
@@ -332,3 +332,57 @@ by apply/negP; move/eqP/size0nil/eqP; apply/negP.
 Qed.
 
 End flatten_lemmas.
+
+Section flatten_bigop.
+
+(*
+Lemma variation_cat_last {R : realDomainType} a b f (s t : seq R) :
+  variation a b f (s ++ t) =
+  variation a b f s + variation (last a s) b f t.
+Proof.
+elim: s a.
+  by move=> ?; rewrite variation_nil add0r.
+by move=> ? ? IH ?; rewrite !variation_recl IH addrA.
+Qed.
+*)
+
+Print GRing.monoid_morphism.
+Lemma bigop_flatten_interleave_split
+  {T0 : eqType} {T1 : Type} (idx : T1) (op : Monoid.com_law idx) (def : T0)
+    (F : seq T0 -> T1) (x : T0) (s t : seq (seq T0)) :
+   F [::] = idx -> {morph F : x y / x ++ y >-> op x y} ->
+    all (fun u => u != [::]) (s ++ t) ->
+  \big[op/idx]_(i < size (s ++ t)) F (flatten (interleave s t)) =
+    op
+      (\big[op/idx]_(i < minn (size s) (size t))
+        F ((nth def [seq last def u | u <- [:: x] :: t] i) :: (nth [::] s i)))
+      (\big[op/idx]_(i < minn (size s) (size t))
+        F ((nth def [seq last def u | u <- s] i) :: (nth [::] t i))).
+Proof.
+move=> F0 mF.
+rewrite all_cat.
+elim: s t x.
+  case.
+    move=> t x/=.
+    by rewrite F0 !big_ord0 Monoid.mul1m.
+  move=> t0 t1 x/=.
+  rewrite F0 !big_ord0 Monoid.mul1m big_const_idem//.
+  by have := (@Monoid.mul1m T1 idx op idx).
+move=> s0 s1 IH.
+case => /=.
+  move=> x.
+  rewrite F0 !big_ord0 Monoid.mul1m big_const_idem//.
+  by have := (@Monoid.mul1m T1 idx op idx).
+move=> t0 t1 x.
+move=> /andP[/andP[s00 s10] /andP[t00 t10]].
+
+(*
+rewrite /= !variation_cat_last.
+have -> : last a x = last def x by case: x x0.
+have -> : last (last def x) y = last def y by case: y y0.
+rewrite (IH B (last def y) _) ?minnSS ?A0 ?B0// !big_ord_recl /= addrA addrACA.
+by congr (_ + _ + (_ + _)); apply: variation_any_ub.
+*)
+Abort.
+
+End flatten_bigop.
