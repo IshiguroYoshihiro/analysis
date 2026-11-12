@@ -1742,9 +1742,8 @@ have lambda0 : (fine \o lambda) @ \oo --> 0%R.
     rewrite -cplt_hull_contiguous_itvs//.
     rewrite setDD setIidr; first exact: sub_Rhull.
     exact: Z0.
-  apply: cvg_measure_bigcap_new_new => /=; last 2 first.
-      by move=> ?; apply: measurableD => //; exact: sub_caratheodory.
-    apply: bigcap_measurable => // ? _; apply: measurableD => //.
+  apply: cvg_measure_bigcap => /=.
+    by move=> ?; apply: measurableD => //; exact: sub_caratheodory.
   apply: (@le_lt_trans _ _ (mu [set` Rhull Z])).
     apply: le_outer_measure.
     exact: subDsetl.

@@ -278,50 +278,6 @@ apply: openI => //.
 by rewrite -bigcap_mkord.
 Qed.
 
-(* TODO: to appear MCA *)
-Lemma cvg_measure_bigcap_new d (T : algebraOfSetsType d) {R : realFieldType}
-  (mu : {measure set T -> \bar R}) (F : (set T)^nat) :
-  (mu (F 0%N) < +oo)%E ->
-  (forall i : nat, d.-measurable (F i)) ->
-  d.-measurable (\bigcap_n F n) ->
-  (mu \o (fun n => (\bigcap_(i < n.+1) F i))) x @[x --> \oo] --> mu (\bigcap_n F n).
-Proof.
-move=> Foo mF mFoo.
-have Hcap : \bigcap_n F n = \bigcap_n (\bigcap_(i < n.+1) F i).
-  apply/seteqP; split.
-    move=> x Fx n _ i ni.
-    by apply: Fx.
-  move=> x Fx n _.
-  by apply: (Fx n) => /=.
-rewrite Hcap.
-apply: nonincreasing_cvg_measure.
-- by rewrite bigcap_mkord big_ord1.
-- by move=> n; exact: fin_bigcap_measurable.
-- by rewrite -Hcap.
-apply/nonincreasing_seqP => n.
-rewrite !bigcap_mkord big_ord_recr/= subsetEset.
-exact: subIsetl.
-Qed.
-
-(* TODO: to appear MCA *)
-Lemma cvg_measure_bigcap_new_new d (T : algebraOfSetsType d) {R : realFieldType}
-  (mu : {measure set T -> \bar R}) (F : (set T)^nat) :
-  (mu (F 0%N) < +oo)%E ->
-  (forall i : nat, d.-measurable (F i)) ->
-  d.-measurable (\bigcap_n F n) ->
-  (mu \o (fun n => (\bigcap_(i < n) F i))) x @[x --> \oo] --> mu (\bigcap_n F n).
-Proof.
-move=> Foo mF mFoo.
-suff: (mu \o (fun n => (\bigcap_(i < n.+1) F i))) x @[x --> \oo] --> mu (\bigcap_n F n).
-  move=> H.
-  move=> A FA.
-  have [n _ Hn] := H _ FA.
-  exists n.+1 => //= m/= nm.
-  destruct m => //.
-  by apply: Hn.
-exact: cvg_measure_bigcap_new.
-Qed.
-
 Lemma big_nat_setUP T (n : nat) (F : nat -> _) (x : T) :
 reflect (exists2 i, (i < n)%N & x \in F i) (x \in \big[setU/set0]_(0 <= i < n) F i).
 Proof.
@@ -2331,28 +2287,23 @@ exists U_, Z; split.
         by rewrite (leq_trans h).
     admit.
   rewrite /U_.
-  apply: (@cvg_measure_bigcap_new _ _ R completed_lebesgue_measure U0_).
-      apply: (@le_lt_trans _ _ (mue (S0 0))).
-        apply: le_outer_measure.
-        exact: subIsetl.
-      apply: (@le_lt_trans _ _ (mue E + (delta_0 0)%:E)%E).
-        rewrite -(setUIDK (S0 0%N) E).
-        rewrite (le_trans (outer_measureU2 mue _ _))//.
-        by rewrite setIidr // leeD2l.
-      apply: lte_add_pinfty.
-        exact: Elty.
-      exact: ltey.
+  rewrite (cvg_shiftS (fun n => completed_lebesgue_measure (\bigcap_(i < n) U0_ i))).
+  apply: (@cvg_measure_bigcap _ _ R completed_lebesgue_measure U0_).
     move=> /= n.
     apply: sub_caratheodory; apply: open_measurable.
       exact: openI.
     split => /=; first exact: sigma_algebra_measurable.
     by move=> A oA; rewrite RGenOpenSets.measurableE//=; exact: sub_sigma_algebra.
-  rewrite /=.
-  apply: sub_caratheodory.
-  apply: Gdelta_measurable.
-    by exists U0_ => // n; exact: openI.
-  split => /=; first exact: sigma_algebra_measurable.
-  by move=> A oA; rewrite RGenOpenSets.measurableE//=; exact: sub_sigma_algebra.
+  apply: (@le_lt_trans _ _ (mue (S0 0))).
+    apply: le_outer_measure.
+    exact: subIsetl.
+  apply: (@le_lt_trans _ _ (mue E + (delta_0 0)%:E)%E).
+    rewrite -(setUIDK (S0 0%N) E).
+    rewrite (le_trans (outer_measureU2 mue _ _))//.
+    by rewrite setIidr // leeD2l.
+  apply: lte_add_pinfty.
+    exact: Elty.
+  exact: ltey.
 - apply/eqP.
   rewrite eq_sym eq_le; apply/andP; split.
     exact: outer_measure_ge0.

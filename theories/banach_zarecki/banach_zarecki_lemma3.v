@@ -48,92 +48,6 @@ have /= mZ : (wlength idfun)^*%mu.-cara.-measurable Z.
 exact: (lusinNf Z Zab mZ muZ0).
 Qed.
 
-Lemma lebesgue_measure_Gdelta_approx (Z : set R) :
-  ((wlength idfun)^*%mu Z < +oo)%E ->
-  exists U : (set R)^nat, [/\ (forall k, Z `<=` U k), (forall k, open (U k)),
-    {homo U : n m / (n <= m)%N >-> (m <= n)%O} &
-    (wlength idfun)^*%mu Z = (wlength idfun)^*%mu (\bigcap_k U k)].
-Proof.
-move=> Zoo.
-pose delta k := 2^-1 ^+ k :> R.
-have delta_gt0 k : 0 < delta k by rewrite exprn_gt0.
-pose Us : set (set R) := [set U | open U /\ Z `<=` U].
-have mUfin : ereal_inf [set mu U | U in Us] \is a fin_num.
-  by rewrite -lebesgue_regularity_outer_inf ge0_fin_numE.
-have := fun k => (@exists2P _ _ _).1
-  (@lb_ereal_inf_adherent _ [set mu U | U in Us] _ (delta_gt0 k) mUfin).
-move/(@choice _ _ (fun k x => [set mu U | U in Us] x /\
-     (x < ereal_inf [set mu U | U in Us] + (delta k)%:E)%E)).
-move=> [e_] /all_and2[/= + einf].
-under [X in X -> _]eq_forall do rewrite exists2E.
-move=> /choice[U_].
-move=> /all_and2[/all_and2[oU ZU] mUe].
-pose V_ := fun n => \bigcap_(i < n.+1) U_ i.
-have niV : {homo V_ : n m / (n <= m)%N >-> (m <= n)%O}.
-  apply/nonincreasing_seqP => n.
-  rewrite /V_ !bigcap_mkord.
-  rewrite big_ord_recr/= subsetEset.
-  exact: subIsetl.
-exists V_; split.
-- by move=> n; exact: sub_bigcap.
-- by move=> n; exact: bigcap_open.
-- exact: niV.
-- rewrite [X in _ = _ X](_ : _ = \bigcap_i U_ i).
-    rewrite eqEsubset; split.
-      move=> x Hx n _.
-      by apply: (Hx n.+1) => /=.
-    move=> x + n _ k /= kn.
-    exact.
-  have V0oo : (mu (V_ 0%N) < +oo)%E.
-    rewrite /V_ bigcap1 (mUe 0%N) (lt_trans (einf 0%N))//.
-    apply: lte_add_pinfty; last by exact: ltry.
-    by rewrite -lebesgue_regularity_outer_inf.
-  have mV i : measurable (V_ i).
-    apply: bigcap_measurable.
-      by exists 0%N.
-    move=> k /= _.
-    exact: open_measurable.
-  have mIV : measurable (\bigcap_i V_ i) by exact: bigcap_measurable.
-  have pVE n : \bigcap_(i < n) V_ i = \bigcap_(i < n) U_ i.
-    case: n.
-      by rewrite eqEsubset; split.
-    move=> n.
-    rewrite eqEsubset; split.
-      move=> x Vx k/= kn.
-      by apply: (Vx k) => /=.
-    move=> x HU k /= kn m /= mk.
-    apply: (HU m) => /=.
-    exact: leq_trans _ kn.
-  have VE : \bigcap_i V_ i = \bigcap_i U_ i.
-    rewrite eqEsubset; split.
-      move=> x HV n _.
-      apply: (HV n) => //.
-      by rewrite IIS; right.
-    move=> x HU n _ k /= kn.
-    exact: (HU k).
-  rewrite -VE.
-  apply: esym.
-  have /cvg_lim VIV :=
-    @nonincreasing_cvg_measure _ _ _ lebesgue_measure V_ V0oo mV mIV niV.
-  rewrite -[LHS]VIV//.
-  apply: cvg_lim => //.
-  apply: (@squeeze_cvge _ _ _ _ (cst (mu Z)) _ (fun n => mu Z + (delta n)%:E)%E).
-  - apply: nearW => n/=; apply/andP; split.
-      apply: le_outer_measure.
-      move=> x Zx k/= _.
-      exact: ZU.
-    apply: (@le_trans _ _ (mu (U_ n))).
-      rewrite le_outer_measure//.
-      by apply: bigcap_inf => /=.
-    by rewrite mUe lebesgue_regularity_outer_inf ltW.
-  - exact: cvg_cst.
-  - rewrite -(adde0 ((wlength _)^*%mu Z)).
-    apply: cvgeD.
-    + exact: fin_num_adde_defl.
-    + exact: cvg_cst.
-    + by apply: cvg_EFin; [exact: nearW|exact: cvg_half].
-Qed.
-
 Let measurable_image_setI_set1 (f : R -> R) (A : set R) (x : R) :
   measurable (f @` (A `&` [set x])).
 Proof.
@@ -245,7 +159,7 @@ move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
 have Zoo : (mu Z < +oo)%E.
   apply: (@le_lt_trans _ _ (mu `[a, b])); first exact: le_outer_measure.
   by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
-have [U_ [ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
+have [U_ [U0oo ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
 set Z1 := `]a, b[ `&` \bigcap_n U_ n.
 have muZ10 : mu Z1 = 0.
   apply/eqP; rewrite -measure_le0/= -muZ0.
@@ -777,7 +691,7 @@ have Zoo : (mu Z < +oo)%E.
   apply: (@le_lt_trans _ _ (mu `[a, b])); first exact: le_outer_measure.
   by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
 (* wlog (we should read Z1 as Z in paper) *)
-have [U_ [ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
+have [U_ [U0oo ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
 set Z1 := `]a, b[ `&` \bigcap_n U_ n.
 have muZ10 : mu Z1 = 0.
   apply/eqP; rewrite -measure_le0/= -muZ0.
@@ -957,7 +871,7 @@ have Zoo : (mu Z < +oo)%E.
   apply: (@le_lt_trans _ _ (mu `[a, b])); first exact: le_outer_measure.
   by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
 (* wlog (we should read Z1 as Z in paper) *)
-have [U_ [ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
+have [U_ [U0oo ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
 set Z1 := `]a, b[ `&` \bigcap_n U_ n.
 have muZ10 : mu Z1 = 0.
   apply/eqP; rewrite -measure_le0/= -muZ0.
