@@ -24,7 +24,7 @@ Local Open Scope ring_scope.
 
 Import MeasurableR.
 
-Section lemma6_converse.
+Section ene6_converse.
 Context {R : realType}.
 Variables a b : R.
 Hypotheses ab : a < b.
@@ -36,7 +36,7 @@ Variable f : R -> R.
 Let H := fun x => fine (total_variation a ^~ f x).
 
 (* lemma6(i) *)
-Lemma total_variation_Lusin :
+Lemma ene6_converse :
   {within `[a, b], continuous f} ->
   bounded_variation a b f ->
   lusinN `[a, b] H -> lusinN `[a, b] f.
@@ -104,31 +104,20 @@ have H6 i :
 apply/eqP; rewrite eq_le measure_ge0 andbT.
 Admitted.
 
-End lemma6_converse.
+End ene6_converse.
 
-Section lemmas.
+(* ref: Theory of the Integral, Stanislaw Saks *)
+Section Saks.
 Context {R : realType}.
-Local Notation mu := (@lebesgue_measure R).
-Local Notation mue := ((@wlength R idfun)^*)%mu.
 
-Lemma image_lebesgue_measure_Gdelta_approx (f : R -> R) (Z : set R) :
-  (mue Z < +oo)%E ->
-  exists U : (set R)^nat, [/\ (lebesgue_measure (U 0%N) < +oo)%E,
-    (forall k, Z `<=` U k), (forall k, open (U k)),
-    {homo U : n m / (n <= m)%N >-> (m <= n)%O} &
-    mue (f @` Z) = mue (\bigcap_k U k)].
+(* p.225, Chapter VII, Theorem 6.1 *)
+Lemma abs_cont_lusinN (a b : R) (f : R -> R) :
+  abs_cont a b f -> lusinN `[a, b] f.
 Proof.
-move=> Zoo.
-(* Z has Gdelta approx {U i}_i  *)
-have [U [U0oo ZU oU decU muZE]] := lebesgue_measure_Gdelta_approx Zoo.
-have [|] := pselect (mue (f @` Z) = +oo)%E.
-  
-(* forall i, f @` (U i) has Gdelta approx {V i j}_j *)
 
-(* *)
 Abort.
 
-End lemmas.
+End Saks.
 
 Section BZ_converse.
 
@@ -139,6 +128,8 @@ Hypotheses ab : a < b.
 Local Notation mu := (@lebesgue_measure R).
 Local Notation mue := ((@wlength R idfun)^*)%mu.
 
+  
+
 Theorem Banach_Zarecki_converse (f : R -> R) :
   abs_cont a b f ->
   [/\ {within `[a, b], continuous f},
@@ -148,12 +139,63 @@ Proof.
 have muE : (@lebesgue_measure R) = (wlength idfun)^*%mu by [].
 move=> acf.
 have cf : {within `[a, b], continuous f}.
+  apply/continuous_within_itvccP => //; split.
+  - move=> x xab.
+    apply/cvg_ballP => e e0.
+    have [d'] := acf (PosNum e0).
+    set d := minr (minr (x - a) (b - x)) (d'%:num / 4).
+    have d0 : 0 < d.
+      admit.
+    set l := x - d.
+    set r := x + d.
+    have H : [/\ forall i : nat, (i < 1)%N ->
+                      (l, r).1 < (l, r).2 /\ `](l, r).1, (l, r).2[ `<=` `[a, b],
+       trivIset `I_1 (fun=> `](l, r).1, (l, r).2[%classic)
+     & \sum_(k < 1) ((l, r).2 - (l, r).1) < d'%:num].
+      split.
+      + move=> i _ /=; split.
+        admit.
+(*
+          rewrite gt_max !lt_min.
+          rewrite andb_assoc -!andb_assoc; apply/and4P; split.
+          * by [].
+          * rewrite ltr_pDr//.
+            by move: xab; rewrite in_itv/= => /andP[].
+          * rewrite ltrBlDl ltr_pDl//.
+            by move: xab; rewrite in_itv/= => /andP[].
+          * by rewrite ler_ltD// gtrN.
+        apply: subset_itv; rewrite bnd_simp.
+*)
+        admit.
+(*
+          by rewrite le_max lexx.
+        by rewrite ge_min lexx.
+*)
+      + by rewrite II1; move=> ? ? -> -> /=.
+      + rewrite big_ord1/=.
+        rewrite -(subr0 r).
+        rewrite -(subrr x).
+        rewrite opprB (addrC x).
+        rewrite addrA -(addrA _ x).
+        rewrite (splitr d'%:num).
+        have dd' : d < d'%:num / 2.
+          admit.
+        rewrite -(addrA x) subrKC.
+        rewrite opprB subrKC.
+        exact: ltrD.
+    move/(_ 1%N (fun => (l, r)) H).
+    rewrite big_ord1/= => frfle.
+    exists d => //.
+    move=> z/=.
   admit.
+- admit.
+- admit.
 have bvf : bounded_variation a b f.
   admit.
 split => //.
+(* move to abs_cont_lusinN*)
 (* lemma6_converse *)
-apply: total_variation_Lusin => //.
+apply: ene6_converse => //.
 move=> X abX cmX.
 (* lusinN is not necessary for completed lebesgue measure *)
 rewrite completed_lebesgue_measureE muE.
@@ -162,9 +204,9 @@ have [] := @lebesgue_measure_Gdelta_approx _ X.
   by rewrite N0.
 move=> A [A0oo NA oA decA mAE].
 apply/eqP; rewrite eq_le; apply/andP; split; last exact: outer_measure_ge0.
-apply: (@le_trans _ _ (mu (\bigcap_i (f @` (A i))))).
+set TV : R -> \bar R := fun x => total_variation a x f.
+apply: (@le_trans _ _ (mu (\bigcap_i ((fine \o TV) @` (A i))))).
 (* lemma2 *)
-  set TV : R -> \bar R := fun x => total_variation a x f.
   have mTVfoo : (mu ((fine \o TV) @` X) < +oo)%E.
     apply: (@le_lt_trans _ _ (mu `[(fine \o TV) a, (fine \o TV) b])).
       apply: le_outer_measure.
@@ -184,12 +226,10 @@ apply: (@le_trans _ _ (mu (\bigcap_i (f @` (A i))))).
       exact: total_variation_nondecreasing xab yab xy.
     rewrite lebesgue_measure_itv => //=.
     by case: ifPn => //; rewrite -EFinB ltry.
-  
-  have mA i : (R.-open).-measurable (A i) by exact: open_measurable.
-  have/cvg_lim := (@cvg_measure_bigcap _ _ _ mu A mA A0oo).
-
-
-rewrite -muE.
+  rewrite (_: mue = mu)//.
+  apply: le_outer_measure => y [x Xx <-] n _.
+  exists x => //.
+  exact: NA.
 admit.
 Admitted.
 
