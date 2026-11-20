@@ -138,6 +138,7 @@ Theorem Banach_Zarecki_converse (f : R -> R) :
 Proof.
 have muE : (@lebesgue_measure R) = (wlength idfun)^*%mu by [].
 move=> acf.
+(* lemma *)
 have cf : {within `[a, b], continuous f}.
   apply/continuous_within_itvccP => //; split.
   - move=> x xab.
@@ -145,7 +146,12 @@ have cf : {within `[a, b], continuous f}.
     have [d'] := acf (PosNum e0).
     set d := minr (minr (x - a) (b - x)) (d'%:num / 4).
     have d0 : 0 < d.
-      admit.
+      rewrite !lt_min -andb_assoc; apply/and3P; split.
+      - rewrite subr_gt0.
+        by move: xab; rewrite in_itv/= => /andP[].
+      - rewrite subr_gt0.
+        by move: xab; rewrite in_itv/= => /andP[].
+      by rewrite pmulr_lgt0.
     set l := x - d.
     set r := x + d.
     have H : [/\ forall i : nat, (i < 1)%N ->
@@ -154,39 +160,27 @@ have cf : {within `[a, b], continuous f}.
      & \sum_(k < 1) ((l, r).2 - (l, r).1) < d'%:num].
       split.
       + move=> i _ /=; split.
-        admit.
-(*
-          rewrite gt_max !lt_min.
-          rewrite andb_assoc -!andb_assoc; apply/and4P; split.
-          * by [].
-          * rewrite ltr_pDr//.
-            by move: xab; rewrite in_itv/= => /andP[].
-          * rewrite ltrBlDl ltr_pDl//.
-            by move: xab; rewrite in_itv/= => /andP[].
-          * by rewrite ler_ltD// gtrN.
+          by rewrite ler_ltD// gtrN.
         apply: subset_itv; rewrite bnd_simp.
-*)
-        admit.
-(*
-          by rewrite le_max lexx.
-        by rewrite ge_min lexx.
-*)
-      + by rewrite II1; move=> ? ? -> -> /=.
-      + rewrite big_ord1/=.
-        rewrite -(subr0 r).
-        rewrite -(subrr x).
-        rewrite opprB (addrC x).
-        rewrite addrA -(addrA _ x).
-        rewrite (splitr d'%:num).
-        have dd' : d < d'%:num / 2.
-          admit.
-        rewrite -(addrA x) subrKC.
-        rewrite opprB subrKC.
-        exact: ltrD.
+          by rewrite lerBDl -lerBDr !ge_min lexx.
+        by rewrite -lerBDl !ge_min lexx orbT.
+      + rewrite II1.
+        by have := (@trivIset1 _ _ _ (fun=> `](l, r).1, (l, r).2[%classic)).
+      rewrite big_ord1/=.
+      rewrite /r (addrC x) addrKA opprK (splitr d'%:num) -!mulr2n.
+      rewrite ltr_wMn2r//.
+      apply: (@le_lt_trans _ _ (d'%:num / 4)).
+        by rewrite ge_min lexx orbT.
+      by rewrite ltr_pM2l// ltf_pV2 ?posrE// ltr_nat.
     move/(_ 1%N (fun => (l, r)) H).
     rewrite big_ord1/= => frfle.
     exists d => //.
     move=> z/=.
+    rewrite ltr_norml.
+    rewrite ltrBrDl ltrBlDr -/r => /andP[zr].
+    rewrite ltrBlDr -ltrBlDl -/l => lz.
+    rewrite /ball/=.
+    
   admit.
 - admit.
 - admit.
