@@ -41,10 +41,18 @@ have Bi2b : (B i).2 <= b.
   by have [] := B12Bab _ jn.
   have [_] := B12Bab _ jn.
   exact.
-rewrite (le_trans (ler_norm (f (B i).2 - f (B i).1)))//=.
-rewrite (total_variationD f aBi1 (ltW B12)) fineD.
+have bv1 : total_variation a (B i).1 f \is a fin_num.
   apply/(bounded_variationP f aBi1)/(@bounded_variationl _ _ _ b) => //.
   by rewrite (le_trans _ Bi2b)// ltW.
+rewrite [leRHS]ger0_norm.
+  rewrite subr_ge0 fine_le//.
+    have aBi2 := (ltW (le_lt_trans aBi1 B12)).
+    apply/(bounded_variationP f aBi2).
+    by apply/(@bounded_variationl _ _ _ b).
+  apply: (@total_variation_nondecreasing _ _ b); rewrite ?ltW//.
+    by rewrite in_itv/= aBi1/=; apply/ltW/(lt_le_trans B12 Bi2b).
+  by rewrite in_itv/= Bi2b/= andbT; apply/ltW/(le_lt_trans aBi1 B12).
+rewrite (total_variationD f aBi1 (ltW B12)) fineD; first exact: bv1.
   apply/(bounded_variationP f (ltW B12)).
   apply/(bounded_variationl (ltW B12) Bi2b).
   by apply: (bounded_variationr aBi1) => //; rewrite (le_trans _ Bi2b)// ltW.

@@ -25,7 +25,6 @@ Local Open Scope ring_scope.
 Definition set01 {R : realType} (b : bool) (x : R) : set R :=
   if b then [set x] else set0.
 
-
 Section measure_setU1.
 Import MeasurableR.
 
@@ -88,7 +87,7 @@ have {fe0} : forall d : {posnum R},
           (forall i j : 'I_n, (i < j)%N -> (B i).2 <= (B j).1), (* NEW *)
           trivIset `I_n (fun i => `](B i).1, (B i).2[%classic),
           \sum_(k < n) ((B k).2 - (B k).1) < d%:num &
-          \sum_(k < n) (f (B k).2 - f (B k).1) >= e0%:num].
+          \sum_(k < n) `|f (B k).2 - f (B k).1| >= e0%:num].
   move=> d; have {fe0} := fe0 d.
   move=> /existsNP[n] /existsNP[B] /not_implyP[] [H1 H2 H3 H4 H5].
   by exists n, B; split => //; rewrite leNgt; apply/negP.
@@ -149,7 +148,7 @@ have Hhomo n k :(k < n_ n)%N -> {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y
   by apply: nndf; apply: (absub n k).
 have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
   by rewrite /ab_; case: cid => ? [].
-have e0_prop i : \sum_(k < n_ i) (f (((ab_ i) k).2) - f ((ab_ i) k).1) >= e0%:num.
+have e0_prop i : \sum_(k < n_ i) `|f (((ab_ i) k).2) - f ((ab_ i) k).1| >= e0%:num.
   by rewrite /ab_; case: cid => ? [].
 have H3 i k : (k < n_0 (delta_ i))%N ->
     (ab_ i k).1 < (ab_ i k).2 /\ `](ab_ i k).1, (ab_ i k).2[ `<=` `[a, b].
@@ -342,7 +341,7 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
       exact: bigcup_measurable.
     - rewrite image_G.
     - by move=> _/= [r Enr <-]; exists n => //=; exists r.
-  have : mu (f @` E_ n) = (\sum_(k < n_ n) (f (ab_ n k).2 - f (ab_ n k).1))%:E.
+  have : mu (f @` E_ n) = (\sum_(k < n_ n) `|f (ab_ n k).2 - f (ab_ n k).1|)%:E.
     (* not in paper *)
     transitivity (\sum_(k < n_ n) mu (f @` `](ab_ n k).1, (ab_ n k).2[%classic)).
     (* /not in paper *)
@@ -538,7 +537,7 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
       rewrite [LHS]lebesgue_measure_itv// lte_fin /=.
       rewrite lt_neqAle.
       have [K1|K1] := eqVneq (f (ab_ n i).1) (f (ab_ n i).2).
-        by rewrite /= K1 subrr.
+        by rewrite /= K1 subrr normr0.
       rewrite /= nndf//.
       apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
       by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
@@ -546,6 +545,15 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
       by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
       apply/ltW.
       exact: ablt.
+      rewrite ger0_norm.
+        rewrite subr_ge0 nndf//.
+      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
+      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
+      apply/ltW.
+      exact: ablt.
+      by rewrite EFinB.
     move=> ->.
     by rewrite lee_fin e0_prop.
 have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.

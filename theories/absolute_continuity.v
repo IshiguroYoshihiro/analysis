@@ -1296,7 +1296,7 @@ Definition abs_cont (a b : R) (f : R -> R) := forall e : {posnum R},
           (B i).1 < (B i).2 /\ `](B i).1, (B i).2[ `<=` `[a, b]),
         trivIset `I_n (fun i => `](B i).1, (B i).2[%classic) &
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
-        \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
+        \sum_(k < n) `|f (B k).2 - f ((B k).1)| < e%:num.
 
 Definition abs_cont_order (a b : R) (f : R -> R) := forall e : {posnum R},
   exists d : {posnum R}, forall n (B : nat -> R * R),
@@ -1305,7 +1305,7 @@ Definition abs_cont_order (a b : R) (f : R -> R) := forall e : {posnum R},
         (forall i j : 'I_n, (i < j)%N -> (B i).2 <= (B j).1),
         trivIset `I_n (fun i => `](B i).1, (B i).2[%classic) &
         \sum_(k < n) ((B k).2 - (B k).1) < d%:num] ->
-        \sum_(k < n) (f (B k).2 - f ((B k).1)) < e%:num.
+        \sum_(k < n) `|f (B k).2 - f ((B k).1)| < e%:num.
 
 End absolute_continuity_def.
 
@@ -1383,8 +1383,8 @@ have nbBg_nat (i j : 'I_n ) : (i < j)%N -> (Bg_nat i).2 <= (Bg_nat j).1.
   - by rewrite inE size_sort size_iota.
   - by rewrite inE size_sort size_iota.
 pose permg : {perm 'I_n} := Perm g_inj.
-have K : \sum_(k < n) (f (B k).2 - f (B k).1) =
-     \sum_(k < n) (f (Bg_nat k).2 - f (Bg_nat k).1).
+have K : \sum_(k < n) `|f (B k).2 - f (B k).1| =
+     \sum_(k < n) `|f (Bg_nat k).2 - f (Bg_nat k).1|.
   rewrite (reindex_onto permg permg^-1%g)//=; first by move=> i _; rewrite permKV.
   apply/eq_big.
     by move=> i; rewrite /= permK eqxx.
