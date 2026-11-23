@@ -3091,8 +3091,6 @@ have ineq7 n : ((\sum_(i < n.+1) `|f (d_ n i) - f (c_ n i)|)%:E <=
       apply: lusinf.
       - by apply: subIset; left.
       - rewrite /=.
-        apply: sub_caratheodory.
-        rewrite RGenOpenSets.measurableE.
         apply: measurableI => //.
         exact: compact_measurable.
       apply/eqP; rewrite -measure_le0/=.

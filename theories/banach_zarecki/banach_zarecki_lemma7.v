@@ -57,13 +57,10 @@ Qed.
 End measure_setU1.
 
 Section Banach_Zarecki_lemma7.
-Context {R : realType}.
-Variables a b : R.
+Context {R : realType} (a b : R) (f : R -> R).
 Hypothesis ab : a < b.
 
-Local Notation mu := (@completed_lebesgue_measure R).
-
-Variable f : R -> R.
+Local Notation mu := (@lebesgue_measure R).
 
 Let set_fun_f : set_fun `[a, b]%classic [set: R] f.
 Proof. by []. Qed.
@@ -71,6 +68,8 @@ Proof. by []. Qed.
 HB.instance Definition _ := isFun.Build _ _ _ _ _ set_fun_f.
 
 Let F : {fun `[a, b]%classic >-> [set: R]} := f.
+
+Import MeasurableR.
 
 (* lemma7 *)
 Lemma Banach_Zarecki_nondecreasing :
@@ -129,13 +128,12 @@ have Hc n k : (k < n_ n)%N -> {within `[(ab_ n k).1, (ab_ n k).2], continuous f}
   move/andP => [].
   rewrite le_eqVlt.
   move/orP => [/eqP <- _|abnkx xabnk].
-    have /= -> := (incl_itv_lb (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
-      (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn)).
-    have /= := (incl_itv_ub (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
-      (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn)).
+    have /= -> := incl_itv_lb (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
+      (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn).
+    have /= := incl_itv_ub (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
+      (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn).
     apply: le_trans.
-    apply/ltW.
-    exact: ablt.
+    exact/ltW/ablt.
   apply/andP; split.
     apply: (le_trans _ (ltW abnkx)).
     by have /= := (incl_itv_lb (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
@@ -143,9 +141,9 @@ have Hc n k : (k < n_ n)%N -> {within `[(ab_ n k).1, (ab_ n k).2], continuous f}
   apply: (le_trans xabnk).
   by have /= := (incl_itv_ub (fun i=> (ablt n (nat_of_ord i) (ltn_ord i)))
       (fun i=> absub n (nat_of_ord i) (ltn_ord i)) (Ordinal knn)).
-have Hhomo n k :(k < n_ n)%N -> {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}.
-  move=>knn x y xab yab.
-  by apply: nndf; apply: (absub n k).
+have Hhomo n k : (k < n_ n)%N -> {in `](ab_ n k).1, (ab_ n k).2[ &, {homo f : x y / x <= y}}.
+  move=> knn x y xab yab.
+  by apply: nndf; exact: (absub n k).
 have d_prop i : \sum_(k < n_ i) (((ab_ i) k).2 - ((ab_ i) k).1) < delta_0 i.
   by rewrite /ab_; case: cid => ? [].
 have e0_prop i : \sum_(k < n_ i) `|f (((ab_ i) k).2) - f ((ab_ i) k).1| >= e0%:num.
@@ -155,11 +153,10 @@ have H3 i k : (k < n_0 (delta_ i))%N ->
   move=> in0i.
   rewrite /ab_; case: cid => ? [] /=.
   by move/(_ _ in0i).
-pose E_ i := \big[setU/set0]_(k < n_ i) `](ab_ i k).1, (ab_ i k).2[%classic.
-have mE i : mu.-cara.-measurable (E_ i).
+pose E_ i : set R := \big[setU/set0]_(k < n_ i) `](ab_ i k).1, (ab_ i k).2[%classic.
+have mE i : measurable (E_ i).
   apply: bigsetU_measurable => /=.
-  move=> k _.
-  by apply: sub_caratheodory.
+  by move=> k _.
 pose G_ i := \bigcup_(j in [set j | (j >= i)%N]) E_ j.
 have mG i : mu.-cara.-measurable (G_ i) by exact: bigcup_measurable.
 pose A := \bigcap_i (G_ i).
@@ -169,18 +166,16 @@ have H1 : (@GRing.inv R 2) / (1 - 2^-1) = 1.
   by rewrite [X in X - _](splitr 1) div1r addrK divff.
 have Eled n : (mu (E_ n) <= (delta_0 n)%:E)%E.
   rewrite measure_semi_additive_ord //=.
-    move=> k.
-    by apply: sub_caratheodory => //=.
-    have := tab_ n.
+  - have := tab_ n.
     rewrite trivIset_mkcond/= => /trivIsetP/= tab_n.
     apply/trivIsetP => /= i j _ _ ij.
     have := tab_n i j Logic.I Logic.I ij.
     rewrite ifT; first by rewrite inE/=.
     rewrite ifT; first by rewrite inE/=.
     by [].
-    exact: mE.
+  - exact: mE.
   apply/ltW.
-  under eq_bigr do rewrite completed_lebesgue_measure_itv/= lte_fin ifT // ?(ablt n _ (ltn_ord _))// -EFinD.
+  under eq_bigr do rewrite lebesgue_measure_itv/= lte_fin ifT // ?(ablt n _ (ltn_ord _))// -EFinD.
   by rewrite sumEFin lte_fin; exact: d_prop.
 (* lemma? *)
 have image_E : forall i, (f @` (E_ i)) = \big[setU/set0]_(k < n_ i)f @` `](ab_ i k).1, (ab_ i k).2[%classic.
@@ -203,11 +198,10 @@ have imfitv n k : (k < n_ n)%N -> exists b0 b1,
   move=> knn.
   have := @continuous_nondecreasing_image_itvoo_itv _ (ab_ n k).1 (ab_ n k).2 f.
   by move/(_ (ablt n k knn) (Hc n k knn) (Hhomo n k knn)).
-have mimf n k :(k < n_ n)%N -> (R.-ocitv.-measurable).-sigma.-measurable (f @` `](ab_ n k).1, (ab_ n k).2[%classic).
+have mimf n k :(k < n_ n)%N -> R.-open.-measurable (f @` `](ab_ n k).1, (ab_ n k).2[%classic).
   move=> knn.
-  move: (imfitv n k knn) => [b0 [b1]] ->.
-  by rewrite RGenOpenSets.measurableE//.
-have mfE : forall i, (R.-ocitv.-measurable).-sigma.-measurable (f @` (E_ i)).
+  by move: (imfitv n k knn) => [b0 [b1]] ->.
+have mfE : forall i, R.-open.-measurable (f @` (E_ i)).
   move=> i.
   rewrite image_E.
   apply: bigsetU_measurable.
@@ -230,73 +224,68 @@ have mA0 : mu A = 0.
       near=> k => /=.
       rewrite measure_ge0 /=.
       apply: (@le_trans _ _ (\big[+%E/0%E]_(k <= j <oo) (mu (E_ j))%E)).
-      - rewrite (_: G_ k = \bigcup_n G_ (n + k)%N).
+        rewrite (_: G_ k = \bigcup_n G_ (n + k)%N).
           apply/seteqP; split.
           + by exists 0%N.
           + apply: bigcup_sub => n _.
             apply: bigcup_sub => j /= nkj.
             apply: bigcup_sup => /=.
             by rewrite (leq_trans _ nkj)// leq_addl.
-          rewrite -nneseries_addn; first by move=> i; by [].
-          apply: measure_sigma_subadditive.
-              by move=> n; exact: mE.
-            by apply: bigcup_measurable => n _; exact: mG.
-          move=> x.
-          move=> [/= i _] [j /= ikj Ejx].
-          exists (j - k)%N => //.
-          by rewrite subnK// (leq_trans _ ikj)// leq_addl.
-(*      rewrite d_geo0; last by near: k; exists 1%N.*)
-      - rewrite [leRHS](_:_ = (\sum_(k <= j <oo) (delta_0 j)%:E)%E).
-          apply: esym.
-          apply: cvg_lim => //.
-          rewrite d_geo0; first by near: k; exists 1%N.
-          rewrite /geometric /=.
-          rewrite -[X in _ --> (X * _)%:E]H1 mulrAC -exprS.
-          rewrite -(cvg_shiftn k) /=.
-          rewrite [X in X @ _ --> _](_:_=
-         (fun n => (@series R (geometric (2^-1 ^+ k.+1) 2^-1) n)%:E)).
-            apply/funext => n.
-            rewrite /series /= sumEFin.
-            rewrite -{1}(add0n k) big_addn addnK.
-            congr (_%:E).
-            apply: eq_bigr => i _.
-            rewrite -exprD addSn addnC.
-            by rewrite /delta_0 -exprVn.
-          apply: cvg_EFin; first by apply: nearW.
-          by apply: cvg_geometric_series.
-        rewrite -nneseries_addn; first by move=> i; apply: measure_ge0.
-        rewrite -[leRHS]nneseries_addn.
-          move=> i.
-          rewrite lee_fin.
-          rewrite /delta_0.
-          apply/ltW.
-          exact: delta_0_ge0.
-        apply: lee_lim.
-            apply: ereal_nondecreasing_is_cvgn.
-            apply: ereal_nondecreasing_series => i _ _.
-            exact: measure_ge0.
-          apply: ereal_nondecreasing_is_cvgn.
-          apply: ereal_nondecreasing_series => i _ _.
-          rewrite lee_fin.
-          rewrite /delta_0.
-          apply/ltW.
-          exact: delta_0_ge0.
-        apply: nearW => /= n.
-        exact: lee_sum.
+        rewrite -nneseries_addn; first by move=> i; by [].
+        apply: measure_sigma_subadditive.
+            by move=> n; exact: mE.
+          by apply: bigcup_measurable => n _; exact: mG.
+        move=> x.
+        move=> [/= i _] [j /= ikj Ejx].
+        exists (j - k)%N => //.
+        by rewrite subnK// (leq_trans _ ikj)// leq_addl.
+      rewrite [leRHS](_:_ = (\sum_(k <= j <oo) (delta_0 j)%:E)%E).
+        apply: esym.
+        apply: cvg_lim => //.
+        rewrite d_geo0; first by near: k; exists 1%N.
+        rewrite /geometric /=.
+        rewrite -[X in _ --> (X * _)%:E]H1 mulrAC -exprS.
+        rewrite -(cvg_shiftn k) /=.
+        rewrite [X in X @ _ --> _](_:_= (fun n => (@series R (geometric (2^-1 ^+ k.+1) 2^-1) n)%:E)).
+          apply/funext => n.
+          rewrite /series /= sumEFin.
+          rewrite -{1}(add0n k) big_addn addnK.
+          congr (_%:E).
+          apply: eq_bigr => i _.
+          rewrite -exprD addSn addnC.
+          by rewrite /delta_0 -exprVn.
+        apply: cvg_EFin; first by apply: nearW.
+        by apply: cvg_geometric_series.
+      rewrite -nneseries_addn; first by [].
+      rewrite -[leRHS]nneseries_addn.
+        move=> i.
+        rewrite lee_fin.
+        rewrite /delta_0.
+        apply/ltW.
+        exact: delta_0_ge0.
+      apply: lee_lim.
+      - apply: ereal_nondecreasing_is_cvgn.
+        exact: ereal_nondecreasing_series.
+      - apply: ereal_nondecreasing_is_cvgn.
+        apply: ereal_nondecreasing_series => i _ _.
+        rewrite lee_fin.
+        rewrite /delta_0.
+        apply/ltW.
+        exact: delta_0_ge0.
+      apply: nearW => /= n.
+      exact: lee_sum.
     move/squeeze_cvge.
-    apply.
-      exact: cvg_cst.
+    apply => //.
     apply: cvg_trans.
-      apply: near_eq_cvg.
-      near=> k.
+      apply: near_eq_cvg; near=> k.
       rewrite d_geo0; first by near: k; exists 1%N.
       reflexivity.
     apply: cvg_EFin; first by near=> k.
-    by apply: cvg_geometric.
+    exact: cvg_geometric.
   suff: (mu \o G_) x @[x --> \oo] --> mu (\bigcap_n G_ n).
     by move=> /cvg_unique /[apply]; exact.
-  apply: nonincreasing_cvg_mu => //=.
-  - rewrite (@le_lt_trans _ _ (\sum_(0 <= i <oo) mu (E_ i))%E) //.
+  apply: nonincreasing_cvg_measure => //=.
+  - rewrite (@le_lt_trans _ _ (\sum_(0 <= i <oo) mu (E_ i))%E)//.
       apply: measure_sigma_subadditive => //.
       rewrite /G_.
       by apply: bigcup_sub => i _; exact: bigcup_sup.
@@ -308,11 +297,11 @@ have mA0 : mu A = 0.
     apply/cvg_lim => //.
     apply: cvg_EFin.
       by apply: nearW => n; rewrite sumEFin.
-      under eq_cvg => n.
-        rewrite /= sumEFin.
-        under eq_bigr do rewrite d_geo.
-        over.
-    by apply: cvg_geometric_series.
+    under eq_cvg => n.
+      rewrite /= sumEFin.
+      under eq_bigr do rewrite d_geo.
+      over.
+    exact: cvg_geometric_series.
   - by apply: bigcapT_measurable => ?; exact: mG.
   - move=> s k sk.
     rewrite /G_.
@@ -321,28 +310,38 @@ have mA0 : mu A = 0.
     apply: bigcup_sup => /=.
     exact: (@le_trans _ _ k).
 have mfA0 : mu (f @` A) = 0.
-  (* use lf *)
   apply: lf.
-  + move=> r Ar.
+  - move=> r Ar.
     rewrite /A /bigcap /= /G_ /= in Ar.
     have [i _] := Ar O I.
     rewrite /E_.
     rewrite -bigcup_seq/= => -[j /= Hj].
-    by apply: (H3 _ _ _).2.
-  + by apply: bigcapT_measurable => //.
-  + exact: mA0.
+    exact: (H3 _ _ _).2.
+  - exact: bigcapT_measurable.
+  - exact: mA0.
 (* where we used to use get_nice_image_itv *)
 have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
   apply: (@le_trans _ _ (mu (f @` E_ n))); last first.
     rewrite le_measure ?inE//=.
-    - exact: sub_caratheodory.
-    - apply: sub_caratheodory.
-      rewrite /G_ image_bigcup.
-      exact: bigcup_measurable.
+    - rewrite image_E.
+      apply: bigsetU_measurable => //= i _.
+      exact: mimf.
     - rewrite image_G.
-    - by move=> _/= [r Enr <-]; exists n => //=; exists r.
+      apply: bigcup_measurable => //= i _.
+      rewrite image_E.
+      apply: bigsetU_measurable => //= j _.
+      exact: mimf.
+    - apply: image_subset => //.
+      rewrite /G_.
+      by apply: bigcup_sup => /=.
   have : mu (f @` E_ n) = (\sum_(k < n_ n) `|f (ab_ n k).2 - f (ab_ n k).1|)%:E.
-    (* not in paper *)
+    have ab_1 (j : 'I_(n_ n)) : (ab_ n j).1 \in `[a, b].
+      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
+      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
+    have ab_2 (j : 'I_(n_ n)) : (ab_ n j).2 \in `[a, b].
+      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
+      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
+    (* not in paper <- TODO: explain? *)
     transitivity (\sum_(k < n_ n) mu (f @` `](ab_ n k).1, (ab_ n k).2[%classic)).
     (* /not in paper *)
       rewrite [X in mu [set f x | x in X]] (_ : _ =
@@ -364,41 +363,30 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
         have K2 : {in `](ab_ n i).1, (ab_ n i).2[ &, {homo f : x y / (x <= y)%O}}.
           exact: (Hhomo _ _ _).
         have [b0 [b1 K3]] := continuous_nondecreasing_image_itvoo_itv (H3 _ _ (ltn_ord i)).1 K1 K2.
-        have K : f (ab_ n i).1 <= f (ab_ n i).2.
-          apply: nndf => //=.
-          (* (ab_ n i).1 \in `[a, b] *)
-          have /subset_neitv_oocc := (H3 _ _ (ltn_ord i)).2.
-          move/(_ (H3 _ _ (ltn_ord i)).1).
-          apply => /=.
-          by rewrite in_itv//= lexx ltW// (H3 _ _ (ltn_ord i)).1.
-          (* (ab_ n i).2 \in `[a, b] *)
-          have /subset_neitv_oocc := (H3 _ _ (ltn_ord i)).2.
-          move/(_ (H3 _ _ (ltn_ord i)).1).
-          apply => /=.
-          by rewrite in_itv//= lexx andbT ltW// (H3 _ _ (ltn_ord i)).1.
-          by apply: ltW; exact: (H3 _ _ _).1.
-        move: K; rewrite le_eqVlt => /predU1P[K|K].
-          move: b0 b1 K3 => [|] [|] /= ->.
-          exists (false, false) => //=.
-          by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp//=.
-          exists (true, false) => //=.
-          rewrite setU0 K [in RHS]set_itv_ge ?bnd_simp//= setU0.
-          by rewrite set_itv1.
-          exists (false, false) => //=.
-          by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp//=.
-          exists (false, false) => //=.
-          by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp//=.
-        move: b0 b1 K3 => [|] [|] /= ->.
-        exists (true, false) => /=.
-        by rewrite setU0 setU1itv//= bnd_simp.
-        exists (true, true) => /=.
-        rewrite setU1itv ?bnd_simp//=.
-        rewrite setUitv1 ?bnd_simp//=//.
-        exact/ltW.
-        exists (false, false) => /=.
-        by rewrite set0U setU0.
-        exists (false, true) => /=.
-        by rewrite set0U setUitv1 ?bnd_simp.
+        have : f (ab_ n i).1 <= f (ab_ n i).2.
+          by rewrite nndf//; exact/ltW/(H3 _ _ _).1.
+        rewrite le_eqVlt => /predU1P[K|K].
+        - move: b0 b1 K3 => [|] [|] /= ->.
+          + exists (false, false) => //=.
+            by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp.
+          + exists (true, false) => //=.
+            rewrite setU0 K [in RHS]set_itv_ge ?bnd_simp//= setU0.
+            by rewrite set_itv1.
+          + exists (false, false) => //=.
+            by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp.
+          + exists (false, false) => //=.
+            by rewrite setU0 set0U K set_itv_ge ?bnd_simp// set_itv_ge ?bnd_simp.
+       -  move: b0 b1 K3 => [|] [|] /= ->.
+          + exists (true, false) => /=.
+            by rewrite setU0 setU1itv//= bnd_simp.
+          + exists (true, true) => /=.
+            rewrite setU1itv ?bnd_simp//=.
+            rewrite setUitv1 ?bnd_simp//=.
+            exact/ltW.
+          + exists (false, false) => /=.
+            by rewrite set0U setU0.
+          + exists (false, true) => /=.
+            by rewrite set0U setUitv1 ?bnd_simp.
       move=> /choice[endpoints Hendpoints].
       under eq_bigr do rewrite Hendpoints//.
       transitivity (mu (\big[setU/set0]_(i < n_ n) `](f (ab_ n i).1), (f (ab_ n i).2)[%classic)).
@@ -411,151 +399,101 @@ have H n : (e0%:num%:E <= mu (f @` G_ n))%E.
           rewrite !big_split/=.
           by rewrite setUAC.
         rewrite measureU//=.
-          apply: measurableU.
-            apply: bigsetU_measurable => i _.
-            rewrite /set01; case: ifPn => // _.
-            by apply: sub_caratheodory.
-          apply: bigsetU_measurable => i _.
-          rewrite /set01; case: ifPn => // _.
-          by apply: sub_caratheodory.
-          apply: bigsetU_measurable => i _.
-          by apply: sub_caratheodory.
-          rewrite -subset0 => x [[]].
-            move=> /mem_set /big_ord_setUP[i].
+        + apply: measurableU.
+          * apply: bigsetU_measurable => i _.
+            by rewrite /set01; case: ifPn.
+          * apply: bigsetU_measurable => i _.
+            by rewrite /set01; case: ifPn.
+        + exact: bigsetU_measurable.
+        + rewrite -subset0 => x [[]].
+          * move=> /mem_set /big_ord_setUP[i].
             rewrite inE /set01; case: ifPn => //= i1 ->{x}.
             move=> /mem_set /big_ord_setUP[j].
             rewrite inE/= in_itv/=.
             have [ij|ij|ij] := ltgtP i j.
-              have H : f (ab_ n i).1 <= f (ab_ n j).1.
-                rewrite nndf//.
-                apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-                by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-                apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
-                by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
-                rewrite (le_trans _ (ordered _ i j _))//.
-                rewrite ltW//.
-                by apply: ablt.
+            - have H : f (ab_ n i).1 <= f (ab_ n j).1.
+                rewrite nndf// (le_trans _ (ordered _ i j _))//.
+                exact/ltW/ablt.
               by rewrite ltNge H.
-              have H : f (ab_ n j).2 <= f (ab_ n i).1.
-                rewrite nndf//.
-                apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
-                by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
-                apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-                by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-                by rewrite (le_trans _ (ordered _ j i _)).
+            - have H : f (ab_ n j).2 <= f (ab_ n i).1.
+                by rewrite nndf// (le_trans _ (ordered _ j i _)).
               move=> /andP[_].
               by rewrite ltNge H.
-              by rewrite ij ltxx.
-          move=> /mem_set /big_ord_setUP[i].
-          rewrite inE /set01; case: ifPn => //= i1 ->{x}.
-          move=> /mem_set /big_ord_setUP[j].
-          rewrite inE/= in_itv/=.
-          have [ij|ij|ij] := ltgtP i j.
-            have H : f (ab_ n i).2 <= f (ab_ n j).1.
-              rewrite nndf//.
-              apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-              by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-              apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
-              by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
-              by rewrite (le_trans _ (ordered _ i j _)).
-            by rewrite ltNge H.
-            rewrite !ltNge.
-            have : f (ab_ n j).2 <= f (ab_ n i).2.
-              rewrite nndf//.
-              apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
-              by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
-              apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-              by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-              have := (ordered _ j i ij) => /le_trans; apply.
-              apply/ltW.
-              exact: ablt.
-              move=> ->.
-            by rewrite andbF.
-            by rewrite ij ltxx andbF.
-          rewrite measureU0//=.
-            apply: bigsetU_measurable => i _.
-            by rewrite /set01; case: ifPn => // _; exact: sub_caratheodory.
-            apply: bigsetU_measurable => i _.
-            by rewrite /set01; case: ifPn => // _; exact: sub_caratheodory.
-            by apply: measure_bigsetU_set01.
-          rewrite [X in (X + _)%E](_ : _ = 0).
-            by apply: measure_bigsetU_set01.
-          rewrite add0e.
-          done.
-        rewrite measure_semi_additive_ord//=.
-          by move=> k; apply: sub_caratheodory.
-          apply/trivIsetP => /= i j _ _.
-            rewrite neq_lt => /orP[ij|ij].
-            rewrite -subset0 => x []/=.
-            rewrite !in_itv/= => /andP[K1 K2] /andP[K3 K4].
-            have := lt_trans K3 K2.
-            apply/negP.
-            rewrite -leNgt.
-            rewrite nndf//.
-            apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-            by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-            apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
-            by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
-            by have := (ordered _ i j ij) => /le_trans; apply.
-          rewrite -subset0 => x []/=.
+            by rewrite ij ltxx.
+          * move=> /mem_set /big_ord_setUP[i].
+            rewrite inE /set01; case: ifPn => //= i1 ->{x}.
+            move=> /mem_set /big_ord_setUP[j].
+            rewrite inE/= in_itv/=.
+            have [ij|ij|ij] := ltgtP i j.
+            - have H : f (ab_ n i).2 <= f (ab_ n j).1.
+                by rewrite nndf// (le_trans _ (ordered _ i j _)).
+              by rewrite ltNge H.
+            - rewrite !ltNge.
+              have -> : f (ab_ n j).2 <= f (ab_ n i).2.
+                rewrite nndf// (le_trans (ordered _ j i ij))//.
+                exact/ltW/ablt.
+              by rewrite andbF.
+            - by rewrite ij ltxx andbF.
+        + rewrite measureU0//=.
+          * apply: bigsetU_measurable => i _.
+            by rewrite /set01; case: ifPn.
+          * apply: bigsetU_measurable => i _.
+            by rewrite /set01; case: ifPn.
+          * by apply: measure_bigsetU_set01.
+          * rewrite [X in (X + _)%E](_ : _ = 0).
+              exact: measure_bigsetU_set01.
+            by rewrite add0e.
+      rewrite measure_semi_additive_ord//=.
+      - apply/trivIsetP => /= i j _ _.
+        rewrite neq_lt => /orP[ij|ij].
+        + rewrite -subset0 => x []/=.
+          rewrite !in_itv/= => /andP[K1 K2] /andP[K3 K4].
+          have := lt_trans K3 K2.
+          apply/negP.
+          by rewrite -leNgt nndf// (le_trans (ordered _ i j ij)).
+        + rewrite -subset0 => x []/=.
           rewrite !in_itv/= => /andP[K1 K2] /andP[K3 K4].
           have := lt_trans K1 K4.
           apply/negP.
-          rewrite -leNgt.
-          rewrite nndf//.
-          apply: (subset_neitv_oocc (ablt _ _ (ltn_ord j)) (absub _ _ _)) => //=.
-          by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord j))).
-          apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-          by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-          by have := (ordered _ _ _ ij) => /le_trans; apply.
-          apply: sub_caratheodory.
-          by apply: bigsetU_measurable => i _.
-        apply: eq_bigr => i _.
+          by rewrite -leNgt nndf// (le_trans (ordered _ _ _ ij)).
+      - exact: bigsetU_measurable.
+      - apply: eq_bigr => i _.
         have /(_ _ _)[| | |] := @continuous_nondecreasing_image_itvoo_itv _ (ab_ n i).1 (ab_ n i).2 f.
-          exact: (ablt _ _ (ltn_ord i)).
-          apply: continuous_subspaceW cf => //.
-          apply: subset_neitv_oocc.
-            exact: (ablt _ _ (ltn_ord i)).
-          exact: (H3 _ _ _).2.
-          exact: (Hhomo _ _ _).
-        move=> b0 [b2 H].
-        rewrite H/=.
-        rewrite [RHS]lebesgue_measure_itv//=.
-        rewrite lte_fin.
-        by rewrite [LHS]lebesgue_measure_itv//=.
-      rewrite -sumEFin.
-      apply/eq_bigr => i _.
-      have /(_ _ _)[| | |] := @continuous_nondecreasing_image_itvoo_itv _ (ab_ n i).1 (ab_ n i).2 f.
-        exact: (ablt _ _ (ltn_ord i)).
-        apply: continuous_subspaceW cf => //.
-        apply: subset_neitv_oocc.
-          exact: (ablt _ _ (ltn_ord i)).
-        exact: (H3 _ _ _).2.
-        exact: (Hhomo _ _ _).
-      move=> b0 [b1 H].
+        + exact: (ablt _ _ (ltn_ord i)).
+        + apply: continuous_subspaceW cf => //.
+        + apply: subset_neitv_oocc.
+          * exact: (ablt _ _ (ltn_ord i)).
+          * exact: (H3 _ _ _).2.
+        + exact: (Hhomo _ _ _).
+      move=> b0 [b2 H].
       rewrite H/=.
-      rewrite [LHS]lebesgue_measure_itv// lte_fin /=.
-      rewrite lt_neqAle.
-      have [K1|K1] := eqVneq (f (ab_ n i).1) (f (ab_ n i).2).
-        by rewrite /= K1 subrr normr0.
-      rewrite /= nndf//.
-      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-      apply/ltW.
-      exact: ablt.
-      rewrite ger0_norm.
-        rewrite subr_ge0 nndf//.
-      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-      apply: (subset_neitv_oocc (ablt _ _ (ltn_ord i)) (absub _ _ _)) => //=.
-      by rewrite in_itv/= lexx/= (ltW (ablt _ _ (ltn_ord i))).
-      apply/ltW.
-      exact: ablt.
-      by rewrite EFinB.
-    move=> ->.
-    by rewrite lee_fin e0_prop.
+      rewrite [RHS]lebesgue_measure_itv//=.
+      rewrite lte_fin.
+      by rewrite [LHS]lebesgue_measure_itv//=.
+    (* end of looooong transitivity step *)
+    rewrite -sumEFin.
+    apply/eq_bigr => i _.
+    have /(_ _ _)[| | |] := @continuous_nondecreasing_image_itvoo_itv _ (ab_ n i).1 (ab_ n i).2 f.
+    + exact: (ablt _ _ (ltn_ord i)).
+    + apply: continuous_subspaceW cf => //.
+      apply: subset_neitv_oocc.
+      * exact: (ablt _ _ (ltn_ord i)).
+      * exact: (H3 _ _ _).2.
+      * exact: (Hhomo _ _ _).
+    move=> b0 [b1 H].
+    rewrite H/=.
+    rewrite [LHS]lebesgue_measure_itv// lte_fin /=.
+    rewrite lt_neqAle.
+    have [K1|K1] := eqVneq (f (ab_ n i).1) (f (ab_ n i).2).
+      by rewrite /= K1 subrr normr0.
+    rewrite /= nndf//.
+    exact/ltW/ablt.
+  - rewrite ger0_norm.
+      rewrite subr_ge0 nndf//.
+      exact/ltW/ablt.
+    by rewrite EFinB.
+  move=> ->.
+  by rewrite lee_fin e0_prop.
 have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
   have ndF : {in `[a, b]%classic &, {homo F : n m / n <= m}}.
     by move=> x y /[!inE] xab yab xy; exact: nndf.
@@ -563,9 +501,7 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
     apply: bigcup_open => i _.
     rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
     by apply: bigcup_open => j _; exact: interval_open.
-  have Gab : forall k : nat, G_ k `<=` `]a, b[.
-    move=> k.
-    rewrite /G_.
+  have Gab k : G_ k `<=` `]a, b[.
     apply: bigcup_sub => i /= ki.
     rewrite /E_.
     rewrite -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
@@ -575,39 +511,32 @@ have muFG0 : mu (\bigcap_k [set f x | x in G_ k]) = 0.
       exact: interval_open.
     by rewrite interior_itv.
   have := @measure_image_nondecreasing_fun R a b F ab nndf G_ cf Gab Gopen.
-  by rewrite /= -/A -completed_lebesgue_measureE mfA0.
+  by rewrite /= -/A mfA0.
+have mfG_ n : lebesgue_display.-measurable (f @` G_ n).
+  rewrite image_G; apply: bigcup_measurable => k /= nk.
+  by rewrite image_E; apply: bigsetU_measurable => //= i _; exact: mimf.
 have : (e0%:num%:E <= limn (fun n => mu (F @` G_ n)))%E.
   apply: lime_ge; last exact: nearW.
   apply: ereal_nonincreasing_is_cvgn; apply/nonincreasing_seqP => n.
   rewrite le_measure ?inE //=.
-  - by rewrite image_G; apply: sub_caratheodory; exact: bigcup_measurable.
-  - by rewrite image_G; apply: sub_caratheodory; exact: bigcup_measurable.
-  - apply: image_subset; apply: bigcup_sub => j /= mj x Ejx.
-    by exists j => //=; exact: leq_trans mj.
+  apply: image_subset; apply: bigcup_sub => j /= mj x Ejx.
+  by exists j => //=; exact: leq_trans mj.
 suff: mu (\bigcap_k (f @` G_ k)) = lim (mu (F @` G_ n) @[n --> \oo]).
   by move=> <-; apply/negP; rewrite -ltNge muFG0.
-apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_mu => //=.
+apply/esym/cvg_lim => //=; apply: nonincreasing_cvg_measure => //=.
 - apply: (@le_lt_trans _ _ (mu `[F a, F b])); last first.
-    rewrite completed_lebesgue_measureE lebesgue_measure_itv//= lte_fin.
+    rewrite lebesgue_measure_itv//= lte_fin.
     rewrite (lt_neqAle (f a)) nndf ?andbT.
-    by rewrite bound_itvE ltW.
-    by rewrite bound_itvE ltW.
-    exact: ltW.
-    by case: ifPn => //; rewrite -EFinB ltry.
-  rewrite le_measure//= ?inE.
-    apply: sub_caratheodory; rewrite image_G.
-    by apply: bigcup_measurable => p _; exact: mfE.
-    exact: sub_caratheodory.
-  move=> x/= [r [i _]].
+    + by rewrite bound_itvE ltW.
+    + by rewrite bound_itvE ltW.
+    + exact: ltW.
+    + by case: ifPn => //; rewrite -EFinB ltry.
+  rewrite le_measure//= ?inE// => x/= [r [i _]].
   rewrite /E_ -(bigcup_mkord (n_ i) (fun k => `](ab_ i k).1, (ab_ i k).2[%classic)).
   move=> -[j jni]/= ijr <-{x}.
-  apply: continuous_nondecreasing_image_itvcc => //.
-  exact: ltW.
+  apply: (continuous_nondecreasing_image_itvcc (ltW ab)) => //.
   by exists r => //=; exact: (absub _ _ _ _ ijr).
-- move=> k; apply: sub_caratheodory; rewrite image_G.
-  by apply: bigcup_measurable => p _; exact: mfE.
-- apply: sub_caratheodory; apply: bigcapT_measurable => p.
-  by rewrite image_G; apply: bigcup_measurable => q _; exact: mfE.
+- exact: bigcapT_measurable.
 - move=> x y xy; apply/subsetPset; apply: image_subset; rewrite /G_.
   apply: bigcup_sub => i/= yi.
   by apply: bigcup_sup => //=; rewrite (leq_trans xy).

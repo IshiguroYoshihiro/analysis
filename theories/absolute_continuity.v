@@ -20,9 +20,11 @@ From mathcomp Require Import realfun exp derive borel_hierarchy.
 (*   abs_cont_order a bf == equivalent definition of abs_cont where the       *)
 (*                          (non-overlapping) intervals forming the           *)
 (*                          subdivision or ordered                            *)
-(*            lusinN A f == the function f : R -> R satisfies the Lusin N     *)
-(*                          condition over A : set R                          *)
 (* ```                                                                        *)
+(*                                                                            *)
+(* `lusinN A f`                                                               *)
+(* : the function `f : R -> R` satisfies the Lusin (N) condition over         *)
+(* : `A : set R`                                                              *)
 (*                                                                            *)
 (* `cplt_hull P`                                                              *)
 (* : the relative complement of A in convex hull of A                         *)
@@ -357,7 +359,7 @@ Lemma continuous_nondecreasing_image_itvoo (a b : R) (f : R -> R) :
 Proof.
 move=> cf ndf x/= [r rab] <-{x}.
 move: rab; rewrite in_itv/= => /andP[ar rb].
-have [cabf fa fb] := (continuous_within_itvP f (lt_trans ar rb)).1 cf.
+have [cabf fa fb] := (continuous_within_itvccP f (lt_trans ar rb)).1 cf.
 rewrite in_itv/=; apply/andP; split.
   move: (fa) => /cvg_lim <-//.
   apply: limr_le.
@@ -405,7 +407,7 @@ Lemma continuous_in_nondecreasing_oo_cc (a b : R) (f : R -> R) : a < b ->
   {in `[a, b] &, {homo f : x y / (x <= y)%O}}.
 Proof.
 move=> ab cf ndf.
-have [cf' fxa fxb] := (continuous_within_itvP f ab).1 cf.
+have [cf' fxa fxb] := (continuous_within_itvccP f ab).1 cf.
 move=> r x.
 rewrite !in_itv/=.
 have faz z : a < z -> z <= b -> f a <= f z.
@@ -456,7 +458,7 @@ Lemma continuous_nondecreasing_image_itvoo_itv (a b : R) (f : R -> R) : a < b ->
 Proof.
 move=> ab cf ndf.
 have ndfcc := continuous_in_nondecreasing_oo_cc ab cf ndf.
-have [cf' fxa fxb] := (continuous_within_itvP f ab).1 cf.
+have [cf' fxa fxb] := (continuous_within_itvccP f ab).1 cf.
 have lefab y : f a <= y -> y <= f b -> minr (f a) (f b) <= y <= maxr (f a) (f b).
   by move=> fax xfb; rewrite ge_min fax /= le_max xfb orbT.
 have ge_fa x : a < x -> x < b -> f a <= f x.
@@ -2325,66 +2327,16 @@ Unshelve. all: end_near. Abort.
 
 End lebesgue_measurable.
 
-Section lusinN.
-Context {R : realType}.
-Let mu := @completed_lebesgue_measure R.
-
-Import MeasurableR.
-
-Definition measurable_lusinN (A : set R) (f : R -> R) :=
-  forall E, E `<=` A -> mu.-cara.-measurable E -> mu E = 0 -> mu (f @` E) = 0.
-
-Definition abs_contN (a b : R) (f : R -> R) :=
-  [/\ {within `[a, b]%classic, continuous f},
-      bounded_variation a b f &
-      measurable_lusinN `[a ,b]%classic f].
-
-Fail Lemma lusinN_total_variation a b f : abs_contN a b f ->
-  lusinN `[a, b]%classic (total_variation a ^~ f).
-
-Lemma abs_contN_dominates a b (f : cumulative R R) : abs_contN a b f ->
-  mu `<< lebesgue_stieltjes_measure f.
-Proof.
-Abort.
-
-Fail Lemma differentiable_lusinN a b f : {in `]a, b[%classic, differentiable f} ->
-  lusinN `]a, b[%classic f.
-
-End lusinN.
-
-Section lusinN_without_measurability.
-Context {R : realType}.
-Local Notation mu := (@completed_lebesgue_measure R).
-
-Definition lusinN (A : set R) (f : R -> R) :=
-  forall E, E `<=` A -> mu E = 0%E -> mu (f @` E) = 0%E.
-
-Let null_cara (E : set R) : mu E = 0%E -> mu.-cara.-measurable E.
-Proof.
-move=> E0; apply: le_caratheodory_measurable => X/=.
-have -> : (wlength idfun)^*%mu (X `&` E) = 0%E.
-  apply/eqP; rewrite eq_le outer_measure_ge0 andbT -E0.
-  by rewrite le_outer_measure.
-by rewrite add0e le_outer_measure.
-Qed.
-
-Lemma lusinNP (A : set R) f : measurable_lusinN A f <-> lusinN A f.
-Proof.
-by split=> hf E EA muE0; apply: (hf _ EA) => //=; exact: null_cara.
-Qed.
-
-End lusinN_without_measurability.
-
 Section lusinN_lebesgue_measure.
 Context {R : realType}.
 Local Notation mu := (@lebesgue_measure R).
 
-Definition lusinN_borel (A : set R) (f : R -> R) :=
-  forall E, E `<=` A -> R.-open.-measurable E -> mu E = 0%E ->
-    mu (f @` E) = 0%E.
+Definition measurable_lusinN (A : set R) (f : R -> R) :=
+  forall E, E `<=` A -> R.-open.-measurable E -> mu E = 0 ->
+    mu (f @` E) = 0.
 
-Definition lusinN_borel_ene (A : set R) (f : R -> R) :=
-  forall E, E `<=` A -> mu E = 0%E -> mu (f @` E) = 0%E.
+Definition lusinN (A : set R) (f : R -> R) :=
+  forall E, E `<=` A -> mu E = 0 -> mu (f @` E) = 0.
 
 Import MeasurableR.
 
@@ -2435,8 +2387,9 @@ rewrite (eq_eseriesr (fun k _ => muB N k)).
 by rewrite (le_trans (ltW (sumB N)))// lee_fin ltW.
 Unshelve. all: by end_near. Qed.
 
-Lemma lusinN_borelP (A : set R) f : R.-open.-measurable A ->
-  lusinN_borel A f <-> lusinN_borel_ene A f.
+(* Vasile Ene, Real Function - Current Topics, LNM 1603, Remark 2.18.1, p.71 *)
+Lemma lusinNP (A : set R) f : R.-open.-measurable A ->
+  measurable_lusinN A f <-> lusinN A f.
 Proof.
 move=> mA; split=> hf E EA.
 - move=> /null_approx[H mH [EH H0]].
@@ -2452,38 +2405,6 @@ move=> mA; split=> hf E EA.
 Qed.
 
 End lusinN_lebesgue_measure.
-
-Section lusinN_new.
-Context {R : realType}.
-Let mu := @lebesgue_measure R.
-
-Import MeasurableR.
-
-Definition lusinN_new (A : set R) (f : R -> R) :=
-  forall E, E `<=` A -> mu E = 0 -> mu (f @` E) = 0.
-
-(* Remark 2.18.1, p.71 in Real Functions - Current Topics *)
-Lemma lusinN_measurable A f : measurable A ->
-  ((forall E : set R, E `<=` A -> R.-open.-measurable E -> mu E = 0 -> mu (f @` E) = 0) <->
-  lusinN_new A f).
-Proof.
-move=> mA.
-have mueE : mu = (wlength idfun)^*%mu by [].
-split => H.
-  move=> Z ZA Z0.
-  have mueZ0 : ((wlength idfun)^*%mu Z < +oo)%E by rewrite -mueE Z0.
-  have [X] := lebesgue_measure_Gdelta_approx mueZ0.
-  rewrite -/mu => -[X0oo ZX oX decX].
-  rewrite -mueE => UXE.
-  have : mu (f @` Z) = mu (f @` (\bigcap_k X k)).
-    apply/eqP; rewrite eq_le; apply/andP; split.
-      apply: le_outer_measure.
-      apply: image_subset.
-      by move=> x + n _; apply: ZX.
-    have mX i : measurable (f @` (X i)).
-Abort.
-
-End lusinN_new.
 
 Definition preimages_gt1 {R: Type} (X : set R) (Y : set R) (f : R -> R) : set R :=
   Y `&` [set y | (* (X `&` f @^-1` [set y] !=set0) /\ *)

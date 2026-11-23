@@ -29,7 +29,7 @@ Context {R : realType}.
 Variables a b : R.
 Hypotheses ab : a < b.
 
-Local Notation mu := (@completed_lebesgue_measure R).
+Local Notation mu := (@lebesgue_measure R).
 
 Variable f : R -> R.
 
@@ -46,9 +46,8 @@ move=> lusinNH Z Zab/= mZ mZ0.
 have muZ_lty : ((wlength idfun)^*%mu Z < +oo)%E.
   move: mZ0.
   rewrite /mu/=.
-  (* TODO: lemma to avoid unfold *)
-  rewrite /completed_lebesgue_stieltjes_measure.
-  by rewrite /completed_measure_extension => ->.
+  rewrite /lebesgue_stieltjes_measure.
+  by rewrite /measure_extension => ->.
 move : muZ_lty => /(@lebesgue_measure_Gdelta_approx R Z).
 move=> [G [G0oo ZG oG Gnonincreasing muZ]].
 pose Z1 := `]a, b[ `&` \bigcap_i G i.
@@ -66,7 +65,6 @@ suff: mu (f @` Z1) = 0.
 have H1 : mu (H @` Z1) = mu (\bigcap_i (H @` (G i))) /\
        mu (\bigcap_i (H @` (G i))) = 0.
   split.
-    rewrite completed_lebesgue_measureE.
     have := @measure_image_nondecreasing_fun R a b H ab _ G.
     (* mismatch Z1 should be an intersection of G's... *)
     admit.
@@ -192,7 +190,7 @@ split => //.
 apply: ene6_converse => //.
 move=> X abX cmX.
 (* lusinN is not necessary for completed lebesgue measure *)
-rewrite completed_lebesgue_measureE muE.
+rewrite muE.
 move=> N0.
 have [] := @lebesgue_measure_Gdelta_approx _ X.
   by rewrite N0.

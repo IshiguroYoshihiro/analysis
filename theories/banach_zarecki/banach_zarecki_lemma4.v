@@ -268,20 +268,6 @@ Qed.
 
 Local Close Scope ereal_scope.
 
-Let ex_perfect_set (cmf : cumulative R R) (cZ : set R) :
-  let f := cmf in
-  cZ `<=` `[a, b] ->
-  {within `[a, b], continuous f} ->
-  {in `[a, b], {homo f : x y / (x <= y)}} ->
-  bounded_variation a b f ->
-  exists n, exists I : nat -> R * R,
-  (forall i, trivIset setT (fun i => `[(I i).1, (I i).2]%classic) /\
-    `](I i).1, (I i).2[ `<=` cZ) /\
-     (\sum_(0 <= i < n) `|f (I i).2 - f (I i).1|)%:E
-     = completed_lebesgue_stieltjes_measure f cZ.
-Proof.
-Abort.
-
 End ene4.
 
 Section ene4_cover.

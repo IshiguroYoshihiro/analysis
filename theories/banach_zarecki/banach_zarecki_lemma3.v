@@ -45,7 +45,8 @@ have /= mZ : (wlength idfun)^*%mu.-cara.-measurable Z.
   apply: sub_caratheodory.
   rewrite RGenOpenSets.measurableE//.
   by apply: compact_measurable => //.
-exact: (lusinNf Z Zab mZ muZ0).
+apply: lusinNf => //.
+exact: compact_measurable.
 Qed.
 
 Let measurable_image_setI_set1 (f : R -> R) (A : set R) (x : R) :
@@ -141,187 +142,6 @@ have := measure0_image_setI_set1 f A x.
 rewrite /lebesgue_measure/lebesgue_stieltjes_measure/measure_extension.
 by move->; rewrite add0r.
 Qed.
-
-(* testing strict increasing version *)
-Lemma image_measure0_Lusin_increasing (F : R -> R) :
-  {within `[a, b], continuous F} ->
-  {in `[a, b] &, {homo F : x y / x < y}} ->
-  (forall Z : set R, Z `<=` `[a, b]%classic ->
-      compact Z ->
-      mu Z = 0 ->
-      mu (F @` Z) = 0) ->
-  measurable_lusinN `[a, b] F.
-Proof.
-move=> cF incF lusinN'.
-apply: contrapT.
-move=> /existsNP[Z]/not_implyP[Zab/=] /not_implyP[mZ] /not_implyP[muZ0].
-move=> /eqP; rewrite neq_lt ltNge measure_ge0/= => muFZ0.
-have Zoo : (mu Z < +oo)%E.
-  apply: (@le_lt_trans _ _ (mu `[a, b])); first exact: le_outer_measure.
-  by rewrite lebesgue_measure_itv/= lte_fin ab -EFinD ltry.
-have [U_ [U0oo ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
-set Z1 := `]a, b[ `&` \bigcap_n U_ n.
-have muZ10 : mu Z1 = 0.
-  apply/eqP; rewrite -measure_le0/= -muZ0.
-  rewrite completed_lebesgue_measureE.
-  rewrite /lebesgue_measure/lebesgue_stieltjes_measure/measure_extension mZIU.
-  apply: le_outer_measure.
-  exact: subIsetr.
-have Z1ab : Z1 `<=` `]a, b[ by exact: subIsetl.
-have Z1oo : (mu (F @` Z1) < +oo)%E.
-  apply: (@le_lt_trans _ _ (mu (F @` `[a, b]))).
-    apply: le_outer_measure.
-    apply: image_subset.
-    apply: (subset_trans Z1ab).
-    exact: subset_itv_oo_cc.
-  rewrite continuous_increasing_image_itv//.
-  rewrite lebesgue_measure_itv lte_fin incF// -?EFinB ?ltry//.
-    by rewrite boundl_in_itv/= bnd_simp ltW.
-  by rewrite boundr_in_itv bnd_simp ltW.
-have gZ1 : Gdelta Z1.
-  apply: GdeltaIr => //.
-  by exists U_.
-(* using lemma2 *)
-have mFZ1 : measurable (F @` Z1).
-apply: measurable_image_Gdelta_set_nondecreasing_fun Z1ab gZ1 => //.
-  by move=> ? ? ? ?; rewrite le_eqVlt => /predU1P[->//|xy]; exact/ltW/incF.
-have ZZ1 : Z `\ a `\ b `<=` Z1.
-  rewrite subsetI; split.
-  - rewrite -(setIidr Zab).
-    rewrite -(setU1itv false) ?bnd_simp ?ltW//.
-    rewrite setIUl setDUl.
-    rewrite setIC -setIDA setDv setI0 set0U.
-    rewrite -(setUitv1 true) ?bnd_simp ?ltW//.
-    rewrite setIUl 2!setDUl -2!setIDA.
-    rewrite -setIDA (setIC [set b]) -setIDA setDv setI0 setU0.
-    exact: subIsetl.
-  - apply: sub_bigcap => n _.
-    apply: subset_trans (ZU n).
-    rewrite setDDl.
-    exact: subDsetl.
-have FZ1oo : (mu (F @` Z1) < +oo)%E.
-  apply: (@le_lt_trans _ _ (mu (F @` `]a, b[))).
-    apply: le_outer_measure.
-    exact: image_subset.
-  apply: (@le_lt_trans _ _ (mu `[F a, F b])).
-    apply: le_outer_measure.
-    rewrite -continuous_increasing_image_itv => //.
-    apply: image_subset.
-    exact: subset_itv_oo_cc.
-  rewrite lebesgue_measure_itv.
-  by case: ifP=> //; rewrite -EFinB ltry.
-have FZ10 : (0 < mu (F @` Z1))%E.
-  apply: (@lt_le_trans _ _ (mu (F @` (Z `\ a `\ b)))).
-    by rewrite 2!measure_image_setD_set1.
-  apply: le_outer_measure.
-  exact: image_subset.
-set e := fine (mu (F @` Z1)) / 2.
-have e0 : 0 < e by rewrite divr_gt0 ?fine_gt0 ?FZ1oo ?FZ10.
-have [K [cK KFZ1 Z1Ke]] := lebesgue_regularity_inner mFZ1 FZ1oo e0.
-set K1 := `[a, b] `&` F @^-1` K.
-have K1K : F @` K1 = K.
-  rewrite eqEsubset; split.
-    apply: (subset_trans sub_image_setI).
-    apply: subIset; right.
-    exact: image_preimage_subset.
-  move=> r Kr/=.
-  pose L := `[a, b] `&` preimage F [set r].
-  have L0 : L !=set0.
-    have [] := @IVT _ _ _ _ r (ltW ab) cF.
-      have Fab : F a < F b.
-        apply: incF => //.
-        - by rewrite boundl_in_itv bnd_simp ltW.
-        - by rewrite boundr_in_itv bnd_simp ltW.
-      rewrite minElt Fab.
-      rewrite maxElt Fab.
-      move: Kr => /KFZ1[t [/= tab _] <-].
-      rewrite 2?ltW ?incF//.
-      - by rewrite bound_itvE// ltW.
-      - exact: subset_itv_oo_cc.
-      - by move: tab; rewrite in_itv/= => /andP[].
-      - exact: subset_itv_oo_cc.
-      - by rewrite bound_itvE// ltW.
-      - by move: tab; rewrite in_itv/= => /andP[].
-    by move=> x xab; rewrite /L; move <-; exists x.
-  move: (L0) => [r'] /[dup] Lr'.
-  rewrite /L/= => [[r'ab Fr'r]].
-  exists r' => //.
-  rewrite /K1/=; split => //.
-  by rewrite Fr'r.
-have : (0 < mu (F @` K1))%E.
-  rewrite K1K.
-  have := Z1Ke.
-  rewrite measureD//; first exact: compact_measurable.
-  rewrite setIidr//.
-  rewrite lteBlDl.
-    rewrite ge0_fin_numE//.
-    apply: le_lt_trans FZ1oo.
-    exact: le_outer_measure.
-  rewrite -lteBlDr//.
-  apply: le_lt_trans.
-  rewrite sube_ge0// /e EFinM fineK; first by rewrite ge0_fin_numE.
-  rewrite muleC gee_pMl//.
-  rewrite lee_fin invf_le1//.
-  by rewrite -[leLHS](mulr1n 1) ler_nat.
-apply/negP.
-rewrite -leNgt.
-rewrite measure_le0/=.
-apply/eqP.
-apply: lusinN'.
-- exact: subIsetl.
-- rewrite /K1 setIC.
-  rewrite -(setIid `[a, b]%classic) setICA.
-  apply: compact_closedI => //; first exact: segment_compact.
-  rewrite closed_setIS; first exact: interval_closed.
-  apply: (continuous_closedP _).1 => //.
-  exact: compact_closed.
-- apply/eqP; rewrite -measure_le0/= -muZ10.
-  have bijF := continuous_increasing_set_bij ab cF incF.
-  have [F' FF'] := pPbij bijF.
-  rewrite /K1 FF' -inv_sub_image.
-    apply: (subset_trans KFZ1).
-    rewrite -continuous_increasing_image_itv//.
-    apply: image_subset.
-    apply: (subset_trans Z1ab).
-    exact: subset_itv_oo_cc.
-  apply: le_outer_measure.
-  rewrite image_sub.
-  apply: subset_trans (@inv_image_sub _ _ _ _ _ Z1 _) => /=; last first.
-    apply: (subset_trans Z1ab).
-    exact: subset_itv_oo_cc.
-  rewrite invV.
-  by move=> ? ?/=; rewrite -FF'; exact: KFZ1.
-Abort.
-
-  (* Lemma open_subset_itvoocc S : open S -> S `<=` `[a, b] -> S `<=` `]a, b[. *)
-  (*   move=> oS Sab. *)
-  (*   apply: (@subset_trans _ [set` Rhull S]). *)
-  (*     exact: sub_Rhull. *)
-  (*     (* lemma? *) *)
-  (*   have itv_closure_subset : {in (@is_interval R) : set (set R) &, {mono closure : i j / i `<=` j}}. *)
-  (*     move=> i j itvi itvj. *)
-  (*     rewrite propeqE; split. *)
-  (*       admit. *)
-  (*     exact: closure_subset. *)
-  (*   rewrite -itv_closure_subset; last 2 first. *)
-  (*       admit. *)
-  (*     admit. *)
-  (*   rewrite closure_itvoo //. *)
-  (*   (* lemma? *) *)
-  (*   have closurer_subset X (x y : R) : X `<=` `[x, y] -> closure X `<=` `[x, y]. *)
-  (*     admit. *)
-  (*   apply: closurer_subset. *)
-  (*   (* lemma? *) *)
-  (*   have sub_Rhullr (i : interval R) : S `<=` [set` i] -> [set` Rhull S] `<=` [set` i]. *)
-  (*     admit. *)
-  (*   by apply: sub_Rhullr. *)
-
-
-(* NB: available as PR https://github.com/math-comp/analysis/pull/1809 *)
-Lemma compact_unif_continuousP f :
-  {within `[a, b], continuous f} <-> @unif_continuous (subspace `[a, b]) R f.
-Proof.
-Admitted.
 
 Section main_lemma.
 
@@ -695,8 +515,7 @@ have [U_ [U0oo ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
 set Z1 := `]a, b[ `&` \bigcap_n U_ n.
 have muZ10 : mu Z1 = 0.
   apply/eqP; rewrite -measure_le0/= -muZ0.
-  rewrite completed_lebesgue_measureE.
-  rewrite /lebesgue_measure/lebesgue_stieltjes_measure/measure_extension mZIU.
+  rewrite /lebesgue_measure /lebesgue_stieltjes_measure /measure_extension mZIU.
   apply: le_outer_measure.
   exact: subIsetr.
 have gZ1 : Gdelta Z1.
@@ -875,8 +694,7 @@ have [U_ [U0oo ZU oU _ mZIU]] := lebesgue_measure_Gdelta_approx Zoo.
 set Z1 := `]a, b[ `&` \bigcap_n U_ n.
 have muZ10 : mu Z1 = 0.
   apply/eqP; rewrite -measure_le0/= -muZ0.
-  rewrite completed_lebesgue_measureE.
-  rewrite /lebesgue_measure/lebesgue_stieltjes_measure/measure_extension mZIU.
+  rewrite /lebesgue_measure /lebesgue_stieltjes_measure /measure_extension mZIU.
   apply: le_outer_measure.
   exact: subIsetr.
 have gZ1 : Gdelta Z1.
