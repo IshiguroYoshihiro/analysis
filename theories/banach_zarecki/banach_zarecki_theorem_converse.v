@@ -39,7 +39,7 @@ Let H := fun x => fine (total_variation a ^~ f x).
 Lemma ene6_converse :
   {within `[a, b], continuous f} ->
   bounded_variation a b f ->
-  lusinN `[a, b] H -> lusinN `[a, b] f.
+  measurable_lusinN `[a, b] H -> measurable_lusinN `[a, b] f.
 Proof.
 move=> cf abf.
 move=> lusinNH Z Zab/= mZ mZ0.
@@ -112,7 +112,7 @@ Context {R : realType}.
 
 (* p.225, Chapter VII, Theorem 6.1 *)
 Lemma abs_cont_lusinN (a b : R) (f : R -> R) :
-  abs_cont a b f -> lusinN `[a, b] f.
+  abs_cont a b f -> measurable_lusinN `[a, b] f.
 Proof.
 
 Abort.
@@ -134,7 +134,7 @@ Theorem Banach_Zarecki_converse (f : R -> R) :
   abs_cont a b f ->
   [/\ {within `[a, b], continuous f},
   bounded_variation a b f &
-  lusinN `[a, b] f].
+  measurable_lusinN `[a, b] f].
 Proof.
 have muE : (@lebesgue_measure R) = (wlength idfun)^*%mu by [].
 move=> acf.

@@ -76,7 +76,7 @@ Let F : {fun `[a, b]%classic >-> [set: R]} := f.
 Lemma Banach_Zarecki_nondecreasing :
   {within `[a, b], continuous f} ->
   {in `[a, b]  &, {homo f : x y / x <= y}} ->
-  lusinN `[a, b] f ->
+  measurable_lusinN `[a, b] f ->
   abs_cont a b f.
 Proof.
 move=> cf nndf lf.

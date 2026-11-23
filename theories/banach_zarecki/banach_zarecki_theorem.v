@@ -33,7 +33,7 @@ Theorem Banach_Zarecki (f : R -> R) :
   lusinN `[a, b] f ->
   abs_cont a b f.
 Proof.
-move=> cf bvf Lf.
+move=> cf bvf /lusinNP Lf.
 apply: total_variation_AC => //. (* lemma 8 *)
 apply: Banach_Zarecki_nondecreasing => //. (* lemma 7 *)
 - exact: total_variation_continuous.

@@ -2325,20 +2325,19 @@ Unshelve. all: end_near. Abort.
 
 End lebesgue_measurable.
 
-
 Section lusinN.
 Context {R : realType}.
 Let mu := @completed_lebesgue_measure R.
 
 Import MeasurableR.
 
-Definition lusinN (A : set R) (f : R -> R) :=
+Definition measurable_lusinN (A : set R) (f : R -> R) :=
   forall E, E `<=` A -> mu.-cara.-measurable E -> mu E = 0 -> mu (f @` E) = 0.
 
 Definition abs_contN (a b : R) (f : R -> R) :=
   [/\ {within `[a, b]%classic, continuous f},
       bounded_variation a b f &
-      lusinN `[a ,b]%classic f].
+      measurable_lusinN `[a ,b]%classic f].
 
 Fail Lemma lusinN_total_variation a b f : abs_contN a b f ->
   lusinN `[a, b]%classic (total_variation a ^~ f).
@@ -2357,7 +2356,7 @@ Section lusinN_without_measurability.
 Context {R : realType}.
 Local Notation mu := (@completed_lebesgue_measure R).
 
-Definition lusinN_ene (A : set R) (f : R -> R) :=
+Definition lusinN (A : set R) (f : R -> R) :=
   forall E, E `<=` A -> mu E = 0%E -> mu (f @` E) = 0%E.
 
 Let null_cara (E : set R) : mu E = 0%E -> mu.-cara.-measurable E.
@@ -2369,7 +2368,7 @@ have -> : (wlength idfun)^*%mu (X `&` E) = 0%E.
 by rewrite add0e le_outer_measure.
 Qed.
 
-Lemma lusinNP (A : set R) f : lusinN A f <-> lusinN_ene A f.
+Lemma lusinNP (A : set R) f : measurable_lusinN A f <-> lusinN A f.
 Proof.
 by split=> hf E EA muE0; apply: (hf _ EA) => //=; exact: null_cara.
 Qed.
@@ -4388,7 +4387,7 @@ apply: subsetI_eq0. (* TODO: generalize this lemma to trivIset *)
   rewrite [X in _ `<=` X]H.
   apply: interval_ooS.
   rewrite has_bound_inf_sup//.
-  exact: has_lbound_contiguous_itvs.
+    exact: has_lbound_contiguous_itvs.
   exact: has_ubound_contiguous_itvs.
 Qed.
 

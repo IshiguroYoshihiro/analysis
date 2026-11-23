@@ -1544,7 +1544,7 @@ Context {R : realType} (a b : R) (ab : a < b) (f : R -> R).
 
 Hypotheses (cf : {within `[a, b], continuous f})
            (bvf : bounded_variation a b f)
-           (lusinf : lusinN `[a, b] f).
+           (lusinf : measurable_lusinN `[a, b] f).
 Definition H := fun x => fine (total_variation a ^~ f x).
 
 (* "Clearly, H is increasing and continuous. " *)
@@ -1557,7 +1557,7 @@ Import MeasurableR.
 Local Notation mu := (@lebesgue_measure R).
 
 (* https://math.stackexchange.com/questions/520209/removing-isolated-points-to-get-a-perfect-set *)
-Lemma ene6_direct : lusinN `[a, b] H.
+Lemma ene6_direct : measurable_lusinN `[a, b] H.
 Proof.
 apply: contrapT => nl.
 (* use lemma 3 *)

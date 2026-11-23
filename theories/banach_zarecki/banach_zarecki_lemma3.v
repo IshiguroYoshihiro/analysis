@@ -34,7 +34,7 @@ Local Notation mu := (@lebesgue_measure R).
 Lemma Lusin_image_measure0 (f : R -> R) :
   {within `[a, b], continuous f} ->
   {in `[a, b] &, {homo f : x y / x <= y}} ->
-  lusinN `[a, b] f ->
+  measurable_lusinN `[a, b] f ->
   forall Z : set R, [/\ Z `<=` `[a, b]%classic,
       compact Z &
       mu Z = 0] ->
@@ -150,7 +150,7 @@ Lemma image_measure0_Lusin_increasing (F : R -> R) :
       compact Z ->
       mu Z = 0 ->
       mu (F @` Z) = 0) ->
-  lusinN `[a, b] F.
+  measurable_lusinN `[a, b] F.
 Proof.
 move=> cF incF lusinN'.
 apply: contrapT.
@@ -679,7 +679,7 @@ Lemma image_measure0_Lusin_nondecreasing (F : R -> R) :
       compact R Z ->
       mu Z = 0 ->
       mu (F @` Z) = 0) ->
-  lusinN `[a, b] F.
+  measurable_lusinN `[a, b] F.
 Proof.
 move=> cF ndF HZ.
 (* Suppose on the contrary that F \notin (N) on `[a, b] *)
@@ -859,7 +859,7 @@ Lemma image_measure0_Lusin_nondecreasing_isolated0 (F : R -> R) :
       isolated Z = set0 (* TODO: change compact to perfect set instead *) ->
       mu Z = 0 ->
       mu (F @` Z) = 0) ->
-  lusinN `[a, b] F.
+  measurable_lusinN `[a, b] F.
 Proof.
 move=> cF ndF HZ.
 (* Suppose on the contrary that F \notin (N) on `[a, b] *)
