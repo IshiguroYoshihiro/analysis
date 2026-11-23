@@ -2325,6 +2325,7 @@ Unshelve. all: end_near. Abort.
 
 End lebesgue_measurable.
 
+
 Section lusinN.
 Context {R : realType}.
 Let mu := @completed_lebesgue_measure R.
@@ -2352,6 +2353,107 @@ Fail Lemma differentiable_lusinN a b f : {in `]a, b[%classic, differentiable f} 
 
 End lusinN.
 
+Section lusinN_without_measurability.
+Context {R : realType}.
+Local Notation mu := (@completed_lebesgue_measure R).
+
+Definition lusinN_ene (A : set R) (f : R -> R) :=
+  forall E, E `<=` A -> mu E = 0%E -> mu (f @` E) = 0%E.
+
+Let null_cara (E : set R) : mu E = 0%E -> mu.-cara.-measurable E.
+Proof.
+move=> E0; apply: le_caratheodory_measurable => X/=.
+have -> : (wlength idfun)^*%mu (X `&` E) = 0%E.
+  apply/eqP; rewrite eq_le outer_measure_ge0 andbT -E0.
+  by rewrite le_outer_measure.
+by rewrite add0e le_outer_measure.
+Qed.
+
+Lemma lusinNP (A : set R) f : lusinN A f <-> lusinN_ene A f.
+Proof.
+by split=> hf E EA muE0; apply: (hf _ EA) => //=; exact: null_cara.
+Qed.
+
+End lusinN_without_measurability.
+
+Section lusinN_lebesgue_measure.
+Context {R : realType}.
+Local Notation mu := (@lebesgue_measure R).
+
+Definition lusinN_borel (A : set R) (f : R -> R) :=
+  forall E, E `<=` A -> R.-open.-measurable E -> mu E = 0%E ->
+    mu (f @` E) = 0%E.
+
+Definition lusinN_borel_ene (A : set R) (f : R -> R) :=
+  forall E, E `<=` A -> mu E = 0%E -> mu (f @` E) = 0%E.
+
+Import MeasurableR.
+
+(* NB: I am pretty sure we have already proved something like that somewhere... *)
+(* "a measurable set is always contained in a G_delta-set having the same outer measure" (Ene, p.71, Remark 2.18.1) *)
+Lemma null_approx (E : set R) : mu E = 0%E ->
+  exists2 G, R.-open.-measurable G & E `<=` G /\ mu G = 0%E.
+Proof.
+move=> muE0.
+have /choice[B hB] : forall n, exists B : (set R)^nat,
+    [/\ forall k, R.-ocitv.-measurable (B k),
+        measurable_cover E B &
+        (\sum_(k <oo) wlength idfun (B k) < n.+1%:R^-1%:E)%E].
+  move=> n.
+  have : (mu E < n.+1%:R^-1%:E)%E by rewrite muE0 lte_fin invr_gt0.
+  rewrite /mu/= /lebesgue_stieltjes_measure/= /measure_extension /mu_ext.
+  move=> /ereal_inf_lt[_ [C + <-] hlt].
+  rewrite /measurable_cover/= => -[hC1 hC2].
+  exists C; split => //; split => // i.
+  have := hC1 i.
+  rewrite -RGenOpenSets.measurableE.
+  rewrite /measurable/=.
+  exact: sub_sigma_algebra.
+have ocitv_mB n k : R.-ocitv.-measurable (B n k) by have [] := hB n.
+have open_mB n k : lebesgue_display.-measurable (B n k).
+   by have [_ [+ _] _] := hB n; exact.
+have EUB n : E `<=` \bigcup_k B n k by have [_ [_ ?] _] := hB n.
+have sumB n : (\sum_(k <oo) wlength idfun (B n k) < n.+1%:R^-1%:E)%E.
+   by have [] := hB n.
+have muB n k : mu (B n k) = wlength idfun (B n k).
+  rewrite /mu/= /lebesgue_stieltjes_measure/= /measure_extension/=.
+  by rewrite measurable_mu_extE.
+have mU n : measurable (\bigcup_k B n k) by exact: bigcupT_measurable.
+pose G := \bigcap_n \bigcup_k B n k.
+have mG : measurable G by exact: bigcapT_measurable.
+exists G => //; split; first by move=> x Ex n _; exact: EUB.
+apply/eqP; rewrite eq_le measure_ge0 andbT.
+apply/lee_addgt0Pr => e e0; rewrite add0e.
+near \oo => N.
+have /= Ne : N.+1%:R^-1 < (PosNum e0)%:num.
+   by near: N; exact: near_infty_natSinv_lt.
+have muGB : (mu G <= mu (\bigcup_k B N k))%E.
+  by rewrite le_measure ?inE//; exact: bigcap_inf.
+have muUB : (mu (\bigcup_k B N k) <= \sum_(k <oo) mu (B N k))%E.
+  exact: measure_sigma_subadditive.
+rewrite (le_trans muGB)// (le_trans muUB)//.
+rewrite (eq_eseriesr (fun k _ => muB N k)).
+by rewrite (le_trans (ltW (sumB N)))// lee_fin ltW.
+Unshelve. all: by end_near. Qed.
+
+Lemma lusinN_borelP (A : set R) f : R.-open.-measurable A ->
+  lusinN_borel A f <-> lusinN_borel_ene A f.
+Proof.
+move=> mA; split=> hf E EA.
+- move=> /null_approx[H mH [EH H0]].
+  have mAH : R.-open.-measurable (A `&` H) by exact: measurableI.
+  have muAH : mu (A `&` H) = 0%E.
+    by apply/eqP; rewrite eq_le measure_ge0 andbT -H0 le_measure ?inE//.
+  apply/eqP; rewrite eq_le measure_ge0 andbT.
+  rewrite -(hf _ (@subIsetl _ A H) mAH muAH).
+  rewrite le_outer_measure//.
+  apply: image_subset => x Ex.
+  by split; [exact: EA | exact: EH].
+- by move=> _; exact: hf EA.
+Qed.
+
+End lusinN_lebesgue_measure.
+
 Section lusinN_new.
 Context {R : realType}.
 Let mu := @lebesgue_measure R.
@@ -2363,20 +2465,18 @@ Definition lusinN_new (A : set R) (f : R -> R) :=
 
 (* Remark 2.18.1, p.71 in Real Functions - Current Topics *)
 Lemma lusinN_measurable A f : measurable A ->
-  ((forall E : set R, E `<=` A -> measurable E -> mu E = 0 -> mu (f @` E) = 0) <->
+  ((forall E : set R, E `<=` A -> R.-open.-measurable E -> mu E = 0 -> mu (f @` E) = 0) <->
   lusinN_new A f).
 Proof.
 move=> mA.
 have mueE : mu = (wlength idfun)^*%mu by [].
 split => H.
   move=> Z ZA Z0.
-
   have mueZ0 : ((wlength idfun)^*%mu Z < +oo)%E by rewrite -mueE Z0.
   have [X] := lebesgue_measure_Gdelta_approx mueZ0.
   rewrite -/mu => -[X0oo ZX oX decX].
   rewrite -mueE => UXE.
-
-  have : mu (f @` Z) = mu (f @` \bigcap_k X k).
+  have : mu (f @` Z) = mu (f @` (\bigcap_k X k)).
     apply/eqP; rewrite eq_le; apply/andP; split.
       apply: le_outer_measure.
       apply: image_subset.
