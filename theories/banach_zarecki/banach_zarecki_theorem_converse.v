@@ -121,7 +121,137 @@ Section BZ_converse.
 
 Context {R : realType}.
 Variables a b : R.
-Hypotheses ab : a < b.
+Implicit Type (f : R -> R).
+
+Lemma abs_cont_continuous f : abs_cont a b f -> {within `[a, b], continuous f}.
+Proof.
+have [|] := leP b a.
+  rewrite le_eqVlt => /predU1P[|].
+    move=> -> _.
+    rewrite set_itv1.
+    exact: continuous_subspace1.
+  move=> ba _.
+  rewrite set_itv_ge.
+    by rewrite bnd_simp -ltNge.
+  exact: continuous_subspace0.
+move=> ab acf.
+apply/continuous_within_itvccP => //; split.
+- move=> x xab.
+  apply/cvg_ballP => e e0.
+  have [d'] := acf (PosNum e0).
+  set d := minr (minr (x - a) (b - x)) (d'%:num / 4).
+  have d0 : 0 < d.
+    rewrite !lt_min -andb_assoc; apply/and3P; split.
+    + rewrite subr_gt0.
+      by move: xab; rewrite in_itv/= => /andP[].
+    + rewrite subr_gt0.
+      by move: xab; rewrite in_itv/= => /andP[].
+    by rewrite pmulr_lgt0.
+  have dd' : d < d'%:num.
+    rewrite gt_min; apply/orP; right.
+    rewrite gtr_pMr// invf_lt1//.
+    by rewrite (_ : 1 = 1%:R)// ltr_nat.
+  set l := x - d.
+  set r := x + d.
+  have al : a <= l.
+    rewrite lerBrDr -lerBrDl.
+    by rewrite !ge_min lexx.
+  have rb : r <= b.
+    rewrite -lerBrDl.
+    by rewrite !ge_min lexx orbT.
+  have H : [/\ forall i : nat, (i < 1)%N ->
+                      (l, r).1 < (l, r).2 /\ `](l, r).1, (l, r).2[ `<=` `[a, b],
+       trivIset `I_1 (fun=> `](l, r).1, (l, r).2[%classic)
+     & \sum_(k < 1) ((l, r).2 - (l, r).1) < d'%:num].
+    split.
+    + move=> i _ /=; split.
+        by rewrite ler_ltD// gtrN.
+      apply: subset_itv; rewrite bnd_simp.
+        by rewrite lerBDl -lerBDr !ge_min lexx.
+      by rewrite -lerBDl !ge_min lexx orbT.
+    + rewrite II1.
+      by have := (@trivIset1 _ _ _ (fun=> `](l, r).1, (l, r).2[%classic)).
+    rewrite big_ord1/=.
+    rewrite /r (addrC x) addrKA opprK (splitr d'%:num) -!mulr2n.
+    rewrite ltr_wMn2r//.
+    apply: (@le_lt_trans _ _ (d'%:num / 4)).
+      by rewrite ge_min lexx orbT.
+    by rewrite ltr_pM2l// ltf_pV2 ?posrE// ltr_nat.
+  move=> acfe.
+  exists d => //.
+  move=> z/=.
+  rewrite ltr_norml.
+  rewrite ltrBrDl ltrBlDr -/r => /andP[zr].
+  rewrite ltrBlDr -ltrBlDl -/l => lz.
+  rewrite /ball/=.
+  have [|] := leP z x.
+    rewrite le_eqVlt => /predU1P[<-|zx].
+      by rewrite subrr normr0.
+    move: (acfe 1%N (fun => (z, x))).
+    rewrite !big_ord1/=; apply; split.
+    + move=> _ _; split => //.
+      apply: subset_itv; rewrite bnd_simp.
+        exact/ltW/(le_lt_trans al lz).
+      apply: ltW.
+      by move: xab; rewrite in_itv/= => /andP[].
+    + rewrite II1.
+      by have := (@trivIset1 _ _ _ (fun => _)).
+    apply: lt_trans dd'.
+    by rewrite ltrBlDl -ltrBlDr.
+  move=> xz.
+  rewrite distrC.
+  have := (acfe 1%N (fun => (x, z))).
+  rewrite !big_ord1/=; apply; split.
+  + move=> _ _; split => //.
+    apply: subset_itv; rewrite bnd_simp.
+      apply: ltW.
+      by move: xab; rewrite in_itv/= => /andP[].
+    exact/ltW/(lt_le_trans zr rb).
+  + by rewrite II1; have  := (@trivIset1 _ _ _ (fun => _)).
+    apply: lt_trans dd'.
+    by rewrite ltrBlDl.
+- apply/cvg_at_rightP => u [altu cvgua].
+  apply/cvg_ballP => e e0.
+  have [d acfe] := acf (PosNum e0).
+  near=> N.
+  rewrite /ball/= distrC.
+  move: (acfe 1%N (fun => (a, u N))).
+  rewrite !big_ord1/=; apply; split.
+  + move=> ? _; split => //.
+    apply: subset_itv; rewrite bnd_simp//.
+    near: N.
+    exact: (cvgr_le _ cvgua).
+  + rewrite II1.
+    exact: trivIset1.
+  rewrite ltrBlDl.
+  near: N.
+  apply: (cvgr_lt _ cvgua).
+    by rewrite ltrDl.
+- apply/cvg_at_leftP => u [ultb cvgub].
+  apply/cvg_ballP => e e0.
+  have [d acfe] := acf (PosNum e0).
+  near=> N.
+  rewrite /ball/=.
+  move: (acfe 1%N (fun => (u N, b))).
+  rewrite !big_ord1/=; apply; split.
+  + move=> ? _; split => //.
+    apply: subset_itv; rewrite bnd_simp//.
+    near: N.
+    exact: (cvgr_ge _ cvgub).
+  + rewrite II1.
+    exact: trivIset1.
+  rewrite ltrBlDl -ltrBlDr.
+  near: N.
+  apply: (cvgr_gt _ cvgub).
+  by rewrite ltrBlDr ltrDl.
+Unshelve. all: end_near. Qed.
+
+Lemma abs_cont_bounded_variation f :
+  abs_cont a b f -> bounded_variation a b f.
+Proof.
+move=> acf.
+apply/bounded_variationP.
+
 
 Local Notation mu := (@lebesgue_measure R).
 Local Notation mue := ((@wlength R idfun)^*)%mu.
@@ -134,118 +264,10 @@ Theorem Banach_Zarecki_converse (f : R -> R) :
 Proof.
 have muE : (@lebesgue_measure R) = (wlength idfun)^*%mu by [].
 move=> acf.
-(* lemma *)
 have cf : {within `[a, b], continuous f}.
-  apply/continuous_within_itvccP => //; split.
-  - move=> x xab.
-    apply/cvg_ballP => e e0.
-    have [d'] := acf (PosNum e0).
-    set d := minr (minr (x - a) (b - x)) (d'%:num / 4).
-    have d0 : 0 < d.
-      rewrite !lt_min -andb_assoc; apply/and3P; split.
-      - rewrite subr_gt0.
-        by move: xab; rewrite in_itv/= => /andP[].
-      - rewrite subr_gt0.
-        by move: xab; rewrite in_itv/= => /andP[].
-      by rewrite pmulr_lgt0.
-    have dd' : d < d'%:num.
-      rewrite gt_min; apply/orP; right.
-      rewrite gtr_pMr// invf_lt1//.
-      by rewrite (_ : 1 = 1%:R)// ltr_nat.
-    set l := x - d.
-    set r := x + d.
-    have al : a <= l.
-      rewrite lerBrDr -lerBrDl.
-      by rewrite !ge_min lexx.
-    have rb : r <= b.
-      rewrite -lerBrDl.
-      by rewrite !ge_min lexx orbT.
-    have H : [/\ forall i : nat, (i < 1)%N ->
-                      (l, r).1 < (l, r).2 /\ `](l, r).1, (l, r).2[ `<=` `[a, b],
-       trivIset `I_1 (fun=> `](l, r).1, (l, r).2[%classic)
-     & \sum_(k < 1) ((l, r).2 - (l, r).1) < d'%:num].
-      split.
-      + move=> i _ /=; split.
-          by rewrite ler_ltD// gtrN.
-        apply: subset_itv; rewrite bnd_simp.
-          by rewrite lerBDl -lerBDr !ge_min lexx.
-        by rewrite -lerBDl !ge_min lexx orbT.
-      + rewrite II1.
-        by have := (@trivIset1 _ _ _ (fun=> `](l, r).1, (l, r).2[%classic)).
-      rewrite big_ord1/=.
-      rewrite /r (addrC x) addrKA opprK (splitr d'%:num) -!mulr2n.
-      rewrite ltr_wMn2r//.
-      apply: (@le_lt_trans _ _ (d'%:num / 4)).
-        by rewrite ge_min lexx orbT.
-      by rewrite ltr_pM2l// ltf_pV2 ?posrE// ltr_nat.
-    move=> acfe.
-    exists d => //.
-    move=> z/=.
-    rewrite ltr_norml.
-    rewrite ltrBrDl ltrBlDr -/r => /andP[zr].
-    rewrite ltrBlDr -ltrBlDl -/l => lz.
-    rewrite /ball/=.
-    have [|] := leP z x.
-      rewrite le_eqVlt => /predU1P[<-|zx].
-        by rewrite subrr normr0.
-      move: (acfe 1%N (fun => (z, x))).
-      rewrite !big_ord1/=; apply; split.
-      + move=> _ _; split => //.
-        apply: subset_itv; rewrite bnd_simp.
-          exact/ltW/(le_lt_trans al lz).
-        apply: ltW.
-        by move: xab; rewrite in_itv/= => /andP[].
-      + rewrite II1.
-        by have := (@trivIset1 _ _ _ (fun => _)).
-      apply: lt_trans dd'.
-      by rewrite ltrBlDl -ltrBlDr.
-    move=> xz.
-    rewrite distrC.
-    have := (acfe 1%N (fun => (x, z))).
-    rewrite !big_ord1/=; apply; split.
-    + move=> _ _; split => //.
-      apply: subset_itv; rewrite bnd_simp.
-        apply: ltW.
-        by move: xab; rewrite in_itv/= => /andP[].
-      exact/ltW/(lt_le_trans zr rb).
-    + by rewrite II1; have  := (@trivIset1 _ _ _ (fun => _)).
-    apply: lt_trans dd'.
-    by rewrite ltrBlDl.
-  - apply/cvg_at_rightP => u [altu cvgua].
-    apply/cvg_ballP => e e0.
-    have [d acfe] := acf (PosNum e0).
-    near=> N.
-    rewrite /ball/= distrC.
-    move: (acfe 1%N (fun => (a, u N))).
-    rewrite !big_ord1/=; apply; split.
-    + move=> ? _; split => //.
-      apply: subset_itv; rewrite bnd_simp//.
-      near: N.
-      exact: (cvgr_le _ cvgua).
-    + rewrite II1.
-      exact: trivIset1.
-    rewrite ltrBlDl.
-    near: N.
-    apply: (cvgr_lt _ cvgua).
-    by rewrite ltrDl.
-  - apply/cvg_at_leftP => u [ultb cvgub].
-    apply/cvg_ballP => e e0.
-    have [d acfe] := acf (PosNum e0).
-    near=> N.
-    rewrite /ball/=.
-    move: (acfe 1%N (fun => (u N, b))).
-    rewrite !big_ord1/=; apply; split.
-    + move=> ? _; split => //.
-      apply: subset_itv; rewrite bnd_simp//.
-      near: N.
-      exact: (cvgr_ge _ cvgub).
-    + rewrite II1.
-      exact: trivIset1.
-    rewrite ltrBlDl -ltrBlDr.
-    near: N.
-    apply: (cvgr_gt _ cvgub).
-    by rewrite ltrBlDr ltrDl.
+  exact: abs_cont_continuous.
 have bvf : bounded_variation a b f.
+  
   admit.
 split => //.
 (* move to abs_cont_lusinN*)
