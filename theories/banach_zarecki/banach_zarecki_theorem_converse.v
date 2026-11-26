@@ -24,6 +24,71 @@ Local Open Scope ring_scope.
 
 Import MeasurableR.
 
+Section lemmas.
+Context {R : realType}.
+
+Lemma le_bounded_variation (a b : R) f : b <= a -> bounded_variation a b f.
+Proof.
+rewrite le_eqVlt => /predU1P[->|ba].
+  exact: bounded_variationxx.
+exists (variation a b f [:: a]).
+move=> /= r [s].
+move/itv_partition_le.
+by rewrite leNgt ba.
+Qed.
+
+End lemmas.
+
+Section banachS.
+Context {R : realType}.
+Local Notation mu := (@lebesgue_measure R).
+Implicit Types (a b : R) (f : R -> R) (P : set R).
+
+(* Banach's (S) condition *)
+(* ref: Vasile Ene, Real Functions - Current Topics
+        p.71, Chapter 2, Section 2.18, Definition 2.18.3,
+        Stanislaw Saks, Theory of the Integral, second revised edition, *)
+
+Definition banachS P f := forall e : R, 0 < e ->
+  exists d, 0 < d /\
+   forall Z : set R, Z `<=` P -> (mu Z < d%:E)%E -> (mu (f @` Z) < e%:E)%E.
+
+Definition banachS_measurable P f := forall e : R, 0 < e ->
+  exists d, 0 < d /\
+   forall Z : set R, Z `<=` P -> R.-open.-measurable P ->
+    (mu Z < d%:E)%E -> (mu (f @` Z) < e%:E)%E.
+
+Lemma banachSP P f : R.-open.-measurable P ->
+ (banachS P f <-> banachS_measurable P f).
+Proof.
+move=> mA; split=> hf r r0.
+- have [d [d0 bd]] := hf r r0.
+  exists d; split => // Z ZP mP Zd.
+  exact: bd.
+have [/= d [d0 bd]] := hf r r0.
+exists d; split => // Z ZP Zd.
+have Zoo : (mu (f @` Z) < +oo)%E.
+(*
+  by apply: (lt_trans Zd); rewrite ltry.
+
+have [A [A0oo ZA oA ndA muZE]] := lebesgue_measure_Gdelta_approx Zoo.
+rewrite /mu/lebesgue_stieltjes_measure/measure_extension.
+rewrite muZE.
+move=> /null_approx[H mH [EH H0]].
+  have mAH : R.-open.-measurable (A `&` H) by exact: measurableI.
+  have muAH : mu (A `&` H) = 0%E.
+    by apply/eqP; rewrite eq_le measure_ge0 andbT -H0 le_measure ?inE//.
+  apply/eqP; rewrite eq_le measure_ge0 andbT.
+  rewrite -(hf _ (@subIsetl _ A H) mAH muAH).
+  rewrite le_outer_measure//.
+  apply: image_subset => x Ex.
+  by split; [exact: EA | exact: EH].
+- by move=> _; exact: hf EA.
+*)
+Abort.
+
+End banachS.
+
 Section ene6_converse.
 Context {R : realType}.
 Variables a b : R.
@@ -250,8 +315,14 @@ Lemma abs_cont_bounded_variation f :
   abs_cont a b f -> bounded_variation a b f.
 Proof.
 move=> acf.
-apply/bounded_variationP.
+have [|ab] := leP b a.
+  exact: le_bounded_variation.
+have aleb := ltW ab.
+apply/bounded_variationP => //.
+rewrite ge0_fin_numE.
+  exact: total_variation_ge0.
 
+Admitted.
 
 Local Notation mu := (@lebesgue_measure R).
 Local Notation mue := ((@wlength R idfun)^*)%mu.
@@ -267,9 +338,10 @@ move=> acf.
 have cf : {within `[a, b], continuous f}.
   exact: abs_cont_continuous.
 have bvf : bounded_variation a b f.
-  
-  admit.
+  exact: abs_cont_bounded_variation.
 split => //.
+have [|ab] := leP b a.
+  admit.
 (* move to abs_cont_lusinN*)
 (* lemma6_converse *)
 apply: ene6_converse => //.
